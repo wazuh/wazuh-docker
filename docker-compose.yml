@@ -1,0 +1,47 @@
+version: '2'
+
+services:
+  wazuh:
+    build: wazuh/
+    ports:
+      - "1514:1514"
+      - "1515:1515"
+      - "514:514"
+      - "55000:55000"
+    networks:
+      - docker_elk
+  elasticsearch:
+    image: elasticsearch:latest
+    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh " -E network.host=0.0.0.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    networks:
+      - docker_elk
+  logstash:
+    build: logstash/
+    command: -f /etc/logstash/conf.d/
+    ports:
+      - "5000:5000"
+    volumes_from:
+      - wazuh
+    networks:
+      - docker_elk
+    depends_on:
+      - elasticsearch
+    environment:
+      - LS_HEAP_SIZE=2048m
+  kibana:
+    build: kibana/
+    ports:
+      - "5601:5601"
+    networks:
+      - docker_elk
+    depends_on:
+      - elasticsearch
+
+networks:
+  docker_elk:
+    driver: bridge
