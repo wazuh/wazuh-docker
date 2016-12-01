@@ -5,7 +5,7 @@ services:
     image: wazuh/wazuh:latest
     ports:
       - "1514/udp:1514/udp"
-      - "1515/udp:1515/udp"
+      - "1515:1515"
       - "514/udp:514/udp"
       - "55000:55000"
     networks:
