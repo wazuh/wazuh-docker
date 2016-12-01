@@ -192,7 +192,7 @@ services:
     networks:
       - docker_elk
     depends_on:
-      - wazun/wazuh-elasticsearch
+      - wazuh/wazuh-elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
   kibana:
@@ -202,7 +202,7 @@ services:
     networks:
       - docker_elk
     depends_on:
-      - wazun/wazuh-elasticsearch
+      - wazuh/wazuh-elasticsearch
 
 networks:
   docker_elk:
