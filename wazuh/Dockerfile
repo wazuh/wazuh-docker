@@ -1,5 +1,5 @@
 FROM milcom/centos7-systemd
-
+# Test
 COPY config/*.repo /etc/yum.repos.d/
 
 RUN rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
