@@ -98,7 +98,7 @@ If you want to override the default configuration, add the *LS_HEAP_SIZE* enviro
 
 ```yml
 logstash:
-  build: logstash/
+  image: wazun/wazuh-logstash:latest
   command: -f /etc/logstash/conf.d/
   volumes:
     - ./logstash/config:/etc/logstash/conf.d
@@ -122,7 +122,7 @@ Then, you'll need to map your configuration file inside the container in the `do
 
 ```yml
 elasticsearch:
-  build: elasticsearch/
+  image: wazuh/wazuh-elasticsearch:latest
   ports:
     - "9200:9200"
     - "9300:9300"
@@ -142,7 +142,7 @@ In order to persist Elasticsearch data even after removing the Elasticsearch con
 
 ```yml
 elasticsearch:
-  build: elasticsearch/
+  image: wazuh/wazuh-elasticsearch:latest
   command: elasticsearch -Des.network.host=_non_loopback_ -Des.cluster.name: my-cluster
   ports:
     - "9200:9200"
@@ -164,7 +164,7 @@ version: '2'
 
 services:
   wazuh:
-    build: wazuh/
+    image: wazuh/wazuh:latest
     ports:
       - "1514:1514"
       - "1515:1515"
@@ -183,7 +183,7 @@ services:
     networks:
       - docker_elk
   logstash:
-    build: logstash/
+    image: wazuh/wazuh-logstash:latest
     command: -f /etc/logstash/conf.d/
     ports:
       - "5000:5000"
@@ -192,17 +192,17 @@ services:
     networks:
       - docker_elk
     depends_on:
-      - elasticsearch
+      - wazun/wazuh-elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
   kibana:
-    build: kibana/
+    image: wazuh/wazuh-kibana:latest
     ports:
       - "5601:5601"
     networks:
       - docker_elk
     depends_on:
-      - elasticsearch
+      - wazun/wazuh-elasticsearch
 
 networks:
   docker_elk:

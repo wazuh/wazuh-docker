@@ -1,4 +1,4 @@
-FROM kibana:latest
+FROM kibana:5.0.2
 
 COPY ./config/kibana.yml /opt/kibana/config/kibana.yml
 
