@@ -97,7 +97,7 @@ sleep 15 # give ossec a reasonable amount of time to start before checking statu
 LAST_OK_DATE=`date +%s`
 
 ## Update rules and decoders with Wazuh Ruleset
-cd /var/ossec/update/ruleset && python ossec_ruleset.py
+#cd /var/ossec/update/ruleset && python ossec_ruleset.py
 
 /bin/node /var/ossec/api/app.js &
 /var/ossec/bin/ossec-control restart

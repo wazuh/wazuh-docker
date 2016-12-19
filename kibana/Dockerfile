@@ -1,4 +1,4 @@
-FROM kibana:5.0.2
+FROM kibana:latest
 
 RUN apt-get update && apt-get install -y curl
 
