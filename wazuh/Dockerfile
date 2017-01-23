@@ -1,9 +1,6 @@
-FROM milcom/centos7-systemd
-
+FROM centos
 
 COPY config/*.repo /etc/yum.repos.d/
-
-RUN rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
 
 RUN yum -y update; yum clean all;
 RUN yum -y install epel-release openssl useradd; yum clean all
@@ -14,10 +11,8 @@ RUN yum install -y wazuh-manager wazuh-api
 
 ADD config/default_agent /var/ossec/default_agent
 
-RUN service wazuh-manager restart &&\
-  /var/ossec/bin/manage_agents -f /default_agent &&\
+RUN /var/ossec/bin/manage_agents -f /default_agent &&\
   rm /var/ossec/default_agent &&\
-  service wazuh-manager stop &&\
   echo -n "" /var/ossec/logs/ossec.log
 
 
