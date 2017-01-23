@@ -43,7 +43,7 @@ services:
 #      - docker_elk
     depends_on:
       - elasticsearch
-#    entrypoint: ./wait-for-it.sh elasticsearch
+    entrypoint: ./wait-for-it.sh elasticsearch
 
 #networks:
 #  docker_elk:
