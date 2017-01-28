@@ -24,7 +24,3 @@ if [ "$1" = 'logstash' ]; then
 fi
 
 exec "$@"
-
-#echo "Wait one min to logstash restart"
-#sleep 60
-#curl -XPUT -v -H "Expect:"  "http://elasticsearch:9200/_template/ossec" -d@/etc/logstash/elastic5-ossec-template.json

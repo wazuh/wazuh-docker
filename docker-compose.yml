@@ -27,8 +27,6 @@ services:
     command: -f /etc/logstash/conf.d/
     ports:
       - "5000:5000"
-    volumes_from:
-      - wazuh
 #    networks:
 #      - docker_elk
     depends_on:
@@ -43,7 +41,7 @@ services:
 #      - docker_elk
     depends_on:
       - elasticsearch
-    entrypoint: ./wait-for-it.sh elasticsearch
+    entrypoint: sh wait-for-it.sh elasticsearch
 
 #networks:
 #  docker_elk:

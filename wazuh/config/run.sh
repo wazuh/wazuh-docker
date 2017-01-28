@@ -100,6 +100,7 @@ LAST_OK_DATE=`date +%s`
 #cd /var/ossec/update/ruleset && python ossec_ruleset.py
 
 /bin/node /var/ossec/api/app.js &
+/usr/bin/filebeat.sh &
 /var/ossec/bin/ossec-control restart
 
 
