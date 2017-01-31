@@ -3,6 +3,7 @@ version: '2'
 services:
   wazuh:
     build: wazuh/
+#    mem_limit: 3g
     ports:
       - "1514/udp:1514/udp"
       - "1515:1515"
@@ -10,19 +11,20 @@ services:
       - "55000:55000"
     networks:
       - docker_elk
-#    volumes:
-#      - volume-path:/var/ossec/etc/data
+    volumes:
+      - /mnt:/var/ossec/data
 
     depends_on:
       - elasticsearch
   elasticsearch:
     image: elasticsearch:5.1.2
-    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh " -E network.host=0.0.0.0
+    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
+#    mem_limit: 8g
     ports:
       - "9200:9200"
       - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xms3g -Xmx3g"
+      ES_JAVA_OPTS: "-Xms5g -Xmx5g"
 #    volumes:
 #      - volume-path:/usr/share/elasticsearch/data
     networks:
@@ -30,8 +32,8 @@ services:
   logstash:
     build: logstash/
     command: -f /etc/logstash/conf.d/
-    ports:
-      - "5000:5000"
+#    ports:
+#      - "5000:5000"
     networks:
       - docker_elk
     depends_on:
