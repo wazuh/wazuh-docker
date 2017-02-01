@@ -1,4 +1,4 @@
-FROM logstash:latest
+FROM logstash:5.1.2
 
 RUN apt-get update
 RUN groupadd -g 1000 ossec && useradd -u 1000 -g 1000 ossec &&\

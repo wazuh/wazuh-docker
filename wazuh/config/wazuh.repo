@@ -3,5 +3,5 @@ gpgcheck=1
 gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH
 enabled=1
 name=CENTOS-$releasever - Wazuh
-baseurl=https://packages.wazuh.com/yum/el/$releasever/$basearch
+baseurl=http://packages.wazuh.com.s3-website-us-west-1.amazonaws.com/yum/el/$releasever/$basearch
 protect=1

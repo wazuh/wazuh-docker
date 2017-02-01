@@ -8,27 +8,32 @@ services:
       - "1515:1515"
       - "514/udp:514/udp"
       - "55000:55000"
-#    networks:
-#      - docker_elk
+    networks:
+      - docker_elk
+#    volumes:
+#      - volume-path:/var/ossec/etc/data
+
     depends_on:
       - elasticsearch
   elasticsearch:
-    image: elasticsearch:latest
+    image: elasticsearch:5.1.2
     command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh " -E network.host=0.0.0.0
     ports:
       - "9200:9200"
       - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-#    networks:
-#      - docker_elk
+      ES_JAVA_OPTS: "-Xms3g -Xmx3g"
+#    volumes:
+#      - volume-path:/usr/share/elasticsearch/data
+    networks:
+      - docker_elk
   logstash:
     build: logstash/
     command: -f /etc/logstash/conf.d/
     ports:
       - "5000:5000"
-#    networks:
-#      - docker_elk
+    networks:
+      - docker_elk
     depends_on:
       - elasticsearch
     environment:
@@ -37,12 +42,12 @@ services:
     build: kibana/
     ports:
       - "5601:5601"
-#    networks:
-#      - docker_elk
+    networks:
+      - docker_elk
     depends_on:
       - elasticsearch
     entrypoint: sh wait-for-it.sh elasticsearch
 
-#networks:
-#  docker_elk:
-#    driver: bridge
+networks:
+  docker_elk:
+    driver: bridge

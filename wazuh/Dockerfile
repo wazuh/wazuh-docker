@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:latest
 
 COPY config/*.repo /etc/yum.repos.d/
 
