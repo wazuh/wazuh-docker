@@ -3,6 +3,7 @@ version: '2'
 services:
   wazuh:
     build: wazuh/
+    hostname: wazuh-manager
 #    mem_limit: 3g
     ports:
       - "1514/udp:1514/udp"
