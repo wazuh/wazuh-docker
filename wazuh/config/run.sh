@@ -19,6 +19,7 @@ for ossecdir in "${DATA_DIRS[@]}"; do
   if [ ! -e "${DATA_PATH}/${ossecdir}" ]
   then
     echo "Installing ${ossecdir}"
+    mkdir -p $(dirname ${DATA_PATH}/${ossecdir})
     cp -pr /var/ossec/${ossecdir}-template ${DATA_PATH}/${ossecdir}
     FIRST_TIME_INSTALLATION=true
   fi
