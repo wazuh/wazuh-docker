@@ -4,7 +4,7 @@ services:
   wazuh:
     build: wazuh/
     hostname: wazuh-manager
-#    mem_limit: 3g
+    restart: always
     ports:
       - "1514/udp:1514/udp"
       - "1515:1515"
@@ -18,8 +18,8 @@ services:
       - elasticsearch
   elasticsearch:
     image: elasticsearch:5.1.2
+    restart: always
     command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
-#    mem_limit: 8g
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -42,6 +42,7 @@ services:
       - LS_HEAP_SIZE=2048m
   kibana:
     build: kibana/
+    restart: always
     ports:
       - "5601:5601"
     networks:
