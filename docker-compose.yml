@@ -7,13 +7,12 @@ services:
     ports:
       - "1514/udp:1514/udp"
       - "1515:1515"
-      - "514/udp:514/udp"
+#      - "514/udp:514/udp"
       - "55000:55000"
     networks:
       - docker_elk
     volumes:
-      - /mnt:/var/ossec/data
-
+      - /mnt/data/ossec/wazuh:/var/ossec/data
     depends_on:
       - elasticsearch
   elasticsearch:
@@ -24,9 +23,9 @@ services:
       - "9200:9200"
       - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xms5g -Xmx5g"
-#    volumes:
-#      - volume-path:/usr/share/elasticsearch/data
+      ES_JAVA_OPTS: "-Xms64g -Xmx64g"
+    volumes:
+      - /mnt/data/ossec/elasticsearch:/usr/share/elasticsearch/data
     networks:
       - docker_elk
   logstash:
