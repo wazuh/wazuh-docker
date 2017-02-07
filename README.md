@@ -107,9 +107,6 @@ Port: 55000
 
 ![Alt text](images/image-2.png?raw=true "Image 2")
 
-
-![Alt text](images/image-3.png?raw=true "Image 2")
-
 If you want to override the default configuration, add the *LS_HEAP_SIZE* environment variable to the container in the `docker-compose.yml`:
 
 ```yml
