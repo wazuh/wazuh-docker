@@ -90,23 +90,6 @@ can create more than one file in that folder if you'd like to. However, you must
 
 The Logstash container use the *LS_HEAP_SIZE* environment variable to determine how much memory should be associated to the JVM heap memory (defaults to 500m).
 
-## How can I configure Wazuhapp plugin?
-
-Select Wazuh APP in the left menu and then add the parameters
-
-![Alt text](images/image-1.png?raw=true "Image 1")
-
-The default configuration is:
-
-```
-User: foo
-Password: bar
-URL: http://wazuh
-Port: 55000
-```
-
-![Alt text](images/image-2.png?raw=true "Image 2")
-
 If you want to override the default configuration, add the *LS_HEAP_SIZE* environment variable to the container in the `docker-compose.yml`:
 
 ```yml
@@ -144,6 +127,24 @@ elasticsearch:
   networks:
     - docker_elk
 ```
+
+## How can I configure Wazuhapp plugin?
+
+Select Wazuh APP in the left menu and then add the parameters
+
+![Alt text](images/image-1.png?raw=true "Image 1")
+
+The default configuration is:
+
+```
+User: foo
+Password: bar
+URL: http://wazuh
+Port: 55000
+```
+
+![Alt text](images/image-2.png?raw=true "Image 2")
+
 
 # Storage
 
