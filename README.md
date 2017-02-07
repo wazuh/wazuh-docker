@@ -157,6 +157,7 @@ In order to persist Elasticsearch data even after removing the Elasticsearch con
 ```yml
 elasticsearch:
   image: wazuh/wazuh-elasticsearch:latest
+  hostname: elasticsearch
   command: elasticsearch -Des.network.host=_non_loopback_ -Des.cluster.name: my-cluster
   ports:
     - "9200:9200"
@@ -204,8 +205,6 @@ services:
     command: -f /etc/logstash/conf.d/
     ports:
       - "5000:5000"
-#    volumes_from:
-#      - wazuh
     networks:
       - docker_elk
     depends_on:
