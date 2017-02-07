@@ -8,10 +8,11 @@ It will give you the ability to analyze any data set by using the searching/aggr
 
 Based on the official images:
 
-* [elasticsearch](https://registry.hub.docker.com/_/elasticsearch/)
-* [logstash](https://registry.hub.docker.com/_/logstash/)
-* [kibana](https://registry.hub.docker.com/_/kibana/)
 * [Wazuh](https://github.com/wazuh/wazuh)
+* [logstash](https://registry.hub.docker.com/_/logstash/)
+* [elasticsearch](https://registry.hub.docker.com/_/elasticsearch/)
+* [kibana](https://registry.hub.docker.com/_/kibana/)
+
 
 # Requirements
 
@@ -28,6 +29,7 @@ You need to increase `max_map_count` on your Docker host:
 ```bash
 $ sudo sysctl -w vm.max_map_count=262144
 ```
+To set this value permanently, update the vm.max_map_count setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
 
 ## SELinux
 
@@ -53,19 +55,13 @@ You can also choose to run it in background (detached mode):
 $ docker-compose up -d
 ```
 
-Now that the stack is running, you'll want to inject logs in it. The shipped logstash configuration allows you to send content via tcp:
-
-```bash
-$ nc localhost 5000 < /path/to/logfile.log
-```
-
 And then access Kibana UI by hitting [http://localhost:5601](http://localhost:5601) with a web browser.
 
-*NOTE*: You'll need to inject data into logstash before being able to create a logstash index in Kibana. Then all you should have to do is to hit the create button.
-
-See: https://www.elastic.co/guide/en/kibana/current/setup.html#connect
-
 By default, the stack exposes the following ports:
+* 1514: Wazuh UDP.
+* 1515: Wazuh TCP.
+* 514 : Wazuh UDP.
+* 55000: Wazuh API.
 * 5000: Logstash TCP input.
 * 9200: Elasticsearch HTTP
 * 9300: Elasticsearch TCP transport
@@ -93,6 +89,26 @@ can create more than one file in that folder if you'd like to. However, you must
 ## How can I specify the amount of memory used by Logstash?
 
 The Logstash container use the *LS_HEAP_SIZE* environment variable to determine how much memory should be associated to the JVM heap memory (defaults to 500m).
+
+## How can I configure Wazuhapp plugin?
+
+Select Wazuh APP in the left menu and then add the parameters
+
+![Alt text](images/image-1.png?raw=true "Image 1")
+
+The default configuration is:
+
+```
+User: foo
+Password: bar
+URL: http://wazuh
+Port: 55000
+```
+
+![Alt text](images/image-2.png?raw=true "Image 2")
+
+
+![Alt text](images/image-3.png?raw=true "Image 2")
 
 If you want to override the default configuration, add the *LS_HEAP_SIZE* environment variable to the container in the `docker-compose.yml`:
 
@@ -165,6 +181,7 @@ version: '2'
 services:
   wazuh:
     image: wazuh/wazuh:latest
+    hostname: wazuh-manager
     ports:
       - "1514:1514"
       - "1515:1515"
@@ -174,7 +191,8 @@ services:
       - docker_elk
   elasticsearch:
     image: elasticsearch:latest
-    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh " -E network.host=0.0.0.0
+    hostname: elasticsearch
+    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -184,11 +202,12 @@ services:
       - docker_elk
   logstash:
     image: wazuh/wazuh-logstash:latest
+    hostname: logstash
     command: -f /etc/logstash/conf.d/
     ports:
       - "5000:5000"
-    volumes_from:
-      - wazuh
+#    volumes_from:
+#      - wazuh
     networks:
       - docker_elk
     depends_on:
@@ -197,12 +216,15 @@ services:
       - LS_HEAP_SIZE=2048m
   kibana:
     image: wazuh/wazuh-kibana:latest
+    hostname: kibana
     ports:
       - "5601:5601"
     networks:
       - docker_elk
     depends_on:
       - wazuh/wazuh-elasticsearch
+    entrypoint: sh wait-for-it.sh elasticsearch
+
 
 networks:
   docker_elk:
