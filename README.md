@@ -1,6 +1,9 @@
-# Docker container for OSSEC
+# Docker container Wazuh + ELK
 
-This Docker container source files can be found in our [ossec-wazuh Github repository](https://github.com/wazuh/ossec-wazuh). It includes both an OSSEC manager and an Elasticsearch single-node cluster, with Logstash and Kibana. You can find more information on how these components work together in our documentation.
+This Docker container source files can be found in our [Wazuh Github repository](https://github.com/wazuh/wazuh). It includes both an OSSEC manager and an Elasticsearch single-node cluster, with Logstash and Kibana. You can find more information on how these components work together in our documentation.
+
+These Docker containers are based on "deviantony" dockerfiles which can be found at [https://github.com/deviantony/docker-elk] (https://github.com/deviantony/docker-elk), and "xetus-oss" dockerfiles, which can be found at [https://github.com/xetus-oss/docker-ossec-server](https://github.com/xetus-oss/docker-ossec-server). We created our own fork, which we test and maintain. Thank you Anthony Lapenna for your contribution to the community.
+
 
 ## Documentation
 
