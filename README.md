@@ -73,17 +73,17 @@ The default configuration is::
         - wazuh/wazuh-elasticsearch
       environment:
         - LS_HEAP_SIZE=2048m
-    kibana:
-      image: wazuh/wazuh-kibana:latest
-      hostname: kibana
-      ports:
-        - "5601:5601"
-      networks:
+  kibana:
+    build: kibana/
+    hostname: kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    networks:
         - docker_elk
-      depends_on:
-        - wazuh/wazuh-elasticsearch
-      entrypoint: sh wait-for-it.sh elasticsearch
-
+    depends_on:
+      - elasticsearch
+    entrypoint: sh wait-for-it.sh elasticsearch
 
   networks:
     docker_elk:
