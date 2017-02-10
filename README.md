@@ -2,8 +2,6 @@
 
 This Docker container source files can be found in our [Wazuh Github repository](https://github.com/wazuh/wazuh). It includes both an OSSEC manager and an Elasticsearch single-node cluster, with Logstash and Kibana. You can find more information on how these components work together in our documentation.
 
-These Docker containers are based on "deviantony" dockerfiles which can be found at [https://github.com/deviantony/docker-elk] (https://github.com/deviantony/docker-elk), and "xetus-oss" dockerfiles, which can be found at [https://github.com/xetus-oss/docker-ossec-server](https://github.com/xetus-oss/docker-ossec-server). We created our own fork, which we test and maintain. Thank you Anthony Lapenna for your contribution to the community.
-
 
 ## Documentation
 
@@ -14,25 +12,182 @@ These Docker containers are based on "deviantony" dockerfiles which can be found
 
 ## Credits and thank you
 
-This Docker container is based on “xetus-oss” dockerfiles, which can be found at his [Github repository](https://github.com/xetus-oss/docker-ossec-server). We created our own fork, which we test and maintain. Thank you Terence Kent for your contribution to the community.
-
+These Docker containers are based on "deviantony" dockerfiles which can be found at [https://github.com/deviantony/docker-elk] (https://github.com/deviantony/docker-elk), and "xetus-oss" dockerfiles, which can be found at [https://github.com/xetus-oss/docker-ossec-server](https://github.com/xetus-oss/docker-ossec-server). We created our own fork, which we test and maintain. Thank you Anthony Lapenna for your contribution to the community.
 ## References
 
 * [Wazuh website](http://wazuh.com)
 * [OSSEC project website](http://ossec.github.io)
 
-## Configure Wazuhapp plugin
+Run the latest version of the ELK (Elasticseach, Logstash, Kibana) stack with Docker and Docker-compose.
+
+It will give you the ability to analyze any data set by using the searching/aggregation capabilities of Elasticseach and the visualization power of Kibana.
+
+Based on the official images:
+
+* [Wazuh](https://github.com/wazuh/wazuh)
+* [logstash](https://registry.hub.docker.com/_/logstash/)
+* [elasticsearch](https://registry.hub.docker.com/_/elasticsearch/)
+* [kibana](https://registry.hub.docker.com/_/kibana/)
+
+
+# Requirements
+
+## Setup
+
+1. Install [Docker](http://docker.io).
+2. Install [Docker-compose](http://docs.docker.com/compose/install/) **version >= 1.6**.
+3. Clone this repository
+
+## Increase max_map_count on your host (Linux)
+
+You need to increase `max_map_count` on your Docker host:
+
+```bash
+$ sudo sysctl -w vm.max_map_count=262144
+```
+To set this value permanently, update the vm.max_map_count setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
+
+## SELinux
+
+On distributions which have SELinux enabled out-of-the-box you will need to either re-context the files or set SELinux into Permissive mode in order for docker-elk to start properly.
+For example on Redhat and CentOS, the following will apply the proper context:
+
+```bash
+.-root@centos ~
+-$ chcon -R system_u:object_r:admin_home_t:s0 docker-elk/
+```
+
+# Usage
+
+Start the ELK stack using *docker-compose*:
+
+```bash
+$ docker-compose up
+```
+
+You can also choose to run it in background (detached mode):
+
+```bash
+$ docker-compose up -d
+```
+
+And then access Kibana UI by hitting [http://localhost:5601](http://localhost:5601) with a web browser.
+
+By default, the stack exposes the following ports:
+* 1514: Wazuh UDP.
+* 1515: Wazuh TCP.
+* 514 : Wazuh UDP.
+* 55000: Wazuh API.
+* 5000: Logstash TCP input.
+* 9200: Elasticsearch HTTP
+* 9300: Elasticsearch TCP transport
+* 5601: Kibana
+
+*WARNING*: If you're using *boot2docker*, you must access it via the *boot2docker* IP address instead of *localhost*.
+
+*WARNING*: If you're using *Docker Toolbox*, you must access it via the *docker-machine* IP address instead of *localhost*.
+
+# Configuration
+
+*NOTE*: Configuration is not dynamically reloaded, you will need to restart the stack after any change in the configuration of a component.
+
+## How can I tune Kibana configuration?
+
+The Kibana default configuration is stored in `kibana/config/kibana.yml`.
+
+## How can I tune Logstash configuration?
+
+The logstash configuration is stored in `logstash/config/logstash.conf`.
+
+The folder `logstash/config` is mapped onto the container `/etc/logstash/conf.d` so you
+can create more than one file in that folder if you'd like to. However, you must be aware that config files will be read from the directory in alphabetical order.
+
+## How can I specify the amount of memory used by Logstash?
+
+The Logstash container use the *LS_HEAP_SIZE* environment variable to determine how much memory should be associated to the JVM heap memory (defaults to 500m).
+
+If you want to override the default configuration, add the *LS_HEAP_SIZE* environment variable to the container in the `docker-compose.yml`:
+
+```yml
+logstash:
+  image: wazun/wazuh-logstash:latest
+  command: -f /etc/logstash/conf.d/
+  volumes:
+    - ./logstash/config:/etc/logstash/conf.d
+  ports:
+    - "5000:5000"
+  networks:
+    - docker_elk
+  depends_on:
+    - elasticsearch
+  environment:
+    - LS_HEAP_SIZE=2048m
+```
+
+## How can I tune Elasticsearch configuration?
+
+The Elasticsearch container is using the shipped configuration and it is not exposed by default.
+
+If you want to override the default configuration, create a file `elasticsearch/config/elasticsearch.yml` and add your configuration in it.
+
+Then, you'll need to map your configuration file inside the container in the `docker-compose.yml`. Update the elasticsearch container declaration to:
+
+```yml
+elasticsearch:
+  image: wazuh/wazuh-elasticsearch:latest
+  ports:
+    - "9200:9200"
+    - "9300:9300"
+  environment:
+    ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+  networks:
+    - docker_elk
+```
+
+## How can I configure Wazuhapp plugin?
 
 Select Wazuh APP in the left menu and then add the parameters
 
-The default configuration is::
+![Alt text](images/image-1.png?raw=true "Image 1")
+
+The default configuration is:
 
 ```
-  User: foo
-  Password: bar
-  URL: http://wazuh
-  Port: 55000
+User: foo
+Password: bar
+URL: http://wazuh
+Port: 55000
 ```
+
+![Alt text](images/image-2.png?raw=true "Image 2")
+
+
+# Storage
+
+## How can I store Elasticsearch data?
+
+The data stored in Elasticsearch will be persisted after container reboot but not after container removal.
+
+In order to persist Elasticsearch data even after removing the Elasticsearch container, you'll have to mount a volume on your Docker host. Update the elasticsearch container declaration to:
+
+```yml
+elasticsearch:
+  image: wazuh/wazuh-elasticsearch:latest
+  hostname: elasticsearch
+  command: elasticsearch -Des.network.host=_non_loopback_ -Des.cluster.name: my-cluster
+  ports:
+    - "9200:9200"
+    - "9300:9300"
+  environment:
+    ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+  networks:
+    - docker_elk
+  volumes:
+    - /path/to/storage:/usr/share/elasticsearch/data
+```
+
+This will store elasticsearch data inside `/path/to/storage`.
+
 
 # Docker compose file
 
@@ -260,145 +415,3 @@ All notable changes to this project will be documented in this file.
 - Delete ZLib generated files on cleaning.
 - Removed maximum lines limit from diff messages (that remain limited by length).
 
-## [v1.1.1] - 2016-05-12
-
-### Added
-
-- agent_control: maximum number of agents can now be extracted using option "-m".
-- maild: timeout limitation, preventing it from hang in some cases.
-- Updated decoders, ruleset and rootchecks from Wazuh Ruleset v1.0.8.
-- Updated changes from ossec-hids repository.
-
-### Changed
-
-- Avoid authd to rename agent if overplaced.
-- Changed some log messages.
-- Reordered directories for agent backups.
-- Don't exit when client.keys is empty by default.
-- Improved client.keys reloading capabilities.
-
-### Fixed
-
-- Fixed JSON output at rootcheck_control.
-- Fixed agent compilation on OS X.
-- Fixed memory issue on removing timestamps.
-- Fixed segmentation fault at reported.
-- Fixed segmentation fault at logcollector.
-
-### Removed
-
-- Removed old rootcheck options.
-
-## [v1.1] - 2016-04-06
-
-### Added
-
-- Re-usage of agent ID in manage_agents and authd, with time limit.
-- Added option to avoid manager from exiting when there are no keys.
-- Backup of the information about an agent that's going to be deleted.
-- Alerting if Authd can't add an agent because of a duplicated IP.
-- Integrator with Slack and PagerDuty.
-- Simplified keywords for the option "frequency".
-- Added custom Reply-to e-mail header.
-- Added option to syscheck to avoid showing diffs on some files.
-- Created agents-timestamp file to save the agents' date of adding.
-
-### Changed
-
-- client.keys: No longer overwrite the name of an agent with "#-#-#-" to mark it as deleted. Instead, the name will appear with a starting "!".
-- API: Distinction between duplicated and invalid name for agent.
-- Stop the "ERROR: No such file or directory" for Apache.
-- Changed defaults to analysisd event counter.
-- Authd won't use password by default.
-- Changed name of fields at JSON output from binaries.
-- Upgraded rules to Wazuh Ruleset v1.07
-
-### Fixed
-
-- Fixed merged.mg push on Windows Agent
-- Fixed Windows agent compilation issue
-- Fixed glob broken implementation.
-- Fixed memory corruption on the OSSEC alert decoder.
-- Fixed command "useradd" on OpenBSD.
-- Fixed some PostgreSQL issues.
-- Allow to disable syscheck:check_perm after enable check_all.
-
-## [v1.0.4] - 2016-02-24
-​
-### Added
-
-- JSON output for manage_agents.
-- Increased analysis daemon's memory size.
-- Authd: Added password authorization.
-- Authd: Boost speed performance at assignation of ID for agents
-- Authd: New option -f *sec*. Force addding new agent (even with duplicated IP) if it was not active for the last *sec* seconds.
-- manage_agents: new option -d. Force adding new agent (even with duplicated IP)
-- manage_agents: Printing new agent ID on adding.
-
-### Changed
-
-- Authd and manage_agents won't add agents with duplicated IP.
-
-### Fixed
-
-- Solved duplicate IP conflicts on client.keys which prevented the new agent to connect.
-- Hashing files in binary mode. Solved some problems related to integrity checksums on Windows.
-- Fixed issue that made console programs not to work on Windows.
-
-### Removed
-
-- RESTful API no longer included in extensions/api folder. Available now at https://github.com/wazuh/wazuh-api
-
-
-## [v1.0.3] - 2016-02-11
-
-### Added
-
-- JSON CLI outputs: ossec-control, rootcheck_control, syscheck_control, ossec-logtest and more.
-- Preparing integration with RESTful API
-- Upgrade version scripts
-- Merge commits from ossec-hids
-- Upgraded rules to Wazuh Ruleset v1.06
-
-### Fixed
-
-- Folders are no longer included on etc/shared
-- Fixes typos on rootcheck files
-- Kibana dashboards fixes
-
-## [v1.0.2] - 2016-01-29
-
-### Added
-
-- Added Wazuh Ruleset updater
-- Added extensions files to support ELK Stack latest versions (ES 2.x, LS 2.1, Kibana 4.3)
-
-### Changed
-
-- Upgraded rules to Wazuh Ruleset v1.05
-- Fixed crash in reportd
-- Fixed Windows EventChannel syntaxis issue
-- Fixed manage_agents bulk option bug. No more "randombytes" errors.
-- Windows deployment script improved
-
-## [v1.0.1] - 2015-12-10
-
-### Added
-
-- Wazuh version info file
-- ossec-init.conf now includes wazuh version
-- Integrated with wazuh OSSEC ruleset updater
-- Several new fields at JSON output (archives and alerts)
-- Wazuh decoders folder
-
-### Changed
-
-- Decoders are now splitted in differents files.
-- jsonout_out enable by default
-- JSON groups improvements
-- Wazuh ruleset updated to 1.0.2
-- Extensions: Improved Kibana dashboards
-- Extensions: Improved Windows deployment script
-
-## [v1.0] - 2015-11-23
-- Initial Wazuh version v1.0
