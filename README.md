@@ -188,6 +188,13 @@ elasticsearch:
 
 This will store elasticsearch data inside `/path/to/storage`.
 
+# Run the containers.
+
+In order to run the containers, first clone this repository, and then run the follow commands
+
+```
+docker-compose build && docker-compose up -d
+```
 
 # Docker compose file
 
