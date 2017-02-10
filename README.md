@@ -1,229 +1,332 @@
-# Docker Wazuh+ELK stack
+# Docker container for OSSEC
 
-.. note:: These Docker containers are based on "deviantony" dockerfiles, which can be found at `https://github.com/deviantony/docker-elk <https://github.com/deviantony/docker-elk>`_. We created our own fork, which we test and maintain. Thank you Anthony Lapenna for your contribution to the community.
+This Docker container source files can be found in our [ossec-wazuh Github repository](https://github.com/wazuh/ossec-wazuh). It includes both an OSSEC manager and an Elasticsearch single-node cluster, with Logstash and Kibana. You can find more information on how these components work together in our documentation.
 
-Run the latest version of the ELK (Elasticseach, Logstash, Kibana) stack with Docker and Docker-compose.
+## Documentation
 
-It will give you the ability to analyze any data set by using the searching/aggregation capabilities of Elasticseach and the visualization power of Kibana.
+* [Full documentation](http://documentation.wazuh.com)
+* [OSSEC integration with ELK Stack]()
+* [Docker container documentation]()
+* [Docker Hub]()
 
-Based on the official images:
+## Credits and thank you
 
-* [Wazuh](https://github.com/wazuh/wazuh)
-* [logstash](https://registry.hub.docker.com/_/logstash/)
-* [elasticsearch](https://registry.hub.docker.com/_/elasticsearch/)
-* [kibana](https://registry.hub.docker.com/_/kibana/)
+This Docker container is based on “xetus-oss” dockerfiles, which can be found at his [Github repository](https://github.com/xetus-oss/docker-ossec-server). We created our own fork, which we test and maintain. Thank you Terence Kent for your contribution to the community.
+
+## References
+
+* [Wazuh website](http://wazuh.com)
+* [OSSEC project website](http://ossec.github.io)
+
+# Change Log
+All notable changes to this project will be documented in this file.
+
+## [v2.0]
+
+### Added
+
+- Wazuh modules manager.
+- Wazuh module for OpenSCAP.
+- Ruleset for OpenSCAP alerts.
+- Kibana dashboards for OpenSCAP.
+- Option at agent_control to restart all agents.
+- Dynamic fields to rules and decoders.
+- Dynamic fields to JSON in alerts/archives.
+- CDB list lookup with dynamic fields.
+- FTS for dynamic fields.
+- Logcollector option to set the frequency of file checking.
+- GeoIP support in Alerts (by Scott R Shinn).
+- Internal option to output GeoIP data on JSON alerts.
+- Matching pattern negation (by Daniel Cid).
+- Syscheck and Rootcheck events on SQLite databases.
+- Data migration tool to SQLite databases.
+- Jenkins QA.
+- 64-bit Windows registry keys support.
+- Complete FIM data output to JSON and alerts.
+- Username, date and inode attributes to FIM events on Unix.
+- Username attribute to FIM events on Windows.
+- Report changes (FIM file diffs) to Windows agent.
+- File diffs to JSON output.
+- Elastic mapping updated for new FIM events.
+- Title and file fields extracted at Rootcheck alerts.
+- Rule description formatting with dynamic field referencing.
+- Multithreaded design for Authd server for fast and reliable client dispatching, with key caching and write scheduling.
+- Auth registration client for Windows (by Gael Muller).
+- Auth password authentication for Windows client.
+- New local decoder file by default.
+- Show server certificate and key paths at Authd help.
+- New option for Authd to verify agent's address.
+- Added support for new format at predecoder (by Brad Lhotsky).
+- Agentless passlist encoding to Base64.
+- New Auditd-specific log format for Logcollector.
+- Option for Authd to auto-choose TLS/SSL method.
+- Compile option for Authd to make it compatible with legacy OSs.
+- Added new templates layout to auto-compose configuration file.
+- New wodle for SQLite database syncing (agent information and fim/pm data).
+- Added XML settings options to exclude some rules or decoders files.
+- Option for agent_control to broadcast AR on all agents.
+- Extended FIM event information forwarded by csyslogd (by Sivakumar Nellurandi).
+- Report Syscheck's new file events on real time.
+
+### Changed
+
+- Isolated logtest directory from analysisd.
+- Remoted informs Analysisd about agent ID.
+- Updated Kibana dashboards.
+- Syscheck FIM attributes to dynamic fields.
+- Force services to exit if PID file creation fails.
+- Atomic writing of client.keys through temporary files.
+- Disabled remote message ID verification by default.
+- Show actual IP on debug message when agents get connected.
+- Enforce rules IDs to max 6 digits.
+- OSSEC users and group as system (UI-hidden) users (by Dennis Golden).
+- Increases Authd connection pool size.
+- Use general-purpose version-flexible SSL/TLS methods for Authd registration.
+- Enforce minimum 3-digit agent ID format.
+- Exclude BTRFS from Rootcheck searching for hidden files inside directories (by Stehpan Joerrens).
+- Moved OSSEC and Wazuh decoders to one directory.
+- Prevent manage_agents from doing invalid actions (such methods for manager at agent).
+- Disabled capturing of security events 5145 and 5156 on Windows agent.
+- Utilities to rename an agent or change the IP address (by Antonio Querubin).
+- Added quiet option for Logtest (by Dan Parriot).
+- Output decoder information onto JSON alerts.
+- Enable mail notifications by default for server installation.
+- Agent control option to restart all agents' Syscheck will also restart manager's Syscheck.
+- Make ossec-control to check Authd PID.
+- Enforce every rule to contain a description.
+- JSON output won't contain field "agentip" if tis value is "any".
+- Don't broadcast Active Response messages to disconnected agents.
+- Don't print Syscheck logs if it's disabled.
+- Set default Syscheck and Rootcheck frequency to 12 hours.
+- Generate FIM new file alert by default.
+- Added option for Integrator to set the maximum log length.
+- JSON output nested objects modelling through dynamic fields.
+- Disable TCP for unsupported OSs.
+- Show previous log on JSON alert.
+- Removed confirmation prompt when importing an agent key successfully.
+- Made Syscheck not to ignore files that change more than 3 times by default.
+- Enabled JSON output by default.
+- Updated default syscheck configuration for Windows agents.
+- Limited agent' maximum connection time for notification time.
+- Improved client.keys changing detection method by remoted: use date and inode.
+- Changed boot service name to Wazuh.
+- Active response enabled on Windows agents by default.
+- New folder structure for rules and decoders.
+- More descriptive logs about syscheck real-time monitoring.
+- Renamed XML tags related to rules and decoders inclusion.
+- Set default maximum agents to 8000.
+- Removed FTS numeric bitfield from JSON output.
+- Fixed ID misasignation by manage_agents when the gratest ID exceeds 32512.
+- Run Windows Registry Syscheck scan on first stage when scan_on_start enabled.
+- Set all Syscheck delay stages to a multiple of internal_options.conf/syscheck.sleep value.
+- Changed JSON timestamp format to ISO8601.
+- Overwrite @timestamp field from Logstash with the alert timestamp.
+
+### Fixed
+
+- Logcollector bug that inhibited alerts about file reduction.
+- Memory issue on string manipulation at JSON.
+- Memory bug at JSON alerts.
+- Fixed some CLang warnings.
+- Issue on marching OSSEC user on installing.
+- Memory leaks at configuration.
+- Memory leaks at Analysisd.
+- Bugs and memory errors at agent management.
+- Mistake with incorrect name for PID file (by Tickhon Clearscale).
+- Agent-auth name at messages (it appeared to be the server).
+- Avoid Monitord to log errors when the JSON alerts file doesn't exists.
+- Agents numberig issue (minimum 3 digits).
+- Avoid no-JSON message at agent_control when client.keys empty.
+- Memory leaks at manage_agents.
+- Authd error messages about connection to queue passed to warning.
+- Issue with Authd password checking.
+- Avoid ossec-control to use Dash.
+- Fixed false error about disconnected agent when trying to send it the shared files.
+- Avoid Authd to close when it reaches the maximum concurrency.
+- Fixed memory bug at event diff execution.
+- Fixed resource leak at file operations.
+- Hide help message by useadd and groupadd on OpenBSD.
+- Fixed error that made Analysisd to crash if it received a missing FIM file entry.
+- Fixed compile warnings at cJSON library.
+- Fixed bug that made Active Response to disable all commands if one of them was disabled (by Jason Thomas).
+- Fixed segmentation fault at logtest (by Dan Parriot).
+- Fixed SQL injection vulnerability at Database.
+- Fixed Active Response scripts for Slack and Twitter.
+- Fixed potential segmentation fault at file queue operation.
+- Fixed file permissions.
+- Fixed failing test for Apache 2.2 logs (by Brad Lhotsky).
+- Fixed memory error at net test.
+- Limit agent waiting time for retrying to connect.
+- Fixed compile warnings on i386 architecture.
+- Fixed Monitord crash when sending daily report email.
+- Fixed script to null route an IP address on Windows Server 2012+ (by Theresa Meiksner).
+- Fixed memory leak at Logtest.
+- Fixed manager with TCP support on FreeBSD (by Dave Stoddard).
+- Fixed Integrator launching at local-mode installation.
+- Fixed issue on previous alerts counter (rules with if_matched_sid option).
+- Fixed compile and installing error on Solaris.
+- Fixed segmentation fault on syscheck when no configuration is defined.
+- Fixed bug that prevented manage_agents from removing syscheck/rootcheck database.
+- Fixed bug that made agents connected on TCP to hang if they are rejected by the manager.
+- Fixed segmentation fault on remoted due to race condition on managing keystore.
+- Fixed data lossing at remoted when reloading keystore.
+- Fixed compile issue on MacOS.
+- Fixed version reading at ruleset updater.
+- Fixed detection of BSD.
+- Fixed memory leak (by Byron Golden).
+- Fixed misinterpretation of octal permissions given by Agentless (by Stephan Leemburg).
+- Fixed mistake incorrect openssl flag at Makefile (by Stephan Leemburg).
+- Silence Slack integration transmission messages (by Dan Parriot).
+- Fixed OpenSUSE Systemd misconfiguration (By Stephan Joerrens).
+- Fixed case issue on JSON output for Rootcheck alerts.
+- Fixed potential issue on duplicated agent ID detection.
+- Fixed issue when creating agent backups.
+
+### Removed
+
+- Deleted link to LUA sources.
+- Delete ZLib generated files on cleaning.
+- Removed maximum lines limit from diff messages (that remain limited by length).
+
+## [v1.1.1] - 2016-05-12
+
+### Added
+
+- agent_control: maximum number of agents can now be extracted using option "-m".
+- maild: timeout limitation, preventing it from hang in some cases.
+- Updated decoders, ruleset and rootchecks from Wazuh Ruleset v1.0.8.
+- Updated changes from ossec-hids repository.
+
+### Changed
+
+- Avoid authd to rename agent if overplaced.
+- Changed some log messages.
+- Reordered directories for agent backups.
+- Don't exit when client.keys is empty by default.
+- Improved client.keys reloading capabilities.
+
+### Fixed
+
+- Fixed JSON output at rootcheck_control.
+- Fixed agent compilation on OS X.
+- Fixed memory issue on removing timestamps.
+- Fixed segmentation fault at reported.
+- Fixed segmentation fault at logcollector.
+
+### Removed
+
+- Removed old rootcheck options.
+
+## [v1.1] - 2016-04-06
+
+### Added
+
+- Re-usage of agent ID in manage_agents and authd, with time limit.
+- Added option to avoid manager from exiting when there are no keys.
+- Backup of the information about an agent that's going to be deleted.
+- Alerting if Authd can't add an agent because of a duplicated IP.
+- Integrator with Slack and PagerDuty.
+- Simplified keywords for the option "frequency".
+- Added custom Reply-to e-mail header.
+- Added option to syscheck to avoid showing diffs on some files.
+- Created agents-timestamp file to save the agents' date of adding.
+
+### Changed
+
+- client.keys: No longer overwrite the name of an agent with "#-#-#-" to mark it as deleted. Instead, the name will appear with a starting "!".
+- API: Distinction between duplicated and invalid name for agent.
+- Stop the "ERROR: No such file or directory" for Apache.
+- Changed defaults to analysisd event counter.
+- Authd won't use password by default.
+- Changed name of fields at JSON output from binaries.
+- Upgraded rules to Wazuh Ruleset v1.07
+
+### Fixed
+
+- Fixed merged.mg push on Windows Agent
+- Fixed Windows agent compilation issue
+- Fixed glob broken implementation.
+- Fixed memory corruption on the OSSEC alert decoder.
+- Fixed command "useradd" on OpenBSD.
+- Fixed some PostgreSQL issues.
+- Allow to disable syscheck:check_perm after enable check_all.
+
+## [v1.0.4] - 2016-02-24
+​
+### Added
+
+- JSON output for manage_agents.
+- Increased analysis daemon's memory size.
+- Authd: Added password authorization.
+- Authd: Boost speed performance at assignation of ID for agents
+- Authd: New option -f *sec*. Force addding new agent (even with duplicated IP) if it was not active for the last *sec* seconds.
+- manage_agents: new option -d. Force adding new agent (even with duplicated IP)
+- manage_agents: Printing new agent ID on adding.
+
+### Changed
+
+- Authd and manage_agents won't add agents with duplicated IP.
+
+### Fixed
+
+- Solved duplicate IP conflicts on client.keys which prevented the new agent to connect.
+- Hashing files in binary mode. Solved some problems related to integrity checksums on Windows.
+- Fixed issue that made console programs not to work on Windows.
+
+### Removed
+
+- RESTful API no longer included in extensions/api folder. Available now at https://github.com/wazuh/wazuh-api
 
 
-# Requirements
+## [v1.0.3] - 2016-02-11
 
-## Setup
+### Added
 
-1. Install [Docker](http://docker.io).
-2. Install [Docker-compose](http://docs.docker.com/compose/install/) **version >= 1.6**.
-3. Clone this repository
+- JSON CLI outputs: ossec-control, rootcheck_control, syscheck_control, ossec-logtest and more.
+- Preparing integration with RESTful API
+- Upgrade version scripts
+- Merge commits from ossec-hids
+- Upgraded rules to Wazuh Ruleset v1.06
 
-## Increase max_map_count on your host (Linux)
+### Fixed
 
-You need to increase `max_map_count` on your Docker host:
+- Folders are no longer included on etc/shared
+- Fixes typos on rootcheck files
+- Kibana dashboards fixes
 
-```bash
-$ sudo sysctl -w vm.max_map_count=262144
-```
-To set this value permanently, update the vm.max_map_count setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
+## [v1.0.2] - 2016-01-29
 
-## SELinux
+### Added
 
-On distributions which have SELinux enabled out-of-the-box you will need to either re-context the files or set SELinux into Permissive mode in order for docker-elk to start properly.
-For example on Redhat and CentOS, the following will apply the proper context:
+- Added Wazuh Ruleset updater
+- Added extensions files to support ELK Stack latest versions (ES 2.x, LS 2.1, Kibana 4.3)
 
-```bash
-.-root@centos ~
--$ chcon -R system_u:object_r:admin_home_t:s0 docker-elk/
-```
+### Changed
 
-# Usage
+- Upgraded rules to Wazuh Ruleset v1.05
+- Fixed crash in reportd
+- Fixed Windows EventChannel syntaxis issue
+- Fixed manage_agents bulk option bug. No more "randombytes" errors.
+- Windows deployment script improved
 
-Start the ELK stack using *docker-compose*:
+## [v1.0.1] - 2015-12-10
 
-```bash
-$ docker-compose up
-```
+### Added
 
-You can also choose to run it in background (detached mode):
+- Wazuh version info file
+- ossec-init.conf now includes wazuh version
+- Integrated with wazuh OSSEC ruleset updater
+- Several new fields at JSON output (archives and alerts)
+- Wazuh decoders folder
 
-```bash
-$ docker-compose up -d
-```
+### Changed
 
-And then access Kibana UI by hitting [http://localhost:5601](http://localhost:5601) with a web browser.
+- Decoders are now splitted in differents files.
+- jsonout_out enable by default
+- JSON groups improvements
+- Wazuh ruleset updated to 1.0.2
+- Extensions: Improved Kibana dashboards
+- Extensions: Improved Windows deployment script
 
-By default, the stack exposes the following ports:
-* 1514: Wazuh UDP.
-* 1515: Wazuh TCP.
-* 514 : Wazuh UDP.
-* 55000: Wazuh API.
-* 5000: Logstash TCP input.
-* 9200: Elasticsearch HTTP
-* 9300: Elasticsearch TCP transport
-* 5601: Kibana
-
-*WARNING*: If you're using *boot2docker*, you must access it via the *boot2docker* IP address instead of *localhost*.
-
-*WARNING*: If you're using *Docker Toolbox*, you must access it via the *docker-machine* IP address instead of *localhost*.
-
-# Configuration
-
-*NOTE*: Configuration is not dynamically reloaded, you will need to restart the stack after any change in the configuration of a component.
-
-## How can I tune Kibana configuration?
-
-The Kibana default configuration is stored in `kibana/config/kibana.yml`.
-
-## How can I tune Logstash configuration?
-
-The logstash configuration is stored in `logstash/config/logstash.conf`.
-
-The folder `logstash/config` is mapped onto the container `/etc/logstash/conf.d` so you
-can create more than one file in that folder if you'd like to. However, you must be aware that config files will be read from the directory in alphabetical order.
-
-## How can I specify the amount of memory used by Logstash?
-
-The Logstash container use the *LS_HEAP_SIZE* environment variable to determine how much memory should be associated to the JVM heap memory (defaults to 500m).
-
-If you want to override the default configuration, add the *LS_HEAP_SIZE* environment variable to the container in the `docker-compose.yml`:
-
-```yml
-logstash:
-  image: wazun/wazuh-logstash:latest
-  command: -f /etc/logstash/conf.d/
-  volumes:
-    - ./logstash/config:/etc/logstash/conf.d
-  ports:
-    - "5000:5000"
-  networks:
-    - docker_elk
-  depends_on:
-    - elasticsearch
-  environment:
-    - LS_HEAP_SIZE=2048m
-```
-
-## How can I tune Elasticsearch configuration?
-
-The Elasticsearch container is using the shipped configuration and it is not exposed by default.
-
-If you want to override the default configuration, create a file `elasticsearch/config/elasticsearch.yml` and add your configuration in it.
-
-Then, you'll need to map your configuration file inside the container in the `docker-compose.yml`. Update the elasticsearch container declaration to:
-
-```yml
-elasticsearch:
-  image: wazuh/wazuh-elasticsearch:latest
-  ports:
-    - "9200:9200"
-    - "9300:9300"
-  environment:
-    ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-  networks:
-    - docker_elk
-```
-
-## How can I configure Wazuhapp plugin?
-
-Select Wazuh APP in the left menu and then add the parameters
-
-![Alt text](images/image-1.png?raw=true "Image 1")
-
-The default configuration is:
-
-```
-User: foo
-Password: bar
-URL: http://wazuh
-Port: 55000
-```
-
-![Alt text](images/image-2.png?raw=true "Image 2")
-
-
-# Storage
-
-## How can I store Elasticsearch data?
-
-The data stored in Elasticsearch will be persisted after container reboot but not after container removal.
-
-In order to persist Elasticsearch data even after removing the Elasticsearch container, you'll have to mount a volume on your Docker host. Update the elasticsearch container declaration to:
-
-```yml
-elasticsearch:
-  image: wazuh/wazuh-elasticsearch:latest
-  hostname: elasticsearch
-  command: elasticsearch -Des.network.host=_non_loopback_ -Des.cluster.name: my-cluster
-  ports:
-    - "9200:9200"
-    - "9300:9300"
-  environment:
-    ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-  networks:
-    - docker_elk
-  volumes:
-    - /path/to/storage:/usr/share/elasticsearch/data
-```
-
-This will store elasticsearch data inside `/path/to/storage`.
-
-## Final docker-compose file
-
-```yml
-version: '2'
-
-services:
-  wazuh:
-    image: wazuh/wazuh:latest
-    hostname: wazuh-manager
-    ports:
-      - "1514:1514"
-      - "1515:1515"
-      - "514:514"
-      - "55000:55000"
-    networks:
-      - docker_elk
-  elasticsearch:
-    image: elasticsearch:latest
-    hostname: elasticsearch
-    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-    networks:
-      - docker_elk
-  logstash:
-    image: wazuh/wazuh-logstash:latest
-    hostname: logstash
-    command: -f /etc/logstash/conf.d/
-    ports:
-      - "5000:5000"
-    networks:
-      - docker_elk
-    depends_on:
-      - wazuh/wazuh-elasticsearch
-    environment:
-      - LS_HEAP_SIZE=2048m
-  kibana:
-    image: wazuh/wazuh-kibana:latest
-    hostname: kibana
-    ports:
-      - "5601:5601"
-    networks:
-      - docker_elk
-    depends_on:
-      - wazuh/wazuh-elasticsearch
-    entrypoint: sh wait-for-it.sh elasticsearch
-
-
-networks:
-  docker_elk:
-    driver: bridge
-```
+## [v1.0] - 2015-11-23
+- Initial Wazuh version v1.0
