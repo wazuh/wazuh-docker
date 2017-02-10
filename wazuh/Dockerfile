@@ -4,8 +4,6 @@ COPY config/*.repo /etc/yum.repos.d/
 
 RUN yum -y update; yum clean all;
 RUN yum -y install epel-release openssl useradd; yum clean all
-RUN groupadd -g 1000 ossec
-RUN useradd -u 1000 -g 1000 ossec
 RUN yum install -y wazuh-manager wazuh-api
 
 ADD config/data_dirs.env /data_dirs.env

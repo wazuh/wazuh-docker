@@ -45,33 +45,6 @@ then
         -subj /CN=${HOSTNAME}/
     fi
   fi
-  #
-  # Support SYSLOG forwarding, if configured
-  #
-  SYSLOG_FORWADING_ENABLED=${SYSLOG_FORWADING_ENABLED:-false}
-  if [ $SYSLOG_FORWADING_ENABLED == true ]
-  then
-    if [ -z "$SYSLOG_FORWARDING_SERVER_IP" ]
-    then
-      echo "Cannot setup sylog forwarding because SYSLOG_FORWARDING_SERVER_IP is not defined"
-    else
-      SYSLOG_FORWARDING_SERVER_PORT=${SYSLOG_FORWARDING_SERVER_PORT:-514}
-      SYSLOG_FORWARDING_FORMAT=${SYSLOG_FORWARDING_FORMAT:-default}
-      SYSLOG_XML_SNIPPET="\
-  <syslog_output>\n\
-    <server>${SYSLOG_FORWARDING_SERVER_IP}</server>\n\
-    <port>${SYSLOG_FORWARDING_SERVER_PORT}</port>\n\
-    <format>${SYSLOG_FORWARDING_FORMAT}</format>\n\
-  </syslog_output>";
-
-      cat /var/ossec/etc/ossec.conf |\
-        perl -pe "s,<ossec_config>,<ossec_config>\n${SYSLOG_XML_SNIPPET}\n," \
-        > /var/ossec/etc/ossec.conf-new
-      mv -f /var/ossec/etc/ossec.conf-new /var/ossec/etc/ossec.conf
-      chgrp ossec /var/ossec/etc/ossec.conf
-      /var/ossec/bin/ossec-control enable client-syslog
-    fi
-  fi
 fi
 
 function ossec_shutdown(){
@@ -87,7 +60,6 @@ trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
 
-
 if [ $AUTO_ENROLLMENT_ENABLED == true ]
 then
   echo "Starting ossec-authd..."
@@ -97,8 +69,7 @@ fi
 sleep 15 # give ossec a reasonable amount of time to start before checking status
 LAST_OK_DATE=`date +%s`
 
-## Update rules and decoders with Wazuh Ruleset
-#cd /var/ossec/update/ruleset && python ossec_ruleset.py
+## Start services
 
 /bin/node /var/ossec/api/app.js &
 /usr/bin/filebeat.sh &
