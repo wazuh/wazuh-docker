@@ -18,6 +18,62 @@ This Docker container is based on “xetus-oss” dockerfiles, which can be foun
 * [Wazuh website](http://wazuh.com)
 * [OSSEC project website](http://ossec.github.io)
 
+# Docker compose file
+
+```
+  version: '2'
+
+  services:
+    wazuh:
+      image: wazuh/wazuh:latest
+      hostname: wazuh-manager
+      ports:
+        - "1514:1514"
+        - "1515:1515"
+        - "514:514"
+        - "55000:55000"
+      networks:
+        - docker_elk
+    elasticsearch:
+      image: elasticsearch:latest
+      hostname: elasticsearch
+      command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
+      ports:
+        - "9200:9200"
+        - "9300:9300"
+      environment:
+        ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+      networks:
+        - docker_elk
+    logstash:
+      image: wazuh/wazuh-logstash:latest
+      hostname: logstash
+      command: -f /etc/logstash/conf.d/
+      ports:
+        - "5000:5000"
+      networks:
+        - docker_elk
+      depends_on:
+        - wazuh/wazuh-elasticsearch
+      environment:
+        - LS_HEAP_SIZE=2048m
+    kibana:
+      image: wazuh/wazuh-kibana:latest
+      hostname: kibana
+      ports:
+        - "5601:5601"
+      networks:
+        - docker_elk
+      depends_on:
+        - wazuh/wazuh-elasticsearch
+      entrypoint: sh wait-for-it.sh elasticsearch
+
+
+  networks:
+    docker_elk:
+      driver: bridge
+```
+
 # Change Log
 All notable changes to this project will be documented in this file.
 
