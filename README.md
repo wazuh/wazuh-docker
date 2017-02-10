@@ -41,7 +41,7 @@ The default configuration is::
 
   services:
     wazuh:
-      image: wazuh/wazuh:latest
+      build: wazuh/
       hostname: wazuh-manager
       ports:
         - "1514:1514"
@@ -62,7 +62,7 @@ The default configuration is::
       networks:
         - docker_elk
     logstash:
-      image: wazuh/wazuh-logstash:latest
+      build: logstash/
       hostname: logstash
       command: -f /etc/logstash/conf.d/
       ports:
