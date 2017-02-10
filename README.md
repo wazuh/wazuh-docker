@@ -21,6 +21,19 @@ This Docker container is based on “xetus-oss” dockerfiles, which can be foun
 * [Wazuh website](http://wazuh.com)
 * [OSSEC project website](http://ossec.github.io)
 
+## Configure Wazuhapp plugin
+
+Select Wazuh APP in the left menu and then add the parameters
+
+The default configuration is::
+
+```
+  User: foo
+  Password: bar
+  URL: http://wazuh
+  Port: 55000
+```
+
 # Docker compose file
 
 ```
