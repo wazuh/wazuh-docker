@@ -1,4 +1,4 @@
-# IMPORTANT NOTE
+# IMPORTANT NOTE (not final release)
 
 The first time than you runt this container can take a while until kibana finish the configuration, the Wazuh plugin can take a few minutes until finish the instalation, please be patient.
 
