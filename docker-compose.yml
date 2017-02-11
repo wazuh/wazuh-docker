@@ -8,10 +8,12 @@ services:
     ports:
       - "1514/udp:1514/udp"
       - "1515:1515"
-#      - "514/udp:514/udp"
+      - "514/udp:514/udp"
       - "55000:55000"
     networks:
         - docker_elk
+    volumes:
+      - my-path:/var/ossec/data
     depends_on:
       - elasticsearch
   logstash:
@@ -39,6 +41,8 @@ services:
       - "9300:9300"
     environment:
       ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    volumes:
+      - my-path:/var/ossec/data
     networks:
         - docker_elk
   kibana:
