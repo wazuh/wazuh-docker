@@ -18,7 +18,7 @@ sleep 30
 if /usr/share/kibana/bin/kibana-plugin list | grep wazuh; then
   echo "Wazuh APP already installed"
 else
-  /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp.zip
+  /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-2.0_5.2.0.zip
 fi
 
 exec $cmd
