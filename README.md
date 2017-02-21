@@ -249,6 +249,7 @@ services:
   logstash:
     image: wazuh/wazuh-logstash
     hostname: logstash
+    restart: always
     command: -f /etc/logstash/conf.d/
 #    volumes:
 #      - ./logstash/config:/etc/logstash/conf.d
@@ -295,6 +296,7 @@ networks:
     ipam:
       config:
       - subnet: 172.25.0.0/24
+
 ```
 
 # Change Log
