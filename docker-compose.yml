@@ -42,7 +42,7 @@ services:
     environment:
       ES_JAVA_OPTS: "-Xms2g -Xmx2g"
 #    volumes:
-#      - my-path:/var/ossec/data
+#      - my-path:/usr/share/elasticsearch/data
     networks:
         - docker_elk
   kibana:
