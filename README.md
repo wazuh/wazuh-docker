@@ -228,44 +228,57 @@ docker-compose build && docker-compose up -d
 # Docker compose file
 
 ```
-  version: '2'
+version: '2'
 
-  services:
-    wazuh:
-      build: wazuh/
-      hostname: wazuh-manager
-      ports:
-        - "1514:1514"
-        - "1515:1515"
-        - "514:514"
-        - "55000:55000"
-      networks:
+services:
+  wazuh:
+    image: wazuh/wazuh
+    hostname: wazuh-manager
+    restart: always
+    ports:
+      - "1514/udp:1514/udp"
+      - "1515:1515"
+      - "514/udp:514/udp"
+      - "55000:55000"
+    networks:
         - docker_elk
-    elasticsearch:
-      image: elasticsearch:latest
-      hostname: elasticsearch
-      command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
-      ports:
-        - "9200:9200"
-        - "9300:9300"
-      environment:
-        ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-      networks:
+#    volumes:
+#      - my-path:/var/ossec/data
+    depends_on:
+      - elasticsearch
+  logstash:
+    image: wazuh/wazuh-logstash
+    hostname: logstash
+    command: -f /etc/logstash/conf.d/
+#    volumes:
+#      - ./logstash/config:/etc/logstash/conf.d
+    links:
+     - kibana
+     - elasticsearch
+    ports:
+      - "5000:5000"
+    networks:
         - docker_elk
-    logstash:
-      build: logstash/
-      hostname: logstash
-      command: -f /etc/logstash/conf.d/
-      ports:
-        - "5000:5000"
-      networks:
+    depends_on:
+      - elasticsearch
+    environment:
+      - LS_HEAP_SIZE=2048m
+  elasticsearch:
+    image: elasticsearch:5.2.0
+    hostname: elasticsearch
+    restart: always
+    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+#    volumes:
+#      - my-path:/usr/share/elasticsearch/data
+    networks:
         - docker_elk
-      depends_on:
-        - wazuh/wazuh-elasticsearch
-      environment:
-        - LS_HEAP_SIZE=2048m
   kibana:
-    build: kibana/
+    image: wazuh/wazuh-kibana
     hostname: kibana
     restart: always
     ports:
@@ -276,9 +289,12 @@ docker-compose build && docker-compose up -d
       - elasticsearch
     entrypoint: sh wait-for-it.sh elasticsearch
 
-  networks:
-    docker_elk:
-      driver: bridge
+networks:
+  docker_elk:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.25.0.0/24
 ```
 
 # Change Log
