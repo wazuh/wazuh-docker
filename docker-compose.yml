@@ -35,7 +35,7 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
   elasticsearch:
-    image: elasticsearch:5.2.0
+    image: elasticsearch:5.2.1
     hostname: elasticsearch
     restart: always
     command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
