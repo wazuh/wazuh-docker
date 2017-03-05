@@ -1,4 +1,4 @@
-FROM logstash:5.2.1
+FROM logstash:5.2.2
 
 RUN apt-get update
 
