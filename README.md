@@ -252,7 +252,7 @@ services:
     restart: always
     command: -f /etc/logstash/conf.d/
 #    volumes:
-#      - ./logstash/config:/etc/logstash/conf.d
+#      - my-path:/etc/logstash/conf.d
     links:
      - kibana
      - elasticsearch
