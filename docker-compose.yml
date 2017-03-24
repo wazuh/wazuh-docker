@@ -14,6 +14,7 @@ services:
         - docker_elk
 #    volumes:
 #      - my-path:/var/ossec/data
+#      - my-path:/etc/postfix
     depends_on:
       - elasticsearch
   logstash:

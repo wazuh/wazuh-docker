@@ -70,7 +70,7 @@ sleep 15 # give ossec a reasonable amount of time to start before checking statu
 LAST_OK_DATE=`date +%s`
 
 ## Start services
-
+/usr/sbin/postfix start
 /bin/node /var/ossec/api/app.js &
 /usr/bin/filebeat.sh &
 /var/ossec/bin/ossec-control restart
