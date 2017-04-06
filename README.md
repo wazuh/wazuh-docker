@@ -2,7 +2,7 @@
 
 The first time than you runt this container can take a while until kibana finish the configuration, the Wazuh plugin can take a few minutes until finish the instalation, please be patient.
 
-# Docker container Wazuh + ELK
+# Docker container Wazuh + ELK(5.3.0)
 
 This Docker container source files can be found in our [Wazuh Github repository](https://github.com/wazuh/wazuh). It includes both an OSSEC manager and an Elasticsearch single-node cluster, with Logstash and Kibana. You can find more information on how these components work together in our documentation.
 
@@ -201,7 +201,7 @@ In order to persist Elasticsearch data even after removing the Elasticsearch con
 
 ```yml
 elasticsearch:
-  image: wazuh/wazuh-elasticsearch:latest
+  image: elasticsearch:5.3.0
   hostname: elasticsearch
   command: elasticsearch -Des.network.host=_non_loopback_ -Des.cluster.name: my-cluster
   ports:
@@ -265,7 +265,7 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
   elasticsearch:
-    image: elasticsearch:5.2.2
+    image: elasticsearch:5.3.0
     hostname: elasticsearch
     restart: always
     command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
