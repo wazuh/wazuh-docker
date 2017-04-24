@@ -5,6 +5,7 @@ set -e
 host="$1"
 shift
 cmd="kibana"
+WAZUH_KIBANA_PLUGIN_URL=${WAZUH_KIBANA_PLUGIN_URL:-https://packages.wazuh.com/wazuhapp/wazuhapp-2.0_5.3.0.zip}
 
 until curl -XGET $host:9200; do
   >&2 echo "Elastic is unavailable - sleeping"
@@ -18,7 +19,7 @@ sleep 30
 if /usr/share/kibana/bin/kibana-plugin list | grep wazuh; then
   echo "Wazuh APP already installed"
 else
-  /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-2.0_5.3.0.zip
+  /usr/share/kibana/bin/kibana-plugin install ${WAZUH_KIBANA_PLUGIN_URL}
 fi
 
 exec $cmd
