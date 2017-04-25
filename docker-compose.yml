@@ -21,7 +21,7 @@ services:
     image: wazuh/wazuh-logstash
     hostname: logstash
     restart: always
-    command: -f /etc/logstash/conf.d/
+    command: -f /etc/logstash/conf.d/*.conf
 #    volumes:
 #      - my-path:/etc/logstash/conf.d
     links:
