@@ -9,7 +9,7 @@ This Docker container source files can be found in our [Wazuh Github repository]
 ## Documentation
 
 * [Full documentation](http://documentation.wazuh.com)
-* [Wazug-docker module documentation](https://documentation.wazuh.com/current/docker/index.html)
+* [Wazuh-docker module documentation](https://documentation.wazuh.com/current/docker/index.html)
 * [Hub docker](https://hub.docker.com/u/wazuh)
 
 ## Credits and thank you
