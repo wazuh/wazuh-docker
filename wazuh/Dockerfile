@@ -18,8 +18,8 @@ RUN chmod 755 /init.bash &&\
   sync && rm /init.bash
 
 
-RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.1.2-x86_64.rpm &&\
-  rpm -vi filebeat-5.1.2-x86_64.rpm && rm filebeat-5.1.2-x86_64.rpm
+RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.4.2-x86_64.rpm &&\
+  rpm -vi filebeat-5.4.2-x86_64.rpm && rm filebeat-5.4.2-x86_64.rpm
 
 COPY config/filebeat.yml /etc/filebeat/
 
