@@ -24,9 +24,9 @@ Once installed you can browse through the interface at: http://127.0.0.1:5601
 
 ## More documentation
 
-* [Full documentation](http://documentation.wazuh.com)
-* [Wazuh-docker module documentation](https://documentation.wazuh.com/current/docker/index.html)
-* [Hub docker](https://hub.docker.com/u/wazuh)
+* [Wazuh full documentation](http://documentation.wazuh.com)
+* [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
+* [Docker hub](https://hub.docker.com/u/wazuh)
 
 ## Credits
 
