@@ -1,5 +1,5 @@
 FROM centos:latest
-
+ARG FILEBEAT_VERSION=5.5.1
 COPY config/*.repo /etc/yum.repos.d/
 
 RUN yum -y update; yum clean all;
@@ -18,8 +18,8 @@ RUN chmod 755 /init.bash &&\
   sync && rm /init.bash
 
 
-RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.5.0-x86_64.rpm &&\
-  rpm -vi filebeat-5.5.0-x86_64.rpm && rm filebeat-5.5.0-x86_64.rpm
+RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm &&\
+  rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm filebeat-${FILEBEAT_VERSION}-x86_64.rpm
 
 COPY config/filebeat.yml /etc/filebeat/
 
