@@ -26,7 +26,7 @@ services:
 #      - my-path:/etc/logstash/conf.d
     links:
      - kibana
-     - elasticsearch
+     - elasticsearch:elasticsearch
     ports:
       - "5000:5000"
     networks:
@@ -59,6 +59,8 @@ services:
         - docker_elk
     depends_on:
       - elasticsearch
+    links:
+      - elasticsearch:elasticsearch
     entrypoint: sh wait-for-it.sh elasticsearch
 #    environment:
 #      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-2.0_5.4.2.zip"
