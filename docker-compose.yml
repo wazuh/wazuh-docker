@@ -63,7 +63,7 @@ services:
       - elasticsearch:elasticsearch
     entrypoint: sh wait-for-it.sh elasticsearch
 #    environment:
-#      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-2.0_5.4.2.zip"
+#      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-2.1.0-5.5.1.zip"
 
 networks:
   docker_elk:

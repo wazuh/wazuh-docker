@@ -7,6 +7,8 @@ RUN yum -y install epel-release openssl useradd; yum clean all
 RUN yum -y install postfix mailx cyrus-sasl cyrus-sasl-plain; yum clean all
 RUN groupadd -g 1000 ossec
 RUN useradd -u 1000 -g 1000 ossec
+RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - &&\
+    yum install -y nodejs
 RUN yum install -y wazuh-manager wazuh-api
 
 
