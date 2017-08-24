@@ -5,7 +5,7 @@ set -e
 host="$1"
 shift
 cmd="kibana"
-WAZUH_KIBANA_PLUGIN_URL=${WAZUH_KIBANA_PLUGIN_URL:-https://packages.wazuh.com/wazuhapp/wazuhapp-2.1.0_5.5.1.zip}
+WAZUH_KIBANA_PLUGIN_URL=${WAZUH_KIBANA_PLUGIN_URL:-https://packages.wazuh.com/wazuhapp/wazuhapp-2.1.0_5.5.2.zip}
 
 until curl -XGET $host:9200; do
   >&2 echo "Elastic is unavailable - sleeping"

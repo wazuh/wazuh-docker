@@ -1,5 +1,5 @@
 FROM centos:latest
-ARG FILEBEAT_VERSION=5.5.1
+ARG FILEBEAT_VERSION=5.5.2
 COPY config/*.repo /etc/yum.repos.d/
 
 RUN yum -y update; yum clean all;
