@@ -22,4 +22,37 @@ else
   /usr/share/kibana/bin/kibana-plugin install ${WAZUH_KIBANA_PLUGIN_URL}
 fi
 
+sleep 30
+
+echo "Configuring defaultIndex to wazuh-alerts-*"
+
+curl -s -XPUT http://$host:9200/.kibana/config/5.5.2 -d '{"defaultIndex" : "wazuh-alerts-*"}' > /dev/null
+
+sleep 30
+
+echo "Setting API credentials into Wazuh APP"
+
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET http://$host:9200/.wazuh/wazuh-configuration/apiconfig)
+if [ "x$CONFIG_CODE" = "x404" ]; then
+  curl -s -XPOST http://$host:9200/.wazuh/wazuh-configuration/apiconfig -H 'Content-Type: application/json' -d'
+  {
+    "api_user": "foo",
+    "api_password": "YmFy",
+    "url": "http://wazuh",
+    "api_port": "55000",
+    "insecure": "true",
+    "component": "API",
+    "active": "true",
+    "manager": "wazuh-manager",
+    "extensions": {
+      "oscap": true,
+      "audit": true,
+      "pci": true
+    }
+  }
+  ' > /dev/null
+else
+  echo "Wazuh APP already configured"
+fi
+
 exec $cmd
