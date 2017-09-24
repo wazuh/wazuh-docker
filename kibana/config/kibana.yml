@@ -81,7 +81,7 @@ elasticsearch.url: "http://elasticsearch:9200"
 # logging.silent: false
 
 # Set the value of this setting to true to suppress all logging output other than error messages.
-# logging.quiet: false
+logging.quiet: true
 
 # Set the value of this setting to true to log all events, including system usage information
 # and all requests.
