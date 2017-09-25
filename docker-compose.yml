@@ -66,12 +66,10 @@ services:
 #    environment:
 #      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-2.1.0-5.5.1.zip"
   nginx:
-    image: nginx:latest
+    image: wazuh/wazuh-nginx
     hostname: nginx
     restart: always
-    command: bash /configure.sh
-    volumes:
-      - ./nginx/configure.sh:/configure.sh
+    entrypoint: sh /configure.sh
     environment:
       - NGINX_PORT=443
     ports:

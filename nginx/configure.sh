@@ -4,20 +4,14 @@ set -e
 
 if [ ! -d /etc/pki/tls/certs ]; then
   echo "Generating SSL certificates"
-  if [ ! -x /usr/bin/openssl ]; then
-    apt-get update >/dev/null
-    apt-get -y install openssl >/dev/null
-  fi
   mkdir -p /etc/pki/tls/certs /etc/pki/tls/private
   openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout /etc/pki/tls/private/kibana-access.key -out /etc/pki/tls/certs/kibana-access.pem >/dev/null
+else
+  echo "SSL certificates already present"
 fi
 
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
-  echo "Setting kibana credentials"
-  if [ ! -x /usr/bin/htpasswd ]; then
-    apt-get update >/dev/null
-    apt-get -y install apache2-utils >/dev/null
-  fi
+  echo "Setting Nginx credentials"
   echo bar|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd foo >/dev/null
 else
   echo "Kibana credentials already configured"
