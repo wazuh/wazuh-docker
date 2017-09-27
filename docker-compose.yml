@@ -69,7 +69,7 @@ services:
     image: wazuh/wazuh-nginx
     hostname: nginx
     restart: always
-    entrypoint: sh /configure.sh
+    entrypoint: sh run.sh
     environment:
       - NGINX_PORT=443
     ports:
