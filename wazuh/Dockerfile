@@ -9,7 +9,7 @@ RUN groupadd -g 1000 ossec
 RUN useradd -u 1000 -g 1000 ossec
 RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - &&\
     yum install -y nodejs
-RUN yum install -y wazuh-manager-2.1.0 wazuh-api-2.1.0
+RUN yum install -y wazuh-manager wazuh-api
 
 
 ADD config/data_dirs.env /data_dirs.env
