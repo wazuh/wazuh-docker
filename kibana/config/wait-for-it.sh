@@ -26,7 +26,7 @@ sleep 30
 
 echo "Configuring defaultIndex to wazuh-alerts-*"
 
-curl -s -XPUT http://$host:9200/.kibana/config/5.5.2 -H 'Content-Type: application/json' -d '{"defaultIndex" : "wazuh-alerts-*"}' > /dev/null
+curl -s -XPUT http://$host:9200/.kibana/config/5.5.2 -d '{"defaultIndex" : "wazuh-alerts-*"}' > /dev/null
 
 sleep 30
 
