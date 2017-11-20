@@ -5,14 +5,12 @@ set -e
 host="$1"
 shift
 cmd="kibana"
-WAZUH_KIBANA_PLUGIN_URL=${WAZUH_KIBANA_PLUGIN_URL:-https://packages.wazuh.com/wazuhapp/wazuhapp-2.1.0_5.5.2.zip}
+WAZUH_KIBANA_PLUGIN_URL=${WAZUH_KIBANA_PLUGIN_URL:-https://packages.wazuh.com/wazuhapp/wazuhapp-2.1.1_5.6.4.zip}
 
 until curl -XGET $host:9200; do
   >&2 echo "Elastic is unavailable - sleeping"
-  sleep 1
+  sleep 5
 done
-
-sleep 30
 
 >&2 echo "Elastic is up - executing command"
 
@@ -26,9 +24,7 @@ sleep 30
 
 echo "Configuring defaultIndex to wazuh-alerts-*"
 
-curl -s -XPUT http://$host:9200/.kibana/config/5.5.2 -H 'Content-Type: application/json' -d '{"defaultIndex" : "wazuh-alerts-*"}' > /dev/null
-
-sleep 30
+curl -s -XPUT http://$host:9200/.kibana/config/5.6.4 -H 'Content-Type: application/json' -d '{"defaultIndex" : "wazuh-alerts-*"}' > /dev/null
 
 echo "Setting API credentials into Wazuh APP"
 
@@ -38,7 +34,7 @@ if [ "x$CONFIG_CODE" = "x404" ]; then
   {
     "api_user": "foo",
     "api_password": "YmFy",
-    "url": "http://wazuh",
+    "url": "https://wazuh",
     "api_port": "55000",
     "insecure": "true",
     "component": "API",
@@ -54,5 +50,7 @@ if [ "x$CONFIG_CODE" = "x404" ]; then
 else
   echo "Wazuh APP already configured"
 fi
+
+sleep 5
 
 exec $cmd

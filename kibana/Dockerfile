@@ -1,7 +1,9 @@
-FROM kibana:5.5.2
+FROM docker.elastic.co/kibana/kibana:5.6.4
 
-RUN apt-get update && apt-get install -y curl
+USER root
 
-COPY ./config/kibana.yml /opt/kibana/config/kibana.yml
+COPY ./config/kibana.yml /usr/share/kibana/config/kibana.yml
 
-COPY config/wait-for-it.sh /
+COPY config/wait-for-it.sh /wait-for-it.sh
+
+RUN chmod 755 /wait-for-it.sh

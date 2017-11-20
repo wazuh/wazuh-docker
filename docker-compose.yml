@@ -35,16 +35,30 @@ services:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
+      - XPACK_MONITORING_ENABLED=false
   elasticsearch:
-    image: elasticsearch:5.5.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.4
     hostname: elasticsearch
     restart: always
-    command: elasticsearch -E node.name="node-1" -E cluster.name="wazuh" -E network.host=0.0.0.0
     ports:
       - "9200:9200"
-      - "9300:9300"
+#      - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      - node.name=node-1
+      - cluster.name=wazuh
+      - network.host=0.0.0.0
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - xpack.ml.enabled=false
+      - xpack.watcher.enabled=false
+      - xpack.graph.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 2g
 #    volumes:
 #      - my-path:/usr/share/elasticsearch/data
     networks:
@@ -62,14 +76,14 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh
-    entrypoint: sh wait-for-it.sh elasticsearch
+    entrypoint: /wait-for-it.sh elasticsearch
 #    environment:
 #      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-2.1.0-5.5.1.zip"
   nginx:
     image: wazuh/wazuh-nginx
     hostname: nginx
     restart: always
-    entrypoint: sh run.sh
+    entrypoint: /run.sh
     environment:
       - NGINX_PORT=443
     ports:

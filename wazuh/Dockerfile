@@ -1,15 +1,15 @@
 FROM centos:latest
-ARG FILEBEAT_VERSION=5.5.2
+ARG FILEBEAT_VERSION=5.6.4
 COPY config/*.repo /etc/yum.repos.d/
 
 RUN yum -y update; yum clean all;
-RUN yum -y install epel-release openssl useradd; yum clean all
+RUN yum -y install epel-release openssl useradd which; yum clean all
 RUN yum -y install postfix mailx cyrus-sasl cyrus-sasl-plain; yum clean all
 RUN groupadd -g 1000 ossec
 RUN useradd -u 1000 -g 1000 ossec
 RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - &&\
     yum install -y nodejs
-RUN yum install -y wazuh-manager-2.1.0 wazuh-api-2.1.0
+RUN yum install -y wazuh-manager wazuh-api
 
 
 ADD config/data_dirs.env /data_dirs.env
@@ -19,6 +19,7 @@ RUN chmod 755 /init.bash &&\
   sync && /init.bash &&\
   sync && rm /init.bash
 
+RUN sed -i 's/inet_protocols = all/inet_protocols = ipv4/g' /etc/postfix/main.cf
 
 RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm filebeat-${FILEBEAT_VERSION}-x86_64.rpm
