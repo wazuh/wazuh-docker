@@ -1,16 +1,15 @@
-FROM centos:latest
+FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=5.6.4
-COPY config/*.repo /etc/yum.repos.d/
 
-RUN yum -y update; yum clean all;
-RUN yum -y install epel-release openssl useradd which; yum clean all
-RUN yum -y install postfix mailx cyrus-sasl cyrus-sasl-plain; yum clean all
+RUN apt-get update; apt-get -y dist-upgrade
+RUN apt-get -y install openssl postfix bsd-mailx curl apt-transport-https lsb-release
 RUN groupadd -g 1000 ossec
 RUN useradd -u 1000 -g 1000 ossec
-RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - &&\
-    yum install -y nodejs
-RUN yum install -y wazuh-manager wazuh-api
-
+RUN curl --silent --location https://deb.nodesource.com/setup_6.x | bash - &&\
+    apt-get install -y nodejs
+RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
+RUN echo "deb https://packages.wazuh.com/apt $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/wazuh.list
+RUN apt-get update && apt-get -y install wazuh-manager wazuh-api expect
 
 ADD config/data_dirs.env /data_dirs.env
 ADD config/init.bash /init.bash
@@ -19,10 +18,8 @@ RUN chmod 755 /init.bash &&\
   sync && /init.bash &&\
   sync && rm /init.bash
 
-RUN sed -i 's/inet_protocols = all/inet_protocols = ipv4/g' /etc/postfix/main.cf
-
-RUN  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm &&\
-  rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm filebeat-${FILEBEAT_VERSION}-x86_64.rpm
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
+    dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm filebeat-${FILEBEAT_VERSION}-amd64.deb
 
 COPY config/filebeat.yml /etc/filebeat/
 
