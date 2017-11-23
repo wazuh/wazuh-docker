@@ -81,7 +81,7 @@ elasticsearch.url: "http://elasticsearch:9200"
 # logging.silent: false
 
 # Set the value of this setting to true to suppress all logging output other than error messages.
-# logging.quiet: false
+logging.quiet: true
 
 # Set the value of this setting to true to log all events, including system usage information
 # and all requests.
@@ -90,3 +90,10 @@ elasticsearch.url: "http://elasticsearch:9200"
 # Set the interval in milliseconds to sample system and process performance
 # metrics. Minimum is 100ms. Defaults to 10000.
 # ops.interval: 10000
+
+xpack.security.enabled: false
+xpack.grokdebugger.enabled: false
+xpack.graph.enabled: false
+xpack.ml.enabled: false
+xpack.monitoring.enabled: false
+xpack.reporting.enabled: false

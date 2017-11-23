@@ -15,12 +15,31 @@ source /data_dirs.env
 FIRST_TIME_INSTALLATION=false
 DATA_PATH=/var/ossec/data
 
+print() {
+    echo -e $1
+}
+
+error_and_exit() {
+    echo "Error executing command: '$1'."
+    echo 'Exiting.'
+    exit 1
+}
+
+exec_cmd() {
+    eval $1 > /dev/null 2>&1 || error_and_exit "$1"
+}
+
+
+edit_configuration() { # $1 -> setting,  $2 -> value
+    sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${DATA_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
+}
+
 for ossecdir in "${DATA_DIRS[@]}"; do
   if [ ! -e "${DATA_PATH}/${ossecdir}" ]
   then
-    echo "Installing ${ossecdir}"
-    mkdir -p $(dirname ${DATA_PATH}/${ossecdir})
-    cp -pr /var/ossec/${ossecdir}-template ${DATA_PATH}/${ossecdir}
+    print "Installing ${ossecdir}"
+    exec_cmd "mkdir -p $(dirname ${DATA_PATH}/${ossecdir})"
+    exec_cmd "cp -pr /var/ossec/${ossecdir}-template ${DATA_PATH}/${ossecdir}"
     FIRST_TIME_INSTALLATION=true
   fi
 done
@@ -30,50 +49,46 @@ chgrp ossec ${DATA_PATH}/process_list
 chmod g+rw ${DATA_PATH}/process_list
 
 AUTO_ENROLLMENT_ENABLED=${AUTO_ENROLLMENT_ENABLED:-true}
+API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
 
 if [ $FIRST_TIME_INSTALLATION == true ]
 then
-
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
     if [ ! -e ${DATA_PATH}/etc/sslmanager.key ]
     then
-      echo "Creating ossec-authd key and cert"
-      openssl genrsa -out ${DATA_PATH}/etc/sslmanager.key 4096
-      openssl req -new -x509 -key ${DATA_PATH}/etc/sslmanager.key\
-        -out ${DATA_PATH}/etc/sslmanager.cert -days 3650\
-        -subj /CN=${HOSTNAME}/
+      print "Creating ossec-authd key and cert"
+      exec_cmd "openssl genrsa -out ${DATA_PATH}/etc/sslmanager.key 4096"
+      exec_cmd "openssl req -new -x509 -key ${DATA_PATH}/etc/sslmanager.key -out ${DATA_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
+      exec_cmd "/var/ossec/bin/ossec-control enable auth"
+    fi
+  fi
+  if [ $API_GENERATE_CERTS == true ]
+  then
+    if [ ! -e ${DATA_PATH}/api/configuration/ssl/server.crt ]
+    then
+      print "Enabling Wazuh API HTTPS"
+      edit_configuration "https" "yes"
+      print "Create Wazuh API key and cert"
+      exec_cmd "openssl genrsa -out ${DATA_PATH}/api/configuration/ssl/server.key 4096"
+      exec_cmd "openssl req -new -x509 -key ${DATA_PATH}/api/configuration/ssl/server.key -out ${DATA_PATH}/api/configuration/ssl/server.crt -days 3650 -subj /CN=${HOSTNAME}/"
     fi
   fi
 fi
 
 function ossec_shutdown(){
-  /var/ossec/bin/ossec-control stop;
-  if [ $AUTO_ENROLLMENT_ENABLED == true ]
-  then
-     kill $AUTHD_PID
-  fi
+  ${DATA_PATH}/bin/ossec-control stop;
 }
+
 
 # Trap exit signals and do a proper shutdown
 trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
 
-if [ $AUTO_ENROLLMENT_ENABLED == true ]
-then
-  echo "Starting ossec-authd..."
-  /var/ossec/bin/ossec-authd -p 1515 -g ossec $AUTHD_OPTIONS >/dev/null 2>&1 &
-  AUTHD_PID=$!
-fi
-sleep 15 # give ossec a reasonable amount of time to start before checking status
-LAST_OK_DATE=`date +%s`
-
-## Start services
-/usr/sbin/postfix start
-/bin/node /var/ossec/api/app.js &
-/usr/bin/filebeat.sh &
-/var/ossec/bin/ossec-control restart
-
+service postfix start
+service wazuh-api start
+service wazuh-manager start
+service filebeat start
 
 tail -f /var/ossec/logs/ossec.log
