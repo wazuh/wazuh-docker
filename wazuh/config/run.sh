@@ -75,10 +75,12 @@ then
   fi
 fi
 
+#Enabling ossec-authd.
+exec_cmd "/var/ossec/bin/ossec-control enable auth"
+
 function ossec_shutdown(){
   ${DATA_PATH}/bin/ossec-control stop;
 }
-
 
 # Trap exit signals and do a proper shutdown
 trap "ossec_shutdown; exit" SIGINT SIGTERM
