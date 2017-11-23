@@ -60,6 +60,7 @@ then
       print "Creating ossec-authd key and cert"
       exec_cmd "openssl genrsa -out ${DATA_PATH}/etc/sslmanager.key 4096"
       exec_cmd "openssl req -new -x509 -key ${DATA_PATH}/etc/sslmanager.key -out ${DATA_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
+      exec_cmd "/var/ossec/bin/ossec-control enable auth"
     fi
   fi
   if [ $API_GENERATE_CERTS == true ]
