@@ -1,5 +1,10 @@
 # Wazuh containers for Docker
 
+[![Slack](https://img.shields.io/badge/slack-join-blue.svg)](https://goo.gl/forms/M2AoZC4b2R9A9Zy12)
+[![Email](https://img.shields.io/badge/email-join-blue.svg)](https://groups.google.com/forum/#!forum/wazuh)
+[![Documentation](https://img.shields.io/badge/docs-view-green.svg)](https://documentation.wazuh.com)
+[![Documentation](https://img.shields.io/badge/web-view-green.svg)](https://wazuh.com)
+
 In this repository you will find the containers to run:
 
 * wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
