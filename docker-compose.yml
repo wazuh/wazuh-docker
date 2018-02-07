@@ -89,6 +89,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+#    volumes:
+#      - my-path:/etc/nginx/conf.d:Z
     networks:
       - docker_elk
     depends_on:
