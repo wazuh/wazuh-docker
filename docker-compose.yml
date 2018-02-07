@@ -78,6 +78,8 @@ services:
       - wazuh
     entrypoint: /wait-for-it.sh elasticsearch
 #    environment:
+#      - http_proxy=yourproxy
+#      - https_proxy=yourproxy
 #      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-3.1.0-6.1.2.zip"
   nginx:
     image: wazuh/wazuh-nginx
