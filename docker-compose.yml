@@ -13,8 +13,8 @@ services:
     networks:
         - docker_elk
 #    volumes:
-#      - my-path:/var/ossec/data
-#      - my-path:/etc/postfix
+#      - my-path:/var/ossec/data:Z
+#      - my-path:/etc/postfix:Z
     depends_on:
       - elasticsearch
   logstash:
@@ -23,7 +23,7 @@ services:
     restart: always
     command: -f /etc/logstash/conf.d/
 #    volumes:
-#      - my-path:/etc/logstash/conf.d
+#      - my-path:/etc/logstash/conf.d:Z
     links:
      - kibana
      - elasticsearch:elasticsearch
@@ -60,7 +60,7 @@ services:
         hard: -1
     mem_limit: 2g
 #    volumes:
-#      - my-path:/usr/share/elasticsearch/data
+#      - my-path:/usr/share/elasticsearch/data:Z
     networks:
         - docker_elk
   kibana:
@@ -78,6 +78,8 @@ services:
       - wazuh
     entrypoint: /wait-for-it.sh elasticsearch
 #    environment:
+#      - http_proxy=yourproxy
+#      - https_proxy=yourproxy
 #      - "WAZUH_KIBANA_PLUGIN_URL=http://your.repo/wazuhapp-3.1.0-6.1.2.zip"
   nginx:
     image: wazuh/wazuh-nginx
@@ -89,6 +91,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+#    volumes:
+#      - my-path:/etc/nginx/conf.d:Z
     networks:
       - docker_elk
     depends_on:
