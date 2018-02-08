@@ -37,7 +37,7 @@ services:
       - LS_HEAP_SIZE=2048m
       - XPACK_MONITORING_ENABLED=false
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.1.3
     hostname: elasticsearch
     restart: always
     ports:
