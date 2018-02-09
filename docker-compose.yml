@@ -69,8 +69,10 @@ services:
     restart: always
 #    ports:
 #      - "5601:5601"
+    environment:
+      - "NODE_OPTIONS=--max-old-space-size=3072"
     networks:
-        - docker_elk
+      - docker_elk
     depends_on:
       - elasticsearch
     links:
