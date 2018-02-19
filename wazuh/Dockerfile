@@ -25,7 +25,7 @@ RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${
 COPY config/filebeat.yml /etc/filebeat/
 
 ADD config/run.sh /tmp/run.sh
-RUN chmod 755 /tmp/run.sh
+RUN chmod 755 /tmp/run.sh && chmod 644 /etc/filebeat/filebeat.yml
 
 VOLUME ["/var/ossec/data"]
 
