@@ -14,7 +14,7 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/3.2/extensions/elasticsearch/w
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/3.2/extensions/elasticsearch/alert_sample.json /usr/share/kibana/config
 
-RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.1.0_6.1.3.zip
+RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.2.0_6.2.1.zip
 
 RUN rm -rf /tmp/*
 
