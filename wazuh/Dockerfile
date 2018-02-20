@@ -1,5 +1,5 @@
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.1.3
+ARG FILEBEAT_VERSION=6.2.1
 
 RUN apt-get update; apt-get -y dist-upgrade
 RUN apt-get -y install openssl postfix bsd-mailx curl apt-transport-https lsb-release
