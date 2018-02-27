@@ -28,7 +28,7 @@ ADD config/run.sh /tmp/run.sh
 RUN chmod 755 /tmp/run.sh
 
 VOLUME ["/var/ossec/data"]
-VOLUME ["/etc/filebeat/"]
+VOLUME ["/etc/filebeat"]
 
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp
 
