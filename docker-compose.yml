@@ -15,6 +15,7 @@ services:
 #    volumes:
 #      - my-path:/var/ossec/data:Z
 #      - my-path:/etc/postfix:Z
+#      - my-path:/etc/filebeat
     depends_on:
       - elasticsearch
   logstash:
