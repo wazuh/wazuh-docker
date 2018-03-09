@@ -16,6 +16,7 @@ services:
 #      - my-path:/var/ossec/data:Z
 #      - my-path:/etc/postfix:Z
 #      - my-path:/etc/filebeat
+#      - my-custom-config-path/ossec.conf:/wazuh-config-mount/etc/ossec.conf
     depends_on:
       - elasticsearch
   logstash:
