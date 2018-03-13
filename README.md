@@ -15,7 +15,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 ## Current release
 
-Containers are currently tested on Wazuh version 3.1.0 and Elastic Stack version 6.1.0. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
+Containers are currently tested on Wazuh version 3.2.0 and Elastic Stack version 6.2.1. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
 
 ## Installation notes
 
@@ -26,6 +26,33 @@ To run all docker instances you can just run ``docker-compose up``, from the dir
 * It is recommended to set Docker host preferences to give at least 4GB memory per container (this doesn't necessarily mean they all will use it, but Elasticsearch requires them to work properly).
 
 Once installed you can browse through the interface at: http://127.0.0.1:5601
+
+## Mount custom Wazuh configuration files
+
+To mount custom Wazuh configuration files in the Wazuh manager container, mount them in the `/wazuh-config-mount` folder. For example, to mount a custom `ossec.conf` file, mount it in `/wazuh-config-mount/etc/ossec.conf` and the [run.sh](wazuh/config/run.sh) script will copy the file at the right place on boot while respecting the destination file permissions.
+
+Here is an example of a `/wazuh-config-mount` folder used to mount some common custom configuration files:
+```
+root@wazuh-manager:/# tree /wazuh-config-mount/
+/wazuh-config-mount/
+└── etc
+    ├── ossec.conf
+    ├── rules
+    │   └── local_rules.xml
+    └── shared
+        └── default
+            └── agent.conf
+
+4 directories, 3 files
+```
+
+In that case, you will see this in the Wazuh manager logs on boot:
+```
+Identified Wazuh configuration files to mount...
+'/wazuh-config-mount/etc/ossec.conf' -> '/var/ossec/data/etc/ossec.conf'
+'/wazuh-config-mount/etc/rules/local_rules.xml' -> '/var/ossec/data/etc/rules/local_rules.xml'
+'/wazuh-config-mount/etc/shared/default/agent.conf' -> '/var/ossec/data/etc/shared/default/agent.conf'
+```
 
 ## More documentation
 

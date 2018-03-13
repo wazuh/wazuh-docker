@@ -12,8 +12,13 @@
 #
 
 source /data_dirs.env
+
 FIRST_TIME_INSTALLATION=false
-DATA_PATH=/var/ossec/data
+
+WAZUH_INSTALL_PATH=/var/ossec
+DATA_PATH=${WAZUH_INSTALL_PATH}/data
+
+WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 
 print() {
     echo -e $1
@@ -29,6 +34,9 @@ exec_cmd() {
     eval $1 > /dev/null 2>&1 || error_and_exit "$1"
 }
 
+exec_cmd_stdout() {
+    eval $1 2>&1 || error_and_exit "$1"
+}
 
 edit_configuration() { # $1 -> setting,  $2 -> value
     sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${DATA_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
@@ -75,11 +83,28 @@ then
   fi
 fi
 
-#Enabling ossec-authd.
+##############################################################################
+# Copy all files from $WAZUH_CONFIG_MOUNT to $DATA_PATH and respect
+# destination files permissions
+#
+# For example, to mount the file /var/ossec/data/etc/ossec.conf, mount it at
+# $WAZUH_CONFIG_MOUNT/etc/ossec.conf in your container and this code will
+# replace the ossec.conf file in /var/ossec/data/etc with yours.
+##############################################################################
+if [ -e "$WAZUH_CONFIG_MOUNT" ]
+then
+  print "Identified Wazuh configuration files to mount..."
+
+  exec_cmd_stdout "cp --verbose -r $WAZUH_CONFIG_MOUNT/* $DATA_PATH"
+else
+  print "No Wazuh configuration files to mount..."
+fi
+
+# Enabling ossec-authd.
 exec_cmd "/var/ossec/bin/ossec-control enable auth"
 
 function ossec_shutdown(){
-  ${DATA_PATH}/bin/ossec-control stop;
+  ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
 }
 
 # Trap exit signals and do a proper shutdown
