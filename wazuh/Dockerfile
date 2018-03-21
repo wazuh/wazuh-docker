@@ -9,7 +9,7 @@ RUN curl --silent --location https://deb.nodesource.com/setup_6.x | bash - &&\
     apt-get install -y nodejs
 RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
 RUN echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
-RUN apt-get update && apt-get -y install wazuh-manager wazuh-api expect
+RUN apt-get update && apt-get -y install wazuh-manager=3.2.0-1 wazuh-api=3.2.0-1 expect
 
 ADD config/data_dirs.env /data_dirs.env
 ADD config/init.bash /init.bash
