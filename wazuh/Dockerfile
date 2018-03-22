@@ -1,5 +1,5 @@
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.2.1
+ARG FILEBEAT_VERSION=6.2.2
 
 RUN apt-get update; apt-get -y dist-upgrade
 RUN apt-get -y install openssl postfix bsd-mailx curl apt-transport-https lsb-release
@@ -9,7 +9,7 @@ RUN curl --silent --location https://deb.nodesource.com/setup_6.x | bash - &&\
     apt-get install -y nodejs
 RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
 RUN echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
-RUN apt-get update && apt-get -y install wazuh-manager=3.2.0-1 wazuh-api=3.2.0-1 expect
+RUN apt-get update && apt-get -y install wazuh-manager=3.2.1-1 wazuh-api=3.2.1-1 expect && apt-get clean
 
 ADD config/data_dirs.env /data_dirs.env
 ADD config/init.bash /init.bash
