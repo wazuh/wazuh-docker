@@ -15,7 +15,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 ## Current release
 
-Containers are currently tested on Wazuh version 3.2.0 and Elastic Stack version 6.2.1. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
+Containers are currently tested on Wazuh version 3.2.1 and Elastic Stack version 6.2.2. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
 
 ## Installation notes
 
@@ -25,7 +25,7 @@ To run all docker instances you can just run ``docker-compose up``, from the dir
 * Kibana container can take a few minutes to install Wazuh plugin, this takes place after ``Optimizing and caching browser bundles...`` is printed out.
 * It is recommended to set Docker host preferences to give at least 4GB memory per container (this doesn't necessarily mean they all will use it, but Elasticsearch requires them to work properly).
 
-Once installed you can browse through the interface at: http://127.0.0.1:5601
+Once installed you can browse through the interface at: https://127.0.0.1.
 
 ## Mount custom Wazuh configuration files
 
