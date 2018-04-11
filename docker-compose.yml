@@ -10,6 +10,7 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
+#      - "1516:1516"
     networks:
         - docker_elk
 #    volumes:
