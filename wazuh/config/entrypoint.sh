@@ -112,9 +112,4 @@ trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
 
-service postfix start
-service wazuh-api start
-service wazuh-manager start
-service filebeat start
-
-tail -f /var/ossec/logs/ossec.log
+/sbin/my_init 
