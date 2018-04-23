@@ -1,13 +1,5 @@
 #!/bin/bash
-
-#
-# OSSEC container bootstrap. See the README for information of the environment
-# variables expected by this script.
-#
-
-#
-
-#
+# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 # Startup the services
 #
 
