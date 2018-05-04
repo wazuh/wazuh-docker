@@ -19,14 +19,6 @@ sleep 5
 cat /usr/share/kibana/config/wazuh-elastic6-template-alerts.json | curl -XPUT "http://$host:9200/_template/wazuh" -H 'Content-Type: application/json' -d @-
 
 sleep 5
-#Insert default templates
-cat /usr/share/kibana/config/wazuh-elastic6-template-monitoring.json | curl -XPUT "http://$host:9200/_template/wazuh-agent" -H 'Content-Type: application/json' -d @-
-
-#Insert sample alert:
-sleep 5
-cat /usr/share/kibana/config/alert_sample.json | curl -XPUT "http://$host:9200/wazuh-alerts-3.x-"`date +%Y.%m.%d`"/wazuh/sample" -H 'Content-Type: application/json' -d @-
-
-sleep 5
 echo "Setting API credentials into Wazuh APP"
 CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET http://$host:9200/.wazuh/wazuh-configuration/1513629884013)
 if [ "x$CONFIG_CODE" = "x404" ]; then
