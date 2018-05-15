@@ -19,28 +19,25 @@ services:
 #      - my-path:/etc/filebeat
 #      - my-custom-config-path/ossec.conf:/wazuh-config-mount/etc/ossec.conf
     depends_on:
-      - elasticsearch
+      - logstash
   logstash:
     image: wazuh/wazuh-logstash
     hostname: logstash
     restart: always
-    command: -f /etc/logstash/conf.d/
 #    volumes:
 #      - my-path:/etc/logstash/conf.d:Z
     links:
-     - kibana
-     - elasticsearch:elasticsearch
+      - elasticsearch:elasticsearch
     ports:
       - "5000:5000"
     networks:
-        - docker_elk
+      - docker_elk
     depends_on:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
-      - XPACK_MONITORING_ENABLED=false
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
     hostname: elasticsearch
     restart: always
     ports:
@@ -51,17 +48,12 @@ services:
       - cluster.name=wazuh
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-      - xpack.monitoring.enabled=false
-      - xpack.ml.enabled=false
-      - xpack.watcher.enabled=false
-      - xpack.graph.enabled=false
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 2g
+    mem_limit: 8g
 #    volumes:
 #      - my-path:/usr/share/elasticsearch/data:Z
     networks:
@@ -72,21 +64,19 @@ services:
     restart: always
 #    ports:
 #      - "5601:5601"
-    environment:
-      - "NODE_OPTIONS=--max-old-space-size=3072"
+#    environment:
+#      - ELASTICSEARCH_URL=http://elasticsearch:9200
     networks:
       - docker_elk
     depends_on:
       - elasticsearch
     links:
       - elasticsearch:elasticsearch
-      - wazuh
-    entrypoint: /wait-for-it.sh elasticsearch
+      - wazuh:wazuh
   nginx:
     image: wazuh/wazuh-nginx
     hostname: nginx
     restart: always
-    entrypoint: /run.sh
     environment:
       - NGINX_PORT=443
     ports:
@@ -99,7 +89,7 @@ services:
     depends_on:
       - kibana
     links:
-      - kibana
+      - kibana:kibana
 
 networks:
   docker_elk:

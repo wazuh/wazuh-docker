@@ -1,6 +1,6 @@
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.2.3
-ARG WAZUH_VERSION=3.2.1-1
+ARG FILEBEAT_VERSION=6.2.4
+ARG WAZUH_VERSION=3.2.2-1
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
