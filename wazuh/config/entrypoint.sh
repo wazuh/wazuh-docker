@@ -1,4 +1,5 @@
 #!/bin/bash
+# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 
 #
 # OSSEC container bootstrap. See the README for information of the environment

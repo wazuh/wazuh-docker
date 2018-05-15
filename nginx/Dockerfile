@@ -1,3 +1,4 @@
+# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM nginx:latest
 
 ENV DEBIAN_FRONTEND noninteractive

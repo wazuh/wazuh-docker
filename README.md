@@ -69,6 +69,10 @@ These Docker containers are based on:
 
 We thank you them and everyone else who has contributed to this project.
 
+## License and copyright
+
+Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
+
 ## Wazuh official website
 
 [Wazuh website](http://wazuh.com)
