@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.2.4
-ARG WAZUH_VERSION=3.2.2-1
+ARG WAZUH_VERSION=3.2.3-1
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
@@ -11,14 +11,14 @@ RUN echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/so
 RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
 
 # Set nodejs repository.
-RUN curl --silent --location https://deb.nodesource.com/setup_6.x | bash - 
+RUN curl --silent --location https://deb.nodesource.com/setup_8.x | bash -
 
 # Creating ossec user as uid:gid 1000:1000
 RUN groupadd -g 1000 ossec
 RUN useradd -u 1000 -g 1000 ossec
 
 # Configure postfix
-RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections 
+RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections
 RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 
 # Install packages
