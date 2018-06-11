@@ -41,7 +41,8 @@ if [ "x$CONFIG_CODE" = "x404" ]; then
         "audit": true,
         "pci": true,
         "aws": true,
-        "virustotal": true
+        "virustotal": true,
+        "gdpr": true
       }
     }
     ' > /dev/null
