@@ -1,5 +1,5 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/logstash/logstash-oss:6.2.4
+FROM docker.elastic.co/logstash/logstash-oss:6.3.0
 
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 
