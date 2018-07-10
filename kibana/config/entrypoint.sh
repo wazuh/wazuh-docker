@@ -24,28 +24,29 @@ echo "Setting API credentials into Wazuh APP"
 CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-configuration/1513629884013)
 if [ "x$CONFIG_CODE" = "x404" ]; then
   curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 -H 'Content-Type: application/json' -d'
-    {
-      "api_user": "foo",
-      "api_password": "YmFy",
-      "url": "https://wazuh",
-      "api_port": "55000",
-      "insecure": "true",
-      "component": "API",
-      "cluster_info": {
-        "manager": "wazuh-manager",
-        "cluster": "Disabled",
-        "status": "disabled"
-       },
-      "extensions": {
-        "oscap": true,
-        "audit": true,
-        "pci": true,
-        "aws": true,
-        "virustotal": true,
-        "gdpr": true
-      }
+  {
+    "api_user": "foo",
+    "api_password": "YmFy",
+    "url": "https://wazuh",
+    "api_port": "55000",
+    "insecure": "true",
+    "component": "API",
+    "cluster_info": {
+      "manager": "wazuh-manager",
+      "cluster": "Disabled",
+      "status": "disabled"
+    },
+    "extensions": {
+      "oscap": true,
+      "audit": true,
+      "pci": true,
+      "aws": true,
+      "virustotal": true,
+      "gdpr": true,
+      "ciscat": true
     }
-    ' > /dev/null
+  }
+  ' > /dev/null
 else
   echo "Wazuh APP already configured"
 fi
