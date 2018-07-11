@@ -1,6 +1,6 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.3.0
+ARG FILEBEAT_VERSION=6.3.1
 ARG WAZUH_VERSION=3.3.1-1
 
 # Updating image
