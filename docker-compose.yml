@@ -38,7 +38,7 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.3.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
     hostname: elasticsearch
     restart: always
     ports:
