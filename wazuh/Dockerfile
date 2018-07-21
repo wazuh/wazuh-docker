@@ -39,6 +39,7 @@ RUN chmod 755 /init.bash &&\
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb
 COPY config/filebeat.yml /etc/filebeat/
+RUN chmod go-w /etc/filebeat/filebeat.yml
 
 # Adding entrypoint
 ADD config/entrypoint.sh /entrypoint.sh
