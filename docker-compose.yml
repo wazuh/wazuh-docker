@@ -22,7 +22,7 @@ services:
     depends_on:
       - logstash
   logstash:
-    image: wazuh/wazuh-logstash:3.3.1_6.3.1
+    image: wazuh/wazuh-logstash:3.4.0_6.3.1
     hostname: logstash
     restart: always
 #    volumes:
@@ -75,7 +75,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    image: wazuh/wazuh-nginx:3.3.1_6.3.1
+    image: wazuh/wazuh-nginx:3.4.0_6.3.1
     hostname: nginx
     restart: always
     environment:
