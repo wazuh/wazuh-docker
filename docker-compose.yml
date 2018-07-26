@@ -60,7 +60,7 @@ services:
     networks:
         - docker_elk
   kibana:
-    image: wazuh/wazuh-kibana:3.3.1_6.3.1
+    image: wazuh/wazuh-kibana:3.4.0_6.3.1
     hostname: kibana
     restart: always
 #    ports:
