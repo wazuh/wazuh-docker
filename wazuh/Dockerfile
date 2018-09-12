@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.4.0
-ARG WAZUH_VERSION=3.6.0-1
+ARG WAZUH_VERSION=3.6.1-1
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
@@ -22,7 +22,7 @@ RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selection
 RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 
 # Install packages
-RUN apt-get update && apt-get -y install openssl postfix bsd-mailx   \
+RUN apt-get update && apt-get -y install openssl postfix bsd-mailx python-boto python-pip  \
     apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} \
     wazuh-api=${WAZUH_VERSION}
 
