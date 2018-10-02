@@ -113,4 +113,16 @@ trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
 
+##############################################################################
+# Interpret any passed arguments (via docker command to this entrypoint) as
+# paths or commands, and execute them.
+#
+# This can be useful for actions that need to be run before the services are
+# started, such as "/var/ossec/bin/ossec-control enable agentless".
+##############################################################################
+for CUSTOM_COMMAND in "$@"
+do
+  exec_cmd_stdout "${CUSTOM_COMMAND}"
+done
+
 /sbin/my_init 
