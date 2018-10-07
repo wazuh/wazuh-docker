@@ -15,7 +15,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 ## Current release
 
-Containers are currently tested on Wazuh version 3.6.1 and Elastic Stack version 6.4.1. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
+Containers are currently tested on Wazuh version 3.6.1 and Elastic Stack version 6.4.2. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
 
 ## Installation notes
 
