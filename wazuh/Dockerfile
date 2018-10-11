@@ -15,7 +15,7 @@ RUN curl --silent --location https://deb.nodesource.com/setup_8.x | bash -
 
 # Creating ossec user as uid:gid 1000:1000
 RUN groupadd -g 1000 ossec
-RUN useradd -u 1000 -g 1000 ossec
+RUN useradd -u 1000 -g 1000 -d /var/ossec ossec
 
 # Configure postfix
 RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections
