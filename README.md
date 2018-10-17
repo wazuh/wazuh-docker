@@ -29,7 +29,7 @@ Once installed you can browse through the interface at: https://127.0.0.1
 
 ## Mount custom Wazuh configuration files
 
-To mount custom Wazuh configuration files in the Wazuh manager container, mount them in the `/wazuh-config-mount` folder. For example, to mount a custom `ossec.conf` file, mount it in `/wazuh-config-mount/etc/ossec.conf` and the [run.sh](wazuh/config/run.sh) script will copy the file at the right place on boot while respecting the destination file permissions.
+To mount custom Wazuh configuration files in the Wazuh manager container, mount them in the `/wazuh-config-mount` folder. For example, to mount a custom `ossec.conf` file, mount it in `/wazuh-config-mount/etc/ossec.conf` and the [entrypoint.sh](wazuh/config/entrypoint.sh) script will copy the file at the right place on boot while respecting the destination file permissions.
 
 Here is an example of a `/wazuh-config-mount` folder used to mount some common custom configuration files:
 ```
