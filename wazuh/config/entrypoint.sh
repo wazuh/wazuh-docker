@@ -122,6 +122,9 @@ chmod -R g+rw ${DATA_PATH}
 ##############################################################################
 for CUSTOM_COMMAND in "$@"
 do
+  echo "Executing command \`${CUSTOM_COMMAND}\`"
+  exec_cmd_stdout "${CUSTOM_COMMAND}"
+done
   exec_cmd_stdout "${CUSTOM_COMMAND}"
 done
 
