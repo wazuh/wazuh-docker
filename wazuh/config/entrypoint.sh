@@ -125,7 +125,5 @@ do
   echo "Executing command \`${CUSTOM_COMMAND}\`"
   exec_cmd_stdout "${CUSTOM_COMMAND}"
 done
-  exec_cmd_stdout "${CUSTOM_COMMAND}"
-done
 
 /sbin/my_init 
