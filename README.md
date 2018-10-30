@@ -54,6 +54,21 @@ Identified Wazuh configuration files to mount...
 '/wazuh-config-mount/etc/shared/default/agent.conf' -> '/var/ossec/data/etc/shared/default/agent.conf'
 ```
 
+## Custom commands/scripts
+
+To execute commands in the Wazuh manager container after configuration is placed but _before_ the
+Wazuh API and manager are started, pass the commands as the docker commands/arguments:
+
+```sh
+docker run -it --rm wazuh/wazuh:latest "echo 'hello world'" "uname -m" "ls /var/ossec"
+```
+
+A more real-world example:
+
+```sh
+docker run -it --rm wazuh/wazuh:latest "/var/ossec/bin/ossec-control enable debug"
+```
+
 ## More documentation
 
 * [Wazuh full documentation](http://documentation.wazuh.com)
