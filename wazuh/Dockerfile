@@ -21,10 +21,13 @@ RUN useradd -u 1000 -g 1000 -d /var/ossec ossec
 RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections
 RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 
+# Add universe repository
+RUN add-apt-repository universe
+
 # Install packages
 RUN apt-get update && apt-get -y install openssl postfix bsd-mailx python-boto python-pip  \
     apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} \
-    wazuh-api=${WAZUH_VERSION}
+    wazuh-api=${WAZUH_VERSION} mailutils libsasl2-modules
 
 # Adding first run script.
 ADD config/data_dirs.env /data_dirs.env
