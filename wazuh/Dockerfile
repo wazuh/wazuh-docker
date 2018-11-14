@@ -73,5 +73,11 @@ RUN mkdir /etc/service/filebeat
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 RUN chmod +x /etc/service/filebeat/run
 
+# Adding compatibility with AWS integration
+RUN sed -i 's/.*with open*/#wiht open/' /var/ossec/wodles/aws/aws-s3
+RUN sed -i 's/.*max_queue_buffer = int(kernel_param.read().strip())*/#max_queue_buffer/' /var/ossec/wodles/aws/aws-s3
+RUN sed -i '784imax_queue_buffer = 0' /var/ossec/wodles/aws/aws-s3
+RUN sed -i '784s/^/    /' /var/ossec/wodles/aws/aws-s3
+
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]

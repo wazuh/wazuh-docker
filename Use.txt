@@ -1,0 +1,11 @@
+1. Clone the indicated repository for the aws-integration compatibility.
+
+$ git clone https://github.com/wazuh/wazuh-docker.git -b aws-integration-compatibility --single-branch
+
+2. Construction of the services with the personalized configuration of the branch. 
+
+$ docker-compose build
+
+3. Builds, (re)creates, starts, and attaches to containers for a service.
+
+$ docker-compose up
