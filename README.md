@@ -44,6 +44,8 @@ Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version
 	│   │   └── entrypoint.sh
 	│   └── Dockerfile
 	├── README.md
+	├── CHANGELOG.md
+	├── VERSION
 	├── test.txt
 	└── wazuh
 	    ├── config
