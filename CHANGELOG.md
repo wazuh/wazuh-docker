@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 - Allow custom scripts or commands before service start ([#58](https://github.com/wazuh/wazuh-docker/pull/58))
 - Added description for wazuh-nginx ([#59](https://github.com/wazuh/wazuh-docker/pull/59))
-- Added license file to match https://github.com/wazuh/wazuh ([#60](https://github.com/wazuh/wazuh-docker/pull/60))
+- Added license file to match https://github.com/wazuh/wazuh LICENSE ([#60](https://github.com/wazuh/wazuh-docker/pull/60))
 
 ### Changed
 
