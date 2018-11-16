@@ -1,7 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## v3.7.0-37xx
+## v3.x.x_6.x.x
+
+## v3.7.0_6.4.3
 
 ### Added
 
@@ -20,6 +22,6 @@ All notable changes to this project will be documented in this file.
 - Fixed a bug that prevents the API from starting when the Wazuh manager was updated. Change in the files that are stored in the volume.  ([#65](https://github.com/wazuh/wazuh-docker/pull/65))
 - Fixed script reference ([#62](https://github.com/wazuh/wazuh-docker/pull/62/files))
 
-## v3.6.0-3600
+## v3.6.1_6.4.3
 
 Wazuh-Docker starting point.
