@@ -64,7 +64,7 @@ Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version
 
 * `stable` branch on correspond to the last Wazuh-Docker stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `Wazuh.Version_ElsaticStack.version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch. 
+* `Wazuh.Version_ElsaticStack.Version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch. 
 
 ## Credits and Thank you
 
