@@ -1,11 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## v3.x.x_6.x.x
+## Wazuh Docker v3.7.0_6.5.0
 
-## v3.7.0_6.5.0
+### Changed
 
-## v3.7.0_6.4.3
+- Adapt to Elastic stack 6.5.0.
+
+## Wazuh Docker v3.7.0_6.4.3
 
 ### Added
 
@@ -25,6 +27,6 @@ All notable changes to this project will be documented in this file.
 - Fixed a bug that prevents the API from starting when the Wazuh manager was updated. Change in the files that are stored in the volume.  ([#65](https://github.com/wazuh/wazuh-docker/pull/65))
 - Fixed script reference ([#62](https://github.com/wazuh/wazuh-docker/pull/62/files))
 
-## v3.6.1_6.4.3
+## Wazuh Docker v3.6.1_6.4.3
 
 Wazuh-Docker starting point.
