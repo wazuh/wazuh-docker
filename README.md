@@ -14,69 +14,59 @@ In this repository you will find the containers to run:
 
 In addition, a docker-compose file is provided to launch the containers mentioned above. It also launches an Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images.
 
-## Current release
-
-Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version 6.4.3. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
-
-## Installation notes
-
-To run all docker instances you can just run ``docker-compose up``, from the directory where you have docker-compose.yml file. The following is part of the expected behavior when setting up the system:
-
-* Both wazuh-kibana and wazuh-logstash containers will run multiple queries to Elasticsearch API using curl, to learn when Elasticsearch is up. It is expected to see several ``Failed to connect to elasticsearch port 9200`` log messages, until Elasticesearch is started. Then the set up process will continue normally.
-* Kibana container can take a few minutes to install Wazuh plugin, this takes place after ``Optimizing and caching browser bundles...`` is printed out.
-* It is recommended to set Docker host preferences to give at least 4GB memory per container (this doesn't necessarily mean they all will use it, but Elasticsearch requires them to work properly).
-
-Once installed you can browse through the interface at: https://127.0.0.1
-
-## Mount custom Wazuh configuration files
-
-To mount custom Wazuh configuration files in the Wazuh manager container, mount them in the `/wazuh-config-mount` folder. For example, to mount a custom `ossec.conf` file, mount it in `/wazuh-config-mount/etc/ossec.conf` and the [entrypoint.sh](wazuh/config/entrypoint.sh) script will copy the file at the right place on boot while respecting the destination file permissions.
-
-Here is an example of a `/wazuh-config-mount` folder used to mount some common custom configuration files:
-```
-root@wazuh-manager:/# tree /wazuh-config-mount/
-/wazuh-config-mount/
-└── etc
-    ├── ossec.conf
-    ├── rules
-    │   └── local_rules.xml
-    └── shared
-        └── default
-            └── agent.conf
-
-4 directories, 3 files
-```
-
-In that case, you will see this in the Wazuh manager logs on boot:
-```
-Identified Wazuh configuration files to mount...
-'/wazuh-config-mount/etc/ossec.conf' -> '/var/ossec/data/etc/ossec.conf'
-'/wazuh-config-mount/etc/rules/local_rules.xml' -> '/var/ossec/data/etc/rules/local_rules.xml'
-'/wazuh-config-mount/etc/shared/default/agent.conf' -> '/var/ossec/data/etc/shared/default/agent.conf'
-```
-
-## Custom commands/scripts
-
-To execute commands in the Wazuh manager container after configuration is placed but _before_ the
-Wazuh API and manager are started, pass the commands as the docker commands/arguments:
-
-```sh
-docker run -it --rm wazuh/wazuh:latest "echo 'hello world'" "uname -m" "ls /var/ossec"
-```
-
-A more real-world example:
-
-```sh
-docker run -it --rm wazuh/wazuh:latest "/var/ossec/bin/ossec-control enable debug"
-```
-
-## More documentation
+## Documentation
 
 * [Wazuh full documentation](http://documentation.wazuh.com)
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker hub](https://hub.docker.com/u/wazuh)
 
-## Credits
+## Current release
+
+Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version 6.4.3. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
+
+## Directory structure
+
+	wazuh-docker
+	├── docker-compose.yml
+	├── kibana
+	│   ├── config
+	│   │   ├── entrypoint.sh
+	│   │   └── kibana.yml
+	│   └── Dockerfile
+	├── LICENSE
+	├── logstash
+	│   ├── config
+	│   │   ├── 01-wazuh.conf
+	│   │   └── run.sh
+	│   └── Dockerfile
+	├── nginx
+	│   ├── config
+	│   │   └── entrypoint.sh
+	│   └── Dockerfile
+	├── README.md
+	├── CHANGELOG.md
+	├── VERSION
+	├── test.txt
+	└── wazuh
+	    ├── config
+	    │   ├── data_dirs.env
+	    │   ├── entrypoint.sh
+	    │   ├── filebeat.runit.service
+	    │   ├── filebeat.yml
+	    │   ├── init.bash
+	    │   ├── postfix.runit.service
+	    │   ├── wazuh-api.runit.service
+	    │   └── wazuh.runit.service
+	    └── Dockerfile
+
+
+## Branches
+
+* `stable` branch on correspond to the last Wazuh-Docker stable version.
+* `master` branch contains the latest code, be aware of possible bugs on this branch.
+* `Wazuh.Version_ElsaticStack.Version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch. 
+
+## Credits and Thank you
 
 These Docker containers are based on:
 
@@ -89,6 +79,6 @@ We thank you them and everyone else who has contributed to this project.
 
 Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 
-## Wazuh official website
+## Web references
 
 [Wazuh website](http://wazuh.com)

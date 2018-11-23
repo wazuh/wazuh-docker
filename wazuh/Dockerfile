@@ -21,10 +21,13 @@ RUN useradd -u 1000 -g 1000 -d /var/ossec ossec
 RUN echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections
 RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 
+# Add universe repository
+RUN add-apt-repository universe
+
 # Install packages
 RUN apt-get update && apt-get -y install openssl postfix bsd-mailx python-boto python-pip  \
     apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} \
-    wazuh-api=${WAZUH_VERSION}
+    wazuh-api=${WAZUH_VERSION} mailutils libsasl2-modules
 
 # Adding first run script.
 ADD config/data_dirs.env /data_dirs.env
@@ -72,6 +75,12 @@ RUN chmod +x /etc/service/postfix/run
 RUN mkdir /etc/service/filebeat
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 RUN chmod +x /etc/service/filebeat/run
+
+# Temporary fix for AWS integration
+RUN sed -i 's/.*with open*/#wiht open/' /var/ossec/wodles/aws/aws-s3
+RUN sed -i 's/.*max_queue_buffer = int(kernel_param.read().strip())*/#max_queue_buffer/' /var/ossec/wodles/aws/aws-s3
+RUN sed -i '784imax_queue_buffer = 0' /var/ossec/wodles/aws/aws-s3
+RUN sed -i '784s/^/    /' /var/ossec/wodles/aws/aws-s3
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
