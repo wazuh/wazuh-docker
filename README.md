@@ -22,7 +22,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 ## Current release
 
-Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version 6.4.3. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
+Containers are currently tested on Wazuh version 3.7.1 and Elastic Stack version 6.5.3. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
 
 ## Directory structure
 
@@ -64,7 +64,7 @@ Containers are currently tested on Wazuh version 3.7.0 and Elastic Stack version
 
 * `stable` branch on correspond to the last Wazuh-Docker stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `Wazuh.Version_ElasticStack.Version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch. 
+* `Wazuh.Version_ElasticStack.Version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
 
 ## Credits and Thank you
 

@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.5.0
-ARG WAZUH_VERSION=3.7.0-1
+ARG FILEBEAT_VERSION=6.5.3
+ARG WAZUH_VERSION=3.7.1-1
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
