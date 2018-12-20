@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v3.7.2_6.5.3
 
+### Changed
+
+- Erasing temporary fix for AWS integration #81
+
 ### Fixed
 
 - entrypoint.sh updated so docker upgrade is posible ([#80](https://github.com/wazuh/wazuh-docker/pull/80))
