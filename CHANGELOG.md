@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v3.7.0_6.5.0
 
+### Fixed
+
+- entrypoint.sh updated so docker upgrade is posible ([#80](https://github.com/wazuh/wazuh-docker/pull/80))
+
+## Wazuh Docker v3.7.0_6.5.0
+
 ### Changed
 
 - Adapt to Elastic stack 6.5.0.
