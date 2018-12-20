@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Erasing temporary fix for AWS integration #81
+- Erasing temporary fix for AWS integration ([#81](https://github.com/wazuh/wazuh-docker/pull/81))
 
 ### Fixed
 
