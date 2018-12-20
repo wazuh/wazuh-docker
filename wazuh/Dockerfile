@@ -1,7 +1,8 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.3
-ARG WAZUH_VERSION=3.7.1-1
+ARG WAZUH_VERSION=3.7.2-1
+
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
@@ -76,11 +77,6 @@ RUN mkdir /etc/service/filebeat
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 RUN chmod +x /etc/service/filebeat/run
 
-# Temporary fix for AWS integration
-RUN sed -i 's/.*with open*/#wiht open/' /var/ossec/wodles/aws/aws-s3
-RUN sed -i 's/.*max_queue_buffer = int(kernel_param.read().strip())*/#max_queue_buffer/' /var/ossec/wodles/aws/aws-s3
-RUN sed -i '784imax_queue_buffer = 0' /var/ossec/wodles/aws/aws-s3
-RUN sed -i '784s/^/    /' /var/ossec/wodles/aws/aws-s3
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
