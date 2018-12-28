@@ -15,7 +15,7 @@ fi
 # Configuring default credentiales.
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
   echo "Setting Nginx credentials"
-  echo bar|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd foo >/dev/null
+ echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
 else
   echo "Kibana credentials already configured"
 fi
