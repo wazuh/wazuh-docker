@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 
 - Update Elastic Stack version to 6.5.4. ([#82](https://github.com/wazuh/wazuh-docker/pull/82))
 
+### Fixed 
+
+- Temporary fix for Wazuh cluster master node in Kubernetes ([#84](https://github.com/wazuh/wazuh-docker/pull/84))
+
 ## Wazuh Docker v3.7.2_6.5.3
 
 ### Changed
