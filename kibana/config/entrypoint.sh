@@ -50,6 +50,9 @@ if [ "x$CONFIG_CODE" = "x404" ]; then
 else
   echo "Wazuh APP already configured"
 fi
+sleep 5
+
+./wazuh_app_config.sh
 
 sleep 5
 
