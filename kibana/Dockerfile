@@ -16,4 +16,37 @@ RUN chmod 755 /entrypoint.sh
 
 USER kibana
 
+ENV PATTERN="" \
+    CHECKS_PATTERN="" \
+    CHECKS_TEMPLATE="" \
+    CHECKS_API="" \
+    CHECKS_SETUP="" \
+    EXTENSIONS_PCI="" \
+    EXTENSIONS_GDPR="" \
+    EXTENSIONS_AUDIT="" \
+    EXTENSIONS_OSCAP="" \
+    EXTENSIONS_CISCAT="" \
+    EXTENSIONS_AWS="" \
+    EXTENSIONS_VIRUSTOTAL="" \
+    EXTENSIONS_OSQUERY="" \
+    APP_TIMEOUT="" \
+    WAZUH_SHARDS="" \
+    WAZUH_REPLICAS="" \
+    WAZUH_VERSION_SHARDS="" \
+    WAZUH_VERSION_REPLICAS= "" \
+    IP_SELECTOR="" \
+    IP_IGNORE="" \
+    XPACK_RBAC_ENABLED="" \
+    WAZUH_MONITORING_ENABLED="" \
+    WAZUH_MONITORING_FREQUENCY="" \
+    WAZUH_MONITORING_SHARDS= "" \
+    WAZUH_MONITORING_REPLICAS= "" \
+    ADMIN_PRIVILEGES="" 
+
+COPY ./wazuh_app_config.sh /usr/share/kibana/config/
+
+RUN chmod +x /usr/share/kibana/config/wazuh_app_config.sh
+
 ENTRYPOINT /entrypoint.sh
+
+
