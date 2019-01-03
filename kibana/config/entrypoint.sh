@@ -52,7 +52,7 @@ else
 fi
 sleep 5
 
-/usr/share/kibana/config/wazuh_app_config.sh
+./wazuh_app_config.sh
 
 sleep 5
 

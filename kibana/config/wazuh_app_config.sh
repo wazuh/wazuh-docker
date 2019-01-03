@@ -34,7 +34,7 @@ declare -A CONFIG_MAP=(
 
 for i in "${!CONFIG_MAP[@]}"
 do
-    if [ "$i" != "" ]; then
+    if [ "${CONFIG_MAP[$i]}" != "" ]; then
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
     fi
 done
