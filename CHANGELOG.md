@@ -3,14 +3,19 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v3.7.2_6.5.4
 
+### Added
+
+- Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
+
 ### Changed
 
 - Update Elastic Stack version to 6.5.4. ([#82](https://github.com/wazuh/wazuh-docker/pull/82))
-- Add env credentials for nginx ([#86](https://github.com/wazuh/wazuh-docker/pull/86))
+- Add env credentials for nginx. ([#86](https://github.com/wazuh/wazuh-docker/pull/86))
+- Improve filebeat configuration ([#88](https://github.com/wazuh/wazuh-docker/pull/88))
 
 ### Fixed 
 
-- Temporary fix for Wazuh cluster master node in Kubernetes ([#84](https://github.com/wazuh/wazuh-docker/pull/84))
+- Temporary fix for Wazuh cluster master node in Kubernetes. ([#84](https://github.com/wazuh/wazuh-docker/pull/84))
 
 ## Wazuh Docker v3.7.2_6.5.3
 
