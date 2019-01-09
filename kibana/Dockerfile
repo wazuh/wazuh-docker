@@ -3,6 +3,9 @@ FROM docker.elastic.co/kibana/kibana:6.5.4
 ARG WAZUH_APP_VERSION=3.7.2_6.5.4
 USER root
 
+ENV ALERTS_SHARDS="1" \
+    ALERTS_REPLICAS="0"
+
 ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/3.7/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/kibana/config
