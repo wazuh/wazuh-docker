@@ -52,6 +52,14 @@ else
 fi
 sleep 5
 
+curl -XPUT "$el_url/_cluster/settings" -H 'Content-Type: application/json' -d'
+{
+  "persistent": {
+    "xpack.monitoring.collection.enabled": true
+  }
+}
+'
+
 ./wazuh_app_config.sh
 
 sleep 5
