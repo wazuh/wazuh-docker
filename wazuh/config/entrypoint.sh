@@ -140,7 +140,7 @@ done
 # 
 # The following actions are performed:
 #
-# Add the wazuh alerts index as default by default.
+# Add the wazuh alerts index as default.
 # Set the Discover time interval to 24 hours instead of 15 minutes.
 # Do not ask user to help providing usage statistics to Elastic.
 ##############################################################################
@@ -163,16 +163,19 @@ cat > ${default_index} << EOF
 }
 EOF
 
-# Add the wazuh alerts index as default by default.
+sleep 5
+# Add the wazuh alerts index as default.
 curl -POST "http://kibana:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
+sleep 5
 # Configuring Kibana TimePicker.
 curl -POST "http://kibana:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
 '{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-24h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
+sleep 5
 # Do not ask user to help providing usage statistics to Elastic
-curl -POST "http://kibana:5601/api/telemetry/v1/optIn" -H "Content.-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl -POST "http://kibana:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
 ##############################################################################
 # Start Wazuh Server.
