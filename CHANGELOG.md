@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
+- Elasticsearch monitoring enabled ([#95](https://github.com/wazuh/wazuh-docker/pull/95))
 
 ### Changed
 
