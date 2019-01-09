@@ -21,6 +21,8 @@ DATA_PATH=${WAZUH_INSTALL_PATH}/data
 
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 
+WAZUH_MAJOR=3
+
 print() {
     echo -e $1
 }
@@ -132,4 +134,48 @@ do
   exec_cmd_stdout "${CUSTOM_COMMAND}"
 done
 
-/sbin/my_init 
+##############################################################################
+# Wait for the Kibana API to start. It is necessary to do it in this container
+# because the others are running Elastic Stack and we can not interrupt them. 
+# 
+# The following actions are performed:
+#
+# Add the wazuh alerts index as default by default.
+# Set the Discover time interval to 24 hours instead of 15 minutes.
+# Do not ask user to help providing usage statistics to Elastic.
+##############################################################################
+
+while [[ "$(curl -XGET -I  -s -o /dev/null -w ''%{http_code}'' kibana:5601/status)" != "200" ]]; do
+  echo "Waiting for Kibana API. Sleeping 5 seconds"
+  sleep 5
+done
+
+# Prepare index selection. 
+echo "Kibana API is running"
+
+default_index="/tmp/default_index.json"
+
+cat > ${default_index} << EOF
+{
+  "changes": {
+    "defaultIndex": "wazuh-alerts-${WAZUH_MAJOR}.x-*"
+  }
+}
+EOF
+
+# Add the wazuh alerts index as default by default.
+curl -POST "http://kibana:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
+rm -f ${default_index}
+
+# Configuring Kibana TimePicker.
+curl -POST "http://kibana:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
+'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-24h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
+
+# Do not ask user to help providing usage statistics to Elastic
+curl -POST "http://kibana:5601/api/telemetry/v1/optIn" -H "Content.-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+
+##############################################################################
+# Start Wazuh Server.
+##############################################################################
+
+/sbin/my_init
