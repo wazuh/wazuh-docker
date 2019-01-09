@@ -18,7 +18,7 @@ done
 
 #Insert default templates
 
-sed -i 's|    "index.refresh_interval": "5s"|    "index.refresh_interval": "5s",    "number_of_shards" :   ${ALERTS_SHARDS},    "number_of_replicas" : ${ALERTS_REPLICAS}|' /usr/share/kibana/config/wazuh-elastic6-template-alerts.json
+sed -i 's|    "index.refresh_interval": "5s"|    "index.refresh_interval": "5s",    "number_of_shards" :   '"${ALERTS_SHARDS}"',    "number_of_replicas" : '"${ALERTS_REPLICAS}"'|' /usr/share/kibana/config/wazuh-elastic6-template-alerts.json
 
 cat /usr/share/kibana/config/wazuh-elastic6-template-alerts.json | curl -XPUT "$el_url/_template/wazuh" -H 'Content-Type: application/json' -d @-
 sleep 5
