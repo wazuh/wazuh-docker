@@ -20,10 +20,6 @@ In addition, a docker-compose file is provided to launch the containers mentione
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker hub](https://hub.docker.com/u/wazuh)
 
-## Current release
-
-Containers are currently tested on Wazuh version 3.8.0 and Elastic Stack version 6.5.4. We will do our best to keep this repository updated to latest versions of both Wazuh and Elastic Stack.
-
 ## Directory structure
 
 	wazuh-docker
