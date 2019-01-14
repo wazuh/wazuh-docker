@@ -107,9 +107,6 @@ else
   print "No Wazuh configuration files to mount..."
 fi
 
-# Enabling ossec-authd.
-exec_cmd "/var/ossec/bin/ossec-control enable auth"
-
 function ossec_shutdown(){
   ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
 }
