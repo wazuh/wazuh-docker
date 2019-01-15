@@ -76,8 +76,5 @@ RUN mkdir /etc/service/filebeat
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 RUN chmod +x /etc/service/filebeat/run
 
-# Temporary fix for Wazuh cluster master node in Kubernetes
-RUN sed -i '87d;88d' /var/ossec/framework/wazuh/cluster/cluster.py
-
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
