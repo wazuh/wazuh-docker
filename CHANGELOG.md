@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Upgrade version 3.8.0_6.5.4 ([#97](https://github.com/wazuh/wazuh-docker/pull/97))
+- Upgrade version 3.8.0_6.5.4. ([#97](https://github.com/wazuh/wazuh-docker/pull/97))
+
+### Removed
+
+- Remove cluster.py work around. ([#99](https://github.com/wazuh/wazuh-docker/pull/99))
 
 ## Wazuh Docker v3.7.2_6.5.4
 
