@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.4
-ARG WAZUH_VERSION=3.7.2-1
+ARG WAZUH_VERSION=3.8.0-1
 
 
 # Updating image
@@ -76,9 +76,6 @@ RUN chmod +x /etc/service/postfix/run
 RUN mkdir /etc/service/filebeat
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 RUN chmod +x /etc/service/filebeat/run
-
-# Temporary fix for Wazuh cluster master node in Kubernetes
-RUN sed -i '87d;88d' /var/ossec/framework/wazuh/cluster/cluster.py
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
