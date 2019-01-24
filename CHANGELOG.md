@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v3.8.1_6.5.4
 
+### Changed
+- Update to Wazuh version 3.8.1. ([#102](https://github.com/wazuh/wazuh-docker/pull/102))
+
 ## Wazuh Docker v3.8.0_6.5.4
 
 ### Changed
