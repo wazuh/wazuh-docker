@@ -1,6 +1,6 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM docker.elastic.co/kibana/kibana:6.5.4
-ARG WAZUH_APP_VERSION=3.8.0_6.5.4
+ARG WAZUH_APP_VERSION=3.8.1_6.5.4
 USER root
 
 ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
@@ -49,4 +49,3 @@ COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 RUN chmod +x ./wazuh_app_config.sh
 
 ENTRYPOINT /entrypoint.sh
-
