@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Improvements to Kibaba settings added. ([#91](https://github.com/wazuh/wazuh-docker/pull/91))
+- Improvements to Kibana settings added. ([#91](https://github.com/wazuh/wazuh-docker/pull/91))
 - Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
 
 ### Changed
