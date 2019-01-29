@@ -7,7 +7,7 @@ ENV ALERTS_SHARDS="1" \
     ALERTS_REPLICAS="0"
 
 ENV API_USER="foo" \
-    API_PASS="YmFy"
+    API_PASS="bar"
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/3.8/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
 

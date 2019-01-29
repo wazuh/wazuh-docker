@@ -23,13 +23,15 @@ sed -i 's|    "index.refresh_interval": "5s"|    "index.refresh_interval": "5s",
 cat /usr/share/elasticsearch/config/wazuh-elastic6-template-alerts.json | curl -XPUT "$el_url/_template/wazuh" -H 'Content-Type: application/json' -d @-
 sleep 5
 
+API_PASSWORD=`echo -n $API_PASS | base64`
+
 echo "Setting API credentials into Wazuh APP"
 CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-configuration/1513629884013)
 if [ "x$CONFIG_CODE" = "x404" ]; then
   curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 -H 'Content-Type: application/json' -d'
   {
     "api_user": "'"$API_USER"'",
-    "api_password": "'"$API_PASS"'",
+    "api_password": "'"$API_PASSWORD"'",
     "url": "https://wazuh",
     "api_port": "55000",
     "insecure": "true",
