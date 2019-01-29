@@ -129,4 +129,19 @@ do
   exec_cmd_stdout "${CUSTOM_COMMAND}"
 done
 
+
+##############################################################################
+# Change Wazuh API user credentials.
+##############################################################################
+
+
+pushd /var/ossec/api/configuration/auth/
+
+echo "Change Wazuh API user credentials"
+change_user="node htpasswd -b -c user $API_USER $API_PASS"
+eval $change_user
+
+popd
+
+
 /sbin/my_init 
