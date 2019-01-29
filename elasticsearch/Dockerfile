@@ -6,6 +6,9 @@ ENV ES_VERSION 6.5.4
 ENV ALERTS_SHARDS="1" \
     ALERTS_REPLICAS="0"
 
+ENV API_USER="foo" \
+    API_PASS="YmFy"
+
 ADD https://raw.githubusercontent.com/wazuh/wazuh/3.8/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh

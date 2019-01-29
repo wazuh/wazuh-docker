@@ -28,8 +28,8 @@ CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-
 if [ "x$CONFIG_CODE" = "x404" ]; then
   curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 -H 'Content-Type: application/json' -d'
   {
-    "api_user": "foo",
-    "api_password": "YmFy",
+    "api_user": "'"$API_USER"'",
+    "api_password": "'"$API_PASS"'",
     "url": "https://wazuh",
     "api_port": "55000",
     "insecure": "true",
