@@ -39,7 +39,7 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    image: wazuh/wazuh-elasticsearch:3.8.1_6.5.4
     hostname: elasticsearch
     restart: always
     ports:
