@@ -3,6 +3,8 @@ FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.4
 ARG WAZUH_VERSION=3.8.1-1
 
+ENV API_USER="foo" \
+    API_PASS="bar"
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
