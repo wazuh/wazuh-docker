@@ -21,4 +21,6 @@ done
 
 sleep 5
 
+./kibana_settings.sh &
+
 /usr/local/bin/kibana-docker
