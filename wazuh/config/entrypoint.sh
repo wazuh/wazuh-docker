@@ -107,9 +107,6 @@ else
   print "No Wazuh configuration files to mount..."
 fi
 
-# Enabling ossec-authd.
-exec_cmd "/var/ossec/bin/ossec-control enable auth"
-
 function ossec_shutdown(){
   ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
 }
@@ -133,7 +130,19 @@ do
 done
 
 ##############################################################################
+# Change Wazuh API user credentials.
+##############################################################################
+
+pushd /var/ossec/api/configuration/auth/
+
+echo "Change Wazuh API user credentials"
+change_user="node htpasswd -b -c user $API_USER $API_PASS"
+eval $change_user
+
+popd
+
+##############################################################################
 # Start Wazuh Server.
 ##############################################################################
 
-/sbin/my_init
+/sbin/my_init 
