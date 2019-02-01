@@ -18,7 +18,7 @@ services:
 #      - my-path:/var/ossec/data:Z
 #      - my-path:/etc/postfix:Z
 #      - my-path:/etc/filebeat
-#      - my_path:/var/lib/filebeat/registry
+#      - my_path:/var/lib/filebeat
 #      - my-custom-config-path/ossec.conf:/wazuh-config-mount/etc/ossec.conf
 #   command: ["echo 'hello world'"]
     depends_on:
