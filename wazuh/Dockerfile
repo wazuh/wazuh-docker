@@ -55,6 +55,7 @@ RUN chmod 755 /entrypoint.sh
 VOLUME ["/var/ossec/data"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
+VOLUME ["/var/lib/filebeat"]
 
 # Services ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
