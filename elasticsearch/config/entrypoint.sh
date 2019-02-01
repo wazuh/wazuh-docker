@@ -1,30 +1,28 @@
 #!/bin/bash
+# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-set -m
+# For more information https://github.com/elastic/elasticsearch-docker/blob/6.5.4/build/elasticsearch/bin/docker-entrypoint.sh
 
-# Add elasticsearch as command if needed
-if [ "${1:0:1}" = '-' ]; then
-	set -- elasticsearch "$@"
-fi
+set -e
 
-if [ "$NODE_NAME" = "" ]; then
-	export NODE_NAME=$HOSTNAME
-fi
+# Files created by Elasticsearch should always be group writable too
+umask 0002
 
-if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
-  el_url="https://elasticsearch:9200"
-else
-  el_url="${ELASTICSEARCH_URL}"
-fi
+run_as_other_user_if_needed() {
+  if [[ "$(id -u)" == "0" ]]; then
+    # If running as root, drop to specified UID and run command
+    exec chroot --userspec=1000 / "${@}"
+  else
+    # Either we are running in Openshift with random uid and are a member of the root group
+    # or with a custom --user
+    exec "${@}"
+  fi
+}
 
-# Run as user "elasticsearch" if the command is "elasticsearch"
-if [ "$1" = 'elasticsearch' -a "$(id -u)" = '0' ]; then
-	set -- su-exec eulasticsearch "$@"
-	ES_JAVA_OPTS="-Des.network.host=$NETWORK_HOST -Des.logger.level=$LOG_LEVEL -Xms$HEAP_SIZE -Xmx$HEAP_SIZE"  "$@" &
-else
-	"$@" &
-fi
+# Run load settings script.
 
 ./load_settings.sh &
 
-su -c "elasticsearch " elasticsearch
+# Execute elasticsearch
+
+run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch "${es_opts[@]}"
