@@ -25,4 +25,4 @@ run_as_other_user_if_needed() {
 
 # Execute elasticsearch
 
-run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch "${es_opts[@]}"
+run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch 
