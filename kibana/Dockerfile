@@ -1,11 +1,11 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:6.5.4
-ARG WAZUH_APP_VERSION=3.8.0_6.5.4
+FROM docker.elastic.co/kibana/kibana:6.6.0
+ARG WAZUH_APP_VERSION=3.9.0_6.6.0
 USER root
 
 ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
-ADD https://raw.githubusercontent.com/wazuh/wazuh/3.8/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/kibana/config
+ADD https://raw.githubusercontent.com/wazuh/wazuh/3.9/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/kibana/config
 
 RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\
