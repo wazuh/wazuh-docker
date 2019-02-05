@@ -84,9 +84,9 @@ then
   done
 else
   echo "
-  #xpack features
-  xpack.ml.enabled: $XPACK_ML
-  " >> $elasticsearch_config_file
+#xpack features
+xpack.ml.enabled: $XPACK_ML
+ " >> $elasticsearch_config_file
 fi
 
 echo "Elasticsearch is ready."

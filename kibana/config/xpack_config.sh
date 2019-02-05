@@ -20,14 +20,14 @@ then
   done
 else
   echo "
-  #xpack features
-  xpack.apm.ui.enabled: $XPACK_APM 
-  xpack.grokdebugger.enabled: $XPACK_DEVTOOLS
-  xpack.searchprofiler.enabled: $XPACK_DEVTOOLS
-  xpack.ml.enabled: $XPACK_ML
-  xpack.canvas.enabled: $XPACK_CANVAS
-  xpack.logstash.enabled: $XPACK_LOGS
-  xpack.infra.enabled: $XPACK_INFRA
-  console.enabled: $XPACK_INFRA
-  " >> $kibana_config_file
+#xpack features
+xpack.apm.ui.enabled: $XPACK_APM 
+xpack.grokdebugger.enabled: $XPACK_DEVTOOLS
+xpack.searchprofiler.enabled: $XPACK_DEVTOOLS
+xpack.ml.enabled: $XPACK_ML
+xpack.canvas.enabled: $XPACK_CANVAS
+xpack.logstash.enabled: $XPACK_LOGS
+xpack.infra.enabled: $XPACK_INFRA
+console.enabled: $XPACK_INFRA
+" >> $kibana_config_file
 fi
