@@ -39,7 +39,13 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES=""
+    ADMIN_PRIVILEGES=""\
+    XPACK_CANVAS="false"\
+    XPACK_LOGS="false"\
+    XPACK_INFRA="false"\
+    XPACK_ML="false"\
+    XPACK_DEVTOOLS="false"\
+    XPACK_APM="false"
 
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
@@ -49,6 +55,10 @@ RUN chmod +x ./wazuh_app_config.sh
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 
 RUN chmod +x ./kibana_settings.sh
+
+COPY --chown=kibana:kibana ./config/xpack_config.sh ./
+
+RUN chmod +x ./xpack_config.sh
 
 ENTRYPOINT /entrypoint.sh
 

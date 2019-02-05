@@ -47,48 +47,4 @@ sleep 5
 # Do not ask user to help providing usage statistics to Elastic
 curl -POST "http://kibana:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
-
-kibana_config_file="/usr/share/kibana/plugins/wazuh/config.yml"
-if grep -vq  "#xpack features" "$kibana_config_file";
-then 
-
-echo "
-#xpack features
-xpack.apm.ui.enabled: false
-xpack.grokdebugger.enabled: false
-xpack.searchprofiler.enabled: false
-xpack.security.enabled: false
-xpack.graph.enabled: false
-xpack.ml.enabled: false
-xpack.monitoring.enabled: false
-xpack.reporting.enabled: false
-xpack.watcher.enabled: false
-" >> /usr/share/kibana/config/kibana.yml
-
-else
-
-
-declare -A CONFIG_MAP=(
-
-[xpack.apm.ui.enabled]= $XPACK_APM
-[xpack.grokdebugger.enabled]= $XPACK_DEVTOOLS
-[xpack.searchprofiler.enabled]= $XPACK_DEVTOOLS
-[xpack.security.enable]= $XPACK_SECURITY
-[xpack.graph.enabled]= $XPACK_GRAPHS
-[xpack.ml.enabled]=$XPACK_MACHINELEARNING
-[xpack.monitoring.enabled]= $XPACK_MONITORING
-[xpack.reporting.enable]= $XPACK_REPORTING
-[xpack.watcher.enabled]= $XPACK_WATCHER
-)
-
-for i in "${!CONFIG_MAP[@]}"
-do
-    if [ "${CONFIG_MAP[$i]}" != "" ]; then
-        sed -i 's/.*'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
-    fi
-done
-
-fi
-
-
 echo "End settings"
