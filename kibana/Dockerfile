@@ -45,6 +45,7 @@ ENV PATTERN="" \
     XPACK_INFRA="false"\
     XPACK_ML="false"\
     XPACK_DEVTOOLS="false"\
+    XPACK_MONITORING="false"\
     XPACK_APM="false"
 
 
