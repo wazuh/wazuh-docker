@@ -21,7 +21,7 @@ done
 
 sleep 5
 
-./xpack_config.sh 
+#./xpack_config.sh 
 
 ./kibana_settings.sh &
 
