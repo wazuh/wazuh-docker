@@ -7,7 +7,7 @@ ENV ALERTS_SHARDS="1" \
 ENV API_USER="foo" \
     API_PASS="bar"
 
-ENV XPACK_ML="false" 
+ENV XPACK_ML="true" 
 
 ENV TEMPLATE_VERSION=v3.8.2
 

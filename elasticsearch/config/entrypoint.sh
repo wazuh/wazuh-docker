@@ -19,6 +19,28 @@ run_as_other_user_if_needed() {
   fi
 }
 
+
+#Disabling xpack features
+
+elasticsearch_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
+if grep -Fq  "#xpack features" "$elasticsearch_config_file";
+then 
+  declare -A CONFIG_MAP=(
+  [xpack.ml.enabled]=$XPACK_ML
+  )
+  for i in "${!CONFIG_MAP[@]}"
+  do
+    if [ "${CONFIG_MAP[$i]}" != "" ]; then
+      sed -i 's/.'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $elasticsearch_config_file
+    fi
+  done
+else
+  echo "
+#xpack features
+xpack.ml.enabled: $XPACK_ML
+ " >> $elasticsearch_config_file
+fi
+
 # Run load settings script.
 
 ./load_settings.sh &

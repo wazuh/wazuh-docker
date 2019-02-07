@@ -40,13 +40,13 @@ ENV PATTERN="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS="" \
     ADMIN_PRIVILEGES=""\
-    XPACK_CANVAS="false"\
-    XPACK_LOGS="false"\
-    XPACK_INFRA="false"\
-    XPACK_ML="false"\
-    XPACK_DEVTOOLS="false"\
-    XPACK_MONITORING="false"\
-    XPACK_APM="false"
+    XPACK_CANVAS="true"\
+    XPACK_LOGS="true"\
+    XPACK_INFRA="true"\
+    XPACK_ML="true"\
+    XPACK_DEVTOOLS="true"\
+    XPACK_MONITORING="true"\
+    XPACK_APM="true"
 
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
