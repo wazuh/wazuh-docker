@@ -68,4 +68,5 @@ curl -XPUT "$el_url/_cluster/settings" -H 'Content-Type: application/json' -d'
 }
 '
 
+
 echo "Elasticsearch is ready."
