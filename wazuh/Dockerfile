@@ -1,8 +1,10 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.4
-ARG WAZUH_VERSION=3.8.0-1
+ARG WAZUH_VERSION=3.8.2-1
 
+ENV API_USER="foo" \
+    API_PASS="bar"
 
 # Updating image
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
@@ -53,6 +55,7 @@ RUN chmod 755 /entrypoint.sh
 VOLUME ["/var/ossec/data"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
+VOLUME ["/var/lib/filebeat"]
 
 # Services ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
