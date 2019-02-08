@@ -1,13 +1,13 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
-FROM wazuh/wazuh-kibana:3.8.2_6.5.4
-#ARG WAZUH_APP_VERSION=3.8.2_6.5.4
+FROM docker.elastic.co/kibana/kibana:6.5.4
+ARG WAZUH_APP_VERSION=3.8.2_6.5.4
 USER root
 
-#ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
-#RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
-#    chown -R kibana:kibana /usr/share/kibana &&\
-#    rm -rf /tmp/*
+RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
+    chown -R kibana:kibana /usr/share/kibana &&\
+    rm -rf /tmp/*
 
 COPY config/entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
@@ -39,14 +39,15 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES=""\
-    XPACK_CANVAS="false"\
-    XPACK_LOGS="false"\
-    XPACK_INFRA="false"\
-    XPACK_ML="false"\
-    XPACK_DEVTOOLS="false"\
-    XPACK_MONITORING="false"\
-    XPACK_APM="false"
+    ADMIN_PRIVILEGES=""
+
+ARG XPACK_CANVAS="true"
+ARG XPACK_LOGS="true"
+ARG XPACK_INFRA="true"
+ARG XPACK_ML="true"
+ARG XPACK_DEVTOOLS="true"
+ARG XPACK_MONITORING="true"
+ARG XPACK_APM="true"
 
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
@@ -66,4 +67,3 @@ RUN ./xpack_config.sh
 RUN /usr/local/bin/kibana-docker --optimize
 
 ENTRYPOINT /entrypoint.sh
-
