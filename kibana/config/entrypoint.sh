@@ -21,10 +21,6 @@ done
 
 sleep 5
 
-#./xpack_config.sh 
-
 ./kibana_settings.sh &
-
-
 
 /usr/local/bin/kibana-docker
