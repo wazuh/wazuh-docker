@@ -39,14 +39,15 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES=""\
-    XPACK_CANVAS="true"\
-    XPACK_LOGS="true"\
-    XPACK_INFRA="true"\
-    XPACK_ML="true"\
-    XPACK_DEVTOOLS="true"\
-    XPACK_MONITORING="true"\
-    XPACK_APM="true"
+    ADMIN_PRIVILEGES=""
+
+ARG XPACK_CANVAS="true"
+ARG XPACK_LOGS="true"
+ARG XPACK_INFRA="true"
+ARG XPACK_ML="true"
+ARG XPACK_DEVTOOLS="true"
+ARG XPACK_MONITORING="true"
+ARG XPACK_APM="true"
 
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
@@ -61,5 +62,8 @@ COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 
 RUN chmod +x ./xpack_config.sh
 
-ENTRYPOINT /entrypoint.sh
+RUN ./xpack_config.sh
 
+RUN /usr/local/bin/kibana-docker --optimize
+
+ENTRYPOINT /entrypoint.sh
