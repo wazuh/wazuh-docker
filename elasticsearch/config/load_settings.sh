@@ -9,6 +9,13 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
+if [ "x${WAZUH_API_URL}" = "x" ]; then
+  wazuh_url="https://wazuh"
+else
+  wazuh_url="${WAZUH_API_URL}"
+fi
+
+
 until curl -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping"
   sleep 5
@@ -35,7 +42,7 @@ if [ "x$CONFIG_CODE" = "x404" ]; then
   {
     "api_user": "'"$API_USER_Q"'",
     "api_password": "'"$API_PASSWORD"'",
-    "url": "https://wazuh",
+    "url": "'"$wazuh_url"'",
     "api_port": "55000",
     "insecure": "true",
     "component": "API",
