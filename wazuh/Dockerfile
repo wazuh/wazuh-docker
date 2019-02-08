@@ -1,24 +1,28 @@
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.4
-ARG WAZUH_VERSION=3.8.0-1
-
+ARG WAZUH_VERSION=3.8.2-1
+ENV API_USER="foo" \
+    API_PASS="bar"
+    
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
    curl --silent --location https://deb.nodesource.com/setup_8.x | bash - && \
    echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
-   groupadd -g 1000 ossec && useradd -u 1000 -g 1000 ossec
-
+   groupadd -g 1000 ossec && useradd -u 1000 -g 1000 -d /var/ossec ossec && \
+   add-apt-repository universe
+   
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && apt-get --no-install-recommends --no-install-suggests -y install openssl postfix bsd-mailx python-boto python-pip  \
    apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} \
-   wazuh-api=${WAZUH_VERSION} && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+   wazuh-api=${WAZUH_VERSION} mailutils libsasl2-modules && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Adding first run script and entrypoint
-COPY config/data_dirs.env /data_dirs.env
-COPY config/init.bash /init.bash
-COPY config/entrypoint.sh /entrypoint.sh
+ADD config/data_dirs.env /data_dirs.env
+ADD config/init.bash /init.bash
+ADD config/entrypoint.sh /entrypoint.sh
+
 
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 RUN chmod 755 /init.bash && \
@@ -33,6 +37,7 @@ RUN chmod 755 /init.bash && \
 VOLUME ["/var/ossec/data"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
+VOLUME ["/var/lib/filebeat"]
 
 # Services ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp

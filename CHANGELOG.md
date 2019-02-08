@@ -1,7 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Wazuh Docker v3.9.0_6.5.4
+## Wazuh Docker v3.8.2_6.5.4
+
+### Changed
+
+- Update to Wazuh version 3.8.2. ([#105](https://github.com/wazuh/wazuh-docker/pull/105))
+
+## Wazuh Docker v3.8.1_6.5.4
+
+### Changed
+- Update to Wazuh version 3.8.1. ([#102](https://github.com/wazuh/wazuh-docker/pull/102))
 
 ## Wazuh Docker v3.8.0_6.5.4
 
@@ -17,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Improvements to Kibana settings added. ([#91](https://github.com/wazuh/wazuh-docker/pull/91))
 - Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
 
 ### Changed
