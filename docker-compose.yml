@@ -11,30 +11,16 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-#      - "1516:1516"
-    networks:
-        - docker_elk
-#    volumes:
-#      - my-path:/var/ossec/data:Z
-#      - my-path:/etc/postfix:Z
-#      - my-path:/etc/filebeat
-#      - my_path:/var/lib/filebeat
-#      - my-custom-config-path/ossec.conf:/wazuh-config-mount/etc/ossec.conf
-#   command: ["echo 'hello world'"]
     depends_on:
       - logstash
   logstash:
     image: wazuh/wazuh-logstash:3.8.2_6.5.4
     hostname: logstash
     restart: always
-#    volumes:
-#      - my-path:/etc/logstash/conf.d:Z
     links:
       - elasticsearch:elasticsearch
     ports:
       - "5000:5000"
-    networks:
-      - docker_elk
     depends_on:
       - elasticsearch
     environment:
@@ -45,7 +31,6 @@ services:
     restart: always
     ports:
       - "9200:9200"
-#      - "9300:9300"
     environment:
       - node.name=node-1
       - cluster.name=wazuh
@@ -57,20 +42,10 @@ services:
         soft: -1
         hard: -1
     mem_limit: 2g
-#    volumes:
-#      - my-path:/usr/share/elasticsearch/data:Z
-    networks:
-        - docker_elk
   kibana:
     image: wazuh/wazuh-kibana:3.8.2_6.5.4
     hostname: kibana
     restart: always
-#    ports:
-#      - "5601:5601"
-#    environment:
-#      - ELASTICSEARCH_URL=http://elasticsearch:9200
-    networks:
-      - docker_elk
     depends_on:
       - elasticsearch
     links:
@@ -85,18 +60,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-#    volumes:
-#      - my-path:/etc/nginx/conf.d:Z
-    networks:
-      - docker_elk
     depends_on:
       - kibana
     links:
       - kibana:kibana
-
-networks:
-  docker_elk:
-    driver: bridge
-    ipam:
-      config:
-      - subnet: 172.25.0.0/24
