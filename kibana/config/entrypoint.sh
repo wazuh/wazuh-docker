@@ -9,7 +9,13 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
-until curl -XGET $el_url; do
+if [ "x${ELASTICSEARCH_USERNAME}" = "x"]; then
+  auth=""
+else
+  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+fi
+
+until curl -XGET $el_url ${auth}; do
   >&2 echo "Elastic is unavailable - sleeping"
   sleep 5
 done
