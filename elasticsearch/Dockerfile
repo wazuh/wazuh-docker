@@ -21,5 +21,7 @@ COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
 
 RUN chmod +x ./load_settings.sh
 
+RUN elasticsearch-plugin install --batch repository-s3
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
