@@ -3,16 +3,20 @@ FROM phusion/baseimage:latest
 ARG FILEBEAT_VERSION=6.5.4
 ARG WAZUH_VERSION=3.8.2-1
 
+ENV API_USER="foo" \
+    API_PASS="bar"
+
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
    curl --silent --location https://deb.nodesource.com/setup_8.x | bash - && \
    echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
-   groupadd -g 1000 ossec && useradd -u 1000 -g 1000 ossec
+   groupadd -g 1000 ossec && useradd -u 1000 -g 1000 -d /var/ossec ossec
 
-RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && apt-get --no-install-recommends --no-install-suggests -y install openssl postfix bsd-mailx python-boto python-pip  \
-   apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} \
+RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
+   apt-get --no-install-recommends --no-install-suggests -y install openssl postfix bsd-mailx python-boto python-pip  \
+   apt-transport-https vim expect nodejs python-cryptography mailutils libsasl2-modules wazuh-manager=${WAZUH_VERSION} \
    wazuh-api=${WAZUH_VERSION} && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Adding first run script and entrypoint
@@ -26,8 +30,10 @@ RUN chmod 755 /init.bash && \
     sync && rm /init.bash && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
-    chmod go-w /etc/filebeat/filebeat.yml && \
     chmod 755 /entrypoint.sh
+
+COPY config/filebeat.yml /etc/filebeat/
+RUN chmod go-w /etc/filebeat/filebeat.yml 
 
 # Setting volumes
 VOLUME ["/var/ossec/data"]
@@ -56,3 +62,4 @@ RUN chmod +x /etc/service/wazuh-api/run && \
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
+
