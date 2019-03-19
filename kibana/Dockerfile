@@ -49,6 +49,7 @@ ARG XPACK_DEVTOOLS="true"
 ARG XPACK_MONITORING="true"
 ARG XPACK_APM="true"
 
+ARG CHANGE_WELLCOME="false"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
@@ -65,5 +66,11 @@ RUN chmod +x ./xpack_config.sh
 RUN ./xpack_config.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
+
+COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
+
+RUN chmod +x ./welcome_wazuh.sh
+
+RUN ./welcome_wazuh.sh
 
 ENTRYPOINT /entrypoint.sh
