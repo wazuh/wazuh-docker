@@ -65,12 +65,14 @@ RUN chmod +x ./xpack_config.sh
 
 RUN ./xpack_config.sh
 
-RUN /usr/local/bin/kibana-docker --optimize
+RUN rm -rf ./optimize/bundles
 
 COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 
 RUN chmod +x ./welcome_wazuh.sh
 
 RUN ./welcome_wazuh.sh
+
+RUN /usr/local/bin/kibana-docker --optimize
 
 ENTRYPOINT /entrypoint.sh
