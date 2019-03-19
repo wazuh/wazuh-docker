@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $CHANGE_WELLCOME == "true" ]]
+if [[ $CHANGE_WELCOME == "true" ]]
 then
 
     kibana_path="/usr/share/kibana"

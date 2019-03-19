@@ -49,7 +49,7 @@ ARG XPACK_DEVTOOLS="true"
 ARG XPACK_MONITORING="true"
 ARG XPACK_APM="true"
 
-ARG CHANGE_WELLCOME="false"
+ARG CHANGE_WELCOME="false"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
