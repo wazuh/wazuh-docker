@@ -17,7 +17,7 @@ then
 
     # Redirect Kibana welcome screen to Discover
     echo "Hide undesired links"
-    sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/rollup/public/crud_app/index.js
-    sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/license_management/public/management_section.js
+    sed -i 's#visible: true#visible: false#g' $kibana_path/node_modules/x-pack/plugins/rollup/public/crud_app/index.js
+    sed -i 's#visible: true#visible: false#g' $kibana_path/node_modules/x-pack/plugins/license_management/public/management_section.js
 fi
 
