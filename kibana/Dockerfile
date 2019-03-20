@@ -65,8 +65,6 @@ RUN chmod +x ./xpack_config.sh
 
 RUN ./xpack_config.sh
 
-RUN rm -rf ./optimize/bundles
-
 COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 
 RUN chmod +x ./welcome_wazuh.sh
