@@ -3,6 +3,10 @@
 
 set -e
 
+##############################################################################
+# Waiting for elasticsearch
+##############################################################################
+
 if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
   el_url="http://elasticsearch:9200"
 else
@@ -17,6 +21,23 @@ done
 sleep 10
 
 >&2 echo "Elasticsearch is up."
+
+
+##############################################################################
+# Waiting for wazuh alerts template
+##############################################################################
+
+strlen=0
+
+while [[ $strlen -eq 0 ]]
+do
+  template=$(curl $el_url:9200/_cat/templates/wazuh -s)
+  strlen=${#template}
+done
+
+sleep 10
+
+>&2 echo "Wazuh alerts template is load."
 
 
 ./wazuh_app_config.sh

@@ -27,10 +27,27 @@ sleep 10
 >&2 echo "Elasticsearch is up."
 
 ##############################################################################
+# Waiting for wazuh alerts template
+##############################################################################
+
+strlen=0
+
+while [[ $strlen -eq 0 ]]
+do
+  template=$(curl $el_url:9200/_cat/templates/wazuh -s)
+  strlen=${#template}
+done
+
+sleep 10
+
+>&2 echo "Wazuh alerts template is load."
+
+##############################################################################
 # Customize logstash output ip
 ##############################################################################
+
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
-  echo "Customize Logstash ouput ip."
+  >&2 echo "Customize Logstash ouput ip."
   sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/config/logstash.yml 
 fi
