@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.8.2_6.5.4
+
+### Added
+
+- Add Wazuh-Elasticsearch. ([#106](https://github.com/wazuh/wazuh-docker/pull/106))
+- Store Filebeat _/var/lib/filebeat/registry._ ([#109](https://github.com/wazuh/wazuh-docker/pull/109))
+- Adding the option to disable some xpack features. ([#111](https://github.com/wazuh/wazuh-docker/pull/111))
+- Wazuh-Kibana customizable at plugin level. ([#117](https://github.com/wazuh/wazuh-docker/pull/117))
+- Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
+
+### Changed
+
+- Update to Wazuh version 3.8.2. ([#105](https://github.com/wazuh/wazuh-docker/pull/105))
+
+## Wazuh Docker v3.8.1_6.5.4
+
+### Changed
+- Update to Wazuh version 3.8.1. ([#102](https://github.com/wazuh/wazuh-docker/pull/102))
+
 ## Wazuh Docker v3.8.0_6.5.4
 
 ### Changed
@@ -15,6 +34,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Improvements to Kibana settings added. ([#91](https://github.com/wazuh/wazuh-docker/pull/91))
 - Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
 
 ### Changed

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 #
 # OSSEC container bootstrap. See the README for information of the environment
@@ -128,5 +128,29 @@ do
   echo "Executing command \`${CUSTOM_COMMAND}\`"
   exec_cmd_stdout "${CUSTOM_COMMAND}"
 done
+
+##############################################################################
+# Change Wazuh API user credentials.
+##############################################################################
+
+pushd /var/ossec/api/configuration/auth/
+
+echo "Change Wazuh API user credentials"
+change_user="node htpasswd -b -c user $API_USER $API_PASS"
+eval $change_user
+
+popd
+
+
+##############################################################################
+# Customize filebeat output ip
+##############################################################################
+if [ "$FILEBEAT_OUTPUT" != "" ]; then
+  sed -i "s/logstash:5000/$FILEBEAT_OUTPUT:5000/" /etc/filebeat/filebeat.yml
+fi
+
+##############################################################################
+# Start Wazuh Server.
+##############################################################################
 
 /sbin/my_init 
