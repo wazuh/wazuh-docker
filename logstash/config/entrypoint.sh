@@ -34,7 +34,7 @@ strlen=0
 
 while [[ $strlen -eq 0 ]]
 do
-  template=$(curl $el_url:9200/_cat/templates/wazuh -s)
+  template=$(curl $el_url/_cat/templates/wazuh -s)
   strlen=${#template}
   >&2 echo "Wazuh alerts template not loaded - sleeping."
   sleep 2
