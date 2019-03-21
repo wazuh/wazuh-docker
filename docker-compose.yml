@@ -81,6 +81,8 @@ services:
     restart: always
     environment:
       - NGINX_PORT=443
+      - NGINX_USER
+      - NGINX_PWD
     ports:
       - "80:80"
       - "443:443"
