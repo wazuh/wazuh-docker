@@ -12,13 +12,32 @@ else
   echo "SSL certificates already present"
 fi
 
-# Configuring default credentiales.
+# Setting users credentials.
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
-  echo "Setting Nginx credentials"
-  echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
+  if [ ! -z "$NGINX_NAME" ]; then
+    IFS=', ' read -r -a users <<< "$NGINX_NAME"
+    IFS=', ' read -r -a pass <<< "$NGINX_PWD"
+
+    if [ ${#users[@]} -eq ${#pass[@]} ]; then
+      echo "Setting users credentials"
+      for index in "${!users[@]}"
+      do
+        if [ $index -eq 0 ]; then
+          echo ${pass[index]}|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd ${users[index]} >/dev/null
+        else
+          echo ${pass[index]}|htpasswd -i /etc/nginx/conf.d/kibana.htpasswd  ${users[index]} >/dev/null     
+        fi
+      done
+    else
+      echo "Number of users in NGINX_NAME and passwords in NGINX_PWD doesn't match." 
+    fi
+  else
+    echo "bar"|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd foo >/dev/null
+  fi
 else
   echo "Kibana credentials already configured"
 fi
+
 
 
 if [ "x${NGINX_PORT}" = "x" ]; then
