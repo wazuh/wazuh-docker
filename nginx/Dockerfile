@@ -13,7 +13,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME ["/etc/nginx/conf.d"]
 
-ENV NGINX_USER="foo" \
+ENV NGINX_NAME="foo" \
     NGINX_PWD="bar"
 
 ENTRYPOINT /entrypoint.sh
