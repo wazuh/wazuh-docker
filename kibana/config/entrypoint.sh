@@ -10,11 +10,13 @@ else
 fi
 
 until curl -XGET $el_url; do
-  >&2 echo "Elastic is unavailable - sleeping"
+  >&2 echo "Elastic is unavailable - sleeping."
   sleep 5
 done
 
->&2 echo "Elastic is up - executing command"
+sleep 10
+
+>&2 echo "Elasticsearch is up."
 
 
 ./wazuh_app_config.sh
