@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Adding the option to disable some xpack features. ([#111](https://github.com/wazuh/wazuh-docker/pull/111))
 - Wazuh-Kibana customizable at plugin level. ([#117](https://github.com/wazuh/wazuh-docker/pull/117))
 - Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
+- Welcome screen management. ([#133](https://github.com/wazuh/wazuh-docker/pull/133))
 
 ### Changed
 
