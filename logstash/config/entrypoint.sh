@@ -36,11 +36,12 @@ while [[ $strlen -eq 0 ]]
 do
   template=$(curl $el_url:9200/_cat/templates/wazuh -s)
   strlen=${#template}
+  >&2 echo "Wazuh alerts template not loaded - sleeping."
 done
 
 sleep 10
 
->&2 echo "Wazuh alerts template is load."
+>&2 echo "Wazuh alerts template is loaded."
 
 ##############################################################################
 # Customize logstash output ip
