@@ -9,7 +9,7 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
-if [ "x${ELASTICSEARCH_USERNAME}" = "x"]; then
+if [ "x${ELASTICSEARCH_USERNAME}" = "x" ]; then
   auth=""
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"

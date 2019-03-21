@@ -15,7 +15,7 @@ else
   wazuh_url="${WAZUH_API_URL}"
 fi
 
-if [ "x${ELASTICSEARCH_USERNAME}" = "x"]; then
+if [ "x${ELASTICSEARCH_USERNAME}" = "x" ]; then
   auth=""
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
