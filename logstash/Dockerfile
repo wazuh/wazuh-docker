@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM docker.elastic.co/logstash/logstash:6.5.4
 
-COPY config/entrypoint.sh /entrypoint.sh
+COPY --chown=logstash:logstash config/entrypoint.sh /entrypoint.sh
 
 RUN chmod 755 /entrypoint.sh
 
