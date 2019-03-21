@@ -18,7 +18,7 @@ until curl -XGET $el_url; do
   sleep 5
 done
 
-sleep 10
+sleep 2
 
 >&2 echo "Elasticsearch is up."
 
@@ -34,9 +34,10 @@ do
   template=$(curl $el_url:9200/_cat/templates/wazuh -s)
   strlen=${#template}
   >&2 echo "Wazuh alerts template not loaded - sleeping."
+  sleep 2
 done
 
-sleep 10
+sleep 2
 
 >&2 echo "Wazuh alerts template is loaded."
 
