@@ -1,7 +1,6 @@
 #!/bin/bash
 # Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
 
-
 set -e
 
 # Generating certificates.
@@ -15,30 +14,24 @@ fi
 
 # Setting users credentials.
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
-  if [ ! -z "$NGINX_NAME" ]; then
-    IFS=', ' read -r -a users <<< "$NGINX_NAME"
-    IFS=', ' read -r -a pass <<< "$NGINX_PWD"
-
-    if [ ${#users[@]} -eq ${#pass[@]} ]; then
-      echo "Setting users credentials"
-      for index in "${!users[@]}"
-      do
-        if [ $index -eq 0 ]; then
-          echo ${pass[index]}|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd ${users[index]} >/dev/null
-        else
-          echo ${pass[index]}|htpasswd -i /etc/nginx/conf.d/kibana.htpasswd  ${users[index]} >/dev/null     
-        fi
-      done
-    else
-      echo "Number of users in NGINX_NAME and passwords in NGINX_PWD doesn't match." 
-    fi
+  echo "Setting users credentials"
+  if [ ! -z "$NGINX_CREDENTIALS" ]; then
+    IFS=';' read -r -a users <<< "$NGINX_CREDENTIALS"
+    for index in "${!users[@]}"
+    do
+      IFS=':' read -r -a credentials <<< "${users[index]}"
+      if [ $index -eq 0 ]; then
+        echo ${credentials[1]}|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd ${credentials[0]} >/dev/null
+      else
+        echo ${credentials[1]}|htpasswd -i /etc/nginx/conf.d/kibana.htpasswd  ${credentials[0]} >/dev/null
+      fi
+    done
   else
-    echo "bar"|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd foo >/dev/null
+    echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
   fi
 else
   echo "Kibana credentials already configured"
 fi
-
 
 if [ "x${NGINX_PORT}" = "x" ]; then
   NGINX_PORT=443
