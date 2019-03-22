@@ -60,6 +60,9 @@ RUN chmod +x /etc/service/wazuh-api/run && \
     chmod +x /etc/service/postfix/run && \
     chmod +x /etc/service/filebeat/run 
 
+RUN echo -n > /var/ossec/logs/alerts/alerts.json
+RUN echo -n > /var/ossec/logs/alerts/alerts.log
+
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
 
