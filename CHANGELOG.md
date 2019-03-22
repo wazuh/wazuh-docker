@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 - Wazuh-Kibana customizable at plugin level. ([#117](https://github.com/wazuh/wazuh-docker/pull/117))
 - Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
 - New Logstash entrypoint added. ([#135](https://github.com/wazuh/wazuh-docker/pull/135/files))
+- Welcome screen management. ([#133](https://github.com/wazuh/wazuh-docker/pull/133))
+
 
 ### Changed
 
