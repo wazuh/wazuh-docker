@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
 - New Logstash entrypoint added. ([#135](https://github.com/wazuh/wazuh-docker/pull/135/files))
 - Welcome screen management. ([#133](https://github.com/wazuh/wazuh-docker/pull/133))
+- Remove alerts created in build time. ([#137](https://github.com/wazuh/wazuh-docker/pull/137))
 
 
 ### Changed
