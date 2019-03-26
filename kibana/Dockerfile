@@ -1,4 +1,4 @@
-# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM docker.elastic.co/kibana/kibana:6.5.4
 ARG WAZUH_APP_VERSION=3.8.2_6.5.4
 USER root
@@ -49,6 +49,7 @@ ARG XPACK_DEVTOOLS="true"
 ARG XPACK_MONITORING="true"
 ARG XPACK_APM="true"
 
+ARG CHANGE_WELCOME="false"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
@@ -63,6 +64,12 @@ COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 RUN chmod +x ./xpack_config.sh
 
 RUN ./xpack_config.sh
+
+COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
+
+RUN chmod +x ./welcome_wazuh.sh
+
+RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
 

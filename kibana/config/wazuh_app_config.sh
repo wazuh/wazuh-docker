@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2018 Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 kibana_config_file="/usr/share/kibana/plugins/wazuh/config.yml"
 
