@@ -13,6 +13,15 @@ else
 fi
 
 # Setting users credentials.
+# In order to set NGINX_CREDENTIALS, before "docker-compose up -d" run (a or b):
+#
+# a) export NGINX_CREDENTIALS="user1:pass1;user2:pass2;" or
+#    export NGINX_CREDENTIALS="user1:pass1;user2:pass2"
+#
+# b) Set NGINX_CREDENTIALS in docker-compose.yml:
+#    NGINX_CREDENTIALS=user1:pass1;user2:pass2; or
+#    NGINX_CREDENTIALS=user1:pass1;user2:pass2
+#
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
   echo "Setting users credentials"
   if [ ! -z "$NGINX_CREDENTIALS" ]; then
@@ -27,6 +36,7 @@ if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
       fi
     done
   else
+    # NGINX_PWD and NGINX_NAME are declared in nginx/Dockerfile 
     echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
   fi
 else
