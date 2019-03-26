@@ -24,7 +24,7 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - LS_HEAP_SIZE=2048m
+      - "LS_JAVA_OPTS=-Xms2g -Xmx2g"
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.8.2_6.5.4
     hostname: elasticsearch
