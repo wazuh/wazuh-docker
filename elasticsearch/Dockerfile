@@ -9,6 +9,8 @@ ENV API_USER="foo" \
 
 ENV XPACK_ML="true" 
 
+ENV ENABLE_CONFIGURE_S3="false"
+
 ENV TEMPLATE_VERSION=v3.8.2
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
@@ -22,6 +24,9 @@ COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
 RUN chmod +x ./load_settings.sh
 
 RUN elasticsearch-plugin install --batch repository-s3
+
+COPY config/configure_s3.sh ./config/configure_s3.sh
+RUN chmod 755 ./config/configure_s3.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
