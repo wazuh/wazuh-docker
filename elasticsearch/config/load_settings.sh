@@ -24,7 +24,7 @@ done
 >&2 echo "Elastic is up - executing command"
 
 if [ $ENABLE_CONFIGURE_S3 ]; then
-
+  #Wait for Elasticsearch to be ready to create the repository
   sleep 10
   IP_PORT="${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 
