@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 set -e
@@ -12,14 +12,36 @@ else
   echo "SSL certificates already present"
 fi
 
-# Configuring default credentiales.
+# Setting users credentials.
+# In order to set NGINX_CREDENTIALS, before "docker-compose up -d" run (a or b):
+#
+# a) export NGINX_CREDENTIALS="user1:pass1;user2:pass2;" or
+#    export NGINX_CREDENTIALS="user1:pass1;user2:pass2"
+#
+# b) Set NGINX_CREDENTIALS in docker-compose.yml:
+#    NGINX_CREDENTIALS=user1:pass1;user2:pass2; or
+#    NGINX_CREDENTIALS=user1:pass1;user2:pass2
+#
 if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
-  echo "Setting Nginx credentials"
-  echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
+  echo "Setting users credentials"
+  if [ ! -z "$NGINX_CREDENTIALS" ]; then
+    IFS=';' read -r -a users <<< "$NGINX_CREDENTIALS"
+    for index in "${!users[@]}"
+    do
+      IFS=':' read -r -a credentials <<< "${users[index]}"
+      if [ $index -eq 0 ]; then
+        echo ${credentials[1]}|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd ${credentials[0]} >/dev/null
+      else
+        echo ${credentials[1]}|htpasswd -i /etc/nginx/conf.d/kibana.htpasswd  ${credentials[0]} >/dev/null
+      fi
+    done
+  else
+    # NGINX_PWD and NGINX_NAME are declared in nginx/Dockerfile 
+    echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
+  fi
 else
   echo "Kibana credentials already configured"
 fi
-
 
 if [ "x${NGINX_PORT}" = "x" ]; then
   NGINX_PORT=443
