@@ -2,7 +2,9 @@
 
 set -e
 
-# Check arguments
+# Check number of arguments passed to configure_s3.sh. If it is different from 4 or 5, the process will finish with error.
+# param 1: number of arguments passed to configure_s3.sh
+
 function CheckArgs()
 {
     if [ $1 != 4 ] && [ $1 != 5 ];then
@@ -13,8 +15,15 @@ function CheckArgs()
     fi
 }
 
-# Create repository from base_path <path>/<elasticsearch_major_version> (if there is no <Elasticsearch major version> argument, current version is added)
+# Create S3 repository from base_path <path>/<elasticsearch_major_version> (if there is no <Elasticsearch major version> argument, current version is added)
 # Repository name would be <RepositoryName>-<elasticsearch_major_version> (if there is no <Elasticsearch major version> argument, current version is added)
+# param 1: <Elastic_Server_IP:Port>
+# param 2: <Bucket>
+# param 3: <Path>
+# param 4: <RepositoryName>
+# param 5: Optional <Elasticsearch major version>
+# output: It will show "acknowledged" if the repository has been successfully created
+
 function CreateRepo()
 {
 
@@ -49,6 +58,13 @@ function CreateRepo()
 
 }
 
+# Run functions CheckArgs and CreateRepo
+# param 1: number of arguments passed to configure_s3.sh
+# param 2: <Elastic_Server_IP:Port>
+# param 3: <Bucket>
+# param 4: <Path>
+# param 5: <RepositoryName>
+# param 6: Optional <Elasticsearch major version>
 
 function Main()
 {
