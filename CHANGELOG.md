@@ -10,10 +10,17 @@ All notable changes to this project will be documented in this file.
 - Adding the option to disable some xpack features. ([#111](https://github.com/wazuh/wazuh-docker/pull/111))
 - Wazuh-Kibana customizable at plugin level. ([#117](https://github.com/wazuh/wazuh-docker/pull/117))
 - Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
+- New Logstash entrypoint added. ([#135](https://github.com/wazuh/wazuh-docker/pull/135/files))
+- Welcome screen management. ([#133](https://github.com/wazuh/wazuh-docker/pull/133))
 
 ### Changed
 
 - Update to Wazuh version 3.8.2. ([#105](https://github.com/wazuh/wazuh-docker/pull/105))
+
+### Removed
+
+- Remove alerts created in build time. ([#137](https://github.com/wazuh/wazuh-docker/pull/137))
+
 
 ## Wazuh Docker v3.8.1_6.5.4
 
