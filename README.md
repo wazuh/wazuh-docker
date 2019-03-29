@@ -61,7 +61,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 * `stable` branch on correspond to the latest Wazuh-Docker stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `Wazuh.Version_ElasticStack.Version` (for example 3.7.0_6.4.3) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
+* `Wazuh.Version_ElasticStack.Version` (for example 3.8.2_6.6.1) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
 
 ## Credits and Thank you
 
