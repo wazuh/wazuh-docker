@@ -1,5 +1,5 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.6.2
 
 ENV ALERTS_SHARDS="1" \
     ALERTS_REPLICAS="0"
