@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 - Update Elastic Stack version to 6.6.2. ([#130](https://github.com/wazuh/wazuh-docker/pull/130))
 
-## Wazuh Docker v3.8.2_6.6.2
+## Wazuh Docker v3.8.2_6.6.1
 
 ### Changed
 
