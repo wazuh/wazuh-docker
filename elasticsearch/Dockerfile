@@ -13,6 +13,16 @@ ENV ENABLE_CONFIGURE_S3="false"
 
 ENV TEMPLATE_VERSION=v3.8.2
 
+ENV ELASTIC_CLUSTER="false" \
+    CLUSTER_NAME="wazuh" \
+    NODE_MASTER="true" \
+    NODE_DATA="true" \
+    NODE_INGEST="true" \
+    NODE_NAME="wazuh-elasticsearch" \
+    MEMORY_LOCK="true" \
+    DISCOVERY_SERVICE="wazuh-elasticsearch" \
+    NUMBER_OF_MASTERS="2"
+
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh
@@ -27,6 +37,9 @@ RUN elasticsearch-plugin install --batch repository-s3
 
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh
+
+COPY --chown=elasticsearch:elasticsearch ./config/config_cluster.sh ./
+RUN chmod +x ./config_cluster.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
