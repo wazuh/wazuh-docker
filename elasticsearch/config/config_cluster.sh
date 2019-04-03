@@ -6,8 +6,9 @@ elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 if [[ $ELASTIC_CLUSTER == "true" ]]
 then
   
-  sed -i "s/cluster.name: \"docker-cluster\"/cluster.name: \"${CLUSTER_NAME}\":g" $elastic_config_file
-  sed -i "s/discovery:zen:minimum_master_nodes: 1/discovery:zen:minimum_master_nodes: ${NUMBER_OF_MASTERS}/g" $elastic_config_file
+  sed -i 's:cluster.name\: "docker-cluster":cluster.name\: "'$CLUSTER_NAME'":g' $elastic_config_file
+  sed -i 's:discovery:zen:minimum_master_nodes: 1:discovery:zen:minimum_master_nodes: '$NUMBER_OF_MASTERS':g' $elastic_config_file
+
 
   echo "
 #cluster node
