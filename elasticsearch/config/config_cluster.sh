@@ -26,7 +26,5 @@ discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
   
-index.unassigned.node_left.delayed_timeout: ${DELAYED_TIMEOUT}
-
 " >> $elastic_config_file
 fi

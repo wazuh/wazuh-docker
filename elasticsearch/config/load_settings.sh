@@ -94,5 +94,13 @@ curl -XPUT "$el_url/_cluster/settings" -H 'Content-Type: application/json' -d'
 }
 '
 
+curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index.unassigned.node_left.delayed_timeout": "'"$DELAYED_TIMEOUT"'"
+  }
+}
+'
+
 
 echo "Elasticsearch is ready."

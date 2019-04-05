@@ -23,7 +23,7 @@ ENV ELASTIC_CLUSTER="false" \
     DISCOVERY_SERVICE="wazuh-elasticsearch" \
     NUMBER_OF_MASTERS="2" \
     MAX_NODES="1" \
-    DELAYED_TIMEOUT="1"
+    DELAYED_TIMEOUT="1m"
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
 
