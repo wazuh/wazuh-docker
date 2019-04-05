@@ -17,6 +17,7 @@ node:
   data: ${NODE_DATA}
   ingest: ${NODE_INGEST}
   name: ${NODE_NAME}
+  max_local_storage_nodes: ${MAX_NODES}
 
 bootstrap:
   memory_lock: ${MEMORY_LOCK}
@@ -24,6 +25,9 @@ bootstrap:
 discovery:
   zen:
     ping.unicast.hosts: ${DISCOVERY_SERVICE}
+  
+index:
+  unassigned.node_left.delayed_timeout: ${DELAYED_TIMEOUT}
 
 " >> $elastic_config_file
 fi
