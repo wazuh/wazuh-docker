@@ -3,11 +3,7 @@
 
 set -e
 
-if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
-  el_url="http://elasticsearch:9200"
-else
-  el_url="${ELASTICSEARCH_URL}"
-fi
+el_url=${ELASTICSEARCH_URL}
 
 if [ "x${WAZUH_API_URL}" = "x" ]; then
   wazuh_url="https://wazuh"
