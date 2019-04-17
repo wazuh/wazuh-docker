@@ -3,7 +3,7 @@
 
 # It will run every .sh script located in entrypoint-scripts folder in lexicographical order
 for script in `ls /entrypoint-scripts/*.sh | sort -n`; do
-  bash "$script" -H
+  bash "$script"
 
 done
 
