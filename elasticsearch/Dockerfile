@@ -15,17 +15,19 @@ ENV ENABLE_CONFIGURE_S3="false"
 
 ENV TEMPLATE_VERSION=v3.8.2
 
+# Elasticearch cluster configuration environment variables
+# If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
 ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NAME="wazuh" \
-    NODE_MASTER="true" \
-    NODE_DATA="true" \
-    NODE_INGEST="true" \
-    NODE_NAME="wazuh-elasticsearch" \
-    MEMORY_LOCK="true" \
-    DISCOVERY_SERVICE="wazuh-elasticsearch" \
-    NUMBER_OF_MASTERS="2" \
-    MAX_NODES="1" \
-    DELAYED_TIMEOUT="1m"
+    CLUSTER_NODE_MASTER="true" \
+    CLUSTER_NODE_DATA="true" \
+    CLUSTER_NODE_INGEST="true" \
+    CLUSTER_NODE_NAME="wazuh-elasticsearch" \
+    CLUSTER_MEMORY_LOCK="true" \
+    CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch" \
+    CLUSTER_NUMBER_OF_MASTERS="2" \
+    CLUSTER_MAX_NODES="1" \
+    CLUSTER_DELAYED_TIMEOUT="1m"
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic6-template-alerts.json /usr/share/elasticsearch/config
 
