@@ -3,11 +3,7 @@
 
 set -e
 
-if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
-  el_url="http://elasticsearch:9200"
-else
-  el_url="${ELASTICSEARCH_URL}"
-fi
+el_url=${ELASTICSEARCH_URL}
 
 if [ "x${WAZUH_API_URL}" = "x" ]; then
   wazuh_url="https://wazuh"
@@ -90,6 +86,15 @@ curl -XPUT "$el_url/_cluster/settings" -H 'Content-Type: application/json' -d'
 {
   "persistent": {
     "xpack.monitoring.collection.enabled": true
+  }
+}
+'
+
+# Set cluster delayed timeout when node falls
+curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index.unassigned.node_left.delayed_timeout": "'"$CLUSTER_DELAYED_TIMEOUT"'"
   }
 }
 '
