@@ -23,7 +23,9 @@ RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg:
 # Adding first run script and entrypoint
 COPY config/data_dirs.env /data_dirs.env
 COPY config/init.bash /init.bash
+RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
+COPY config/00-wazuh.sh /entrypoint-scripts/00-wazuh.sh
 
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 RUN chmod 755 /init.bash && \
@@ -31,7 +33,8 @@ RUN chmod 755 /init.bash && \
     sync && rm /init.bash && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
-    chmod 755 /entrypoint.sh
+    chmod 755 /entrypoint.sh && \
+    chmod 755 /entrypoint-scripts/00-wazuh.sh 
 
 COPY config/filebeat.yml /etc/filebeat/
 RUN chmod go-w /etc/filebeat/filebeat.yml 

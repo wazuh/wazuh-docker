@@ -15,6 +15,8 @@ In this repository you will find the containers to run:
 
 In addition, a docker-compose file is provided to launch the containers mentioned above. 
 
+* Elasticsearch cluster. In the Elasticsearch Dockerfile we can visualize variables to configure an Elasticsearch Cluster. These variables are used in the file *config_cluster.sh* to set them in the *elasticsearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
+
 ## Documentation
 
 * [Wazuh full documentation](http://documentation.wazuh.com)
