@@ -8,8 +8,8 @@ set -e
 function CheckArgs()
 {
     if [ $1 != 4 ] && [ $1 != 5 ];then
-        echo "Use: configure_s3.sh <Elastic_Server_IP:Port> <Bucket> <Path> <RepositoryName> (By default <current_elasticsearch_major_version> is added to the path and the repository name)"
-        echo "or use: configure_s3.sh <Elastic_Server_IP:Port> <Bucket> <Path> <RepositoryName> <Elasticsearch major version>" 
+        echo "Use: configure_s3.sh <Elasticsearch_Url> <Bucket> <Path> <RepositoryName> (By default <current_elasticsearch_major_version> is added to the path and the repository name)"
+        echo "or use: configure_s3.sh <Elasticsearch_Url> <Bucket> <Path> <RepositoryName> <Elasticsearch major version>" 
         exit 1
 
     fi
@@ -17,10 +17,10 @@ function CheckArgs()
 
 # Create S3 repository from base_path <path>/<elasticsearch_major_version> (if there is no <Elasticsearch major version> argument, current version is added)
 # Repository name would be <RepositoryName>-<elasticsearch_major_version> (if there is no <Elasticsearch major version> argument, current version is added)
-# param 1: <Elastic_Server_IP:Port>
-# param 2: <Bucket>
-# param 3: <Path>
-# param 4: <RepositoryName>
+# param 1: <Elasticsearch_Url> : Elasticsearch Url. (e.g. elasticsearch:9200 or http://elasticsearch:9200)
+# param 2: <Bucket> : S3 bucket name
+# param 3: <Path> : "Base path" or "Base folder" where snapshots are uploaded
+# param 4: <RepositoryName> : S3 repository name 
 # param 5: Optional <Elasticsearch major version>
 # output: It will show "acknowledged" if the repository has been successfully created
 
