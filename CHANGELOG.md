@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.0_6.7.1
+
+### Added
+
+- Support for xPACK authorized requests ([@manuasir](https://github.com/manuasir)) ([#119](https://github.com/wazuh/wazuh-docker/pull/119))
+- Add Elasticsearch cluster configuration ([@SitoRBJ](https://github.com/SitoRBJ)). ([#146](https://github.com/wazuh/wazuh-docker/pull/146))
+- Add Elasticsearch cluster configuration ([@Phandora](https://github.com/Phandora)) ([#140](https://github.com/wazuh/wazuh-docker/pull/140))
+- Setting Nginx to support several user/passwords in Kibana ([@toniMR](https://github.com/toniMR)) ([#136](https://github.com/wazuh/wazuh-docker/pull/136))
+
+
+### Changed
+
+- Use LS_JAVA_OPTS instead of old LS_HEAP_SIZE ([@ruffy91](https://github.com/ruffy91)) ([#139](https://github.com/wazuh/wazuh-docker/pull/139))
+- Changing the original Wazuh docker image to allow adding code in the entrypoint ([@Phandora](https://github.com/phandora)) ([#151](https://github.com/wazuh/wazuh-docker/pull/151))
+
+### Removed
+
+- Removing files from Wazuh image ([@Phandora](https://github.com/phandora)) ([#153](https://github.com/wazuh/wazuh-docker/pull/153))
+
 ## Wazuh Docker v3.8.2_6.7.0
 
 ### Changed
