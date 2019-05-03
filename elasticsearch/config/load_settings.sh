@@ -3,11 +3,7 @@
 
 set -e
 
-if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
-  el_url="http://elasticsearch:9200"
-else
-  el_url="${ELASTICSEARCH_URL}"
-fi
+el_url=${ELASTICSEARCH_URL}
 
 if [ "x${WAZUH_API_URL}" = "x" ]; then
   wazuh_url="https://wazuh"
@@ -15,8 +11,13 @@ else
   wazuh_url="${WAZUH_API_URL}"
 fi
 
+if [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+  auth=""
+else
+  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+fi
 
-until curl -XGET $el_url; do
+until curl ${auth} -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping"
   sleep 5
 done
@@ -46,7 +47,7 @@ fi
 
 sed -i 's|    "index.refresh_interval": "5s"|    "index.refresh_interval": "5s",    "number_of_shards" :   '"${ALERTS_SHARDS}"',    "number_of_replicas" : '"${ALERTS_REPLICAS}"'|' /usr/share/elasticsearch/config/wazuh-elastic6-template-alerts.json
 
-cat /usr/share/elasticsearch/config/wazuh-elastic6-template-alerts.json | curl -XPUT "$el_url/_template/wazuh" -H 'Content-Type: application/json' -d @-
+cat /usr/share/elasticsearch/config/wazuh-elastic6-template-alerts.json | curl -XPUT "$el_url/_template/wazuh" ${auth} -H 'Content-Type: application/json' -d @-
 sleep 5
 
 
@@ -55,9 +56,9 @@ API_USER_Q=`echo "$API_USER" | tr -d '"'`
 API_PASSWORD=`echo -n $API_PASS_Q | base64`
 
 echo "Setting API credentials into Wazuh APP"
-CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-configuration/1513629884013)
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-configuration/1513629884013 ${auth})
 if [ "x$CONFIG_CODE" = "x404" ]; then
-  curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 -H 'Content-Type: application/json' -d'
+  curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
   {
     "api_user": "'"$API_USER_Q"'",
     "api_password": "'"$API_PASSWORD"'",
@@ -86,10 +87,19 @@ else
 fi
 sleep 5
 
-curl -XPUT "$el_url/_cluster/settings" -H 'Content-Type: application/json' -d'
+curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/json' -d'
 {
   "persistent": {
     "xpack.monitoring.collection.enabled": true
+  }
+}
+'
+
+# Set cluster delayed timeout when node falls
+curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index.unassigned.node_left.delayed_timeout": "'"$CLUSTER_DELAYED_TIMEOUT"'"
   }
 }
 '
