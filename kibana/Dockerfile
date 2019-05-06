@@ -1,6 +1,6 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:6.5.4
-ARG WAZUH_APP_VERSION=3.8.2_6.5.4
+FROM docker.elastic.co/kibana/kibana:6.7.1
+ARG WAZUH_APP_VERSION=3.9.0_6.7.1
 USER root
 
 ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
