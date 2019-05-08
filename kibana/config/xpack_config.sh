@@ -12,6 +12,8 @@ then
     [xpack.logstash.enabled]=$XPACK_LOGS
     [xpack.infra.enabled]=$XPACK_INFRA
     [xpack.monitoring.enabled]=$XPACK_MONITORING
+    [xpack.maps.enabled]=$XPACK_MAPS
+    [xpack.uptime.enabled]=$XPACK_UPTIME
     [console.enabled]=$XPACK_DEVTOOLS
   )
   for i in "${!CONFIG_MAP[@]}"
@@ -31,6 +33,8 @@ xpack.canvas.enabled: $XPACK_CANVAS
 xpack.logstash.enabled: $XPACK_LOGS
 xpack.infra.enabled: $XPACK_INFRA
 xpack.monitoring.enabled: $XPACK_MONITORING
+xpack.maps.enabled: $XPACK_MAPS
+xpack.uptime.enabled: $XPACK_UPTIME
 console.enabled: $XPACK_DEVTOOLS
 " >> $kibana_config_file
 fi
