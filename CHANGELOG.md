@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.0_6.7.2
+
+### Changed
+
+- Update Elastic Stack version to 6.7.2.
+
 ## Wazuh Docker v3.9.0_6.7.1
 
 ### Added
