@@ -50,8 +50,8 @@ sleep 2
 
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
   >&2 echo "Customize Logstash ouput ip."
-  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/config/logstash.yml 
+  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT/" /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT/" /usr/share/logstash/config/logstash.yml 
 fi
 
 ##############################################################################
