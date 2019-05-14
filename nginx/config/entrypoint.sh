@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 set -e
 
