@@ -1,9 +1,7 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-#
 # Initialize the custom data directory layout
-#
 source /data_dirs.env
 
 cd /var/ossec
