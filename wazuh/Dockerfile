@@ -1,10 +1,12 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=6.7.2
+ARG FILEBEAT_VERSION=7.0.0
 ARG WAZUH_VERSION=3.9.0-1
 
 ENV API_USER="foo" \
-    API_PASS="bar"
+   API_PASS="bar"
+
+ENV TEMPLATE_VERSION="elastic-7-2"
 
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
@@ -31,12 +33,12 @@ COPY config/00-wazuh.sh /entrypoint-scripts/00-wazuh.sh
 
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 RUN chmod 755 /init.bash && \
-    sync && /init.bash && \
-    sync && rm /init.bash && \
-    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
-    dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
-    chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/00-wazuh.sh 
+   sync && /init.bash && \
+   sync && rm /init.bash && \
+   curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
+   dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
+   chmod 755 /entrypoint.sh && \
+   chmod 755 /entrypoint-scripts/00-wazuh.sh 
 
 COPY config/filebeat.yml /etc/filebeat/
 RUN chmod go-w /etc/filebeat/filebeat.yml 
@@ -52,9 +54,9 @@ EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
 
 # Adding services
 RUN mkdir /etc/service/wazuh && \
-    mkdir /etc/service/wazuh-api && \
-    mkdir /etc/service/postfix && \
-    mkdir /etc/service/filebeat
+   mkdir /etc/service/wazuh-api && \
+   mkdir /etc/service/postfix && \
+   mkdir /etc/service/filebeat
 
 COPY config/wazuh.runit.service /etc/service/wazuh/run
 COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
@@ -62,9 +64,12 @@ COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
 RUN chmod +x /etc/service/wazuh-api/run && \
-    chmod +x /etc/service/wazuh/run && \
-    chmod +x /etc/service/postfix/run && \
-    chmod +x /etc/service/filebeat/run 
+   chmod +x /etc/service/wazuh/run && \
+   chmod +x /etc/service/postfix/run && \
+   chmod +x /etc/service/filebeat/run 
+
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic7-template-alerts.json /etc/filebeat
+RUN chmod go-w /etc/filebeat/wazuh-elastic7-template-alerts.json 
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
