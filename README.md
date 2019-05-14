@@ -76,7 +76,7 @@ We thank you them and everyone else who has contributed to this project.
 
 ## License and copyright
 
-Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 ## Web references
 
