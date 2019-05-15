@@ -18,9 +18,8 @@ RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg:
    apt-get --no-install-recommends --no-install-suggests -y install openssl postfix bsd-mailx python-boto python-pip  \
    apt-transport-https vim expect nodejs python-cryptography mailutils libsasl2-modules wazuh-manager=${WAZUH_VERSION} \
    wazuh-api=${WAZUH_VERSION} && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && rm -f \
-   /var/ossec/logs/alerts/*/*/*.log && rm -f /var/ossec/logs/alerts/*/*/*.json && rm -f \
-   /var/ossec/logs/archives/*/*/*.log && rm -f /var/ossec/logs/archives/*/*/*.json && rm -f \
-   /var/ossec/logs/firewall/*/*/*.log && rm -f /var/ossec/logs/firewall/*/*/*.json
+   /var/ossec/logs/alerts/*/*/* && rm -f /var/ossec/logs/archives/*/*/* && rm -f /var/ossec/logs/firewall/*/*/* && rm -f \
+   /var/ossec/logs/api/*/*/* && rm -f /var/ossec/logs/cluster/*/*/* && rm -f /var/ossec/logs/ossec/*/*/*
 
 # Adding first run script and entrypoint
 COPY config/data_dirs.env /data_dirs.env
