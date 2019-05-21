@@ -3,9 +3,9 @@ FROM docker.elastic.co/kibana/kibana:6.8.0
 ARG WAZUH_APP_VERSION=3.9.1_6.8.0
 USER root
 
-ADD https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-3.9.1_6.8.0.zip /tmp
 
-RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
+RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.9.1_6.8.0.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
