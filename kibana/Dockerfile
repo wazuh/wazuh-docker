@@ -9,8 +9,8 @@ RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
-COPY config/entrypoint.sh /entrypoint.sh
-RUN chmod 755 /entrypoint.sh
+COPY config/entrypoint.sh ./entrypoint.sh
+RUN chmod 755 ./entrypoint.sh
 
 USER kibana
 
@@ -73,4 +73,4 @@ RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
 
-ENTRYPOINT /entrypoint.sh
+ENTRYPOINT ./entrypoint.sh
