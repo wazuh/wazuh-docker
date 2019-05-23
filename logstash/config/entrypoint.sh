@@ -17,6 +17,16 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
+
+if [ ${SETUP_PASSWORDS} != "no" ]; then
+  auth="-u elastic:${ELASTIC_PASS}"
+elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+  auth=""
+else
+  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+fi
+
+
 ##############################################################################
 # Customize logstash output ip
 ##############################################################################
@@ -27,7 +37,7 @@ if [ "$LOGSTASH_OUTPUT" != "" ]; then
   sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml 
 fi
 
-until curl -XGET $el_url; do
+until curl $auth -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping."
   sleep 5
 done
@@ -44,7 +54,7 @@ strlen=0
 
 while [[ $strlen -eq 0 ]]
 do
-  template=$(curl $el_url/_cat/templates/wazuh -s)
+  template=$(curl $auth $el_url/_cat/templates/wazuh -s)
   strlen=${#template}
   >&2 echo "Wazuh alerts template not loaded - sleeping."
   sleep 2

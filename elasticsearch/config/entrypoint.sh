@@ -45,6 +45,8 @@ fi
 
 ./config_cluster.sh
 
+./config_secure.sh
+
 ./load_settings.sh &
 
 # Execute elasticsearch

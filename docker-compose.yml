@@ -25,6 +25,8 @@ services:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
+      - SETUP_PASSWORDS=yes
+      - ELASTIC_PASS=jimmyRaynor
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
     hostname: elasticsearch
@@ -37,6 +39,14 @@ services:
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - SETUP_PASSWORDS=yes
+      - BOOTSTRAP_PASS=top-secret
+      - ELASTIC_PASS=jimmyRaynor
+      - KIBANA_PASS=zeratul
+      - LOGSTASH_PASS=Illydan
+      - APM_SYSTEM_PASS=kerrigan
+      - BEATS_SYSTEM_PASS=artanis
+      - REMOTE_USER_PASS=glorfindel
     ulimits:
       memlock:
         soft: -1
@@ -51,6 +61,10 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
+  environment:
+      - SETUP_PASSWORDS=yes
+      - ELASTIC_PASS=jimmyRaynor
+      - KIBANA_PASS=zeratul
   nginx:
     image: wazuh/wazuh-nginx:3.9.1_6.8.0
     hostname: nginx

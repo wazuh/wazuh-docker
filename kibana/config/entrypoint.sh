@@ -13,7 +13,10 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
-if [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+
+if [ ${SETUP_PASSWORDS} != "no" ]; then
+  auth="-u elastic:${ELASTIC_PASS}"
+elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
@@ -37,7 +40,7 @@ strlen=0
 
 while [[ $strlen -eq 0 ]]
 do
-  template=$(curl $el_url/_cat/templates/wazuh -s)
+  template=$(curl $auth $el_url/_cat/templates/wazuh -s)
   strlen=${#template}
   >&2 echo "Wazuh alerts template not loaded - sleeping."
   sleep 2
@@ -47,6 +50,17 @@ sleep 2
 
 >&2 echo "Wazuh alerts template is loaded."
 
+
+##############################################################################
+# If Secure access to Kibana is enabled, we must set the credentials. 
+##############################################################################
+
+sed -i 's:#elasticsearch.username\: "user":elasticsearch.username\: "kibana":' /usr/share/kibana/config/kibana.yml       
+sed -i 's:#elasticsearch.password\: "pass":elasticsearch.password\: "'$KIBANA_PASS'":' /usr/share/kibana/config/kibana.yml
+
+##############################################################################
+# Run more configuration scripts. 
+##############################################################################
 
 ./wazuh_app_config.sh
 
