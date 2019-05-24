@@ -117,7 +117,7 @@ curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/jso
 '
 
 # Set cluster delayed timeout when node falls
-curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
+curl -X PUT "$el_url/_all/_settings" ${auth} -H 'Content-Type: application/json' -d'
 {
   "settings": {
     "index.unassigned.node_left.delayed_timeout": "'"$CLUSTER_DELAYED_TIMEOUT"'"

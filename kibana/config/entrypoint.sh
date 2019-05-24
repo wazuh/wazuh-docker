@@ -61,8 +61,8 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
   echo "
 # Required set the passwords
 elasticsearch.username: \"kibana\"
-elasticsearch.password\: \"'$KIBANA_PASS'\"
-" >> $elastic_config_file
+elasticsearch.password: \"'$KIBANA_PASS'\"
+" >> /usr/share/kibana/config/kibana.yml
 
 fi
 
