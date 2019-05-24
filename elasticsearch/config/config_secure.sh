@@ -16,7 +16,5 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 xpack.security.enabled: true
 " >> $elastic_config_file
 
-  #printf ${BOOTSTRAP_PASS} | /usr/share/elasticsearch/bin/elasticsearch-keystore add "bootstrap.password"
-
 fi
 

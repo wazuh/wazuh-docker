@@ -40,7 +40,6 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - SETUP_PASSWORDS=yes
-      - BOOTSTRAP_PASS=top-secret
       - ELASTIC_PASSWORD=jimmyRaynor
       - KIBANA_PASS=zeratul
       - LOGSTASH_PASS=Illydan
