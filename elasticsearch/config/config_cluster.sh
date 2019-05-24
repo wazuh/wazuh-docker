@@ -24,9 +24,18 @@ node:
 
 bootstrap:
   memory_lock: ${CLUSTER_MEMORY_LOCK} 
+
+cluster.initial_master_nodes:
+  - '${CLUSTER_INITIAL_MASTER_NODES}'
+
 " >> $elastic_config_file
 else
 
-echo 'cluster.initial_master_nodes: ["elasticsearch"]' >> $elastic_config_file
+cat >> $elastic_config_file <<'EOF'
+cluster.initial_master_nodes:
+  - 'elasticsearch'
+EOF
+
+# echo 'discovery.type: single-node'
 
 fi
