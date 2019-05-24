@@ -1,16 +1,16 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:7.0.0
-ARG WAZUH_APP_VERSION=3.9.0_7.0.0-rc5
+FROM docker.elastic.co/kibana/kibana:7.1.0
+ARG WAZUH_APP_VERSION=3.9.1_7.1.0
 USER root
 
-ADD https://packages-dev.wazuh.com/staging/app/kibana/wazuhapp-3.9.0_7.0.0-rc5.zip /tmp
+ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-3.9.1_7.1.0.zip /tmp
 
 RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 COPY config/entrypoint.sh /entrypoint.sh
 
-RUN chmod 755 /entrypoint.sh
+RUN chmod 755 /entrypoint.sh        
 
 USER kibana
 

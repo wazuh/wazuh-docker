@@ -1,7 +1,7 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
-ARG FILEBEAT_VERSION=7.0.0
-ARG WAZUH_VERSION=3.9.0-1
+ARG FILEBEAT_VERSION=7.1.0
+ARG WAZUH_VERSION=3.9.1-1
 
 ENV API_USER="foo" \
    API_PASS="bar"
@@ -68,8 +68,9 @@ RUN chmod +x /etc/service/wazuh-api/run && \
    chmod +x /etc/service/postfix/run && \
    chmod +x /etc/service/filebeat/run 
 
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/wazuh-elastic7-template-alerts.json /etc/filebeat
-RUN chmod go-w /etc/filebeat/wazuh-elastic7-template-alerts.json 
+
+ADD https://raw.githubusercontent.com/wazuh/wazuh/v3.9.1/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
