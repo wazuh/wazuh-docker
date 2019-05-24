@@ -109,11 +109,12 @@ curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
 
 if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
-  curl -uelastic:${BOOTSTRAP_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/elastic/_password ' -d '{ "password":"'$ELASTIC_PASS'" }'
-  curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'
-  curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$APM_SYSTEM_PASS'" }'
-  curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$BEATS_SYSTEM_PASS'" }'
-  curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
-  curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$REMOTE_USER_PASS'" }'
+  # curl -uelastic:${BOOTSTRAP_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/elastic/_password ' -d '{ "password":"'$ELASTIC_PASS'" }'
+  # curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'
+  # curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$APM_SYSTEM_PASS'" }'
+  # curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$BEATS_SYSTEM_PASS'" }'
+  # curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
+  # curl -u elastic:${ELASTIC_PASS} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$REMOTE_USER_PASS'" }'
 
+fi
 echo "Elasticsearch is ready."

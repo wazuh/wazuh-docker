@@ -51,4 +51,12 @@ fi
 
 # Execute elasticsearch
 
+
+if [[ $SETUP_PASSWORDS == "yes" ]]; then
+  echo "HERE WE GO"
+  run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password'
+  echo "ELASTIC PASSWORD CHANGED"
+  echo $ELASTIC_PASSWORD
+fi
+
 run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch 

@@ -41,7 +41,7 @@ services:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - SETUP_PASSWORDS=yes
       - BOOTSTRAP_PASS=top-secret
-      - ELASTIC_PASS=jimmyRaynor
+      - ELASTIC_PASSWORD=jimmyRaynor
       - KIBANA_PASS=zeratul
       - LOGSTASH_PASS=Illydan
       - APM_SYSTEM_PASS=kerrigan
@@ -61,7 +61,7 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
-  environment:
+    environment:
       - SETUP_PASSWORDS=yes
       - ELASTIC_PASS=jimmyRaynor
       - KIBANA_PASS=zeratul
