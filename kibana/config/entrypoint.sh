@@ -53,6 +53,7 @@ sleep 2
 
 ##############################################################################
 # If Secure access to Kibana is enabled, we must set the credentials.
+# We must create the ssl certificate. 
 ##############################################################################
 
 
@@ -62,12 +63,15 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 # Required set the passwords
 elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$ELASTIC_PASS\"
+server.ssl.enabled: true
+server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
+server.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
 " >> /usr/share/kibana/config/kibana.yml
 
-fi
+  mkdir -p $KIBANA_SSL_KEY_PATH $KIBANA_SSL_CERT_PATH
+  openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
-# sed -i 's:#elasticsearch.username\: "user":elasticsearch.username\: "kibana":' /usr/share/kibana/config/kibana.yml
-# sed -i 's:#elasticsearch.password\: "pass":elasticsearch.password\: "'$KIBANA_PASS'":' /usr/share/kibana/config/kibana.yml
+fi
 
 ##############################################################################
 # Run more configuration scripts.
