@@ -32,13 +32,13 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
   sleep 10
   IP_PORT="${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 
-  if [ "x$S3_PATH" != "x" ]; then 
+  if [ "x$S3_PATH" != "x" ]; then
 
-    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then 
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR 
+    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
 
     else
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME 
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
 
@@ -51,23 +51,44 @@ fi
 ##############################################################################
 
 if [[ $SETUP_PASSWORDS == "yes" ]]; then
-  
+
   echo "Seting up passwords for all Elastic Stack users"
 
   sleep 5
-  
-  echo "Seting Kibana password"  
+
+  echo "Seting Kibana password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'
   echo "Seting APM password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$APM_SYSTEM_PASS'" }'
   echo "Seting Beats password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$BEATS_SYSTEM_PASS'" }'
   echo "Seting Logstash password"
-  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/logstash_writer ' -d ' { "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_internal ' -d ' { "password":"'$LOGSTASH_PASS'", "roles" : [ "logstash_writer", "logstash_admin", "logstash_system"],  "full_name" : "Internal Logstash User" }'
+
+  #curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
   echo "Seting remote monitoring password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$REMOTE_USER_PASS'" }'
 
   echo "Passwords established for all Elastic Stack users"
+
+  echo "Creating access user"
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_access ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ "wazuh*" ],  "privileges": ["read"] } ] }'
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_full ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ ".wazuh" ],  "privileges": ["all"] } ] }'
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_version ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ ".wazuh-version" ],  "privileges": ["read"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/wazuh_user ' -d ' { "password":"'$WAZUH_USER_PASS'", "roles" : [ "wazuh_access", "wazuh_full", "wazuh_version", "kibana_user"],  "full_name" : "Wazuh Access User" }'
+
+  echo "Wazuh access user created"
 
 fi
 

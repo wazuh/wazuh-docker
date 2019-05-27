@@ -52,7 +52,7 @@ sleep 2
 
 
 ##############################################################################
-# If Secure access to Kibana is enabled, we must set the credentials. 
+# If Secure access to Kibana is enabled, we must set the credentials.
 ##############################################################################
 
 
@@ -60,17 +60,17 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
   echo "
 # Required set the passwords
-elasticsearch.username: \"kibana\"
-elasticsearch.password: \"'$KIBANA_PASS'\"
+elasticsearch.username: \"elastic\"
+elasticsearch.password: \"$ELASTIC_PASS\"
 " >> /usr/share/kibana/config/kibana.yml
 
 fi
 
-# sed -i 's:#elasticsearch.username\: "user":elasticsearch.username\: "kibana":' /usr/share/kibana/config/kibana.yml       
+# sed -i 's:#elasticsearch.username\: "user":elasticsearch.username\: "kibana":' /usr/share/kibana/config/kibana.yml
 # sed -i 's:#elasticsearch.password\: "pass":elasticsearch.password\: "'$KIBANA_PASS'":' /usr/share/kibana/config/kibana.yml
 
 ##############################################################################
-# Run more configuration scripts. 
+# Run more configuration scripts.
 ##############################################################################
 
 ./wazuh_app_config.sh

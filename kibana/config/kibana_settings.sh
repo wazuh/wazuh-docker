@@ -6,8 +6,8 @@ WAZUH_MAJOR=3
 
 ##############################################################################
 # Wait for the Kibana API to start. It is necessary to do it in this container
-# because the others are running Elastic Stack and we can not interrupt them. 
-# 
+# because the others are running Elastic Stack and we can not interrupt them.
+#
 # The following actions are performed:
 #
 # Add the wazuh alerts index as default.
@@ -20,7 +20,6 @@ WAZUH_MAJOR=3
 ##############################################################################
 if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
   sed -i 's|http://elasticsearch:9200|'$ELASTICSEARCH_KIBANA_IP'|g' /usr/share/kibana/config/kibana.yml
-
 fi
 
 if [ "$KIBANA_IP" != "" ]; then
@@ -34,14 +33,14 @@ if [ ${SETUP_PASSWORDS} != "no" ]; then
 else
   auth=""
 fi
-  
+
 
 while [[ "$(curl $auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_ip:5601/status)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
 
-# Prepare index selection. 
+# Prepare index selection.
 echo "Kibana API is running"
 
 default_index="/tmp/default_index.json"

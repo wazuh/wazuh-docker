@@ -19,7 +19,7 @@ fi
 
 
 if [ ${SETUP_PASSWORDS} != "no" ]; then
-  auth="-u elastic:${ELASTIC_PASS}"
+  auth="-u elastic:${ELASTIC_PASSWORD}"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -34,7 +34,7 @@ fi
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
   >&2 echo "Customize Logstash ouput ip."
   sed -i 's|elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml 
+  sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml
 fi
 
 until curl $auth -XGET $el_url; do
@@ -45,6 +45,30 @@ done
 sleep 2
 
 >&2 echo "Elasticsearch is up."
+
+
+##############################################################################
+# Set Logstash password
+##############################################################################
+
+##############################################################################
+# If Secure access to Kibana is enabled, we must set the credentials.
+##############################################################################
+
+if [[ $SETUP_PASSWORDS == "yes" ]]; then
+
+  echo "
+# Required set the passwords
+xpack.monitoring.elasticsearch.username: \"logstash_internal\"
+xpack.monitoring.elasticsearch.password: \"$LOGSTASH_PASS\"
+xpack.management.elasticsearch.username: \"logstash_internal\"
+xpack.management.elasticsearch.password: \"$LOGSTASH_PASS\"
+" >> /usr/share/logstash/config/logstash.yml
+
+  sed -i 's:#user => logstash_internal:user => logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => logstash_internal_password:password => '$LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+
+fi
 
 ##############################################################################
 # Waiting for wazuh alerts template
