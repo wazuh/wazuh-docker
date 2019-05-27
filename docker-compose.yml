@@ -66,8 +66,8 @@ services:
       - SETUP_PASSWORDS=yes
       - ELASTIC_PASS=jimmyRaynor
       - KIBANA_PASS=zeratul
-      - KIBANA_SSL_KEY_PATH=/etc/kibana/config/ssl/private
-      - KIBANA_SSL_CERT_PATH=/etc/kibana/config/ssl/certs
+      - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
+      - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
     ports:
       - "5601:5601"
   # nginx:

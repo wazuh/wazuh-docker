@@ -57,16 +57,16 @@ EOF
 
 sleep 5
 # Add the wazuh alerts index as default.
-curl $auth -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
+curl $auth -k -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
 sleep 5
 # Configuring Kibana TimePicker.
-curl $auth -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
+curl $auth -k -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
 '{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-24h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
 sleep 5
 # Do not ask user to help providing usage statistics to Elastic
-curl $auth -POST "$kibana_secure_ip:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl $auth -k -POST "$kibana_secure_ip:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
 echo "End settings"
