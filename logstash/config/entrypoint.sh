@@ -17,6 +17,16 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
+##############################################################################
+# Customize logstash output ip
+##############################################################################
+
+if [ "$LOGSTASH_OUTPUT" != "" ]; then
+  >&2 echo "Customize Logstash ouput ip."
+  sed -i 's|elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml 
+fi
+
 until curl -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping."
   sleep 5
@@ -43,16 +53,6 @@ done
 sleep 2
 
 >&2 echo "Wazuh alerts template is loaded."
-
-##############################################################################
-# Customize logstash output ip
-##############################################################################
-
-if [ "$LOGSTASH_OUTPUT" != "" ]; then
-  >&2 echo "Customize Logstash ouput ip."
-  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i "s/elasticsearch:9200/$LOGSTASH_OUTPUT:9200/" /usr/share/logstash/config/logstash.yml 
-fi
 
 ##############################################################################
 # Map environment variables to entries in logstash.yml.

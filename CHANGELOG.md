@@ -5,8 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Option to sisable additionals X-Pack applications and hide unnecesary management links ([@SitoRBJ](https://github.com/SitoRBJ)) ([#163](https://github.com/wazuh/wazuh-docker/pull/163))
+- Option to disable additionals X-Pack applications and hide unnecesary management links ([@SitoRBJ](https://github.com/SitoRBJ)) ([#163](https://github.com/wazuh/wazuh-docker/pull/163))
 
+
+## Wazuh Docker v3.9.1_6.8.0
+
+### Added
+
+- Update to Wazuh version 3.9.1_6.8.0 ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
+### Fixed
+
+- Fixed `ELASTICSEARCH_KIBANA_IP` environment variable ([@manuasir](https://github.com/manuasir)) ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
+## Wazuh Docker v3.9.0_6.7.2
+
+### Changed
+
+- Update Elastic Stack version to 6.7.2.
 
 ## Wazuh Docker v3.9.0_6.7.1
 
