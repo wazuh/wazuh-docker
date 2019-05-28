@@ -25,6 +25,9 @@ services:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
+      - SETUP_PASSWORDS=yes
+      - ELASTIC_PASSWORD=elastic_pass
+      - LOGSTASH_PASS=logstash_pass
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
     hostname: elasticsearch
@@ -37,6 +40,16 @@ services:
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - SETUP_PASSWORDS=yes
+      - ADMIN_USER=admin_user
+      - ADMIN_PASS=admin_pass
+      - ELASTIC_PASSWORD=elastic_pass
+      - KIBANA_PASS=kibana_pass
+      - LOGSTASH_PASS=logstash_pass
+      - APM_SYSTEM_PASS=apmSystem_pass
+      - BEATS_SYSTEM_PASS=beatsSystem_pass
+      - REMOTE_USER_PASS=remoteUser_pass
+      - WAZUH_USER_PASS=wazuh_usr_pass
     ulimits:
       memlock:
         soft: -1
@@ -51,17 +64,11 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
-  nginx:
-    image: wazuh/wazuh-nginx:3.9.1_6.8.0
-    hostname: nginx
-    restart: always
     environment:
-      - NGINX_PORT=443
-      - NGINX_CREDENTIALS
+      - SETUP_PASSWORDS=yes
+      - ELASTIC_PASS=elastic_pass
+      - KIBANA_PASS=kibana_pass
+      - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
+      - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
     ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - kibana
-    links:
-      - kibana:kibana
+      - "5601:5601"

@@ -11,7 +11,10 @@ else
   wazuh_url="${WAZUH_API_URL}"
 fi
 
-if [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+
+if [ ${SETUP_PASSWORDS} != "no" ]; then
+  auth="-uelastic:${ELASTIC_PASSWORD}"
+elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
@@ -29,17 +32,70 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
   sleep 10
   IP_PORT="${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 
-  if [ "x$S3_PATH" != "x" ]; then 
+  if [ "x$S3_PATH" != "x" ]; then
 
-    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then 
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR 
+    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
 
     else
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME 
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
 
   fi
+
+fi
+
+##############################################################################
+# Setup passwords for Elastic Stack users
+##############################################################################
+
+if [[ $SETUP_PASSWORDS == "yes" ]]; then
+
+  echo "Seting up passwords for all Elastic Stack users"
+
+  sleep 5
+
+  echo "Seting Kibana password"
+  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'
+  echo "Seting APM password"
+  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$APM_SYSTEM_PASS'" }'
+  echo "Seting Beats password"
+  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$BEATS_SYSTEM_PASS'" }'
+  echo "Seting Logstash password"
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/logstash_writer ' -d ' { "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/service_logstash_internal ' -d ' { "password":"'$LOGSTASH_PASS'", "roles" : [ "logstash_writer", "logstash_admin", "logstash_system"],  "full_name" : "Internal Logstash User" }'
+
+  #curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
+  echo "Seting remote monitoring password"
+  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$REMOTE_USER_PASS'" }'
+
+  echo "Passwords established for all Elastic Stack users"
+
+  echo "Creating Wazuh access user"
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_app_user ' -d ' { "indices": [ { "names": [ ".kibana*" ],  "privileges": ["read", "view_index_metadata"] }, { "names": [ ".wazuh" ],  "privileges": ["read","view_index_metadata"] }, { "names": [ "wazuh*" ],  "privileges": ["read","view_index_metadata"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/wazuh_user ' -d ' { "password":"'$WAZUH_USER_PASS'", "roles" : [ "wazuh_app_user", "kibana_user"],  "full_name" : "Wazuh Access User" }'
+
+  echo "Wazuh access user created"
+
+
+  echo "Creating Admin user"
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_app_user_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' "http://localhost:9200/_xpack/security/user/$ADMIN_USER" -d ' { "password":"'$ADMIN_PASS'", "roles" : [ "wazuh_app_user_admin", "kibana_user"],  "full_name" : "Admin User" }'
+
+  echo "Admin user created"
 
 fi
 
@@ -96,13 +152,11 @@ curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/jso
 '
 
 # Set cluster delayed timeout when node falls
-curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
+curl -X PUT "$el_url/_all/_settings" ${auth} -H 'Content-Type: application/json' -d'
 {
   "settings": {
     "index.unassigned.node_left.delayed_timeout": "'"$CLUSTER_DELAYED_TIMEOUT"'"
   }
 }
 '
-
-
 echo "Elasticsearch is ready."

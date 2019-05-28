@@ -17,6 +17,16 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
+
+if [ ${SETUP_PASSWORDS} != "no" ]; then
+  auth="-u elastic:${ELASTIC_PASSWORD}"
+elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+  auth=""
+else
+  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+fi
+
+
 ##############################################################################
 # Customize logstash output ip
 ##############################################################################
@@ -24,10 +34,10 @@ fi
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
   >&2 echo "Customize Logstash ouput ip."
   sed -i 's|elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml 
+  sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml
 fi
 
-until curl -XGET $el_url; do
+until curl $auth -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping."
   sleep 5
 done
@@ -35,6 +45,30 @@ done
 sleep 2
 
 >&2 echo "Elasticsearch is up."
+
+
+##############################################################################
+# Set Logstash password
+##############################################################################
+
+##############################################################################
+# If Secure access to Kibana is enabled, we must set the credentials.
+##############################################################################
+
+if [[ $SETUP_PASSWORDS == "yes" ]]; then
+
+  echo "
+# Required set the passwords
+xpack.monitoring.elasticsearch.username: \"logstash_internal\"
+xpack.monitoring.elasticsearch.password: \"$LOGSTASH_PASS\"
+xpack.management.elasticsearch.username: \"logstash_internal\"
+xpack.management.elasticsearch.password: \"$LOGSTASH_PASS\"
+" >> /usr/share/logstash/config/logstash.yml
+
+  sed -i 's:#user => service_logstash_internal:user => service_logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => service_logstash_internal_password:password => '$LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+
+fi
 
 ##############################################################################
 # Waiting for wazuh alerts template
@@ -44,7 +78,7 @@ strlen=0
 
 while [[ $strlen -eq 0 ]]
 do
-  template=$(curl $el_url/_cat/templates/wazuh -s)
+  template=$(curl $auth $el_url/_cat/templates/wazuh -s)
   strlen=${#template}
   >&2 echo "Wazuh alerts template not loaded - sleeping."
   sleep 2

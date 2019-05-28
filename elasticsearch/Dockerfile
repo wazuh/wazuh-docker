@@ -29,6 +29,8 @@ ENV ELASTIC_CLUSTER="false" \
     CLUSTER_MAX_NODES="1" \
     CLUSTER_DELAYED_TIMEOUT="1m"
 
+
+
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh
@@ -46,6 +48,9 @@ RUN chmod 755 ./config/configure_s3.sh
 
 COPY --chown=elasticsearch:elasticsearch ./config/config_cluster.sh ./
 RUN chmod +x ./config_cluster.sh
+
+COPY --chown=elasticsearch:elasticsearch ./config/config_secure.sh ./
+RUN chmod +x ./config_secure.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
