@@ -68,7 +68,7 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
   sleep 5
 
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_internal ' -d ' { "password":"'$LOGSTASH_PASS'", "roles" : [ "logstash_writer", "logstash_admin", "logstash_system"],  "full_name" : "Internal Logstash User" }'
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/service_logstash_internal ' -d ' { "password":"'$LOGSTASH_PASS'", "roles" : [ "logstash_writer", "logstash_admin", "logstash_system"],  "full_name" : "Internal Logstash User" }'
 
   #curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/logstash_system/_password ' -d '{ "password":"'$LOGSTASH_PASS'" }'
   echo "Seting remote monitoring password"
@@ -76,19 +76,26 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
   echo "Passwords established for all Elastic Stack users"
 
-  echo "Creating access user"
+  echo "Creating Wazuh access user"
 
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_access ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ "wazuh*" ],  "privileges": ["read"] } ] }'
-
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_full ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ ".wazuh" ],  "privileges": ["all"] } ] }'
-
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_version ' -d ' { "cluster": ["manage_index_templates", "monitor"], "indices": [ { "names": [ ".wazuh-version" ],  "privileges": ["read"] } ] }'
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_app_user ' -d ' { "indices": [ { "names": [ ".kibana*" ],  "privileges": ["read", "view_index_metadata"] }, { "names": [ ".wazuh" ],  "privileges": ["read","view_index_metadata"] }, { "names": [ "wazuh*" ],  "privileges": ["read","view_index_metadata"] } ] }'
 
   sleep 5
 
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/wazuh_user ' -d ' { "password":"'$WAZUH_USER_PASS'", "roles" : [ "wazuh_access", "wazuh_full", "wazuh_version", "kibana_user"],  "full_name" : "Wazuh Access User" }'
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/wazuh_user ' -d ' { "password":"'$WAZUH_USER_PASS'", "roles" : [ "wazuh_app_user", "kibana_user"],  "full_name" : "Wazuh Access User" }'
 
   echo "Wazuh access user created"
+
+
+  echo "Creating Admin user"
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/wazuh_app_user_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
+
+  sleep 5
+
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' "http://localhost:9200/_xpack/security/user/$ADMIN_USER" -d ' { "password":"'$ADMIN_PASS'", "roles" : [ "wazuh_app_user_admin", "kibana_user"],  "full_name" : "Admin User" }'
+
+  echo "Admin user created"
 
 fi
 

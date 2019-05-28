@@ -65,8 +65,8 @@ xpack.management.elasticsearch.username: \"logstash_internal\"
 xpack.management.elasticsearch.password: \"$LOGSTASH_PASS\"
 " >> /usr/share/logstash/config/logstash.yml
 
-  sed -i 's:#user => logstash_internal:user => logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#password => logstash_internal_password:password => '$LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#user => service_logstash_internal:user => service_logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => service_logstash_internal_password:password => '$LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
 
 fi
 
