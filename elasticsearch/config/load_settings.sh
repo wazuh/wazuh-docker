@@ -77,7 +77,7 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
   echo "Creating Admin user"
   curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/service_wazuh_app_user_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
   sleep 5
-  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' "http://localhost:9200/_xpack/security/user/$ADMIN_USER" -d ' { "password":"'$ADMIN_PASS'", "roles" : [ "wazuh_app_user_admin", "kibana_user"],  "full_name" : "Admin User" }'
+  curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' "http://localhost:9200/_xpack/security/user/$ADMIN_USER" -d ' { "password":"'$ADMIN_PASS'", "roles" : [ "service_wazuh_app_user_admin", "kibana_user"],  "full_name" : "Admin User" }'
   echo "Admin user created"
 
 fi
