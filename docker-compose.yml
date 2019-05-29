@@ -49,7 +49,6 @@ services:
       - APM_SYSTEM_PASS=apmSystem_pass
       - BEATS_SYSTEM_PASS=beatsSystem_pass
       - REMOTE_USER_PASS=remoteUser_pass
-      - WAZUH_USER_PASS=wazuh_usr_pass
     ulimits:
       memlock:
         soft: -1
