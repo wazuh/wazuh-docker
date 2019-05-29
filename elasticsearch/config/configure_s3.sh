@@ -2,6 +2,18 @@
 
 set -e
 
+
+##############################################################################
+# If Secure access to Kibana is enabled, we must set the credentials for 
+# monitoring
+##############################################################################
+
+if [ ${SETUP_PASSWORDS} != "no" ]; then
+  auth="-u elastic:${ELASTIC_PASSWORD}"
+else
+  auth=""
+fi
+
 # Check number of arguments passed to configure_s3.sh. If it is different from 4 or 5, the process will finish with error.
 # param 1: number of arguments passed to configure_s3.sh
 
@@ -35,7 +47,7 @@ function CreateRepo()
     if [ $1 == 5 ];then
         version="$6"
     else
-        version=`curl -s $elastic_ip_port | grep number | cut -d"\"" -f4 | cut -c1`
+        version=`curl ${auth} -s $elastic_ip_port | grep number | cut -d"\"" -f4 | cut -c1`
     fi
 
     if ! [[ "$version" =~ ^[0-9]+$ ]];then
@@ -46,7 +58,7 @@ function CreateRepo()
     repository="$repository_name-$version"
     s3_path="$path/$version"
 
-    curl -X PUT "$elastic_ip_port/_snapshot/$repository" -H 'Content-Type: application/json' -d'
+    curl ${auth} -X PUT "$elastic_ip_port/_snapshot/$repository" -H 'Content-Type: application/json' -d'
         {
             "type": "s3",
             "settings": {
