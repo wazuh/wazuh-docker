@@ -70,5 +70,7 @@ services:
       - KIBANA_PASS=kibana_pass
       - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
       - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
+      - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
+      - CA_PASS="ca_pass"
     ports:
       - "5601:5601"
