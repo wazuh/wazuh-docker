@@ -9,4 +9,6 @@ RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 
 COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 
+ADD https://raw.githubusercontent.com/SitoRBJ/test-ca/master/server.CA-signed.crt /usr/share/logstash/config
+
 ENTRYPOINT /entrypoint.sh

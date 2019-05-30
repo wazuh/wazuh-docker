@@ -28,6 +28,7 @@ services:
       - SETUP_PASSWORDS=yes
       - ELASTIC_PASSWORD=elastic_pass
       - LOGSTASH_PASS=logstash_pass
+      - LOGSTASH_OUTPUT=https://elasticsearch:9200
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
     hostname: elasticsearch

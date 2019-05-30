@@ -11,7 +11,7 @@ RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
-RUN yum install openssl -y
+RUN yum install openssl -y && yum install unzip -y
 
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
