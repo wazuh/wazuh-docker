@@ -29,6 +29,7 @@ services:
       - ELASTIC_PASSWORD=elastic_pass
       - LOGSTASH_PASS=logstash_pass
       - LOGSTASH_OUTPUT=https://elasticsearch:9200
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
     hostname: elasticsearch
@@ -41,6 +42,9 @@ services:
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - ELASTICSEARCH_IP=https://elasticsearch
+      - ELASTICSEARCH_PORT=9200
       - SETUP_PASSWORDS=yes
       - ADMIN_USER=admin_user
       - ADMIN_PASS=admin_pass
@@ -66,6 +70,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
     environment:
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
       - SETUP_PASSWORDS=yes
       - ELASTIC_PASS=elastic_pass
       - KIBANA_PASS=kibana_pass
