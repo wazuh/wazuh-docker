@@ -11,9 +11,9 @@ elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
 if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
-echo "Creating certificate and set elasticsearch configuration options"
+echo "Creating certificate."
 
-pushd /usr/share/elasticsearch/config/
+pushd /usr/share/elasticsearch/cert/
 
 unzip elastic-CA.zip
 /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem --out certs.zip --ca-cert server.CA-signed.crt --ca-key server.CA.key  --ca-pass $CA_PASS
@@ -21,14 +21,19 @@ unzip certs.zip
 
 popd
 
+chown -R elasticsearch: /usr/share/elasticsearch/cert
+chmod -R 770 /usr/share/elasticsearch/cert
+
+echo "Setting configuration options."
+
   echo "
 # Required to set the passwords and TLS options
 xpack.security.enabled: true
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/instance/instance.key
-xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/instance/instance.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.crt\" ]
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/cert/instance/instance.key
+xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/cert/instance/instance.crt
+xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/cert/server.CA-signed.crt\" ]
 " >> $elastic_config_file
 
 fi

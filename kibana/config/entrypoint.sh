@@ -67,8 +67,8 @@ elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
 elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/server.CA-signed.crt\"]
-elasticsearch.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
-elasticsearch.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
+# elasticsearch.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
+# elasticsearch.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
 
 server.ssl.enabled: true
 server.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.cert
