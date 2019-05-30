@@ -49,6 +49,7 @@ services:
       - APM_SYSTEM_PASS=apmSystem_pass
       - BEATS_SYSTEM_PASS=beatsSystem_pass
       - REMOTE_USER_PASS=remoteUser_pass
+      - CA_PASS="ca_pass"
     ulimits:
       memlock:
         soft: -1

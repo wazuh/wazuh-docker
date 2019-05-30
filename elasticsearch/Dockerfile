@@ -33,6 +33,9 @@ ENV ELASTIC_CLUSTER="false" \
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
+# CA cert for Transport SSL
+ADD https://github.com/SitoRBJ/test-ca/raw/master/elastic-CA.zip /usr/share/elasticsearch/config
+
 COPY config/entrypoint.sh /entrypoint.sh
 
 RUN chmod 755 /entrypoint.sh
