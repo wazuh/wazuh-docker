@@ -57,6 +57,12 @@ ARG XPACK_UPTIME="true"
 
 ARG CHANGE_WELCOME="false"
 
+COPY --chown=kibana:kibana ./config/wazuh_wazuh_bg.svg /usr/share/kibana/optimize/bundles/
+
+RUN sed -i 's|cc17a3dbad9fc4557b4d5d47a38fcc56.svg|wazuh_wazuh_bg.svg|g' /usr/share/kibana/optimize/bundles/login.style.css
+RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/commons.bundle.js
+RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
+
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
 RUN chmod +x ./wazuh_app_config.sh
