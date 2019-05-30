@@ -9,7 +9,7 @@ set -e
 ##############################################################################
 
 if [ ${SETUP_PASSWORDS} != "no" ]; then
-  auth="-u elastic:${ELASTIC_PASSWORD}"
+  auth="-u elastic:${ELASTIC_PASSWORD} -k"
 else
   auth=""
 fi
