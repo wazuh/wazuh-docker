@@ -58,16 +58,10 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
   echo "Seting Kibana password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'
-  echo "Seting APM password"
-  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$APM_SYSTEM_PASS'" }'
-  echo "Seting Beats password"
-  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$BEATS_SYSTEM_PASS'" }'
   echo "Seting Logstash password"
   curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/logstash_writer ' -d ' { "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
   sleep 5
   curl -u elastic:${ELASTIC_PASSWORD} -XPOST -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/service_logstash_internal ' -d ' { "password":"'$LOGSTASH_PASS'", "roles" : [ "logstash_writer", "logstash_admin", "logstash_system"],  "full_name" : "Internal Logstash User" }'
-  echo "Seting remote monitoring password"
-  curl -u elastic:${ELASTIC_PASSWORD} -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$REMOTE_USER_PASS'" }'
   echo "Passwords established for all Elastic Stack users"
 
   echo "Creating Wazuh APP access rol"

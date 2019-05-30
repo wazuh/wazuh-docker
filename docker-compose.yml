@@ -46,9 +46,6 @@ services:
       - ELASTIC_PASSWORD=elastic_pass
       - KIBANA_PASS=kibana_pass
       - LOGSTASH_PASS=logstash_pass
-      - APM_SYSTEM_PASS=apmSystem_pass
-      - BEATS_SYSTEM_PASS=beatsSystem_pass
-      - REMOTE_USER_PASS=remoteUser_pass
     ulimits:
       memlock:
         soft: -1
