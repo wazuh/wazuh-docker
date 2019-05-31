@@ -6,7 +6,7 @@ USER root
 ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-3.9.1_6.8.0.zip /tmp
 
 # CA for secure communication with Elastic
-ADD https://github.com/SitoRBJ/test-ca/raw/master/elastic-CA.zip /usr/share/kibana/config/
+ADD https://github.com/SitoRBJ/test-ca/raw/master/elastic-CA.zip /usr/share/kibana/config
 
 RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.9.1_6.8.0.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\

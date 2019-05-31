@@ -54,7 +54,7 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 
   echo "Seting up passwords for all Elastic Stack users"
 
-  sleep 5
+  sleep 10
 
   echo "Seting Kibana password"
   curl -u elastic:${ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$KIBANA_PASS'" }'

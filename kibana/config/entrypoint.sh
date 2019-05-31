@@ -66,12 +66,12 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
-elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/server.CA-signed.crt\"]
+elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/server.CA-signed.pem\"]
 # elasticsearch.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
 # elasticsearch.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
 
 server.ssl.enabled: true
-server.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.cert
+server.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
 server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
 " >> /usr/share/kibana/config/kibana.yml
 
@@ -80,20 +80,23 @@ server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
   mkdir -p $KIBANA_SSL_KEY_PATH $KIBANA_SSL_CERT_PATH
   CA_PATH="/usr/share/kibana/config"
 
-  chown -R kibana: $CA_PATH/ssl
-  chmod -R 774 $CA_PATH/ssl
-  chown kibana: $CA_PATH/server.CA-signed.crt
-  chmod 774 $CA_PATH/server.CA-signed.crt
-
   echo "Creating SSL certificates."
   
   pushd $CA_PATH
-  
-  unzip elastic-CA.zip
+
+  unzip $CA_PATH/elastic-CA.zip 
+  chown kibana: $CA_PATH/server.CA-signed.crt
+  chmod 774 $CA_PATH/server.CA-signed.crt
+
   echo $CA_PASS > pass_phrase.txt
-  openssl req -batch -nodes -days 18250  -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.csr  >/dev/null
-  openssl x509 -req -in $KIBANA_SSL_KEY_PATH/kibana-access.csr -passin file:pass_phrase.txt  -CA $CA_PATH/server.CA-signed.crt -CAkey $CA_PATH/server.CA.key -CAcreateserial -out $KIBANA_SSL_KEY_PATH/kibana-acces.crt
- 
+  # openssl req -batch -nodes -days 18250  -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.csr  >/dev/null
+  # openssl x509 -req -in $KIBANA_SSL_CERT_PATH/kibana-access.csr -passin file:pass_phrase.txt  -CA $CA_PATH/server.CA-signed.crt -CAkey $CA_PATH/server.CA.key -CAcreateserial -out $KIBANA_SSL_CERT_PATH/kibana-access.pem
+
+  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
+
+  chown -R kibana: $CA_PATH/ssl
+  chmod -R 774 $CA_PATH/ssl
+
   popd
   echo "SSL certificates created."
 

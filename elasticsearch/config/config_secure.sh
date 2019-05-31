@@ -35,14 +35,14 @@ xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/instance/instance.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/instance/instance.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.crt\" ]
+xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.pem\" ]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: /usr/share/elasticsearch/config/instance/instance.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/instance/instance.crt
-xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.crt\" ]
+xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.pem\" ]
 " >> $elastic_config_file
 
 fi
