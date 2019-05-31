@@ -78,9 +78,14 @@ server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
   echo "Create SSL directories."
 
   mkdir -p $KIBANA_SSL_KEY_PATH $KIBANA_SSL_CERT_PATH
+  CA_PATH="/usr/share/kibana/config"
+
+  chown -R kibana: $CA_PATH/ssl
+  chmod -R 774 $CA_PATH/ssl
+  chown kibana: $CA_PATH/server.CA-signed.crt
+  chmod 774 $CA_PATH/server.CA-signed.crt
 
   echo "Creating SSL certificates."
-  CA_PATH="/usr/share/kibana/cert"
   
   pushd $CA_PATH
   
@@ -91,9 +96,6 @@ server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
  
   popd
   echo "SSL certificates created."
-
-  chown -R kibana: $CA_PATH
-  chmod -R 774 $CA_PATH
 
 fi
 

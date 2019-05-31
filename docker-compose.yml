@@ -54,7 +54,7 @@ services:
       - APM_SYSTEM_PASS=apmSystem_pass
       - BEATS_SYSTEM_PASS=beatsSystem_pass
       - REMOTE_USER_PASS=remoteUser_pass
-      - CA_PASS="ca_pass"
+      - CA_PASS=ca_pass
     ulimits:
       memlock:
         soft: -1
@@ -74,9 +74,9 @@ services:
       - SETUP_PASSWORDS=yes
       - ELASTIC_PASS=elastic_pass
       - KIBANA_PASS=kibana_pass
-      - KIBANA_SSL_KEY_PATH=/usr/share/kibana/cert/ssl/private
-      - KIBANA_SSL_CERT_PATH=/usr/share/kibana/cert/ssl/certs
+      - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
+      - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
-      - CA_PASS="ca_pass"
+      - CA_PASS=ca_pass
     ports:
       - "5601:5601"
