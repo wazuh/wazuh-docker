@@ -70,6 +70,9 @@ xpack.management.elasticsearch.password: \"$LOGSTASH_PASS\"
   sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/cert/server.CA-signed.crt":g' /usr/share/logstash/pipeline/01-wazuh.conf 
 
+  chown -R logstash: /usr/share/logstash/cert
+  chmod -R 774 /usr/share/logstash/cert
+
 fi
 
 ##############################################################################
