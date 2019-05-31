@@ -22,7 +22,7 @@ unzip certs.zip
 popd
 
 chown -R elasticsearch: /usr/share/elasticsearch/cert
-chmod -R 770 /usr/share/elasticsearch/cert
+chmod -R 774 /usr/share/elasticsearch/cert
 
 echo "Setting configuration options."
 

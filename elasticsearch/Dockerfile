@@ -34,7 +34,6 @@ ENV ELASTIC_CLUSTER="false" \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # CA cert for Transport SSL
-
 RUN mkdir /usr/share/elasticsearch/cert
 ADD https://github.com/SitoRBJ/test-ca/raw/master/elastic-CA.zip /usr/share/elasticsearch/cert
 

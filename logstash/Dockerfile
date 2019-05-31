@@ -9,6 +9,11 @@ RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 
 COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 
-ADD https://raw.githubusercontent.com/SitoRBJ/test-ca/master/server.CA-signed.crt /usr/share/logstash/config
+# CA for secure communication with Elastic
+RUN mkdir /usr/share/logstash/cert
+ADD https://raw.githubusercontent.com/SitoRBJ/test-ca/master/server.CA-signed.crt /usr/share/logstash/cert
+RUN chown -R logstash: /usr/share/logstash/cert
+RUN chmod -R 774 /usr/share/logstash/cert
+
 
 ENTRYPOINT /entrypoint.sh
