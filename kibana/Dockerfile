@@ -67,7 +67,7 @@ RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/b
 RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
 RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/login.bundle.js
 COPY --chown=kibana:kibana ./config/login.style.css ./
-RUN mv /usr/share/kibanalogin.style.css /usr/share/kibana/optimize/bundles/login.style.css
+RUN mv /usr/share/kibana/login.style.css /usr/share/kibana/optimize/bundles/login.style.css
 
 
 
