@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-# For more information https://github.com/elastic/elasticsearch-docker/blob/6.5.4/build/elasticsearch/bin/docker-entrypoint.sh
+# For more information https://github.com/elastic/elasticsearch-docker/blob/6.8.0/build/elasticsearch/bin/docker-entrypoint.sh
 
 set -e
 

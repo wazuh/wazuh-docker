@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.1_6.8.0
+
+### Added
+
+- Update to Wazuh version 3.9.1_6.8.0 ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
+### Fixed
+
+- Fixed `ELASTICSEARCH_KIBANA_IP` environment variable ([@manuasir](https://github.com/manuasir)) ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
 ## Wazuh Docker v3.9.0_6.7.2
 
 ### Changed

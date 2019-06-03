@@ -71,4 +71,6 @@ RUN chmod +x ./welcome_wazuh.sh
 
 RUN ./welcome_wazuh.sh
 
+RUN /usr/local/bin/kibana-docker --optimize
+
 ENTRYPOINT /entrypoint.sh

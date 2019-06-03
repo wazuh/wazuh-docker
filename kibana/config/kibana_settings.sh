@@ -19,7 +19,7 @@ WAZUH_MAJOR=3
 ##############################################################################
 if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
   sed -i "s:#elasticsearch.hosts:elasticsearch.hosts:g" /usr/share/kibana/config/kibana.yml
-  sed -i "s/elasticsearch:9200/$ELASTICSEARCH_KIBANA_IP:9200/" /usr/share/kibana/config/kibana.yml
+  sed -i 's|http://elasticsearch:9200|'$ELASTICSEARCH_KIBANA_IP'|g' /usr/share/kibana/config/kibana.yml
 fi
 
 if [ "$KIBANA_IP" != "" ]; then
