@@ -12,4 +12,10 @@ COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 # CA for secure communication with Elastic
 ADD https://raw.githubusercontent.com/SitoRBJ/test-ca/master/server.CA-signed.pem /usr/share/logstash/config
 
+# Set permissions for CA
+USER root
+RUN chown logstash: /usr/share/logstash/config/server.CA-signed.pem
+RUN chmod 774 /usr/share/logstash/config/server.CA-signed.pem
+USER logstash
+
 ENTRYPOINT /entrypoint.sh

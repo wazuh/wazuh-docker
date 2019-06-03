@@ -55,6 +55,7 @@ services:
       - BEATS_SYSTEM_PASS=beatsSystem_pass
       - REMOTE_USER_PASS=remoteUser_pass
       - CA_PASS=ca_pass
+      - CERT_DNS=elasticsearch
     ulimits:
       memlock:
         soft: -1
@@ -77,6 +78,5 @@ services:
       - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
       - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
-      - CA_PASS=ca_pass
     ports:
       - "5601:5601"

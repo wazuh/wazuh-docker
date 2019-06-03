@@ -85,12 +85,8 @@ server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
   pushd $CA_PATH
 
   unzip $CA_PATH/elastic-CA.zip 
-  chown kibana: $CA_PATH/server.CA-signed.crt
-  chmod 774 $CA_PATH/server.CA-signed.crt
-
-  echo $CA_PASS > pass_phrase.txt
-  # openssl req -batch -nodes -days 18250  -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.csr  >/dev/null
-  # openssl x509 -req -in $KIBANA_SSL_CERT_PATH/kibana-access.csr -passin file:pass_phrase.txt  -CA $CA_PATH/server.CA-signed.crt -CAkey $CA_PATH/server.CA.key -CAcreateserial -out $KIBANA_SSL_CERT_PATH/kibana-access.pem
+  chown kibana: $CA_PATH/server.CA-signed.pem
+  chmod 774 $CA_PATH/server.CA-signed.pem
 
   openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
