@@ -8,9 +8,8 @@ ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-3.9.1_7.1.0.zip /tmp
 RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
-COPY config/entrypoint.sh /entrypoint.sh
-
-RUN chmod 755 /entrypoint.sh        
+COPY config/entrypoint.sh ./entrypoint.sh
+RUN chmod 755 ./entrypoint.sh
 
 USER kibana
 
@@ -73,4 +72,4 @@ RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
 
-ENTRYPOINT /entrypoint.sh
+ENTRYPOINT ./entrypoint.sh
