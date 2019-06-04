@@ -3,7 +3,7 @@ FROM docker.elastic.co/kibana/kibana:7.1.0
 ARG WAZUH_APP_VERSION=3.9.1_7.1.0
 USER root
 
-ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-3.9.1_7.1.0.zip /tmp
+ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
 RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip

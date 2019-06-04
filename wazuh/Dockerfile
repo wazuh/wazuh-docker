@@ -6,7 +6,7 @@ ARG WAZUH_VERSION=3.9.1-1
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ENV TEMPLATE_VERSION="elastic-7-2"
+ENV TEMPLATE_VERSION="v3.9.1"
 
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
@@ -69,7 +69,7 @@ RUN chmod +x /etc/service/wazuh-api/run && \
    chmod +x /etc/service/filebeat/run 
 
 
-ADD https://raw.githubusercontent.com/wazuh/wazuh/v3.9.1/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 # Run all services

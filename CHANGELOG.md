@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.1_7.1.0
+
+### Added
+
+- Support for Elastic v7.1.0
+- New environment variables for Kibana ([@manuasir](https://github.com/manuasir)) [#22ad43](https://github.com/wazuh/wazuh-docker/commit/22ad4360f548e54bb0c5e929f8c84a186ad2ab88)
+
 ## Wazuh Docker v3.9.1_6.8.0
 
 ### Added
