@@ -28,8 +28,8 @@ else
   kibana_ip="kibana"
 fi
 
-if [ ${SETUP_PASSWORDS} != "no" ]; then
-  auth="-u kibana:${KIBANA_PASS}"
+if [ ${XPACK_SECURITY_ENABLED} != "no" ]; then
+  auth="-u kibana:${XPACK_SECURITY_ENABLED_KIBANA_PASS}"
   kibana_secure_ip="https://$kibana_ip"
 else
   auth=""

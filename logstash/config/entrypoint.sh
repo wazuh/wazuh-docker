@@ -18,8 +18,8 @@ else
 fi
 
 
-if [ ${SETUP_PASSWORDS} != "no" ]; then
-  auth="-u elastic:${ELASTIC_PASSWORD} -k"
+if [ ${XPACK_SECURITY_ENABLED} != "no" ]; then
+  auth="-u elastic:${XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -55,18 +55,18 @@ sleep 2
 # If Secure access to Kibana is enabled, we must set the credentials.
 ##############################################################################
 
-if [[ $SETUP_PASSWORDS == "yes" ]]; then
+if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
 
   echo "
 # Required set the passwords
 xpack.monitoring.elasticsearch.username: \"logstash_internal\"
-xpack.monitoring.elasticsearch.password: \"$LOGSTASH_PASS\"
+xpack.monitoring.elasticsearch.password: \"$XPACK_SECURITY_ENABLED_LOGSTASH_PASS\"
 xpack.management.elasticsearch.username: \"logstash_internal\"
-xpack.management.elasticsearch.password: \"$LOGSTASH_PASS\"
+xpack.management.elasticsearch.password: \"$XPACK_SECURITY_ENABLED_LOGSTASH_PASS\"
 " >> /usr/share/logstash/config/logstash.yml
 
   sed -i 's:#user => service_logstash_internal:user => service_logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#password => service_logstash_internal_password:password => '$LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => service_logstash_internal_password:password => '$XPACK_SECURITY_ENABLED_LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/server.CA-signed.pem":g' /usr/share/logstash/pipeline/01-wazuh.conf 
 

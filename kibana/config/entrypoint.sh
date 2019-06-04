@@ -14,7 +14,7 @@ else
 fi
 
 
-if [ ${SETUP_PASSWORDS} != "no" ]; then
+if [ ${XPACK_SECURITY_ENABLED} != "no" ]; then
   auth="-u elastic:${ELASTIC_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
@@ -56,7 +56,7 @@ sleep 2
 # We must create the ssl certificate.
 ##############################################################################
 
-if [[ $SETUP_PASSWORDS == "yes" ]]; then
+if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
 
 
   echo "Setting security Kibana configuiration options."
@@ -67,17 +67,17 @@ elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
 elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/server.CA-signed.pem\"]
-# elasticsearch.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
-# elasticsearch.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
+# elasticsearch.ssl.certificate: $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem
+# elasticsearch.ssl.key: $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
 
 server.ssl.enabled: true
-server.ssl.certificate: $KIBANA_SSL_CERT_PATH/kibana-access.pem
-server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
+server.ssl.certificate: $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem
+server.ssl.key: $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
 " >> /usr/share/kibana/config/kibana.yml
 
   echo "Create SSL directories."
 
-  mkdir -p $KIBANA_SSL_KEY_PATH $KIBANA_SSL_CERT_PATH
+  mkdir -p $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH
   CA_PATH="/usr/share/kibana/config"
 
   echo "Creating SSL certificates."
@@ -88,7 +88,7 @@ server.ssl.key: $KIBANA_SSL_KEY_PATH/kibana-access.key
   chown kibana: $CA_PATH/server.CA-signed.pem
   chmod 774 $CA_PATH/server.CA-signed.pem
 
-  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $KIBANA_SSL_KEY_PATH/kibana-access.key -out $KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
+  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key -out $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
   chown -R kibana: $CA_PATH/ssl
   chmod -R 774 $CA_PATH/ssl

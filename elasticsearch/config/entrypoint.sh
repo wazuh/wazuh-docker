@@ -52,9 +52,9 @@ fi
 # Execute elasticsearch
 
 
-if [[ $SETUP_PASSWORDS == "yes" ]]; then
+if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
   echo "Change Elastic password"
-  run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -xf 'bootstrap.password'
+  run_as_other_user_if_needed echo "$XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD" | elasticsearch-keystore add -xf 'bootstrap.password'
   echo "Elastic password changed"
 fi
 

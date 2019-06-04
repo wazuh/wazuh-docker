@@ -9,7 +9,7 @@ elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 # Set xpack.security.enabled to true. In Elastic 7 must add ssl options
 ##############################################################################
 
-if [[ $SETUP_PASSWORDS == "yes" ]]; then
+if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
 
   echo "Creating certificate."
 
@@ -21,12 +21,15 @@ if [[ $SETUP_PASSWORDS == "yes" ]]; then
 instances:
 - name: \"elasticsearch\"
   dns: 
-    - $CERT_DNS
+    - $XPACK_SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
   unzip elastic-CA.zip
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert server.CA-signed.pem --ca-key server.CA.key  --ca-pass $CA_PASS
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert server.CA-signed.pem --ca-key server.CA.key  --ca-pass $XPACK_SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
+
+  rm certs.zip
+  rm elastic-CA.zip
 
   popd
 

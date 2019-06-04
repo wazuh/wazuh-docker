@@ -25,9 +25,9 @@ services:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
-      - SETUP_PASSWORDS=yes
-      - ELASTIC_PASSWORD=elastic_pass
-      - LOGSTASH_PASS=logstash_pass
+      - XPACK_SECURITY_ENABLED=yes
+      - XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD=elastic_pass
+      - XPACK_SECURITY_ENABLED_LOGSTASH_PASS=logstash_pass
       - LOGSTASH_OUTPUT=https://elasticsearch:9200
       - ELASTICSEARCH_URL=https://elasticsearch:9200
   elasticsearch:
@@ -45,17 +45,17 @@ services:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - ELASTICSEARCH_IP=https://elasticsearch
       - ELASTICSEARCH_PORT=9200
-      - SETUP_PASSWORDS=yes
-      - ADMIN_USER=admin_user
-      - ADMIN_PASS=admin_pass
-      - ELASTIC_PASSWORD=elastic_pass
-      - KIBANA_PASS=kibana_pass
-      - LOGSTASH_PASS=logstash_pass
-      - APM_SYSTEM_PASS=apmSystem_pass
-      - BEATS_SYSTEM_PASS=beatsSystem_pass
-      - REMOTE_USER_PASS=remoteUser_pass
-      - CA_PASS=ca_pass
-      - CERT_DNS=elasticsearch
+      - XPACK_SECURITY_ENABLED=yes
+      - XPACK_SECURITY_ENABLED_ADMIN_USER=admin_user
+      - XPACK_SECURITY_ENABLED_ADMIN_PASS=admin_pass
+      - XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD=elastic_pass
+      - XPACK_SECURITY_ENABLED_KIBANA_PASS=kibana_pass
+      - XPACK_SECURITY_ENABLED_LOGSTASH_PASS=logstash_pass
+      - XPACK_SECURITY_ENABLED_APM_SYSTEM_PASS=apmSystem_pass
+      - XPACK_SECURITY_ENABLED_BEATS_SYSTEM_PASS=beatsSystem_pass
+      - XPACK_SECURITY_ENABLED_REMOTE_USER_PASS=remoteUser_pass
+      - XPACK_SECURITY_ENABLED_CA_PASSPHRASE=ca_pass
+      - XPACK_SECURITY_CERTIFICATE_DNS=elasticsearch
     ulimits:
       memlock:
         soft: -1
@@ -72,11 +72,11 @@ services:
       - wazuh:wazuh
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
-      - SETUP_PASSWORDS=yes
+      - XPACK_SECURITY_ENABLED=yes
       - ELASTIC_PASS=elastic_pass
-      - KIBANA_PASS=kibana_pass
-      - KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
-      - KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
+      - XPACK_SECURITY_ENABLED_KIBANA_PASS=kibana_pass
+      - XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
+      - XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
     ports:
       - "5601:5601"

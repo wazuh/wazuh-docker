@@ -8,8 +8,8 @@ set -e
 # monitoring
 ##############################################################################
 
-if [ ${SETUP_PASSWORDS} != "no" ]; then
-  auth="-u elastic:${ELASTIC_PASSWORD} -k"
+if [ ${XPACK_SECURITY_ENABLED} != "no" ]; then
+  auth="-u elastic:${XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD} -k"
 else
   auth=""
 fi
