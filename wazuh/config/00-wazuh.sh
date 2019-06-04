@@ -1,17 +1,10 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-#
-# OSSEC container bootstrap. See the README for information of the environment
+# Wazuh container bootstrap. See the README for information of the environment
 # variables expected by this script.
-#
 
-#
-
-#
 # Startup the services
-#
-
 source /data_dirs.env
 
 FIRST_TIME_INSTALLATION=false
@@ -140,12 +133,3 @@ change_user="node htpasswd -b -c user $API_USER $API_PASS"
 eval $change_user
 
 popd
-
-
-##############################################################################
-# Customize filebeat output ip
-##############################################################################
-if [ "$FILEBEAT_OUTPUT" != "" ]; then
-  sed -i "s/logstash:5000/$FILEBEAT_OUTPUT:5000/" /etc/filebeat/filebeat.yml
-fi
-

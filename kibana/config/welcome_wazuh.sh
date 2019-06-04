@@ -1,4 +1,5 @@
 #!/bin/bash
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 if [[ $CHANGE_WELCOME == "true" ]]
 then

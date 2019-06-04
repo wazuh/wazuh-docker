@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
@@ -10,7 +10,7 @@ then
   
   # Set the cluster.name and discovery.zen.minimun_master_nodes variables
   sed -i 's:cluster.name\: "docker-cluster":cluster.name\: "'$CLUSTER_NAME'":g' $elastic_config_file
-  sed -i 's:discovery.zen.minimum_master_nodes\: 1:discovery.zen.minimum_master_nodes\: '$CLUSTER_NUMBER_OF_MASTERS':g' $elastic_config_file
+  #sed -i 's:discovery.zen.minimum_master_nodes\: 1:discovery.zen.minimum_master_nodes\: '$CLUSTER_NUMBER_OF_MASTERS':g' $elastic_config_file
 
   # Add the cluster configuration
   echo "
@@ -23,11 +23,19 @@ node:
   max_local_storage_nodes: ${CLUSTER_MAX_NODES}
 
 bootstrap:
-  memory_lock: ${CLUSTER_MEMORY_LOCK}
+  memory_lock: ${CLUSTER_MEMORY_LOCK} 
 
-discovery:
-  zen:
-    ping.unicast.hosts: ${CLUSTER_DISCOVERY_SERVICE}
-  
+cluster.initial_master_nodes:
+  - '${CLUSTER_INITIAL_MASTER_NODES}'
+
 " >> $elastic_config_file
+else
+
+cat >> $elastic_config_file <<'EOF'
+cluster.initial_master_nodes:
+  - 'elasticsearch'
+EOF
+
+# echo 'discovery.type: single-node'
+
 fi
