@@ -35,8 +35,8 @@ instances:
 
   chown elasticsearch: /usr/share/elasticsearch/config/server.CA-signed.pem
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod 774 /usr/share/elasticsearch/config/server.CA-signed.pem
-  chmod -R 774 /usr/share/elasticsearch/config/elasticsearch
+  chmod 440 /usr/share/elasticsearch/config/server.CA-signed.pem
+  chmod -R 440 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
 

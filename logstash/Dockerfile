@@ -15,7 +15,7 @@ ADD https://raw.githubusercontent.com/SitoRBJ/test-ca/master/server.CA-signed.pe
 # Set permissions for CA
 USER root
 RUN chown logstash: /usr/share/logstash/config/server.CA-signed.pem
-RUN chmod 774 /usr/share/logstash/config/server.CA-signed.pem
+RUN chmod 440 /usr/share/logstash/config/server.CA-signed.pem
 USER logstash
 
 ENTRYPOINT /entrypoint.sh

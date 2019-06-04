@@ -86,12 +86,12 @@ server.ssl.key: $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
 
   unzip $CA_PATH/elastic-CA.zip 
   chown kibana: $CA_PATH/server.CA-signed.pem
-  chmod 774 $CA_PATH/server.CA-signed.pem
+  chmod 440 $CA_PATH/server.CA-signed.pem
 
   openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key -out $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
   chown -R kibana: $CA_PATH/ssl
-  chmod -R 774 $CA_PATH/ssl
+  chmod -R 440 $CA_PATH/ssl
 
   popd
   echo "SSL certificates created."
