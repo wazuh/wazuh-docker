@@ -3,7 +3,11 @@
 
 set -e
 
-el_url=${ELASTICSEARCH_URL}
+if [ "x${ELASTICSEARCH_PROTOCOL}" = "x" || "x${ELASTICSEARCH_IP}" = "x" || "x${ELASTICSEARCH_PORT}" = "x" ]; then
+  el_url=="http://elasticsearch:9200"
+else
+  el_url=="${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
+fi
 
 if [ "x${WAZUH_API_URL}" = "x" ]; then
   wazuh_url="https://wazuh"
@@ -30,15 +34,14 @@ done
 if [ $ENABLE_CONFIGURE_S3 ]; then
   #Wait for Elasticsearch to be ready to create the repository
   sleep 10
-  IP_PORT="${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 
   if [ "x$S3_PATH" != "x" ]; then
 
     if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
+      ./config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
 
     else
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
+      ./config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
 

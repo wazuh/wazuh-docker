@@ -42,8 +42,8 @@ services:
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
-      - ELASTICSEARCH_IP=https://elasticsearch
+      - ELASTICSEARCH_PROTOCOL=https
+      - ELASTICSEARCH_IP=elasticsearch
       - ELASTICSEARCH_PORT=9200
       - XPACK_SECURITY_ENABLED=yes
       - XPACK_SECURITY_ENABLED_ADMIN_USER=admin_user
