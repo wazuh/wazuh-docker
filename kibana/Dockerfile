@@ -58,19 +58,6 @@ ARG XPACK_UPTIME="true"
 
 ARG CHANGE_WELCOME="false"
 
-# Set Wazuh custom login image
-COPY --chown=kibana:kibana ./config/wazuh_wazuh_bg.svg /usr/share/kibana/optimize/bundles/
-COPY --chown=kibana:kibana ./config/wazuh_logo_circle.svg /usr/share/kibana/optimize/bundles/
-RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/commons.bundle.js
-RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/login.bundle.js
-RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
-RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
-RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/login.bundle.js
-COPY --chown=kibana:kibana ./config/login.style.css ./
-RUN mv /usr/share/kibana/login.style.css /usr/share/kibana/optimize/bundles/login.style.css
-
-
-
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
 RUN chmod +x ./wazuh_app_config.sh
@@ -92,5 +79,17 @@ RUN chmod +x ./welcome_wazuh.sh
 RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
+
+
+# Set Wazuh custom login image
+COPY --chown=kibana:kibana ./config/wazuh_wazuh_bg.svg /usr/share/kibana/optimize/bundles/
+COPY --chown=kibana:kibana ./config/wazuh_logo_circle.svg /usr/share/kibana/optimize/bundles/
+RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/commons.bundle.js
+RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/login.bundle.js
+RUN sed -i 's|Welcome to Kibana|Welcome to Wazuh|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
+RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/kibana.bundle.js
+RUN sed -i 's|Your window into the Elastic Stack|The Open Source Security Platform|g' /usr/share/kibana/optimize/bundles/login.bundle.js
+COPY --chown=kibana:kibana ./config/login.style.css ./
+RUN mv /usr/share/kibana/login.style.css /usr/share/kibana/optimize/bundles/login.style.css
 
 ENTRYPOINT ./entrypoint.sh
