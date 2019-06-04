@@ -6,15 +6,32 @@
 #
 source /data_files.env
 
-MIRRORING_PATH=/var/ossec/docker-backups
-mkdir ${MIRRORING_PATH}
 cd /var/ossec
 
+MIRRORING_PATH=/var/ossec/docker-backups
+mkdir ${MIRRORING_PATH}
+Update=${MIRRORING_PATH}/update
+mkdir ${Update}
+
 for ossecfile in "${DATA_FILES[@]}"; do
-  if [ ! -e ${MIRRORING_PATH}/${ossecfile}  ]
+  if [ ! -e ${Update}/${ossecfile}  ]
   then
     DIR=$(dirname "${ossecfile}")
-    mkdir -p ${MIRRORING_PATH}/${DIR}
+    mkdir -p ${Update}/${DIR}
   fi
-  mv ${ossecfile} docker-backups/${ossecfile}
+  mv ${ossecfile} ${Update}/${ossecfile}
+done
+
+source /data_dirs.env
+
+Mount=${MIRRORING_PATH}/mount
+mkdir ${Mount}
+
+for ossecdir in "${DATA_DIRS[@]}"; do
+  if [ ! -e ${Mount}/${ossecdir}  ]
+  then
+    DIR=$(dirname "${ossecdir}")
+    mkdir -p ${Mount}/${DIR}
+  fi
+  mv ${ossecdir} ${Mount}/${ossecdir}
 done

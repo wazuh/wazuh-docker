@@ -23,6 +23,7 @@ RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg:
 
 # Adding first run script and entrypoint
 COPY config/data_files.env /data_files.env
+COPY config/data_dirs.env /data_dirs.env
 COPY config/init.bash /init.bash
 RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
