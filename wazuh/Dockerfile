@@ -22,7 +22,7 @@ RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg:
    /var/ossec/logs/api/*/*/* && rm -f /var/ossec/logs/cluster/*/*/* && rm -f /var/ossec/logs/ossec/*/*/*
 
 # Adding first run script and entrypoint
-COPY config/data_dirs.env /data_dirs.env
+COPY config/data_files.env /data_files.env
 COPY config/init.bash /init.bash
 RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
@@ -41,7 +41,11 @@ COPY config/filebeat.yml /etc/filebeat/
 RUN chmod go-w /etc/filebeat/filebeat.yml 
 
 # Setting volumes
-VOLUME ["/var/ossec/data"]
+VOLUME ["/var/ossec/api/configuration"]
+VOLUME ["/var/ossec/etc"]
+VOLUME ["/var/ossec/logs"]
+VOLUME ["/var/ossec/queue"]
+VOLUME ["/var/ossec/var/multigroups"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
 VOLUME ["/var/lib/filebeat"]
