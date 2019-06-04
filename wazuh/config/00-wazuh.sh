@@ -39,9 +39,13 @@ edit_configuration() { # $1 -> setting,  $2 -> value
 
 mount_permanent_data() {
   for ossecdir in "${DATA_DIRS[@]}"; do
-    print "Installing ${ossecdir}"
-    exec_cmd "mkdir -p $(dirname ${WAZUH_INSTALL_PATH}/${ossecdir})"
-    exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/docker-backups/mount/${ossecdir}/. ${WAZUH_INSTALL_PATH}/${ossecdir}"
+    if find ${WAZUH_INSTALL_PATH}/${ossecdir} -mindepth 1 | read; then
+      print "Path ${ossecfile} is not empty"
+    else
+      print "Installing ${ossecdir}"
+      exec_cmd "mkdir -p $(dirname ${WAZUH_INSTALL_PATH}/${ossecdir})"
+      exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/docker-backups/mount/${ossecdir}/. ${WAZUH_INSTALL_PATH}/${ossecdir}"
+    fi
   done
 }
 
