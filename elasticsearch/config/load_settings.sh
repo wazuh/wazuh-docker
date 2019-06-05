@@ -57,7 +57,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "Seting up passwords for all Elastic Stack users"
 
-  sleep 15
+  sleep 20
 
   echo "Seting remote monitoring password"
   until curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$SECURITY_ENABLED_REMOTE_USER_PASS'" }' ; do
