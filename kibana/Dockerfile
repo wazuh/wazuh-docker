@@ -6,18 +6,18 @@ USER root
 ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-3.9.1_6.8.0.zip /tmp
 
 # This CA is created for testing. Please set your own CA pem signed certificate. 
-# command: $ docker build <kibana_directory> --build-arg XPACK_SECURITY_ENABLED_CA_PEM_LOCATION=<CA_PEM_LOCATION>
-# ENV variables are necessary: XPACK_SECURITY_ENABLED_CA_PEM 
-ARG XPACK_SECURITY_ENABLED_CA_PEM_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s-ssl/certs/server.TEST-CA-signed.pem"
+# command: $ docker build <kibana_directory> --build-arg SECURITY_ENABLED_CA_PEM_LOCATION=<CA_PEM_LOCATION>
+# ENV variables are necessary: SECURITY_ENABLED_CA_PEM 
+ARG SECURITY_ENABLED_CA_PEM_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s-ssl/certs/server.TEST-CA-signed.pem"
 
 # CA for secure communication with Elastic
-ADD $XPACK_SECURITY_ENABLED_CA_PEM_LOCATION /usr/share/kibana/config
+ADD $SECURITY_ENABLED_CA_PEM_LOCATION /usr/share/kibana/config
 
 RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.9.1_6.8.0.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
-RUN yum install openssl -y && yum install unzip -y
+RUN yum install openssl -y
 
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh

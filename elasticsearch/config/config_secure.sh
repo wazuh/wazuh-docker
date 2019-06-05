@@ -9,7 +9,7 @@ elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 # Set xpack.security.enabled to true. In Elastic 7 must add ssl options
 ##############################################################################
 
-if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
+if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "Creating certificate."
 
@@ -21,22 +21,22 @@ if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
 instances:
 - name: \"elasticsearch\"
   dns: 
-    - $XPACK_SECURITY_CERTIFICATE_DNS
+    - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  unzip $XPACK_SECURITY_ENABLED_CA_ZIP
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $XPACK_SECURITY_ENABLED_CA_PEM --ca-key $XPACK_SECURITY_ENABLED_CA_KEY --ca-pass $XPACK_SECURITY_ENABLED_CA_PASSPHRASE
+  unzip $SECURITY_ENABLED_CA_ZIP
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_ENABLED_CA_PEM --ca-key $SECURITY_ENABLED_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
 
   rm certs.zip
-  rm $XPACK_SECURITY_ENABLED_CA_ZIP
+  rm $SECURITY_ENABLED_CA_ZIP
 
   popd
 
-  chown elasticsearch: /usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM
+  chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod 440 /usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM
-  chmod -R 440 /usr/share/elasticsearch/config/elasticsearch
+  chmod 770 /usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM
+  chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
 
@@ -47,14 +47,14 @@ xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM\" ]
+xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM\" ]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM\" ]
+xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM\" ]
 " >> $elastic_config_file
 
 fi

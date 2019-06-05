@@ -14,9 +14,9 @@ ENV ENABLE_CONFIGURE_S3="false"
 ENV TEMPLATE_VERSION=v3.9.1
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
-# command: $ docker build <elasticsearch_directory> --build-arg XPACK_SECURITY_ENABLED_CA_ZIP_LOCATION=<CA_ZIP_LOCATION>
-# ENV variables are necessary: XPACK_SECURITY_ENABLED_CA_ZIP, XPACK_SECURITY_ENABLED_CA_PEM, XPACK_SECURITY_ENABLED_CA_KEY 
-ARG XPACK_SECURITY_ENABLED_CA_ZIP_LOCATION="https://github.com/wazuh/wazuh-docker/raw/k8s-ssl/certs/TEST-CA.zip"
+# command: $ docker build <elasticsearch_directory> --build-arg SECURITY_ENABLED_CA_ZIP_LOCATION=<CA_ZIP_LOCATION>
+# ENV variables are necessary: SECURITY_ENABLED_CA_ZIP, SECURITY_ENABLED_CA_PEM, SECURITY_ENABLED_CA_KEY 
+ARG SECURITY_ENABLED_CA_ZIP_LOCATION="https://github.com/wazuh/wazuh-docker/raw/k8s-ssl/certs/TEST-CA.zip"
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
@@ -35,7 +35,7 @@ ENV ELASTIC_CLUSTER="false" \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # CA cert for Transport SSL
-ADD $XPACK_SECURITY_ENABLED_CA_ZIP_LOCATION /usr/share/elasticsearch/config
+ADD $SECURITY_ENABLED_CA_ZIP_LOCATION /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh
 
