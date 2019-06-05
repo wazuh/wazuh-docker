@@ -57,7 +57,6 @@ services:
       - SECURITY_ENABLED_REMOTE_USER_PASS=remoteUser_pass
       - SECURITY_ENABLED_CA_PASSPHRASE=ca_pass
       - SECURITY_CERTIFICATE_DNS=elasticsearch
-      - SECURITY_ENABLED_CA_ZIP=TEST-CA.zip
       - SECURITY_ENABLED_CA_PEM=server.TEST-CA-signed.pem
       - SECURITY_ENABLED_CA_KEY=server.TEST-CA.key
     ulimits:

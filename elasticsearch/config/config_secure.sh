@@ -24,12 +24,9 @@ instances:
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  unzip $SECURITY_ENABLED_CA_ZIP
   /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_ENABLED_CA_PEM --ca-key $SECURITY_ENABLED_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
-
   rm certs.zip
-  rm $SECURITY_ENABLED_CA_ZIP
 
   popd
 
