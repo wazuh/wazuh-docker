@@ -30,6 +30,7 @@ services:
       - XPACK_SECURITY_ENABLED_LOGSTASH_PASS=logstash_pass
       - LOGSTASH_OUTPUT=https://elasticsearch:9200
       - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED_CA_PEM=server.TEST-CA-signed.pem
   elasticsearch:
     image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
     hostname: elasticsearch
@@ -56,6 +57,9 @@ services:
       - XPACK_SECURITY_ENABLED_REMOTE_USER_PASS=remoteUser_pass
       - XPACK_SECURITY_ENABLED_CA_PASSPHRASE=ca_pass
       - XPACK_SECURITY_CERTIFICATE_DNS=elasticsearch
+      - XPACK_SECURITY_ENABLED_CA_ZIP=TEST-CA.zip
+      - XPACK_SECURITY_ENABLED_CA_PEM=server.TEST-CA-signed.pem
+      - XPACK_SECURITY_ENABLED_CA_KEY=server.TEST-CA.key
     ulimits:
       memlock:
         soft: -1
@@ -78,5 +82,6 @@ services:
       - XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
       - XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED_CA_PEM=server.TEST-CA-signed.pem
     ports:
       - "5601:5601"

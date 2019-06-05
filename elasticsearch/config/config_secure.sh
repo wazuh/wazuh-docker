@@ -24,18 +24,18 @@ instances:
     - $XPACK_SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  unzip elastic-CA.zip
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert server.CA-signed.pem --ca-key server.CA.key  --ca-pass $XPACK_SECURITY_ENABLED_CA_PASSPHRASE
+  unzip $XPACK_SECURITY_ENABLED_CA_ZIP
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $XPACK_SECURITY_ENABLED_CA_PEM --ca-key $XPACK_SECURITY_ENABLED_CA_KEY --ca-pass $XPACK_SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
 
   rm certs.zip
-  rm elastic-CA.zip
+  rm $XPACK_SECURITY_ENABLED_CA_ZIP
 
   popd
 
-  chown elasticsearch: /usr/share/elasticsearch/config/server.CA-signed.pem
+  chown elasticsearch: /usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod 440 /usr/share/elasticsearch/config/server.CA-signed.pem
+  chmod 440 /usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM
   chmod -R 440 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
@@ -47,14 +47,14 @@ xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.pem\" ]
+xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM\" ]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/server.CA-signed.pem\" ]
+xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$XPACK_SECURITY_ENABLED_CA_PEM\" ]
 " >> $elastic_config_file
 
 fi

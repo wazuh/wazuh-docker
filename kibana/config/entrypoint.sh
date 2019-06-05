@@ -66,7 +66,7 @@ if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
 elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
-elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/server.CA-signed.pem\"]
+elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$XPACK_SECURITY_ENABLED_CA_PEM\"]
 # elasticsearch.ssl.certificate: $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem
 # elasticsearch.ssl.key: $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
 
@@ -84,9 +84,8 @@ server.ssl.key: $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
   
   pushd $CA_PATH
 
-  unzip $CA_PATH/elastic-CA.zip 
-  chown kibana: $CA_PATH/server.CA-signed.pem
-  chmod 440 $CA_PATH/server.CA-signed.pem
+  chown kibana: $CA_PATH/$XPACK_SECURITY_ENABLED_CA_PEM
+  chmod 440 $CA_PATH/$XPACK_SECURITY_ENABLED_CA_PEM
 
   openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $XPACK_SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key -out $XPACK_SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
