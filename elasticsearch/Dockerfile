@@ -36,7 +36,7 @@ ENV ELASTIC_CLUSTER="false" \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # CA cert for Transport SSL
-ADD $SECURITY_ENABLED_CA_ZIP_LOCATION /usr/share/elasticsearch/config
+ADD $SECURITY_ENABLED_CA_PEM_LOCATION /usr/share/elasticsearch/config
 ADD $SECURITY_ENABLED_CA_KEY_LOCATION /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh
