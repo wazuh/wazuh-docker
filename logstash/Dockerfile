@@ -21,7 +21,7 @@ ADD $SECURITY_ENABLED_CA_PEM_LOCATION /usr/share/logstash/config
 # Set permissions for CA
 USER root
 RUN chown logstash: /usr/share/logstash/config/$SECURITY_ENABLED_CA_PEM_ARG
-RUN chmod 440 /usr/share/logstash/config/$XPACK_SECURITY_ENABLED_CA_PEM_ARG
+RUN chmod 440 /usr/share/logstash/config/$SECURITY_ENABLED_CA_PEM_ARG
 USER logstash
 
 ENTRYPOINT /entrypoint.sh

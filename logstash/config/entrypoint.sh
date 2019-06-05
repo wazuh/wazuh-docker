@@ -18,8 +18,8 @@ else
 fi
 
 
-if [ ${XPACK_SECURITY_ENABLED} != "no" ]; then
-  auth="-u elastic:${XPACK_SECURITY_ENABLED_ELASTIC_PASSWORD} -k"
+if [ ${SECURITY_ENABLED} != "no" ]; then
+  auth="-u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -55,20 +55,20 @@ sleep 2
 # If Secure access to Kibana is enabled, we must set the credentials.
 ##############################################################################
 
-if [[ $XPACK_SECURITY_ENABLED == "yes" ]]; then
+if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "
 # Required set the passwords
 xpack.monitoring.elasticsearch.username: \"logstash_internal\"
-xpack.monitoring.elasticsearch.password: \"$XPACK_SECURITY_ENABLED_LOGSTASH_PASS\"
+xpack.monitoring.elasticsearch.password: \"$SECURITY_ENABLED_LOGSTASH_PASS\"
 xpack.management.elasticsearch.username: \"logstash_internal\"
-xpack.management.elasticsearch.password: \"$XPACK_SECURITY_ENABLED_LOGSTASH_PASS\"
+xpack.management.elasticsearch.password: \"$SECURITY_ENABLED_LOGSTASH_PASS\"
 " >> /usr/share/logstash/config/logstash.yml
 
   sed -i 's:#user => service_logstash_internal:user => service_logstash_internal:g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#password => service_logstash_internal_password:password => '$XPACK_SECURITY_ENABLED_LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => service_logstash_internal_password:password => '$SECURITY_ENABLED_LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$XPACK_SECURITY_ENABLED_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
+  sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$SECURITY_ENABLED_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
   
 fi
 
