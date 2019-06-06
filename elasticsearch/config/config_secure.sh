@@ -24,15 +24,15 @@ instances:
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_ENABLED_CA_PEM --ca-key $SECURITY_ENABLED_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_ENABLED_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
   rm certs.zip
 
   popd
 
-  chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM
+  chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod 770 /usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM
+  chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
@@ -44,14 +44,14 @@ xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM\" ]
+xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_CA_PEM\" ]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_ENABLED_CA_PEM\" ]
+xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_CA_PEM\" ]
 " >> $elastic_config_file
 
 fi

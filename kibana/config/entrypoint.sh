@@ -66,7 +66,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 elasticsearch.username: \"elastic\"
 elasticsearch.password: \"$SECURITY_ENABLED_ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
-elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_ENABLED_CA_PEM\"]
+elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_CA_PEM\"]
 
 server.ssl.enabled: true
 server.ssl.certificate: $SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem
@@ -82,8 +82,8 @@ server.ssl.key: $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
   
   pushd $CA_PATH
 
-  chown kibana: $CA_PATH/$SECURITY_ENABLED_CA_PEM
-  chmod 440 $CA_PATH/$SECURITY_ENABLED_CA_PEM
+  chown kibana: $CA_PATH/$SECURITY_CA_PEM
+  chmod 440 $CA_PATH/$SECURITY_CA_PEM
 
   openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 

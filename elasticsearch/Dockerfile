@@ -14,9 +14,9 @@ ENV ENABLE_CONFIGURE_S3="false"
 ENV TEMPLATE_VERSION=v3.9.1
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
-# command: $ docker build <elasticsearch_directory> --build-arg SECURITY_ENABLED_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_ENABLED_CA_KEY_LOCATION=<CA_KEY_LOCATION>
-# ENV variables are necessary: SECURITY_ENABLED_CA_PEM, SECURITY_ENABLED_CA_KEY 
-ARG SECURITY_ENABLED_CA_PEM_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s/certs/server.TEST-CA-signed.pem"
+# command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_ENABLED_CA_KEY_LOCATION=<CA_KEY_LOCATION>
+# ENV variables are necessary: SECURITY_CA_PEM, SECURITY_ENABLED_CA_KEY 
+ARG SECURITY_CA_PEM_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s/certs/server.TEST-CA-signed.pem"
 ARG SECURITY_ENABLED_CA_KEY_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s/certs/server.TEST-CA.key"
 
 # Elasticearch cluster configuration environment variables
@@ -36,7 +36,7 @@ ENV ELASTIC_CLUSTER="false" \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # CA cert for Transport SSL
-ADD $SECURITY_ENABLED_CA_PEM_LOCATION /usr/share/elasticsearch/config
+ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config
 ADD $SECURITY_ENABLED_CA_KEY_LOCATION /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh
