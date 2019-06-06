@@ -30,26 +30,13 @@ COPY config/entrypoint.sh /entrypoint.sh
 COPY config/00-wazuh.sh /entrypoint-scripts/00-wazuh.sh
 
 # Sync calls are due to https://github.com/docker/docker/issues/9547
-RUN chmod 755 /init.bash && \
-    sync && /init.bash && \
-    sync && rm /init.bash && \
-    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
     chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-wazuh.sh 
 
 COPY config/filebeat.yml /etc/filebeat/
 RUN chmod go-w /etc/filebeat/filebeat.yml 
-
-# Setting volumes
-VOLUME ["/var/ossec/api/configuration"]
-VOLUME ["/var/ossec/etc"]
-VOLUME ["/var/ossec/logs"]
-VOLUME ["/var/ossec/queue"]
-VOLUME ["/var/ossec/var/multigroups"]
-VOLUME ["/etc/filebeat"]
-VOLUME ["/etc/postfix"]
-VOLUME ["/var/lib/filebeat"]
 
 # Services ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
@@ -69,6 +56,20 @@ RUN chmod +x /etc/service/wazuh-api/run && \
     chmod +x /etc/service/wazuh/run && \
     chmod +x /etc/service/postfix/run && \
     chmod +x /etc/service/filebeat/run 
+
+RUN chmod 755 /init.bash && \
+    sync && /init.bash && \
+    sync && rm /init.bash 
+
+# Setting volumes
+VOLUME ["/var/ossec/api/configuration"]
+VOLUME ["/var/ossec/etc"]
+VOLUME ["/var/ossec/logs"]
+VOLUME ["/var/ossec/queue"]
+VOLUME ["/var/ossec/var/multigroups"]
+VOLUME ["/etc/filebeat"]
+VOLUME ["/etc/postfix"]
+VOLUME ["/var/lib/filebeat"]
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
