@@ -64,7 +64,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "
 # Required set the passwords
 elasticsearch.username: \"elastic\"
-elasticsearch.password: \"$ELASTIC_PASS\"
+elasticsearch.password: \"$SECURITY_ENABLED_ELASTIC_PASS\"
 # Elasticsearch from/to Kibana
 elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_ENABLED_CA_PEM\"]
 
