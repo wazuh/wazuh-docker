@@ -15,7 +15,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u elastic:${ELASTIC_PASS} -k"
+  auth="-u elastic:${SECURITY_ENABLED_ELASTIC_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
