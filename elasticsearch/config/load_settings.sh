@@ -17,7 +17,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-uelastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k"
+  auth="-uelastic:${SECURITY_ELASTIC_PASSWORD} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -60,30 +60,30 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   sleep 20
 
   echo "Seting remote monitoring password"
-  until curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$SECURITY_ENABLED_REMOTE_USER_PASS'" }' ; do
+  until curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$SECURITY_ENABLED_REMOTE_USER_PASS'" }' ; do
     >&2 echo "Unavailable password seeting- sleeping"
     sleep 2
   done
   echo "Seting Kibana password"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$SECURITY_ENABLED_KIBANA_PASS'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$SECURITY_ENABLED_KIBANA_PASS'" }'
   echo "Seting APM password"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_ENABLED_APM_SYSTEM_PASS'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_ENABLED_APM_SYSTEM_PASS'" }'
   echo "Seting Beats password"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$SECURITY_ENABLED_BEATS_SYSTEM_PASS'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$SECURITY_ENABLED_BEATS_SYSTEM_PASS'" }'
   echo "Seting Logstash password"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d ' { "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d ' { "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
   sleep 5
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/service_logstash ' -d ' { "password":"'$SECURITY_ENABLED_LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : " Service Internal Logstash User" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/service_logstash ' -d ' { "password":"'$SECURITY_ENABLED_LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : " Service Internal Logstash User" }'
   echo "Passwords established for all Elastic Stack users"
 
   echo "Creating Wazuh APP access rol"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_user ' -d ' { "indices": [ { "names": [ ".kibana*" ],  "privileges": ["read", "view_index_metadata"] }, { "names": [ ".wazuh" ],  "privileges": ["read","view_index_metadata"] }, { "names": [ "wazuh*" ],  "privileges": ["read","view_index_metadata"] } ] }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_user ' -d ' { "indices": [ { "names": [ ".kibana*" ],  "privileges": ["read", "view_index_metadata"] }, { "names": [ ".wazuh" ],  "privileges": ["read","view_index_metadata"] }, { "names": [ "wazuh*" ],  "privileges": ["read","view_index_metadata"] } ] }'
   sleep 5
   echo "Wazuh APP access rol created"
   echo "Creating Admin user"
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
   sleep 5
-  curl -u elastic:${SECURITY_ENABLED_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ENABLED_ADMIN_USER" -d ' { "password":"'$SECURITY_ENABLED_ADMIN_PASS'", "roles" : [ "service_wazuh_admin", "kibana_user"],  "full_name" : "Admin User" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ENABLED_ADMIN_USER" -d ' { "password":"'$SECURITY_ENABLED_ADMIN_PASS'", "roles" : [ "service_wazuh_admin", "kibana_user"],  "full_name" : "Admin User" }'
   echo "Admin user created"
 
 fi
