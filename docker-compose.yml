@@ -76,7 +76,7 @@ services:
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - SECURITY_ENABLED=yes
-      - ELASTIC_PASS=elastic_pass
+      - SECURITY_ENABLED_ELASTIC_PASS=elastic_pass
       - SECURITY_ENABLED_KIBANA_PASS=kibana_pass
       - SECURITY_ENABLED_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
       - SECURITY_ENABLED_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
