@@ -52,10 +52,10 @@ services:
       - SECURITY_ELASTIC_PASSWORD=elastic_pass
       - SECURITY_KIBANA_PASS=kibana_pass
       - SECURITY_LOGSTASH_PASS=logstash_pass
-      - SECURITY_ENABLED_APM_SYSTEM_PASS=apmSystem_pass
-      - SECURITY_ENABLED_BEATS_SYSTEM_PASS=beatsSystem_pass
-      - SECURITY_ENABLED_REMOTE_USER_PASS=remoteUser_pass
-      - SECURITY_ENABLED_CA_PASSPHRASE=ca_pass
+      - SECURITY_APM_SYSTEM_PASS=apmSystem_pass
+      - SECURITY_BEATS_SYSTEM_PASS=beatsSystem_pass
+      - SECURITY_REMOTE_USER_PASS=remoteUser_pass
+      - SECURITY_CA_PASSPHRASE=ca_pass
       - SECURITY_CERTIFICATE_DNS=elasticsearch
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
       - SECURITY_CA_KEY=server.TEST-CA.key
