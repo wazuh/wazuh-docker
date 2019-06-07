@@ -47,10 +47,10 @@ services:
       - ELASTICSEARCH_IP=elasticsearch
       - ELASTICSEARCH_PORT=9200
       - SECURITY_ENABLED=yes
-      - SECURITY_ENABLED_ADMIN_USER=admin_user
-      - SECURITY_ENABLED_ADMIN_PASS=admin_pass
+      - SECURITY_ADMIN_USER=admin_user
+      - SECURITY_ADMIN_PASS=admin_pass
       - SECURITY_ELASTIC_PASSWORD=elastic_pass
-      - SECURITY_ENABLED_KIBANA_PASS=kibana_pass
+      - SECURITY_KIBANA_PASS=kibana_pass
       - SECURITY_LOGSTASH_PASS=logstash_pass
       - SECURITY_ENABLED_APM_SYSTEM_PASS=apmSystem_pass
       - SECURITY_ENABLED_BEATS_SYSTEM_PASS=beatsSystem_pass
@@ -58,7 +58,7 @@ services:
       - SECURITY_ENABLED_CA_PASSPHRASE=ca_pass
       - SECURITY_CERTIFICATE_DNS=elasticsearch
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
-      - SECURITY_ENABLED_CA_KEY=server.TEST-CA.key
+      - SECURITY_CA_KEY=server.TEST-CA.key
     ulimits:
       memlock:
         soft: -1
@@ -77,7 +77,7 @@ services:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - SECURITY_ENABLED=yes
       - SECURITY_ENABLED_ELASTIC_PASS=elastic_pass
-      - SECURITY_ENABLED_KIBANA_PASS=kibana_pass
+      - SECURITY_KIBANA_PASS=kibana_pass
       - SECURITY_ENABLED_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
       - SECURITY_ENABLED_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200

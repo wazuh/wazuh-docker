@@ -24,7 +24,7 @@ instances:
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_ENABLED_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_ENABLED_CA_PASSPHRASE
   unzip certs.zip
   rm certs.zip
 

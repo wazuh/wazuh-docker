@@ -65,7 +65,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     sleep 2
   done
   echo "Seting Kibana password"
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$SECURITY_ENABLED_KIBANA_PASS'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$SECURITY_KIBANA_PASS'" }'
   echo "Seting APM password"
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_ENABLED_APM_SYSTEM_PASS'" }'
   echo "Seting Beats password"
@@ -83,7 +83,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "Creating Admin user"
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
   sleep 5
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ENABLED_ADMIN_USER" -d ' { "password":"'$SECURITY_ENABLED_ADMIN_PASS'", "roles" : [ "service_wazuh_admin", "kibana_user"],  "full_name" : "Admin User" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ADMIN_USER" -d ' { "password":"'$SECURITY_ADMIN_PASS'", "roles" : [ "service_wazuh_admin", "kibana_user"],  "full_name" : "'$SECURITY_ADMIN_USER'" }'
   echo "Admin user created"
 
 fi
