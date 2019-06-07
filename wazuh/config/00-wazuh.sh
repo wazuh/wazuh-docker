@@ -37,11 +37,11 @@ edit_configuration() { # $1 -> setting,  $2 -> value
 }
 
 ##############################################################################
-# This function will mount every directory contained in data_dirs.env in the 
-# respective path if this is empty. 
-# If it is empty means permanent data volume is also empty. Otherwise it 
-# will not be copied because there is already data in the volume for the 
-# specified path.
+# This function will attempt to mount every directory in data_dirs.env 
+# into the respective path. 
+# If the path is empty means permanent data volume is also empty, so a backup  
+# will be copied into it. Otherwise it will not be copied because there is  
+# already data inside the volume for the specified path.
 ##############################################################################
 
 mount_permanent_data() {
