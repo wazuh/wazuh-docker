@@ -36,6 +36,13 @@ edit_configuration() { # $1 -> setting,  $2 -> value
   sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${WAZUH_INSTALL_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
 }
 
+##############################################################################
+# This function will mount every directory contained in data_dirs.env in the 
+# respective path if this is empty. 
+# If it is empty means permanent data volume is also empty. Otherwise it 
+# will not be copied because there is already data in the volume for the 
+# specified path.
+##############################################################################
 
 mount_permanent_data() {
   for ossecdir in "${DATA_DIRS[@]}"; do
@@ -165,9 +172,10 @@ custom_filebeat_output_ip() {
 
 
 main() {
-
+  # Mount data_dirs.env paths
   mount_permanent_data
 
+  # Update data_files.env 
   update_permanent_data
 
   rm /var/ossec/queue/db/.template.db
@@ -200,6 +208,7 @@ main() {
 
   custom_filebeat_output_ip
 
+  # Delete backup/mirroring folder
   rm -rf ${WAZUH_INSTALL_PATH}/docker-backups
 }
 
