@@ -15,7 +15,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u elastic:${SECURITY_ENABLED_ELASTIC_PASS} -k"
+  auth="-u elastic:${SECURITY_ELASTIC_PASSWORD} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -64,18 +64,18 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "
 # Required set the passwords
 elasticsearch.username: \"elastic\"
-elasticsearch.password: \"$SECURITY_ENABLED_ELASTIC_PASS\"
+elasticsearch.password: \"$SECURITY_ELASTIC_PASSWORD\"
 # Elasticsearch from/to Kibana
 elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_CA_PEM\"]
 
 server.ssl.enabled: true
-server.ssl.certificate: $SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem
-server.ssl.key: $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
+server.ssl.certificate: $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem
+server.ssl.key: $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key
 " >> /usr/share/kibana/config/kibana.yml
 
   echo "Create SSL directories."
 
-  mkdir -p $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH $SECURITY_ENABLED_KIBANA_SSL_CERT_PATH
+  mkdir -p $SECURITY_KIBANA_SSL_KEY_PATH $SECURITY_KIBANA_SSL_CERT_PATH
   CA_PATH="/usr/share/kibana/config"
 
   echo "Creating SSL certificates."
@@ -85,7 +85,7 @@ server.ssl.key: $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key
   chown kibana: $CA_PATH/$SECURITY_CA_PEM
   chmod 440 $CA_PATH/$SECURITY_CA_PEM
 
-  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $SECURITY_ENABLED_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_ENABLED_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
+  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
 
   chown -R kibana: $CA_PATH/ssl
   chmod -R 770 $CA_PATH/ssl
