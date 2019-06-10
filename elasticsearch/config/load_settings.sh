@@ -75,15 +75,8 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   sleep 5
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/service_logstash ' -d ' { "password":"'$SECURITY_LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : " Service Internal Logstash User" }'
   echo "Passwords established for all Elastic Stack users"
-
-  echo "Creating Wazuh APP access rol"
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_user ' -d ' { "indices": [ { "names": [ ".kibana*" ],  "privileges": ["read", "view_index_metadata"] }, { "names": [ ".wazuh" ],  "privileges": ["read","view_index_metadata"] }, { "names": [ "wazuh*" ],  "privileges": ["read","view_index_metadata"] } ] }'
-  sleep 5
-  echo "Wazuh APP access rol created"
   echo "Creating Admin user"
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_admin ' -d ' { "cluster": ["manage_security", "monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh*" ],  "privileges": ["read", "view_index_metadata"] } ] }'
-  sleep 5
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ADMIN_USER" -d ' { "password":"'$SECURITY_ADMIN_PASS'", "roles" : [ "service_wazuh_admin", "kibana_user"],  "full_name" : "'$SECURITY_ADMIN_USER'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ADMIN_USER" -d ' { "password":"'$SECURITY_ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "'$SECURITY_ADMIN_USER'" }'
   echo "Admin user created"
 
 fi

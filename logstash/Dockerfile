@@ -12,7 +12,7 @@ COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 # This CA is created for testing. Please set your own CA pem signed certificate. 
 # command: $ docker build <logstash_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_PEM_ARG=<CA_PEM_NAME>
 # ENV variables are necessary: SECURITY_CA_PEM 
-ARG SECURITY_CA_PEM_LOCATION="https://raw.githubusercontent.com/wazuh/wazuh-docker/k8s/certs/server.TEST-CA-signed.pem"
+ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
 ARG SECURITY_CA_PEM_ARG="server.TEST-CA-signed.pem"
 
 # CA for secure communication with Elastic
