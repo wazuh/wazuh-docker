@@ -3,7 +3,7 @@ version: '2'
 
 services:
   wazuh:
-    build: wazuh
+    image: wazuh/wazuh:3.9.1_7.1.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -12,7 +12,7 @@ services:
       - '514:514/udp'
       - '55000:55000'
   elasticsearch:
-    build: elasticsearch
+    image: wazuh/wazuh-elasticsearch:3.9.1_7.1.0
     hostname: elasticsearch
     restart: always
     ports:
@@ -30,7 +30,7 @@ services:
         hard: -1
     mem_limit: 2g
   kibana:
-    build: kibana
+    image: wazuh/wazuh-kibana:3.9.1_7.1.0
     hostname: kibana
     restart: always
     depends_on:
@@ -39,7 +39,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    build: nginx
+    image: wazuh/wazuh-nginx:3.9.1_7.1.0
     hostname: nginx
     restart: always
     environment:
