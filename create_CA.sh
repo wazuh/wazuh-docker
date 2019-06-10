@@ -99,7 +99,7 @@ create_own_CA ()
 full_own_creation ()
 {
     echo "Create directory demoCA. Press enter and fill in the first certificate with your data."
-    usr/lib/ssl/misc/CA.pl -newca
+    /usr/lib/ssl/misc/CA.pl -newca
     echo "demoCA directory created."
     create_own_CA
 }
