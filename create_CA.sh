@@ -72,7 +72,7 @@ fi
 
 create_own_CA ()
 {
-    SIGNED_CA= "${CA_NAME}-signed.pem"
+    SIGNED_CA="${CA_NAME}-signed.pem"
     KEY_CA="${CA_NAME}.key"
     CSR_CA="${CA_NAME}.csr"
     echo "Creation of the self-signed CA certificate."
