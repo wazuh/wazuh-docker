@@ -93,8 +93,8 @@ create_own_CA ()
     sed -i 's:ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_LOCATION="config/'$SIGNED_CA'":g' kibana/Dockerfile
     sed -i 's:ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_LOCATION="config/'$SIGNED_CA'":g' logstash/Dockerfile
     sed -i 's:ARG SECURITY_CA_PEM_ARG="server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_ARG="'$SIGNED_CA'":g' logstash/Dockerfile
-    sed -i 's:SECURITY_CA_PEM=server.TEST-CA-signed.pem:SECURITY_CA_PEM='$SIGNED_CA':g' docker-compose
-    sed -i 's:SECURITY_CA_KEY=server.TEST-CA.key:SECURITY_CA_KEY='$KEY_CA':g' docker-compose
+    sed -i 's:SECURITY_CA_PEM=server.TEST-CA-signed.pem:SECURITY_CA_PEM='$SIGNED_CA':g' docker-compose.yml
+    sed -i 's:SECURITY_CA_KEY=server.TEST-CA.key:SECURITY_CA_KEY='$KEY_CA':g' docker-compose.yml
     echo "Finished"
 }
 
