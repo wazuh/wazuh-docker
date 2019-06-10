@@ -89,7 +89,7 @@ create_own_CA ()
     cp ${SIGNED_CA} logstash/config/
     rm ${SIGNED_CA} ${KEY_CA} ${CSR_CA}
     sed -i 's:ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_LOCATION="config/'$SIGNED_CA'":g' elasticsearch/Dockerfile
-    sed -i 's:ARG SECURITY_CA_KEY_LOCATION="config/server.TEST-CA.key":ARG ASECURITY_CA_KEY_LOCATION="config/'$KEY_CA'":g' elasticsearch/Dockerfile
+    sed -i 's:ARG SECURITY_CA_KEY_LOCATION="config/server.TEST-CA.key":ARG SECURITY_CA_KEY_LOCATION="config/'$KEY_CA'":g' elasticsearch/Dockerfile
     sed -i 's:ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_LOCATION="config/'$SIGNED_CA'":g' kibana/Dockerfile
     sed -i 's:ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_LOCATION="config/'$SIGNED_CA'":g' logstash/Dockerfile
     sed -i 's:ARG SECURITY_CA_PEM_ARG="server.TEST-CA-signed.pem":ARG SECURITY_CA_PEM_ARG="'$SIGNED_CA'":g' logstash/Dockerfile
