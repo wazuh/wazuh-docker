@@ -67,14 +67,22 @@ fi
 
 create_own_CA ()
 {
+	# Set names for private key and CA files.
     SIGNED_CA="${CA_NAME}-signed.pem"
     KEY_CA="${CA_NAME}.key"
+
     echo "Creation of the self-signed CA certificate."
+
+	# Key creation
     echo "Generate CA private key"
     openssl genrsa -des3 -out ${KEY_CA} 2048
+    
+	# CA creation
     echo "Self sign certificate"
     openssl req -x509 -new -nodes -key  ${KEY_CA} -sha256 -days ${DAYS} -out ${SIGNED_CA}
     echo "Self signed CA created"
+
+	# Add CA and Key files in the Elastic Stack directories
     cp ${KEY_CA} elasticsearch/config/
     cp ${SIGNED_CA} elasticsearch/config/
     cp ${SIGNED_CA} kibana/config/

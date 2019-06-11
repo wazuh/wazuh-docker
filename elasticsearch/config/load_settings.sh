@@ -65,7 +65,9 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     sleep 2
   done
   echo "Seting Kibana password"
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/kibana/_password ' -d '{ "password":"'$SECURITY_KIBANA_PASS'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_app ' -d ' { "cluster": ["monitor"], "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read", "write", "index"] }, { "names": [ ".wazuh" ],  "privileges": ["read", "write", "index", "view_index_metadata", "delete"] }, { "names": [ "wazuh-monitoring*" ],  "privileges": ["read", "view_index_metadata", "delete", "write", "index"] } , { "names": [ "wazuh-alerts*" ],  "privileges": ["read", "view_index_metadata", "delete", "index"] } ] }'
+  sleep 5
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_KIBANA_USER"  -d '{ "password":"'$SECURITY_KIBANA_PASS'", "roles" : [ "kibana_system", "service_wazuh_app"],  "full_name" : "'$SECURITY_KIBANA_USER'" }'
   echo "Seting APM password"
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_APM_SYSTEM_PASS'" }'
   echo "Seting Beats password"

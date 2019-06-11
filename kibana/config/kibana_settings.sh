@@ -29,7 +29,7 @@ else
 fi
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u kibana:${SECURITY_KIBANA_PASS}"
+  auth="-u $SECURITY_KIBANA_USER:${SECURITY_KIBANA_PASS}"
   kibana_secure_ip="https://$kibana_ip"
 else
   auth=""
