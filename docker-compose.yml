@@ -27,6 +27,7 @@ services:
       - LS_HEAP_SIZE=2048m
       - SECURITY_ENABLED=yes
       - SECURITY_ELASTIC_PASSWORD=elastic_pass
+      - SECURITY_LOGSTASH_USER=service_logstash
       - SECURITY_LOGSTASH_PASS=logstash_pass
       - LOGSTASH_OUTPUT=https://elasticsearch:9200
       - ELASTICSEARCH_URL=https://elasticsearch:9200

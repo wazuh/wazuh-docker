@@ -60,13 +60,13 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "
 # Required set the passwords
 xpack.monitoring.enabled: true
-xpack.monitoring.elasticsearch.username: \"service_logstash\"
+xpack.monitoring.elasticsearch.username: \"$SECURITY_LOGSTASH_USER\"
 xpack.monitoring.elasticsearch.password: \"$SECURITY_LOGSTASH_PASS\"
-xpack.management.elasticsearch.username: \"service_logstash\"
+xpack.management.elasticsearch.username: \"$SECURITY_LOGSTASH_USER\"
 xpack.management.elasticsearch.password: \"$SECURITY_LOGSTASH_PASS\"
 " >> /usr/share/logstash/config/logstash.yml
 
-  sed -i 's:#user => service_logstash:user => service_logstash:g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#user => service_logstash:user => '$SECURITY_LOGSTASH_USER':g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#password => service_logstash_internal_password:password => '$SECURITY_LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$SECURITY_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
