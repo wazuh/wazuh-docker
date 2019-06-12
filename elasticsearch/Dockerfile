@@ -13,7 +13,7 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ENV TEMPLATE_VERSION=v3.9.1
+ENV TEMPLATE_VERSION=v3.9.2
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
