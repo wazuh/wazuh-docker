@@ -78,7 +78,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_LOGSTASH_USER" -d '{ "password":"'$SECURITY_LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : "Service Internal Logstash User" }'
   echo "Passwords established for all Elastic Stack users"
   echo "Creating Admin user"
-  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ADMIN_USER" -d '{ "password":"'$SECURITY_ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "'$SECURITY_ADMIN_USER'" }'
+  curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/wazuh_admin" -d '{ "password":"'$SECURITY_ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "WAZUH admin" }'
   echo "Admin user created"
 
 fi
