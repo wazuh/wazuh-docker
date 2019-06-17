@@ -59,12 +59,12 @@ sleep 2
 if [[ $SECURITY_ENABLED == "yes" ]]; then
 
 
+  # Create keystore
+  /usr/share/kibana/bin/kibana-keystore create
+  
   echo "Setting security Kibana configuiration options."
 
   echo "
-# Required set the passwords
-elasticsearch.username: \"$SECURITY_KIBANA_USER\"
-elasticsearch.password: \"$SECURITY_KIBANA_PASS\"
 # Elasticsearch from/to Kibana
 elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_CA_PEM\"]
 
@@ -84,14 +84,18 @@ server.ssl.key: $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key
 
   chown kibana: $CA_PATH/$SECURITY_CA_PEM
   chmod 440 $CA_PATH/$SECURITY_CA_PEM
-
-  openssl req -x509 -batch -nodes -days 18250 -newkey rsa:2048 -keyout $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem  >/dev/null
-
+  SECURITY_KEY_PASS=`openssl rand -base64 32`
+  openssl req -batch -x509 -days 18250 -newkey rsa:2048 -keyout $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem -passout pass:"$SECURITY_KEY_PASS" >/dev/null
   chown -R kibana: $CA_PATH/ssl
   chmod -R 770 $CA_PATH/ssl
 
   popd
   echo "SSL certificates created."
+
+  # Add keys to keystore
+  echo -e "$SECURITY_KIBANA_PASS" | /usr/share/kibana/bin/kibana-keystore add elasticsearch.password --stdin
+  echo -e "$SECURITY_KEY_PASS" | /usr/share/kibana/bin/kibana-keystore add server.ssl.keyPassphrase --stdin
+  echo -e "$SECURITY_KIBANA_USER" | /usr/share/kibana/bin/kibana-keystore add elasticsearch.username --stdin
 
 fi
 

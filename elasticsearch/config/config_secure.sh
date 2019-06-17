@@ -26,8 +26,8 @@ instances:
 " > instances.yml
 
   # Genereate .p12 certificate and key
-  SECURITY_CERT_PASSPHRASE=`openssl rand -base64 32`
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_CERT_PASSPHRASE
+  SECURITY_KEY_PASSPHRASE=`openssl rand -base64 32`
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_KEY_PASSPHRASE
   unzip certs.zip
   rm certs.zip
 
@@ -59,10 +59,10 @@ xpack.security.http.ssl.truststore.path: /usr/share/elasticsearch/config/elastic
 " >> $elastic_config_file
 
   # Add keys to keystore
-  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
-  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
-  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
-  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password
 
 fi
 
