@@ -48,7 +48,6 @@ services:
       - ELASTICSEARCH_IP=elasticsearch
       - ELASTICSEARCH_PORT=9200
       - SECURITY_ENABLED=yes
-      - SECURITY_ADMIN_USER=admin_user
       - SECURITY_ADMIN_PASS=admin_pass
       - SECURITY_ELASTIC_PASSWORD=elastic_pass
       - SECURITY_KIBANA_USER=service_kibana

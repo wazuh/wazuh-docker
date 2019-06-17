@@ -53,19 +53,18 @@ xpack.security.transport.ssl.truststore.path: /usr/share/elasticsearch/config/el
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
-xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.http.ssl.keystore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
 xpack.security.http.ssl.truststore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
 " >> $elastic_config_file
 
   # Create keystore
-  /usr/share/kibana/bin/kibana-keystore create
+  /usr/share/elasticsearch/bin/elasticsearch-keystore create
 
   # Add keys to keystore
-  echo -e $SECURITY_KEY_PASSPHRASE | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password --stdin
-  echo -e $SECURITY_KEY_PASSPHRASE | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password --stdin
-  echo -e $SECURITY_KEY_PASSPHRASE | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password --stdin
-  echo -e $SECURITY_KEY_PASSPHRASE | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password --stdin
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password --stdin
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password --stdin
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password --stdin
+  echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password --stdin
 
 fi
 

@@ -66,10 +66,10 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "
 # Required set the passwords
 xpack.monitoring.enabled: true
-xpack.monitoring.elasticsearch.username: "${LOGSTASH_KS_USER}"
-xpack.monitoring.elasticsearch.password: "${LOGSTASH_KS_PASS}"
-xpack.management.elasticsearch.username: "${LOGSTASH_KS_USER}"
-xpack.management.elasticsearch.password: "${LOGSTASH_KS_PASS}"
+xpack.monitoring.elasticsearch.username: \${LOGSTASH_KS_USER}
+xpack.monitoring.elasticsearch.password: \${LOGSTASH_KS_PASS}
+xpack.management.elasticsearch.username: \${LOGSTASH_KS_USER}
+xpack.management.elasticsearch.password: \${LOGSTASH_KS_PASS}
 " >> /usr/share/logstash/config/logstash.yml
 
   ## Settings for 01-wazuh.conf
