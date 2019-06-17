@@ -57,21 +57,34 @@ sleep 2
 
 if [[ $SECURITY_ENABLED == "yes" ]]; then
 
+  ## Create secure keystore
+  SECURITY_RANDOM_PASS=`date +%s | sha256sum | base64 | head -c 32 ; echo`
+  export LOGSTASH_KEYSTORE_PASS=$SECURITY_RANDOM_PASS
+  /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config create
+
+  ## Settings for logstash.yml
   echo "
 # Required set the passwords
 xpack.monitoring.enabled: true
-xpack.monitoring.elasticsearch.username: \"$SECURITY_LOGSTASH_USER\"
-xpack.monitoring.elasticsearch.password: \"$SECURITY_LOGSTASH_PASS\"
-xpack.management.elasticsearch.username: \"$SECURITY_LOGSTASH_USER\"
-xpack.management.elasticsearch.password: \"$SECURITY_LOGSTASH_PASS\"
+xpack.monitoring.elasticsearch.username: "${LOGSTASH_KS_USER}"
+xpack.monitoring.elasticsearch.password: "${LOGSTASH_KS_PASS}"
+xpack.management.elasticsearch.username: "${LOGSTASH_KS_USER}"
+xpack.management.elasticsearch.password: "${LOGSTASH_KS_PASS}"
 " >> /usr/share/logstash/config/logstash.yml
 
-  sed -i 's:#user => service_logstash:user => '$SECURITY_LOGSTASH_USER':g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#password => service_logstash_internal_password:password => '$SECURITY_LOGSTASH_PASS':g' /usr/share/logstash/pipeline/01-wazuh.conf
+  ## Settings for 01-wazuh.conf
+  sed -i 's:#user => service_logstash:user => "${LOGSTASH_KS_USER}":g' /usr/share/logstash/pipeline/01-wazuh.conf
+  sed -i 's:#password => service_logstash_internal_password:password => "${LOGSTASH_KS_PASS}":g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$SECURITY_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
+
+  ## Add keys to the keystore
+  echo -e "$SECURITY_LOGSTASH_USER" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_USER
+  echo -e "$SECURITY_LOGSTASH_PASS" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_PASS
+  
   
 fi
+  
 
 ##############################################################################
 # Waiting for wazuh alerts template
