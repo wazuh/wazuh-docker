@@ -3,7 +3,7 @@ version: '2'
 
 services:
   wazuh:
-    image: wazuh/wazuh:3.9.1_6.8.0
+    image: wazuh/wazuh:3.9.2_6.8.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -14,7 +14,7 @@ services:
     depends_on:
       - logstash
   logstash:
-    image: wazuh/wazuh-logstash:3.9.1_6.8.0
+    image: wazuh/wazuh-logstash:3.9.2_6.8.0
     hostname: logstash
     restart: always
     links:
@@ -26,7 +26,7 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.1_6.8.0
+    image: wazuh/wazuh-elasticsearch:3.9.2_6.8.0
     hostname: elasticsearch
     restart: always
     ports:
@@ -43,7 +43,7 @@ services:
         hard: -1
     mem_limit: 2g
   kibana:
-    image: wazuh/wazuh-kibana:3.9.1_6.8.0
+    image: wazuh/wazuh-kibana:3.9.2_6.8.0
     hostname: kibana
     restart: always
     depends_on:
@@ -52,7 +52,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    image: wazuh/wazuh-nginx:3.9.1_6.8.0
+    image: wazuh/wazuh-nginx:3.9.2_6.8.0
     hostname: nginx
     restart: always
     environment:

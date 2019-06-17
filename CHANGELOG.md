@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 
 - Option to disable additionals X-Pack applications and hide unnecesary management links ([@SitoRBJ](https://github.com/SitoRBJ)) ([#163](https://github.com/wazuh/wazuh-docker/pull/163))
 
+## Wazuh Docker v3.9.2_6.8.0
+
+### Added
+
+- Update to Wazuh version 3.9.2_6.8.0
+
 
 ## Wazuh Docker v3.9.1_6.8.0
 

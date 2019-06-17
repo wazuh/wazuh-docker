@@ -1,11 +1,11 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM docker.elastic.co/kibana/kibana:6.8.0
-ARG WAZUH_APP_VERSION=3.9.1_6.8.0
+ARG WAZUH_APP_VERSION=3.9.2_6.8.0
 USER root
 
-ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-3.9.1_6.8.0.zip /tmp
+ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
-RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-3.9.1_6.8.0.zip &&\
+RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
@@ -41,17 +41,17 @@ ENV PATTERN="" \
     WAZUH_MONITORING_REPLICAS="" \
     ADMIN_PRIVILEGES=""
 
-ARG XPACK_CANVAS="true"
-ARG XPACK_LOGS="true"
-ARG XPACK_INFRA="true"
-ARG XPACK_ML="true"
-ARG XPACK_DEVTOOLS="true"
-ARG XPACK_MONITORING="true"
-ARG XPACK_APM="true"
-ARG XPACK_MAPS="true"
-ARG XPACK_UPTIME="true"
+ARG XPACK_CANVAS="false"
+ARG XPACK_LOGS="false"
+ARG XPACK_INFRA="false"
+ARG XPACK_ML="false"
+ARG XPACK_DEVTOOLS="false"
+ARG XPACK_MONITORING="false"
+ARG XPACK_APM="false"
+ARG XPACK_MAPS="false"
+ARG XPACK_UPTIME="false"
 
-ARG CHANGE_WELCOME="false"
+ARG CHANGE_WELCOME="true"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
