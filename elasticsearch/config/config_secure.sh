@@ -17,6 +17,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "Setting configuration options."
 
+  # Create instances.yml for elasticsearch .p12 certificate and key
   echo "
 instances:
 - name: \"elasticsearch\"
@@ -24,35 +25,44 @@ instances:
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE
+  # Genereate .p12 certificate and key
+  SECURITY_CERT_PASSPHRASE=`openssl rand -base64 32`
+  /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_CERT_PASSPHRASE
   unzip certs.zip
   rm certs.zip
 
   popd
 
+  # Change permissions and owner of certificates
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
   chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
-
+  
+  # Settings for elasticsearch.yml
   echo "
 # Required to set the passwords and TLS options
 xpack.security.enabled: true
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
-xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.transport.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_CA_PEM\" ]
+xpack.security.transport.ssl.keystore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
+xpack.security.transport.ssl.truststore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
-xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.crt
-xpack.security.http.ssl.certificate_authorities: [ \"/usr/share/elasticsearch/config/$SECURITY_CA_PEM\" ]
+xpack.security.http.ssl.keystore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
+xpack.security.http.ssl.truststore.path: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.p12
 " >> $elastic_config_file
+
+  # Add keys to keystore
+  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
+  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
+  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+  echo -e "$SECURITY_CERT_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password
 
 fi
 
