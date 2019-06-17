@@ -9,7 +9,7 @@ else
   el_url="${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 fi
 
-if [ "x${WAZUH_API_URL}" = "x" ]; then
+if [[ "x${WAZUH_API_URL}" = "x" ]]; then
   wazuh_url="https://wazuh"
 else
   wazuh_url="${WAZUH_API_URL}"

@@ -26,7 +26,7 @@ instances:
 " > instances.yml
 
   # Genereate .p12 certificate and key
-  SECURITY_KEY_PASSPHRASE=`openssl rand -base64 32`
+  SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_KEY_PASSPHRASE
   unzip certs.zip
   rm certs.zip
