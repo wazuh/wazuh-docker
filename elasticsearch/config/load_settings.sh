@@ -60,6 +60,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   sleep 10
 
   echo "Seting remote monitoring password"
+  SECURITY_REMOTE_USER_PASS=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   until curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$SECURITY_REMOTE_USER_PASS'" }'; do
     >&2 echo "Unavailable password seeting- sleeping"
     sleep 2
@@ -69,8 +70,10 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   sleep 5
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_KIBANA_USER"  -d '{ "password":"'$SECURITY_KIBANA_PASS'", "roles" : [ "kibana_system", "service_wazuh_app"],  "full_name" : "Service Internal Kibana User" }'
   echo "Seting APM password"
+  SECURITY_APM_SYSTEM_PASS=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_APM_SYSTEM_PASS'" }'
   echo "Seting Beats password"
+  SECURITY_BEATS_SYSTEM_PASS=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$SECURITY_BEATS_SYSTEM_PASS'" }'
   echo "Seting Logstash password"
   curl -u elastic:${SECURITY_ELASTIC_PASSWORD} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
