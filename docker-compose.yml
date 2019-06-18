@@ -26,7 +26,6 @@ services:
     environment:
       - LS_HEAP_SIZE=2048m
       - SECURITY_ENABLED=yes
-      - SECURITY_ELASTIC_PASSWORD=elastic_pass
       - SECURITY_LOGSTASH_USER=service_logstash
       - SECURITY_LOGSTASH_PASS=logstash_pass
       - LOGSTASH_OUTPUT=https://elasticsearch:9200
@@ -76,7 +75,6 @@ services:
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - SECURITY_ENABLED=yes
-      - SECURITY_ELASTIC_PASSWORD=elastic_pass
       - SECURITY_KIBANA_USER=service_kibana
       - SECURITY_KIBANA_PASS=kibana_pass
       - SECURITY_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private

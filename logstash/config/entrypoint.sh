@@ -19,7 +19,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u elastic:${SECURITY_ELASTIC_PASSWORD} -k"
+  auth="-u ${SECURITY_LOGSTASH_USER}:${SECURITY_LOGSTASH_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
