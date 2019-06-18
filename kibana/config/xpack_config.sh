@@ -10,7 +10,6 @@ then
     [xpack.searchprofiler.enabled]=$XPACK_DEVTOOLS
     [xpack.ml.enabled]=$XPACK_ML
     [xpack.canvas.enabled]=$XPACK_CANVAS
-    [xpack.logstash.enabled]=$XPACK_LOGS
     [xpack.infra.enabled]=$XPACK_INFRA
     [xpack.monitoring.enabled]=$XPACK_MONITORING
     [console.enabled]=$XPACK_DEVTOOLS
@@ -29,7 +28,6 @@ xpack.grokdebugger.enabled: $XPACK_DEVTOOLS
 xpack.searchprofiler.enabled: $XPACK_DEVTOOLS
 xpack.ml.enabled: $XPACK_ML
 xpack.canvas.enabled: $XPACK_CANVAS
-xpack.logstash.enabled: $XPACK_LOGS
 xpack.infra.enabled: $XPACK_INFRA
 xpack.monitoring.enabled: $XPACK_MONITORING
 console.enabled: $XPACK_DEVTOOLS
