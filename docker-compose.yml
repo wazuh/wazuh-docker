@@ -58,6 +58,7 @@ services:
       - SECURITY_CERTIFICATE_DNS=elasticsearch
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
       - SECURITY_CA_KEY=server.TEST-CA.key
+      - SECURITY_EXPECTED_HOSTNAME=elasticsearch
     ulimits:
       memlock:
         soft: -1
