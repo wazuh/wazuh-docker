@@ -51,13 +51,11 @@ fi
 
 # Execute elasticsearch
 
-MY_HOSTNAME=`hostname`
+
 if [[ $SECURITY_ENABLED == "yes" ]]; then
-  if [[ $SECURITY_EXPECTED_HOSTNAME == $MY_HOSTNAME ]]; then
-    echo "Change Elastic password"
-    run_as_other_user_if_needed echo "$SECURITY_ELASTIC_PASSWORD" | elasticsearch-keystore add -xf 'bootstrap.password'
-    echo "Elastic password changed"
-  fi
+  echo "Change Elastic password"
+  run_as_other_user_if_needed echo "$SECURITY_ELASTIC_PASSWORD" | elasticsearch-keystore add -xf 'bootstrap.password'
+  echo "Elastic password changed"
 fi
 
 run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch 
