@@ -52,10 +52,13 @@ RUN bin/elasticsearch-plugin install --batch https://artifacts.elastic.co/downlo
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/config_cluster.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/10-config_cluster.sh /entrypoint-scripts/10-config_cluster.sh
 RUN chmod +x ./config_cluster.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/config_secure.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/20-config_secure.sh /entrypoint-scripts/20-config_secure.sh
+RUN chmod +x ./config_secure.sh
+
+COPY --chown=elasticsearch:elasticsearch ./config/30-entrypoint.sh /entrypoint-scripts/30-entrypoint.sh
 RUN chmod +x ./config_secure.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

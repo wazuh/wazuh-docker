@@ -27,7 +27,21 @@ instances:
 
   # Genereate .p12 certificate and key
   SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
-  /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_KEY_PASSPHRASE
+  if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+    /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $SECURITY_CA_PASSPHRASE --pass $SECURITY_KEY_PASSPHRASE
+  else
+    input=${SECURITY_CREDENTIALS_FILE}
+    CA_PASSPHRASE_FROM_FILE=""
+    while IFS= read -r line
+    do
+      if [[ $line == *"CA_PASSPHRASE"*]]; then
+        arrIN=(${IN//:/ })
+        CA_PASSPHRASE_FROM_FILE=${arrIN[1]}
+      fi
+    done < "$input"
+    /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE
+  fi
+  
   unzip certs.zip
   rm certs.zip
 
