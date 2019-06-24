@@ -63,9 +63,11 @@ ARG XPACK_UPTIME="true"
 
 ARG CHANGE_WELCOME="false"
 
-COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
+COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
+RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh
 
-RUN chmod +x ./wazuh_app_config.sh
+COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
+RUN chmod +x /entrypoint-scripts/20-entrypoint.sh
 
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 
