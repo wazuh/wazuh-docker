@@ -16,8 +16,11 @@ ENV TEMPLATE_VERSION=v3.9.1
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
 # command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_KEY_LOCATION=<CA_KEY_LOCATION>
 # ENV variables are necessary: SECURITY_CA_PEM, SECURITY_CA_KEY 
-ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
-ARG SECURITY_CA_KEY_LOCATION="config/server.TEST-CA.key"
+# Example:
+# ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
+# ARG SECURITY_CA_KEY_LOCATION="config/server.TEST-CA.key"
+ARG SECURITY_CA_PEM_LOCATION=""
+ARG SECURITY_CA_KEY_LOCATION=""
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
@@ -37,7 +40,7 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/e
 
 # CA cert for Transport SSL
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config
-ADD $SECURITY_CA_KEY_LOCATION /usr/share/elasticsearch/config
+ADD $SECURITY_CA_KEY_LOCATION /usr/share/elasticsearch/config 
 
 COPY config/entrypoint.sh /entrypoint.sh
 
