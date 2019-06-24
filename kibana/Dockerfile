@@ -21,6 +21,7 @@ RUN yum install openssl -y
 
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
+RUN mkdir /entrypoint-scripts
 
 USER kibana
 

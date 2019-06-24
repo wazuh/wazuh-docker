@@ -18,6 +18,10 @@ ARG SECURITY_CA_PEM_ARG="server.TEST-CA-signed.pem"
 # CA for secure communication with Elastic
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/logstash/config
 
+RUN mkdir /entrypoint-scripts
+COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh
+RUN chmod +x /entrypoint-scripts/10-entrypoint.sh
+
 # Set permissions for CA
 USER root
 RUN chown logstash: /usr/share/logstash/config/$SECURITY_CA_PEM_ARG

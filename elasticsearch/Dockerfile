@@ -13,6 +13,7 @@ ENV ENABLE_CONFIGURE_S3="false"
 
 ENV TEMPLATE_VERSION=v3.9.1
 
+
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
 # command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_KEY_LOCATION=<CA_KEY_LOCATION>
 # ENV variables are necessary: SECURITY_CA_PEM, SECURITY_CA_KEY 
@@ -41,6 +42,8 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/e
 # CA cert for Transport SSL
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config
 ADD $SECURITY_CA_KEY_LOCATION /usr/share/elasticsearch/config 
+
+RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
 
