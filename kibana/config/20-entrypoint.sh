@@ -120,6 +120,6 @@ fi
 # Run more configuration scripts.
 ##############################################################################
 
-./usr/share/kibana/kibana_settings.sh &
+bash /usr/share/kibana/kibana_settings.sh &
 
 /usr/local/bin/kibana-docker
