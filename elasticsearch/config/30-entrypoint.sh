@@ -23,7 +23,7 @@ run_as_other_user_if_needed() {
 #Disabling xpack features
 
 elasticsearch_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
-if grep -Fq  "#xpack features" "$elasticsearch_config_file";
+if grep -Fq  "#xpack features" "$elasticsearch_config_file" ;
 then 
   declare -A CONFIG_MAP=(
   [xpack.ml.enabled]=$XPACK_ML
@@ -43,7 +43,7 @@ fi
 
 # Run load settings script.
 
-./usr/share/elasticsearch/config/load_settings.sh &
+./usr/share/elasticsearch/load_settings.sh &
 
 # Execute elasticsearch
 
@@ -57,7 +57,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     ELASTIC_PASSWORD_FROM_FILE=""
     while IFS= read -r line
     do
-      if [[ $line == *"ELASTIC_PASSWORD"*]]; then
+      if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
         arrIN=(${IN//:/ })
         ELASTIC_PASSWORD_FROM_FILE=${arrIN[1]}
       fi

@@ -25,7 +25,7 @@ else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
   do
-    if [[ $line == *"LOGSTASH_PASSWORD"*]]; then
+    if [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       LOGSTASH_PASS=${arrIN[1]}
     fi

@@ -22,7 +22,7 @@ else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
   do
-    if [[ $line == *"KIBANA_PASSWORD"*]]; then
+    if [[ $line == *"KIBANA_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       KIBANA_PASS=${arrIN[1]}
     fi

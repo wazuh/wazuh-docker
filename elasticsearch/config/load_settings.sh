@@ -33,22 +33,22 @@ else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
   do
-    if [[ $line == *"ELASTIC_PASSWORD"*]]; then
+    if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       ELASTIC_PASS=${arrIN[1]}
-    elif [[ $line == *"KIBANA_PASSWORD"*]]; then
+    elif [[ $line == *"KIBANA_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       KIBANA_PASS=${arrIN[1]}
-    elif [[ $line == *"LOGSTASH_PASSWORD"*]]; then
+    elif [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       LOGSTASH_PASS=${arrIN[1]}
-    elif [[ $line == *"ADMIN_PASSWORD"*]]; then
+    elif [[ $line == *"ADMIN_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       ADMIN_PASS=${arrIN[1]}
-    elif [[ $line == *"WAZUH_API_USER"*]]; then
+    elif [[ $line == *"WAZUH_API_USER"* ]]; then
       arrIN=(${IN//:/ })
       WAZH_API_USER=${arrIN[1]}
-    elif [[ $line == *"WAZUH_API_PASSWORD"*]]; then
+    elif [[ $line == *"WAZUH_API_PASSWORD"* ]]; then
       arrIN=(${IN//:/ })
       WAZH_API_PASS=${arrIN[1]}
     fi
