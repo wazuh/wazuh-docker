@@ -9,8 +9,8 @@ ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-3.9.1_6.8.0.z
 # command: $ docker build <kibana_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION>
 # ENV variables are necessary: SECURITY_CA_PEM 
 # Sample:
-# ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
-ARG SECURITY_CA_PEM_LOCATION=""
+ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
+
 
 # CA for secure communication with Elastic
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config

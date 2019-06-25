@@ -27,6 +27,7 @@ RUN chmod 440 /usr/share/logstash/config/$SECURITY_CA_PEM_ARG
 # Add entrypoint scripts
 RUN mkdir /entrypoint-scripts
 RUN chmod -R 774 /entrypoint-scripts
+RUN chown -R logstash:logstash /entrypoint-scripts
 COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh
 RUN chmod +x /entrypoint-scripts/10-entrypoint.sh
 USER logstash
