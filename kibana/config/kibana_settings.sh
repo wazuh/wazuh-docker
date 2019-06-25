@@ -30,14 +30,6 @@ if [ "$KIBANA_INDEX" != "" ]; then
     echo "kibana.index: $KIBANA_INDEX" >> /usr/share/kibana/config/kibana.yml
 fi
 
-# If XPACK_SECURITY_ENABLED was set, then change the xpack.security.enabled option from true (default) to false.
-if [ "$XPACK_SECURITY_ENABLED" != "" ]; then
-  if grep -q 'xpack.security.enabled' /usr/share/kibana/config/kibana.yml; then
-    sed -i '/xpack.security.enabled/d' /usr/share/kibana/config/kibana.yml
-  fi
-    echo "xpack.security.enabled: $XPACK_SECURITY_ENABLED" >> /usr/share/kibana/config/kibana.yml
-fi
-
 if [ "$KIBANA_IP" != "" ]; then
   kibana_ip="$KIBANA_IP"
 else
