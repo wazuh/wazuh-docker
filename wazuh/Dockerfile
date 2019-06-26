@@ -26,7 +26,7 @@ COPY config/data_dirs.env /data_dirs.env
 COPY config/init.bash /init.bash
 RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
-COPY config/00-wazuh.sh /entrypoint-scripts/00-wazuh.sh
+COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 RUN chmod 755 /init.bash && \
