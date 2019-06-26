@@ -135,8 +135,27 @@ done
 
 pushd /var/ossec/api/configuration/auth/
 
+
+if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  WAZUH_API_USER=${API_USER}
+  WAZUH_API_PASS=${API_USER}
+else
+  input=${SECURITY_CREDENTIALS_FILE}
+  while IFS= read -r line
+  do
+    if [[ $line == *"WAZUH_API_USER"* ]]; then
+      arrIN=(${IN//:/ })
+      WAZUH_API_USER=${arrIN[1]}
+    elif [[ $line == *"WAZUH_API_PASS"* ]]; then
+      arrIN=(${IN//:/ })
+      WAZUH_API_PASS=${arrIN[1]}
+    fi
+  done < "$input"
+ 
+fi
+
 echo "Change Wazuh API user credentials"
-change_user="node htpasswd -b -c user $API_USER $API_PASS"
+change_user="node htpasswd -b -c user $WAZUH_API_USER $WAZUH_API_PASS"
 eval $change_user
 
 popd
