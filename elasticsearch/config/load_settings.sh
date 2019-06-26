@@ -79,10 +79,10 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
   if [ "x$S3_PATH" != "x" ]; then
 
     if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
-      ./usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
+      bash /usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
 
     else
-      ./usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
+      bash /usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
 
