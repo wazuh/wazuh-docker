@@ -35,7 +35,7 @@ RUN chmod 755 /init.bash && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
     chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/00-wazuh.sh 
+    chmod 755 /entrypoint-scripts/01-wazuh.sh 
 
 COPY config/filebeat.yml /etc/filebeat/
 RUN chmod go-w /etc/filebeat/filebeat.yml 
