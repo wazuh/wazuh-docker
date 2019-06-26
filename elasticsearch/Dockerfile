@@ -11,7 +11,7 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ENV TEMPLATE_VERSION=v3.9.1
+ENV TEMPLATE_VERSION=v3.9.2
 
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
