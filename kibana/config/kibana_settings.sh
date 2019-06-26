@@ -37,7 +37,7 @@ else
   while IFS= read -r line
   do
     if [[ $line == *"KIBANA_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       KIBANA_PASS=${arrIN[1]}
     fi
   done < "$input"

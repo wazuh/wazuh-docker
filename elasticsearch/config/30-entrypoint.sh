@@ -58,7 +58,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     while IFS= read -r line
     do
       if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
-        arrIN=(${IN//:/ })
+        arrIN=(${line//:/ })
         ELASTIC_PASSWORD_FROM_FILE=${arrIN[1]}
       fi
     done < "$input"

@@ -35,7 +35,7 @@ instances:
     while IFS= read -r line
     do
       if [[ $line == *"CA_PASSPHRASE"* ]]; then
-        arrIN=(${IN//:/ })
+        arrIN=(${line//:/ })
         CA_PASSPHRASE_FROM_FILE=${arrIN[1]}
       fi
     done < "$input"

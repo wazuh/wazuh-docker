@@ -144,10 +144,10 @@ else
   while IFS= read -r line
   do
     if [[ $line == *"WAZUH_API_USER"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       WAZUH_API_USER=${arrIN[1]}
     elif [[ $line == *"WAZUH_API_PASS"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       WAZUH_API_PASS=${arrIN[1]}
     fi
   done < "$input"

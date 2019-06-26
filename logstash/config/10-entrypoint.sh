@@ -26,7 +26,7 @@ else
   while IFS= read -r line
   do
     if [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       LOGSTASH_PASS=${arrIN[1]}
     fi
   done < "$input"

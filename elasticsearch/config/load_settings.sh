@@ -34,22 +34,22 @@ else
   while IFS= read -r line
   do
     if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       ELASTIC_PASS=${arrIN[1]}
     elif [[ $line == *"KIBANA_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       KIBANA_PASS=${arrIN[1]}
     elif [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       LOGSTASH_PASS=${arrIN[1]}
     elif [[ $line == *"ADMIN_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       ADMIN_PASS=${arrIN[1]}
     elif [[ $line == *"WAZUH_API_USER"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       WAZH_API_USER=${arrIN[1]}
     elif [[ $line == *"WAZUH_API_PASSWORD"* ]]; then
-      arrIN=(${IN//:/ })
+      arrIN=(${line//:/ })
       WAZH_API_PASS=${arrIN[1]}
     fi
   done < "$input"
