@@ -138,7 +138,7 @@ pushd /var/ossec/api/configuration/auth/
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   WAZUH_API_USER=${API_USER}
-  WAZUH_API_PASS=${API_USER}
+  WAZUH_API_PASS=${API_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
