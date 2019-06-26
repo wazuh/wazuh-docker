@@ -25,6 +25,10 @@ instances:
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
 
+  # Change permissions and owner of ca
+  chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
+  chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
+
   # Genereate .p12 certificate and key
   SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
@@ -39,7 +43,16 @@ instances:
         CA_PASSPHRASE_FROM_FILE=${arrIN[1]}
       fi
     done < "$input"
+    echo "HEEEEEEEEEEEEEERE"
+    ls
+    echo $SECURITY_CA_PEM
+    echo $SECURITY_CA_KEY
+    echo $CA_PASSPHRASE_FROM_FILE
+    echo $SECURITY_KEY_PASSPHRASE
+    echo "HEEEEEEEEEEEEEERE"
     /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE
+    echo "/usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE"
+    echo "HEEEEEEEEEEEEEERE"
   fi
   
   unzip certs.zip
@@ -50,7 +63,6 @@ instances:
   # Change permissions and owner of certificates
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
   echo "Setting configuration options."
