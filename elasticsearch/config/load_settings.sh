@@ -96,6 +96,8 @@ fi
 
 if [[ $SECURITY_ENABLED == "yes" ]]; then
   MY_HOSTNAME=`hostname`
+  echo "Hostname:"
+  echo $MY_HOSTNAME
   if [[ $SECURITY_EXPECTED_HOSTNAME == $MY_HOSTNAME ]]; then
     echo "Seting up passwords for all Elastic Stack users"
 
