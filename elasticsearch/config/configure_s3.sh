@@ -8,8 +8,26 @@ set -e
 # monitoring
 ##############################################################################
 
+ELASTIC_PASS=""
+
+if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  ELASTIC_PASS=${SECURITY_ELASTIC_PASSWORD}
+
+else
+  input=${SECURITY_CREDENTIALS_FILE}
+  while IFS= read -r line
+  do
+    if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
+      arrIN=(${line//:/ })
+      ELASTIC_PASS=${arrIN[1]}
+    fi
+  done < "$input"
+ 
+fi
+
+
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u elastic:${SECURITY_ELASTIC_PASSWORD} -k"
+  auth="-u elastic:${ELASTIC_PASS} -k"
 else
   auth=""
 fi
