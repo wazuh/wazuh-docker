@@ -43,6 +43,7 @@ instances:
         CA_PASSPHRASE_FROM_FILE=${arrIN[1]}
       fi
     done < "$input"
+     /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE
   fi
   
   unzip certs.zip
