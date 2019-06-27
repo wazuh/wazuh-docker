@@ -43,16 +43,6 @@ instances:
         CA_PASSPHRASE_FROM_FILE=${arrIN[1]}
       fi
     done < "$input"
-    echo "HEEEEEEEEEEEEEERE"
-    ls
-    echo $SECURITY_CA_PEM
-    echo $SECURITY_CA_KEY
-    echo $CA_PASSPHRASE_FROM_FILE
-    echo $SECURITY_KEY_PASSPHRASE
-    echo "HEEEEEEEEEEEEEERE"
-    /usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE
-    echo "/usr/share/elasticsearch/bin/elasticsearch-certutil cert -in instances.yml --out certs.zip --ca-cert $SECURITY_CA_PEM --ca-key $SECURITY_CA_KEY --ca-pass $CA_PASSPHRASE_FROM_FILE --pass $SECURITY_KEY_PASSPHRASE"
-    echo "HEEEEEEEEEEEEEERE"
   fi
   
   unzip certs.zip
@@ -61,7 +51,6 @@ instances:
   popd
 
   # Change permissions and owner of certificates
-  chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
   chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
