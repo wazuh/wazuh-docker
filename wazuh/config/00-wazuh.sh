@@ -13,6 +13,7 @@ WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 AUTO_ENROLLMENT_ENABLED=${AUTO_ENROLLMENT_ENABLED:-true}
 API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
+restrict_permissions_go=(/etc/filebeat)
 
 print() {
   echo -e $1
@@ -210,6 +211,15 @@ main() {
 
   # Delete backup/mirroring folder
   rm -rf ${WAZUH_INSTALL_PATH}/docker-backups
+
+  # Restrict permissions for group and others
+
+  for folder in "${restrict_permissions_go[@]}"; do
+    for file in $folder/*; do
+      chmod go-w $file
+    done
+  done 
+
 }
 
 main
