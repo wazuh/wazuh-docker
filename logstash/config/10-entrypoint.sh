@@ -119,6 +119,18 @@ sleep 2
 
 >&2 echo "Wazuh alerts template is loaded."
 
+
+##############################################################################
+# Remove credentials file
+##############################################################################
+
+if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  echo "Security credentials file not used. Nothing to do."
+else
+  rm ${SECURITY_CREDENTIALS_FILE}
+fi
+
+
 ##############################################################################
 # Map environment variables to entries in logstash.yml.
 # Note that this will mutate logstash.yml in place if any such settings are found.

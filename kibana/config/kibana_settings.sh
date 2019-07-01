@@ -86,4 +86,11 @@ sleep 5
 # Do not ask user to help providing usage statistics to Elastic
 curl $auth -k -POST "$kibana_secure_ip:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
+# Remove credentials file
+if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  echo "Security credentials file not used. Nothing to do."
+else
+  rm ${SECURITY_CREDENTIALS_FILE}
+fi
+
 echo "End settings"
