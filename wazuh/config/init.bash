@@ -4,43 +4,32 @@
 #
 # Initialize the custom data directory layout
 #
-source /data_files.env
+source /permanent_data.env
 
 WAZUH_INSTALL_PATH=/var/ossec
-MIRRORING_PATH=${WAZUH_INSTALL_PATH}/docker-backups
-mkdir ${MIRRORING_PATH}
-Update=${MIRRORING_PATH}/update
-mkdir ${Update}
+DATA_TMP_PATH=${WAZUH_INSTALL_PATH}/data_tmp
+mkdir ${DATA_TMP_PATH}
+EXCLUSION_PATH=${DATA_TMP_PATH}/exclusion
+mkdir ${EXCLUSION_PATH}
 
-for ossecfile in "${DATA_FILES[@]}"; do
-  if [ ! -e ${Update}/${ossecfile}  ]
+for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
+  if [ ! -e ${EXCLUSION_PATH}/${exclusion_file}  ]
   then
-    DIR=$(dirname "${ossecfile}")
-    mkdir -p ${Update}/${DIR}
+    DIR=$(dirname "${exclusion_file}")
+    mkdir -p ${EXCLUSION_PATH}/${DIR}
   fi
-  mv ${WAZUH_INSTALL_PATH}/${ossecfile} ${Update}/${ossecfile}
+  mv ${exclusion_file} ${EXCLUSION_PATH}/${exclusion_file}
 done
 
-source /data_dirs.env
+PERMANENT_PATH=${DATA_TMP_PATH}/permanent
+mkdir ${PERMANENT_PATH}
 
-mount=${MIRRORING_PATH}/mount
-mkdir ${mount}
-
-for ossecdir in "${DATA_DIRS[@]}"; do
-  if [[ $ossecdir == /* ]]
+for permanent_dir in "${PERMANENT_DATA[@]}"; do
+  if [ ! -e ${PERMANENT_PATH}${permanent_dir}  ]
   then
-    if [ ! -e ${mount}${ossecdir}  ]
-    then
-      DIR=$(dirname "${ossecdir}")
-      mkdir -p ${mount}${DIR}
-    fi
-    mv ${ossecdir} ${mount}${ossecdir}
-  else
-    if [ ! -e ${mount}${WAZUH_INSTALL_PATH}/${ossecdir}  ]
-    then
-      DIR=$(dirname "${ossecdir}")
-      mkdir -p ${mount}${WAZUH_INSTALL_PATH}/${DIR}
-    fi
-    mv ${WAZUH_INSTALL_PATH}/${ossecdir} ${mount}${WAZUH_INSTALL_PATH}/${ossecdir}
+    DIR=$(dirname "${permanent_dir}")
+    mkdir -p ${PERMANENT_PATH}${DIR}
   fi
+  mv ${permanent_dir} ${PERMANENT_PATH}${permanent_dir}
+
 done

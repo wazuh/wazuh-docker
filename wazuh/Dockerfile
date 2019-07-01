@@ -19,11 +19,10 @@ RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg:
    apt-transport-https vim expect nodejs python-cryptography mailutils libsasl2-modules wazuh-manager=${WAZUH_VERSION} \
    wazuh-api=${WAZUH_VERSION} && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && rm -f \
    /var/ossec/logs/alerts/*/*/* && rm -f /var/ossec/logs/archives/*/*/* && rm -f /var/ossec/logs/firewall/*/*/* && rm -f \
-   /var/ossec/logs/api/*/*/* && rm -f /var/ossec/logs/cluster/*/*/* && rm -f /var/ossec/logs/ossec/*/*/*
+   /var/ossec/logs/api/*/*/* && rm -f /var/ossec/logs/cluster/*/*/* && rm -f /var/ossec/logs/ossec/*/*/* && rm /var/ossec/var/run/*
 
 # Adding first run script and entrypoint
-COPY config/data_files.env /data_files.env
-COPY config/data_dirs.env /data_dirs.env
+COPY config/permanent_data.env /permanent_data.env
 COPY config/init.bash /init.bash
 RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
@@ -62,6 +61,8 @@ RUN chmod 755 /init.bash && \
     sync && rm /init.bash 
 
 # Setting volumes
+# Once we declared a volume in the Dockerfile, changes made to that path will have no effect. In other words, any changes made
+# to the these paths from here to the end of the Dockerfile will not be taken into account when mounting the volume.
 VOLUME ["/var/ossec/api/configuration"]
 VOLUME ["/var/ossec/etc"]
 VOLUME ["/var/ossec/logs"]

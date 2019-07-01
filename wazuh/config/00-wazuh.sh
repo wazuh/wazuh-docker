@@ -6,8 +6,7 @@
 
 # Startup the services
 
-source /data_dirs.env
-source /data_files.env
+source /permanent_data.env
 
 WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
@@ -46,24 +45,14 @@ edit_configuration() { # $1 -> setting,  $2 -> value
 ##############################################################################
 
 mount_permanent_data() {
-  for ossecdir in "${DATA_DIRS[@]}"; do
-    if [[ $ossecdir == /* ]]
-    then
-      if find ${ossecdir} -mindepth 1 | read; then
-        print "Path ${ossecdir} is not empty"
-      else
-        print "Installing ${ossecdir}"
-        exec_cmd "mkdir -p $(dirname ${ossecdir})"
-        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/docker-backups/mount${ossecdir}/. ${ossecdir}"
-      fi
+  for permanent_dir in "${PERMANENT_DATA[@]}"; do
+    # Check if the path is not empty
+    if find ${permanent_dir} -mindepth 1 | read; then
+      print "The path ${permanent_dir} is already mounted"
     else
-      if find ${WAZUH_INSTALL_PATH}/${ossecdir} -mindepth 1 | read; then
-        print "Path ${ossecdir} is not empty"
-      else
-        print "Installing ${ossecdir}"
-        exec_cmd "mkdir -p $(dirname ${WAZUH_INSTALL_PATH}/${ossecdir})"
-        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/docker-backups/mount/${WAZUH_INSTALL_PATH}/${ossecdir}/. ${WAZUH_INSTALL_PATH}/${ossecdir}"
-      fi
+      print "Installing ${permanent_dir}"
+      exec_cmd "mkdir -p $(dirname ${permanent_dir})"
+      exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/. ${permanent_dir}"
     fi
   done
 }
@@ -75,12 +64,12 @@ mount_permanent_data() {
 # they must be updated to work properly if wazuh version is changed.
 ##############################################################################
 
-update_permanent_data() {
-  for ossecfile in "${DATA_FILES[@]}"; do
-    if [  -e ${WAZUH_INSTALL_PATH}/docker-backups/update/${ossecfile}  ]
+apply_exclusion_data() {
+  for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
+    if [  -e ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file}  ]
     then
-      print "Updating ${ossecfile}"
-      exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/docker-backups/update/${ossecfile} ${WAZUH_INSTALL_PATH}/${ossecfile}"
+      print "Updating ${exclusion_file}"
+      exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
     fi
   done
 }
@@ -173,13 +162,11 @@ custom_filebeat_output_ip() {
 
 
 main() {
-  # Mount data_dirs.env paths
+  # Attempt to mount permanent data paths
   mount_permanent_data
 
-  # Update data_files.env 
-  update_permanent_data
-
-  rm /var/ossec/queue/db/.template.db
+  # Update exclusion files contained in permanent data paths
+  apply_exclusion_data
 
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
@@ -210,7 +197,7 @@ main() {
   custom_filebeat_output_ip
 
   # Delete backup/mirroring folder
-  rm -rf ${WAZUH_INSTALL_PATH}/docker-backups
+  rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
   # Restrict permissions for group and others
 
