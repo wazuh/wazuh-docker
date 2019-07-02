@@ -196,16 +196,8 @@ main() {
 
   custom_filebeat_output_ip
 
-  # Delete backup/mirroring folder
+  # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
-
-  # Restrict permissions for group and others
-
-  for folder in "${restrict_permissions_go[@]}"; do
-    for file in $folder/*; do
-      chmod go-w $file
-    done
-  done 
 
 }
 
