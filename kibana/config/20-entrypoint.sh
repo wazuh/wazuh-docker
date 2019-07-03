@@ -13,10 +13,11 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
-
+KIBANA_USER=""
 KIBANA_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  KIBANA_USER=${SECURITY_KIBANA_USER}
   KIBANA_PASS=${SECURITY_KIBANA_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
@@ -25,6 +26,9 @@ else
     if [[ $line == *"KIBANA_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       KIBANA_PASS=${arrIN[1]}
+    elif [[ $line == *"KIBANA_USER"* ]]; then
+      arrIN=(${line//:/ })
+      KIBANA_USER=${arrIN[1]}
     fi
   done < "$input"
  
@@ -32,7 +36,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u ${SECURITY_KIBANA_USER}:${KIBANA_PASS} -k"
+  auth="-u ${KIBANA_USER}:${KIBANA_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -112,7 +116,7 @@ server.ssl.key: $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key
   # Add keys to keystore
   echo -e "$KIBANA_PASS" | /usr/share/kibana/bin/kibana-keystore add elasticsearch.password --stdin
   echo -e "$SECURITY_KEY_PASS" | /usr/share/kibana/bin/kibana-keystore add server.ssl.keyPassphrase --stdin
-  echo -e "$SECURITY_KIBANA_USER" | /usr/share/kibana/bin/kibana-keystore add elasticsearch.username --stdin
+  echo -e "$KIBANA_USER" | /usr/share/kibana/bin/kibana-keystore add elasticsearch.username --stdin
 
 fi
 

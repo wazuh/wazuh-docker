@@ -17,9 +17,11 @@ else
   el_url="${ELASTICSEARCH_URL}"
 fi
 
+LOGSTASH_USER=""
 LOGSTASH_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  LOGSTASH_USER=${SECURITY_LOGSTASH_USER}
   LOGSTASH_PASS=${SECURITY_LOGSTASH_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
@@ -28,13 +30,16 @@ else
     if [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       LOGSTASH_PASS=${arrIN[1]}
+    elif [[ $line == *"LOGSTASH_USER"* ]]; then
+      arrIN=(${line//:/ })
+      LOGSTASH_USER=${arrIN[1]}
     fi
   done < "$input"
  
 fi
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u ${SECURITY_LOGSTASH_USER}:${LOGSTASH_PASS} -k"
+  auth="-u ${LOGSTASH_USER}:${LOGSTASH_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
   auth=""
 else
@@ -94,7 +99,7 @@ xpack.management.elasticsearch.password: \${LOGSTASH_KS_PASS}
   sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$SECURITY_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
 
   ## Add keys to the keystore
-  echo -e "$SECURITY_LOGSTASH_USER" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_USER
+  echo -e "$LOGSTASH_USER" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_USER
   echo -e "$LOGSTASH_PASS" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_PASS
   
   

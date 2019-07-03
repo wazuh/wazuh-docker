@@ -16,16 +16,22 @@ else
 fi
 
 ELASTIC_PASS=""
+KIBANA_USER=""
 KIBANA_PASS=""
+LOGSTASH_USER=""
 LOGSTASH_PASS=""
+ADMIN_USER=""
 ADMIN_PASS=""
 WAZH_API_USER=""
 WAZH_API_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   ELASTIC_PASS=${SECURITY_ELASTIC_PASSWORD}
+  KIBANA_USER=${SECURITY_KIBANA_USER}
   KIBANA_PASS=${SECURITY_KIBANA_PASS}
+  LOGSTASH_USER=${SECURITY_LOGSTASH_USER}
   LOGSTASH_PASS=${SECURITY_LOGSTASH_PASS}
+  ADMIN_USER=${SECURITY_ADMIN_USER}
   ADMIN_PASS=${SECURITY_ADMIN_PASS}
   WAZH_API_USER=${API_USER}
   WAZH_API_PASS=${API_PASS}
@@ -36,12 +42,21 @@ else
     if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       ELASTIC_PASS=${arrIN[1]}
+    elif [[ $line == *"KIBANA_USER"* ]]; then
+      arrIN=(${line//:/ })
+      KIBANA_USER=${arrIN[1]}
     elif [[ $line == *"KIBANA_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       KIBANA_PASS=${arrIN[1]}
+    elif [[ $line == *"LOGSTASH_USER"* ]]; then
+      arrIN=(${line//:/ })
+      LOGSTASH_USER=${arrIN[1]}
     elif [[ $line == *"LOGSTASH_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       LOGSTASH_PASS=${arrIN[1]}
+    elif [[ $line == *"ADMIN_USER"* ]]; then
+      arrIN=(${line//:/ })
+      ADMIN_USER=${arrIN[1]}
     elif [[ $line == *"ADMIN_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       ADMIN_PASS=${arrIN[1]}
@@ -112,7 +127,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     echo "Seting Kibana password"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_app ' -d ' { "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read"] }, { "names": [ "wazuh-monitoring*", ".wazuh*" ],  "privileges": ["all"] } , { "names": [ "wazuh-alerts*" ],  "privileges": ["read", "view_index_metadata"] }  ] }'
     sleep 5
-    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_KIBANA_USER"  -d '{ "password":"'$KIBANA_PASS'", "roles" : [ "kibana_system", "service_wazuh_app"],  "full_name" : "Service Internal Kibana User" }'
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$KIBANA_USER"  -d '{ "password":"'$KIBANA_PASS'", "roles" : [ "kibana_system", "service_wazuh_app"],  "full_name" : "Service Internal Kibana User" }'
     echo "Seting APM password"
     SECURITY_APM_SYSTEM_PASS=`date +%s | sha256sum | base64 | head -c 16 ; echo`
     curl -u elastic:${ELASTIC_PASS} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_APM_SYSTEM_PASS'" }'
@@ -122,10 +137,10 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     echo "Seting Logstash password"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
     sleep 5
-    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_LOGSTASH_USER" -d '{ "password":"'$LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : "Service Internal Logstash User" }'
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$LOGSTASH_USER" -d '{ "password":"'$LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : "Service Internal Logstash User" }'
     echo "Passwords established for all Elastic Stack users"
     echo "Creating Admin user"
-    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$SECURITY_ADMIN_USER" -d '{ "password":"'$ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "Wazuh admin" }'
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$ADMIN_USER" -d '{ "password":"'$ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "Wazuh admin" }'
     echo "Admin user created"
   fi
 fi
