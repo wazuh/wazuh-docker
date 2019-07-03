@@ -12,7 +12,6 @@ WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 AUTO_ENROLLMENT_ENABLED=${AUTO_ENROLLMENT_ENABLED:-true}
 API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
-restrict_permissions_go=(/etc/filebeat)
 
 print() {
   echo -e $1
