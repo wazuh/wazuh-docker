@@ -71,6 +71,9 @@ instances:
   
   fi
   
+  # remove CA key
+  rm $SECURITY_CA_KEY
+
   popd
 
   echo "Setting configuration options."
