@@ -97,6 +97,10 @@ create_api_key_cert() {
   print "Create Wazuh API key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt -days 3650 -subj /CN=${HOSTNAME}/"
+
+  # Granting proper permissions 
+  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key
+  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt
 }
 
 ##############################################################################
@@ -188,7 +192,6 @@ main() {
 
   # Trap exit signals and do a proper shutdown
   trap "ossec_shutdown; exit" SIGINT SIGTERM
-  chmod -R g+rw ${WAZUH_INSTALL_PATH}
 
   docker_custom_args
 
