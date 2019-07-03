@@ -54,7 +54,7 @@ instances:
 
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
 
-    openssl ca -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $SECURITY_CA_PASSPHRASE -out elasticsearch.cert.pem
+    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $SECURITY_CA_PASSPHRASE -out elasticsearch.cert.pem
   
   else
     input=${SECURITY_CREDENTIALS_FILE}
@@ -67,7 +67,7 @@ instances:
       fi
     done < "$input"
     
-    openssl ca -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $CA_PASSPHRASE_FROM_FILE -out elasticsearch.cert.pem 
+    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $CA_PASSPHRASE_FROM_FILE -out elasticsearch.cert.pem 
   
   fi
   
