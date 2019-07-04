@@ -132,7 +132,7 @@ sleep 2
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   echo "Security credentials file not used. Nothing to do."
 else
-  rm ${SECURITY_CREDENTIALS_FILE}
+  shred -zvu ${SECURITY_CREDENTIALS_FILE}
 fi
 
 

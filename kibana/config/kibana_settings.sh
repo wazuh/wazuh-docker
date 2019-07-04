@@ -90,7 +90,7 @@ curl $auth -k -POST "$kibana_secure_ip:5601/api/telemetry/v1/optIn" -H "Content-
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   echo "Security credentials file not used. Nothing to do."
 else
-  rm ${SECURITY_CREDENTIALS_FILE}
+  shred -zvu ${SECURITY_CREDENTIALS_FILE}
 fi
 
 echo "End settings"
