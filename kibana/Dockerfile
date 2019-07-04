@@ -1,5 +1,5 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:6.5.4
+FROM docker.elastic.co/kibana/kibana:6.5.4-oss
 ARG WAZUH_APP_VERSION=3.8.2_6.5.4
 USER root
 
@@ -35,20 +35,6 @@ ENV PATTERN="" \
     WAZUH_MONITORING_REPLICAS="" \
     ADMIN_PRIVILEGES=""
 
-ARG XPACK_CANVAS="false"
-ARG XPACK_LOGS="false"
-ARG XPACK_INFRA="false"
-ARG XPACK_ML="false"
-ARG XPACK_DEVTOOLS="false"
-ARG XPACK_MONITORING="false"
-ARG XPACK_APM="false"
-ARG XPACK_SECURITY_ENABLED="false"
-ARG XPACK_REPORTING_ENABLED="false"
-ARG XPACK_SPACES_ENABLED="false"
-ARG XPACK_APM_ENABLED="false"
-ARG XPACK_GRAPH_ENABLED="false"
-ARG XPACK_MONITORING_ENABLED="false"
-
 ARG CHANGE_WELCOME="false"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
@@ -58,12 +44,6 @@ RUN chmod +x ./wazuh_app_config.sh
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 
 RUN chmod +x ./kibana_settings.sh
-
-COPY --chown=kibana:kibana ./config/xpack_config.sh ./
-
-RUN chmod +x ./xpack_config.sh
-
-RUN ./xpack_config.sh
 
 COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 
