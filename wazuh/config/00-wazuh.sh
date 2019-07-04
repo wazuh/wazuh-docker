@@ -79,8 +79,9 @@ apply_exclusion_data() {
 ##############################################################################
 
 remove_data_files() {
-  for dlt_file in "${PERMANENT_DATA_DLT[@]}"; do
-    exec_cmd "rm ${dlt_file}"
+  for del_file in "${PERMANENT_DATA_DEL[@]}"; do
+    print "Removing ${del_file}"
+    exec_cmd "rm ${del_file}"
   done
 }
 

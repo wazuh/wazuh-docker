@@ -14,12 +14,12 @@ RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /
    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
    groupadd -g 1000 ossec && useradd -u 1000 -g 1000 -d /var/ossec ossec
 
-RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && apt-get remove postfix && \
+RUN add-apt-repository universe && apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
    apt-get --no-install-recommends --no-install-suggests -y install openssl postfix bsd-mailx python-boto python-pip mailutils libsasl2-2 ca-certificates \
    libsasl2-modules apt-transport-https vim expect nodejs python-cryptography wazuh-manager=${WAZUH_VERSION} wazuh-api=${WAZUH_VERSION} && \
    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && rm -f /var/ossec/logs/alerts/*/*/* && rm -f /var/ossec/logs/archives/*/*/* &&\
    rm -f /var/ossec/logs/firewall/*/*/* && rm -f /var/ossec/logs/api/*/*/* && rm -f /var/ossec/logs/cluster/*/*/* &&\
-   rm -f /var/ossec/logs/ossec/*/*/* && rm /var/ossec/var/run/* && touch /etc/postfix/postfix-files
+   rm -f /var/ossec/logs/ossec/*/*/* && rm /var/ossec/var/run/* 
 
 # Adding first run script and entrypoint
 COPY config/permanent_data.env /permanent_data.env
