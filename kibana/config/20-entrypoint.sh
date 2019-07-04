@@ -104,11 +104,11 @@ server.ssl.key: $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key
   pushd $CA_PATH
 
   chown kibana: $CA_PATH/$SECURITY_CA_PEM
-  chmod 440 $CA_PATH/$SECURITY_CA_PEM
+  chmod 400 $CA_PATH/$SECURITY_CA_PEM
   SECURITY_KEY_PASS=`openssl rand -base64 32`
   openssl req -batch -x509 -days 18250 -newkey rsa:2048 -keyout $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key -out $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem -passout pass:"$SECURITY_KEY_PASS" >/dev/null
   chown -R kibana: $CA_PATH/ssl
-  chmod -R 770 $CA_PATH/ssl
+  chmod -R 400 $CA_PATH/ssl
 
   popd
   echo "SSL certificates created."

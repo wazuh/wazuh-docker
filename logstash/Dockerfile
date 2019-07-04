@@ -24,7 +24,7 @@ ADD $SECURITY_CA_PEM_LOCATION /usr/share/logstash/config
 # Set permissions for CA
 USER root
 RUN if [[ "x$SECURITY_CA_PEM_LOCATION" == x ]] ; then echo Nothing to do ; else chown logstash: /usr/share/logstash/config/$SECURITY_CA_PEM_ARG ; fi
-RUN if [[ "x$SECURITY_CA_PEM_LOCATION" == x ]] ; then echo Nothing to do ; else chmod 440 /usr/share/logstash/config/$SECURITY_CA_PEM_ARG ; fi
+RUN if [[ "x$SECURITY_CA_PEM_LOCATION" == x ]] ; then echo Nothing to do ; else chmod 400 /usr/share/logstash/config/$SECURITY_CA_PEM_ARG ; fi
 
 # Add entrypoint scripts
 RUN mkdir /entrypoint-scripts
