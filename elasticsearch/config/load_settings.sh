@@ -24,6 +24,8 @@ ADMIN_USER=""
 ADMIN_PASS=""
 WAZH_API_USER=""
 WAZH_API_PASS=""
+MONITORING_USER=""
+MONITORING_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   ELASTIC_PASS=${SECURITY_ELASTIC_PASSWORD}
@@ -35,6 +37,8 @@ if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   ADMIN_PASS=${SECURITY_ADMIN_PASS}
   WAZH_API_USER=${API_USER}
   WAZH_API_PASS=${API_PASS}
+  MONITORING_USER=${SECURITY_MONITORING_USER}
+  MONITORING_PASS=${SECURITY_MONITORING_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
@@ -66,6 +70,12 @@ else
     elif [[ $line == *"WAZUH_API_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       WAZH_API_PASS=${arrIN[1]}
+    elif [[ $line == *"MONITORING_USER"* ]]; then
+      arrIN=(${line//:/ })
+      MONITORING_USER=${arrIN[1]}
+    elif [[ $line == *"MONITORING_PASSWORD"* ]]; then
+      arrIN=(${line//:/ })
+      MONITORING_PASS=${arrIN[1]}
     fi
   done < "$input"
  
@@ -114,27 +124,27 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   echo "Hostname:"
   echo $MY_HOSTNAME
   if [[ $SECURITY_EXPECTED_HOSTNAME == $MY_HOSTNAME ]]; then
-    echo "Seting up passwords for all Elastic Stack users"
+    echo "Setting up passwords for all Elastic Stack users"
 
     sleep 10
 
-    echo "Seting remote monitoring password"
+    echo "Setting remote monitoring password"
     SECURITY_REMOTE_USER_PASS=`date +%s | sha256sum | base64 | head -c 16 ; echo`
     until curl -u elastic:${ELASTIC_PASS} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/remote_monitoring_user/_password ' -d '{ "password":"'$SECURITY_REMOTE_USER_PASS'" }'; do
       >&2 echo "Unavailable password seeting- sleeping"
       sleep 2
     done
-    echo "Seting Kibana password"
+    echo "Setting Kibana password"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_wazuh_app ' -d ' { "indices": [ { "names": [ ".kibana*", ".reporting*", ".monitoring*" ],  "privileges": ["read"] }, { "names": [ "wazuh-monitoring*", ".wazuh*" ],  "privileges": ["all"] } , { "names": [ "wazuh-alerts*" ],  "privileges": ["read", "view_index_metadata"] }  ] }'
     sleep 5
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$KIBANA_USER"  -d '{ "password":"'$KIBANA_PASS'", "roles" : [ "kibana_system", "service_wazuh_app"],  "full_name" : "Service Internal Kibana User" }'
-    echo "Seting APM password"
+    echo "Setting APM password"
     SECURITY_APM_SYSTEM_PASS=`date +%s | sha256sum | base64 | head -c 16 ; echo`
     curl -u elastic:${ELASTIC_PASS} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/apm_system/_password ' -d '{ "password":"'$SECURITY_APM_SYSTEM_PASS'" }'
-    echo "Seting Beats password"
+    echo "Setting Beats password"
     SECURITY_BEATS_SYSTEM_PASS=`date +%s | sha256sum | base64 | head -c 16 ; echo`
     curl -u elastic:${ELASTIC_PASS} -k -XPUT -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/user/beats_system/_password ' -d '{ "password":"'$SECURITY_BEATS_SYSTEM_PASS'" }'
-    echo "Seting Logstash password"
+    echo "Setting Logstash password"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
     sleep 5
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$LOGSTASH_USER" -d '{ "password":"'$LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : "Service Internal Logstash User" }'
@@ -142,6 +152,10 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     echo "Creating Admin user"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$ADMIN_USER" -d '{ "password":"'$ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "Wazuh admin" }'
     echo "Admin user created"
+    echo "Setting monitoring user"
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_monitoring_reader ' -d '{ "cluster": ["manage", "monitor"], "indices": [ { "names": [ "*" ],  "privileges": ["write","create_index","manage","read", "index"] } ] }'
+    sleep 5
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$MONITORING_USER" -d '{ "password":"'$MONITORING_PASS'", "roles" : [ "service_monitoring_reader", "snapshot_user"],  "full_name" : "Service Internal Monitoring User" }'
   fi
 fi
 
