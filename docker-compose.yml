@@ -61,6 +61,8 @@ services:
       - SECURITY_CA_TRUST=server.TEST-CA-signed.pem
       - SECURITY_EXPECTED_HOSTNAME=elasticsearch
       - SECURITY_OPENSSL_CONF=TEST_openssl.cnf
+      - SECURITY_MONITORING_USER=service_monitoring
+      - SECURITY_MONITORING_PASS=monitoring_pass
     ulimits:
       memlock:
         soft: -1
