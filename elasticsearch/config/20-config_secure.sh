@@ -37,7 +37,7 @@ instances:
 
   # Change permissions and owner of certificates
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod -R 440 /usr/share/elasticsearch/config/elasticsearch
+  chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
 
   # Prepare directories for openssl
   mkdir /root/ca
