@@ -26,7 +26,8 @@ instances:
 
   # Change permissions and owner of ca
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
-  chmod 400 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
+  chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
+  chmod 400 /usr/share/elasticsearch/config/elasticsearch/elasticsearch.csr
 
   # Genereate .p12 certificate and key
   SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
@@ -36,7 +37,7 @@ instances:
 
   # Change permissions and owner of certificates
   chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
-  chmod -R 400 /usr/share/elasticsearch/config/elasticsearch
+  chmod -R 440 /usr/share/elasticsearch/config/elasticsearch
 
   # Prepare directories for openssl
   mkdir /root/ca
@@ -71,6 +72,8 @@ instances:
   
   fi
   
+  chmod 440 /usr/share/elasticsearch/config/elasticsearch.cert.pem
+
   # remove CA key
   rm $SECURITY_CA_KEY
 
