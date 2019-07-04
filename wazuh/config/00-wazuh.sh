@@ -36,7 +36,7 @@ edit_configuration() { # $1 -> setting,  $2 -> value
 }
 
 ##############################################################################
-# This function will attempt to mount every directory in data_dirs.env 
+# This function will attempt to mount every directory in PERMANENT_DATA 
 # into the respective path. 
 # If the path is empty means permanent data volume is also empty, so a backup  
 # will be copied into it. Otherwise it will not be copied because there is  
@@ -58,7 +58,7 @@ mount_permanent_data() {
 
 ##############################################################################
 # This function will replace from the permanent data volume every file 
-# contained in data_files.env
+# contained in PERMANENT_DATA_EXCP
 # Some files as 'internal_options.conf' are saved as permanent data, but 
 # they must be updated to work properly if wazuh version is changed.
 ##############################################################################
@@ -70,6 +70,17 @@ apply_exclusion_data() {
       print "Updating ${exclusion_file}"
       exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
     fi
+  done
+}
+
+##############################################################################
+# This function will delete from the permanent data volume every file 
+# contained in PERMANENT_DATA_DLT
+##############################################################################
+
+remove_data_files() {
+  for dlt_file in "${PERMANENT_DATA_DLT[@]}"; do
+    exec_cmd "rm ${dlt_file}"
   done
 }
 
@@ -170,6 +181,9 @@ main() {
 
   # Update exclusion files contained in permanent data paths
   apply_exclusion_data
+
+  # Delete some files contained in permanent data paths
+  remove_data_files
 
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
