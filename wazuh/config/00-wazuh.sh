@@ -1,11 +1,7 @@
 #!/bin/bash
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-# OSSEC container bootstrap. See the README for information of the environment
-# variables expected by this script.
-
-# Startup the services
-
+# Variables
 source /permanent_data.env
 
 WAZUH_INSTALL_PATH=/var/ossec
@@ -13,6 +9,10 @@ WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 AUTO_ENROLLMENT_ENABLED=${AUTO_ENROLLMENT_ENABLED:-true}
 API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
 
+
+##############################################################################
+# Aux functions
+##############################################################################
 print() {
   echo -e $1
 }
@@ -30,6 +30,11 @@ exec_cmd() {
 exec_cmd_stdout() {
   eval $1 2>&1 || error_and_exit "$1"
 }
+
+
+##############################################################################
+# Edit configuration
+##############################################################################
 
 edit_configuration() { # $1 -> setting,  $2 -> value
   sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${WAZUH_INSTALL_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
@@ -75,7 +80,7 @@ apply_exclusion_data() {
 
 ##############################################################################
 # This function will delete from the permanent data volume every file 
-# contained in PERMANENT_DATA_DLT
+# contained in PERMANENT_DATA_DEL
 ##############################################################################
 
 remove_data_files() {
@@ -86,8 +91,7 @@ remove_data_files() {
 }
 
 ##############################################################################
-# If AUTO_ENROLLMENT_ENABLED variable is true, this function checks if ossec 
-# authd key exists. If not, ossec-authd key and cert will be created
+# Create certificates: Manager
 ##############################################################################
 
 create_ossec_key_cert() {
@@ -97,9 +101,7 @@ create_ossec_key_cert() {
 }
 
 ##############################################################################
-# If API_GENERATE_CERTS variable is true, this function checks if api cert 
-# exists. If not, api "http" configuration is set to yes and Wazuh API key and 
-# cert will be created.
+# Create certificates: API
 ##############################################################################
 
 create_api_key_cert() {
@@ -132,6 +134,10 @@ mount_files() {
     print "No Wazuh configuration files to mount..."
   fi
 }
+
+##############################################################################
+# Stop OSSEC
+##############################################################################
 
 function ossec_shutdown(){
   ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
@@ -176,16 +182,21 @@ custom_filebeat_output_ip() {
 }
 
 
+##############################################################################
+# Main function
+##############################################################################
+
 main() {
-  # Attempt to mount permanent data paths
+  # Mount permanent data  (i.e. ossec.conf)
   mount_permanent_data
 
-  # Update exclusion files contained in permanent data paths
+  # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
 
-  # Delete some files contained in permanent data paths
+  # Remove some files in permanent_data (i.e. .template.db)
   remove_data_files
 
+  # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
     if [ ! -e ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ]
@@ -194,6 +205,7 @@ main() {
     fi
   fi
 
+  # Generate API certs if API_GENERATE_CERTS is true and does not exist
   if [ $API_GENERATE_CERTS == true ]
   then
     if [ ! -e ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt ]
@@ -202,20 +214,23 @@ main() {
     fi
   fi
 
+  # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
   # Trap exit signals and do a proper shutdown
   trap "ossec_shutdown; exit" SIGINT SIGTERM
 
+  # Execute custom args
   docker_custom_args
 
+  # Change API user credentials
   change_api_user_credentials
 
+  # Update filebeat configuration
   custom_filebeat_output_ip
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
-
 }
 
 main
