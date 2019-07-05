@@ -26,7 +26,7 @@ instances:
 
   # Change permissions and owner of ca
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
-  chmod 770 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
+  chmod 440 /usr/share/elasticsearch/config/$SECURITY_CA_PEM
   chmod 400 /usr/share/elasticsearch/config/elasticsearch/elasticsearch.csr
 
   # Genereate .p12 certificate and key
