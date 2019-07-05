@@ -55,7 +55,6 @@ mount_permanent_data() {
       print "The path ${permanent_dir} is already mounted"
     else
       print "Installing ${permanent_dir}"
-      exec_cmd "mkdir -p $(dirname ${permanent_dir})"
       exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/. ${permanent_dir}"
     fi
   done
