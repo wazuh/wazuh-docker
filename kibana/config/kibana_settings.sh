@@ -28,9 +28,11 @@ else
   kibana_ip="kibana"
 fi
 
+KIBANA_USER=""
 KIBANA_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  KIBANA_USER=${SECURITY_KIBANA_USER}
   KIBANA_PASS=${SECURITY_KIBANA_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
@@ -39,6 +41,9 @@ else
     if [[ $line == *"KIBANA_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       KIBANA_PASS=${arrIN[1]}
+    elif [[ $line == *"KIBANA_USER"* ]]; then
+      arrIN=(${line//:/ })
+      KIBANA_USER=${arrIN[1]}
     fi
   done < "$input"
  
@@ -46,7 +51,7 @@ fi
 
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
-  auth="-u $SECURITY_KIBANA_USER:${KIBANA_PASS}"
+  auth="-u $KIBANA_USER:${KIBANA_PASS}"
   kibana_secure_ip="https://$kibana_ip"
 else
   auth=""
