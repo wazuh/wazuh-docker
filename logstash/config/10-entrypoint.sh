@@ -88,8 +88,12 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 xpack.monitoring.enabled: true
 xpack.monitoring.elasticsearch.username: \${LOGSTASH_KS_USER}
 xpack.monitoring.elasticsearch.password: \${LOGSTASH_KS_PASS}
+xpack.monitoring.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/$SECURITY_CA_PEM
+
+xpack.management.elasticsearch.hosts: \"$LOGSTASH_OUTPUT/\"
 xpack.management.elasticsearch.username: \${LOGSTASH_KS_USER}
 xpack.management.elasticsearch.password: \${LOGSTASH_KS_PASS}
+xpack.management.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/$SECURITY_CA_PEM
 " >> /usr/share/logstash/config/logstash.yml
 
   ## Settings for 01-wazuh.conf
