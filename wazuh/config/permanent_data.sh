@@ -14,9 +14,9 @@ mkdir ${EXCLUSION_PATH}
 
 for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
   # Create the directory for the exclusion file if it does not exist
-  if [ ! -e ${EXCLUSION_PATH}/${exclusion_file}  ]
+  DIR=$(dirname "${exclusion_file}")
+  if [ ! -e ${EXCLUSION_PATH}/${DIR}  ]
   then
-    DIR=$(dirname "${exclusion_file}")
     mkdir -p ${EXCLUSION_PATH}/${DIR}
   fi
 
@@ -29,9 +29,9 @@ mkdir ${PERMANENT_PATH}
 
 for permanent_dir in "${PERMANENT_DATA[@]}"; do
   # Create the directory for the permanent file if it does not exist
-  if [ ! -e ${PERMANENT_PATH}${permanent_dir}  ]
+  DIR=$(dirname "${permanent_dir}")
+  if [ ! -e ${PERMANENT_PATH}${DIR}  ]
   then
-    DIR=$(dirname "${permanent_dir}")
     mkdir -p ${PERMANENT_PATH}${DIR}
   fi
   
