@@ -145,7 +145,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     echo "Setting Logstash password"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_xpack/security/role/service_logstash_writer ' -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ],  "privileges": ["write","delete","create_index","manage","manage_ilm"] } ] }'
     sleep 5
-    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$LOGSTASH_USER" -d '{ "password":"'$LOGSTASH_PASS'", "roles" : [ "service_logstash_writer"],  "full_name" : "Service Internal Logstash User" }'
+    curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$LOGSTASH_USER" -d '{ "password":"'$LOGSTASH_PASS'", "roles" : [ "service_logstash_writer", "logstash_system"],  "full_name" : "Service Internal Logstash User" }'
     echo "Passwords established for all Elastic Stack users"
     echo "Creating Admin user"
     curl -u elastic:${ELASTIC_PASS} -k -XPOST -H 'Content-Type: application/json' "https://localhost:9200/_xpack/security/user/$ADMIN_USER" -d '{ "password":"'$ADMIN_PASS'", "roles" : [ "superuser"],  "full_name" : "Wazuh admin" }'
