@@ -5,12 +5,25 @@ USER root
 
 ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
+# This CA is created for testing. Please set your own CA pem signed certificate. 
+# command: $ docker build <kibana_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION>
+# ENV variables are necessary: SECURITY_CA_PEM 
+# Sample:
+# ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
+ARG SECURITY_CA_PEM_LOCATION=""
+
+# CA for secure communication with Elastic
+ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
+
 RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
     chown -R kibana:kibana /usr/share/kibana &&\
     rm -rf /tmp/*
 
+RUN yum install openssl -y
+
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
+RUN mkdir /entrypoint-scripts
 
 USER kibana
 
@@ -53,9 +66,11 @@ ARG XPACK_UPTIME="false"
 
 ARG CHANGE_WELCOME="true"
 
-COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
+COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
+RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh
 
-RUN chmod +x ./wazuh_app_config.sh
+COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
+RUN chmod +x /entrypoint-scripts/20-entrypoint.sh
 
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 

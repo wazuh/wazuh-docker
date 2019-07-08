@@ -87,10 +87,10 @@ VOLUME ["/var/lib/filebeat"]
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
-COPY config/00-wazuh.sh /entrypoint-scripts/00-wazuh.sh
+COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 
 RUN chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/00-wazuh.sh
+    chmod 755 /entrypoint-scripts/01-wazuh.sh
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]

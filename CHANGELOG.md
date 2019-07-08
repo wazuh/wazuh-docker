@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Update to Wazuh version 3.9.1_6.8.0 ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+- Security for Elastic Stack in Docker implemented ([#186](https://github.com/wazuh/wazuh-docker/issues/186))
 
 ### Fixed
 
