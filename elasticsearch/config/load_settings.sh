@@ -123,10 +123,8 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   MY_HOSTNAME=`hostname`
   echo "Hostname:"
   echo $MY_HOSTNAME
-  if [[ $SECURITY_EXPECTED_HOSTNAME == $MY_HOSTNAME ]]; then
+  if [[ $SECURITY_MAIN_NODE == $MY_HOSTNAME ]]; then
     echo "Setting up passwords for all Elastic Stack users"
-
-    sleep 10
 
     echo "Setting remote monitoring password"
     SECURITY_REMOTE_USER_PASS=`date +%s | sha256sum | base64 | head -c 16 ; echo`
