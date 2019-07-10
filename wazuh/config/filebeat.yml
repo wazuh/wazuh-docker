@@ -45,6 +45,34 @@ processors:
       when:
         regexp:
           data.win.eventdata.ipAddress: \b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
+  - rename:
+      fields:
+        - from: "data.aws.srcaddr"
+          to: "@src_ip"
+      ignore_missing: true
+      fail_on_error: false
+      when:
+        regexp:
+          data.aws.srcaddr: \b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
+  - rename:
+      fields:
+        - from: "data.win.eventdata.destinationIp"
+          to: "@dst_ip"
+      ignore_missing: true
+      fail_on_error: false
+      when:
+        regexp:
+          data.win.eventdata.destinationIp: \b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
+  - rename:
+      fields:
+        - from: "data.aws.dstaddr"
+          to: "@dst_ip"
+      ignore_missing: true
+      fail_on_error: false
+      when:
+        regexp:
+          data.aws.dstaddr: \b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
+
 
 output.elasticsearch:
   hosts: ['http://elasticsearch:9200']
