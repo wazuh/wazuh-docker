@@ -2,8 +2,8 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=6.8.0
-ARG WAZUH_VERSION=3.9.2-1
+ARG FILEBEAT_VERSION=6.8.1
+ARG WAZUH_VERSION=3.9.3-1
 
 # Environment variables
 ENV API_USER="foo" \
