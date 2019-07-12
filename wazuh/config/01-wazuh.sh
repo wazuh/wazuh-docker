@@ -84,8 +84,9 @@ apply_exclusion_data() {
 
 remove_data_files() {
   for del_file in "${PERMANENT_DATA_DEL[@]}"; do
-    print "Removing ${del_file}"
-    exec_cmd "rm ${del_file}"
+    if [ -e ${del_file} ]
+      print "Removing ${del_file}"
+      exec_cmd "rm ${del_file}"
   done
 }
 
