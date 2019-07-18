@@ -11,7 +11,7 @@ ENV API_USER="foo" \
 
 # Install packages
 RUN set -x && \ 
-    echo "deb https://packages-dev.wazuh.com/debug/ unstable main" | tee /etc/apt/sources.list.d/wazuh.list && \
+    echo "deb https://packages-dev.wazuh.com/debug/apt/ unstable main" | tee /etc/apt/sources.list.d/wazuh.list && \
     curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
     curl --silent --location https://deb.nodesource.com/setup_8.x | bash - && \
     echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
