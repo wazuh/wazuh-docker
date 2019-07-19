@@ -22,18 +22,17 @@ ARG TEMPLATE_VERSION=v3.9.2
 # CLUSTER_INITIAL_MASTER_NODES set to own node by default.
 ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NAME="wazuh" \
-    CLUSTER_NODE_MASTER="true" \
+    CLUSTER_NODE_MASTER="false" \
     CLUSTER_NODE_DATA="true" \
     CLUSTER_NODE_INGEST="true" \
     CLUSTER_NODE_NAME="wazuh-elasticsearch" \
+    CLUSTER_MASTER_NODE_NAME="master-node" \
     CLUSTER_MEMORY_LOCK="true" \
     CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch" \
     CLUSTER_NUMBER_OF_MASTERS="2" \
     CLUSTER_MAX_NODES="1" \
     CLUSTER_DELAYED_TIMEOUT="1m" \
     CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"
-
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /usr/share/elasticsearch/config
 
 COPY config/entrypoint.sh /entrypoint.sh 
 

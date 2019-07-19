@@ -10,25 +10,41 @@ remove_single_node_conf(){
 }
 
 # If Elasticsearch cluster is enable, then set up the elasticsearch.yml
-if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" ]];then
+if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $CLUSTER_MASTER_NODE_NAME != "" ]]; then
 
   remove_single_node_conf $elastic_config_file
 
   # Remove the old configuration
   sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file
 
-  # Add the current cluster configuration
+if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
+# Add the master configuration
+# cluster.initial_master_nodes for bootstrap the cluster
+cat > $elastic_config_file << EOF
+# cluster node
+network.host: 0.0.0.0
+node.name: $CLUSTER_MASTER_NODE_NAME
+node.master: $CLUSTER_NODE_MASTER
+cluster.initial_master_nodes: 
+  - $CLUSTER_MASTER_NODE_NAME
+# end cluster config" 
+EOF
+
+elif [[ $CLUSTER_NODE_NAME != "" ]];then
+
+sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file
+
 cat > $elastic_config_file << EOF
 # cluster node
 network.host: 0.0.0.0
 node.name: $CLUSTER_NODE_NAME
-node.master: $CLUSTER_NODE_MASTER
-
-cluster.initial_master_nodes: 
-  - $CLUSTER_INITIAL_MASTER_NODES
+node.master: false
+discovery.seed_hosts: 
+  - $CLUSTER_MASTER_NODE_NAME
+  - $CLUSTER_NODE_NAME
 # end cluster config" 
 EOF
-
+fi
 # If the cluster is disabled, then set a single-node configuration
 else
   sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file

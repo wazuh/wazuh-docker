@@ -12,22 +12,33 @@ services:
       - "514:514/udp"
       - "55000:55000"
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.2_7.1.1
+    build: elasticsearch
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
     environment:
-      - node.name=node-1
-      - cluster.name=wazuh
-      - network.host=0.0.0.0
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_CLUSTER=true
+      - CLUSTER_NODE_MASTER=true
+      - CLUSTER_MASTER_NODE_NAME=es01
+
+  es02:
+    build: elasticsearch
+    hostname: es02
+    restart: always
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_CLUSTER=true
+      - CLUSTER_MASTER_NODE_NAME=elasticsearch
+      - CLUSTER_NODE_NAME=es02
     ulimits:
       memlock:
         soft: -1
         hard: -1
     mem_limit: 2g
+
+
   kibana:
     image: wazuh/wazuh-kibana:3.9.2_7.1.1
     hostname: kibana
