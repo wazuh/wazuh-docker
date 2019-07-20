@@ -9,13 +9,15 @@ remove_single_node_conf(){
   fi
 }
 
+remove_cluster_config(){
+  sed -i '/# cluster node/,/# end cluster config/d' $1
+}
+
 # If Elasticsearch cluster is enable, then set up the elasticsearch.yml
 if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $CLUSTER_MASTER_NODE_NAME != "" ]]; then
-
-  remove_single_node_conf $elastic_config_file
-
   # Remove the old configuration
-  sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file
+  remove_single_node_conf $elastic_config_file
+  remove_cluster_config $elastic_config_file
 
 if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
 # Add the master configuration
@@ -31,8 +33,9 @@ cluster.initial_master_nodes:
 EOF
 
 elif [[ $CLUSTER_NODE_NAME != "" ]];then
-
-sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file
+# Remove the old configuration
+remove_single_node_conf $elastic_config_file
+remove_cluster_config $elastic_config_file
 
 cat > $elastic_config_file << EOF
 # cluster node
@@ -47,8 +50,8 @@ EOF
 fi
 # If the cluster is disabled, then set a single-node configuration
 else
-  sed -i '/# cluster node/,/# end cluster config/d' $elastic_config_file
-  # If it's not already configured
+  # Remove the old configuration
   remove_single_node_conf $elastic_config_file
+  remove_cluster_config $elastic_config_file
   echo "discovery.type: single-node" >> $elastic_config_file
 fi
