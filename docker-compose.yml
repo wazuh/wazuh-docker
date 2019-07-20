@@ -13,7 +13,7 @@ services:
       - "55000:55000"
 
   elasticsearch:
-    image: wazuh/wazuh-kibana:3.9.3_7.2.0
+    image: wazuh/wazuh-elasticsearch:3.9.3_7.2.0
     hostname: elasticsearch
     restart: always
     ports:
