@@ -3,39 +3,55 @@
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
+remove_single_node_conf(){
+  if grep -Fq "discovery.type" $1; then
+    sed -i '/discovery.type\: /d' $1 
+  fi
+}
 
-# If Elasticsearch cluster is enable
-if [[ $ELASTIC_CLUSTER == "true" ]]
-then
-  
-  # Set the cluster.name and discovery.zen.minimun_master_nodes variables
-  sed -i 's:cluster.name\: "docker-cluster":cluster.name\: "'$CLUSTER_NAME'":g' $elastic_config_file
-  #sed -i 's:discovery.zen.minimum_master_nodes\: 1:discovery.zen.minimum_master_nodes\: '$CLUSTER_NUMBER_OF_MASTERS':g' $elastic_config_file
+remove_cluster_config(){
+  sed -i '/# cluster node/,/# end cluster config/d' $1
+}
 
-  # Add the cluster configuration
-  echo "
-#cluster node
-node:
-  master: ${CLUSTER_NODE_MASTER}
-  data: ${CLUSTER_NODE_DATA}
-  ingest: ${CLUSTER_NODE_INGEST}
-  name: ${CLUSTER_NODE_NAME}
-  max_local_storage_nodes: ${CLUSTER_MAX_NODES}
+# If Elasticsearch cluster is enable, then set up the elasticsearch.yml
+if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $CLUSTER_MASTER_NODE_NAME != "" ]]; then
+  # Remove the old configuration
+  remove_single_node_conf $elastic_config_file
+  remove_cluster_config $elastic_config_file
 
-bootstrap:
-  memory_lock: ${CLUSTER_MEMORY_LOCK} 
-
-cluster.initial_master_nodes:
-  - '${CLUSTER_INITIAL_MASTER_NODES}'
-
-" >> $elastic_config_file
-else
-
-cat >> $elastic_config_file <<'EOF'
-cluster.initial_master_nodes:
-  - 'elasticsearch'
+if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
+# Add the master configuration
+# cluster.initial_master_nodes for bootstrap the cluster
+cat > $elastic_config_file << EOF
+# cluster node
+network.host: 0.0.0.0
+node.name: $CLUSTER_MASTER_NODE_NAME
+node.master: $CLUSTER_NODE_MASTER
+cluster.initial_master_nodes: 
+  - $CLUSTER_MASTER_NODE_NAME
+# end cluster config" 
 EOF
 
-# echo 'discovery.type: single-node'
+elif [[ $CLUSTER_NODE_NAME != "" ]];then
+# Remove the old configuration
+remove_single_node_conf $elastic_config_file
+remove_cluster_config $elastic_config_file
 
+cat > $elastic_config_file << EOF
+# cluster node
+network.host: 0.0.0.0
+node.name: $CLUSTER_NODE_NAME
+node.master: false
+discovery.seed_hosts: 
+  - $CLUSTER_MASTER_NODE_NAME
+  - $CLUSTER_NODE_NAME
+# end cluster config" 
+EOF
+fi
+# If the cluster is disabled, then set a single-node configuration
+else
+  # Remove the old configuration
+  remove_single_node_conf $elastic_config_file
+  remove_cluster_config $elastic_config_file
+  echo "discovery.type: single-node" >> $elastic_config_file
 fi
