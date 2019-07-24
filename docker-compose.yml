@@ -13,6 +13,10 @@ services:
       - "55000:55000"
     depends_on:
       - logstash
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
   logstash:
     image: wazuh/wazuh-logstash:3.9.3_6.8.1
     hostname: logstash
