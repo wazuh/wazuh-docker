@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.3_7.2.0-oss
+
+### Added
+- Support for OSS Elastic Docker images.
+
 ## Wazuh Docker v3.9.3_7.2.0
 
 ### Fixed
