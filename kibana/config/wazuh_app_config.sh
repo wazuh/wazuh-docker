@@ -24,7 +24,6 @@ declare -A CONFIG_MAP=(
   [wazuh-version.replicas]=$WAZUH_VERSION_REPLICAS
   [ip.selector]=$IP_SELECTOR
   [ip.ignore]=$IP_IGNORE
-  [xpack.rbac.enabled]=$XPACK_RBAC_ENABLED
   [wazuh.monitoring.enabled]=$WAZUH_MONITORING_ENABLED
   [wazuh.monitoring.frequency]=$WAZUH_MONITORING_FREQUENCY
   [wazuh.monitoring.shards]=$WAZUH_MONITORING_SHARDS
