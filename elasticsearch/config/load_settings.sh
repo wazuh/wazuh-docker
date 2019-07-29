@@ -11,13 +11,8 @@ else
   wazuh_url="${WAZUH_API_URL}"
 fi
 
-if [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
-  auth=""
-else
-  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
-fi
 
-until curl ${auth} -XGET $el_url; do
+until curl -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping"
   sleep 5
 done
@@ -50,10 +45,10 @@ API_USER_Q=`echo "$API_USER" | tr -d '"'`
 API_PASSWORD=`echo -n $API_PASS_Q | base64`
 
 echo "Setting API credentials into Wazuh APP"
-CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013)
 
 if [ "x$CONFIG_CODE" != "x200" ]; then
-  curl -s -XPOST $el_url/.wazuh/_doc/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
+  curl -s -XPOST $el_url/.wazuh/_doc/1513629884013 -H 'Content-Type: application/json' -d'
   {
     "api_user": "'"$API_USER_Q"'",
     "api_password": "'"$API_PASSWORD"'",
@@ -81,14 +76,6 @@ else
   echo "Wazuh APP already configured"
 fi
 sleep 5
-
-curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/json' -d'
-{
-  "persistent": {
-    "xpack.monitoring.collection.enabled": true
-  }
-}
-'
 
 # Set cluster delayed timeout when node falls
 curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
