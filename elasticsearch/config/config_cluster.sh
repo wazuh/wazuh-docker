@@ -3,6 +3,9 @@
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
+# Disable the Open distro security plugin
+sed -i '/opendistro_security/d' $elastic_config_file
+
 remove_single_node_conf(){
   if grep -Fq "discovery.type" $1; then
     sed -i '/discovery.type\: /d' $1 
@@ -55,3 +58,4 @@ else
   remove_cluster_config $elastic_config_file
   echo "discovery.type: single-node" >> $elastic_config_file
 fi
+echo "opendistro_security.disabled: true" >> $elastic_config_file
