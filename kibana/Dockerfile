@@ -1,6 +1,6 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana-oss:7.2.0
-ARG ELASTIC_VERSION=7.2.0
+FROM amazon/opendistro-for-elasticsearch-kibana:1.1.0
+ARG ELASTIC_VERSION=7.1.1
 ARG WAZUH_VERSION=3.9.3
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
@@ -8,7 +8,7 @@ USER root
 
 ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
-RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+RUN /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 COPY config/entrypoint.sh ./entrypoint.sh
@@ -59,5 +59,7 @@ RUN chmod +x ./welcome_wazuh.sh
 RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
+
+RUN /usr/share/kibana/bin/kibana-plugin remove opendistro_security
 
 ENTRYPOINT ./entrypoint.sh
