@@ -3,7 +3,7 @@ version: '2'
 
 services:
   wazuh:
-    image: wazuh/wazuh:3.9.3_7.2.0-oss
+    image: wazuh/wazuh:3.9.3_7.1.1-opendistro
     hostname: wazuh-manager
     restart: always
     ports:
@@ -13,16 +13,14 @@ services:
       - "55000:55000"
 
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.3_7.2.0-oss
+    image: wazuh/wazuh-elasticsearch:3.9.3_7.1.1-opendistro
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTIC_CLUSTER=true
-      - CLUSTER_NODE_MASTER=true
-      - CLUSTER_MASTER_NODE_NAME=es01
+      - ELASTIC_CLUSTER=false
     ulimits:
       memlock:
         soft: -1
@@ -30,7 +28,7 @@ services:
     mem_limit: 2g
 
   kibana:
-    image: wazuh/wazuh-kibana:3.9.3_7.2.0-oss
+    image: wazuh/wazuh-kibana:3.9.3_7.1.1-opendistro
     hostname: kibana
     restart: always
     depends_on:
@@ -39,7 +37,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    image: wazuh/wazuh-nginx:3.9.3_7.2.0
+    image: wazuh/wazuh-nginx:3.9.3_7.1.1-opendistro
     hostname: nginx
     restart: always
     environment:

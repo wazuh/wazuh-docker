@@ -11,6 +11,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Wazuh-docker reinserts cluster settings after resuming containers ([@manuasir](https://github.com/manuasir)) [#213](https://github.com/wazuh/wazuh-docker/pull/213)
 
+
+## Wazuh Docker v3.9.3_7.1.1-opendistro
+
+### Added
+- Support for Amazon Open Distro Docker images.
+
+
 ## Wazuh Docker v3.9.2_7.1.1
 
 ### Added
