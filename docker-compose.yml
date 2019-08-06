@@ -1,7 +1,32 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-version: '2'
-
+version: '3'
 services:
+
+
+  elasticsearch:
+    build: elasticsearch
+    container_name: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - odfe-data1:/usr/share/elasticsearch/data
+      - ./root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem
+      - ./node.pem:/usr/share/elasticsearch/config/node.pem
+      - ./node-key.pem:/usr/share/elasticsearch/config/node-key.pem
+      - ./admin.pem:/usr/share/elasticsearch/config/admin.pem
+      - ./admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+      - ./custom-elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - odfe-net
+
+
   wazuh:
     image: wazuh/wazuh:3.9.3_7.1.1-opendistro
     hostname: wazuh-manager
@@ -11,24 +36,11 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-
-  elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.3_7.1.1-opendistro
-    hostname: elasticsearch
-    restart: always
-    ports:
-      - "9200:9200"
-    environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTIC_CLUSTER=false
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 2g
+    networks:
+      - odfe-net
 
   kibana:
-    image: wazuh/wazuh-kibana:3.9.3_7.1.1-opendistro
+    build: kibana
     hostname: kibana
     restart: always
     depends_on:
@@ -36,17 +48,11 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
-  nginx:
-    image: wazuh/wazuh-nginx:3.9.3_7.1.1-opendistro
-    hostname: nginx
-    restart: always
-    environment:
-      - NGINX_PORT=443
-      - NGINX_CREDENTIALS
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - kibana
-    links:
-      - kibana:kibana
+    networks:
+      - odfe-net
+
+volumes:
+  odfe-data1:
+
+networks:
+  odfe-net:

@@ -41,8 +41,5 @@ RUN ${bin/elasticsearch-plugin install --batch S3_PLUGIN_URL}
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/config_cluster.sh ./
-RUN chmod +x ./config_cluster.sh
-
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]

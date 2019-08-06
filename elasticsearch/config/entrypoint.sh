@@ -21,8 +21,6 @@ run_as_other_user_if_needed() {
 
 # Run load settings script.
 
-./config_cluster.sh
-
 ./load_settings.sh &
 
 # Execute elasticsearch

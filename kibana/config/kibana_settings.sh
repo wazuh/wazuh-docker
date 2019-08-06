@@ -18,7 +18,6 @@ WAZUH_MAJOR=3
 # Customize elasticsearch ip
 ##############################################################################
 sed -i 's|https://localhost:9200|http://elasticsearch:9200|g' /usr/share/kibana/config/kibana.yml
-sed -i '/opendistro_security/d' /usr/share/kibana/config/kibana.yml
 
 if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
   sed -i '/elasticsearch.hosts/d' /usr/share/kibana/config/kibana.yml

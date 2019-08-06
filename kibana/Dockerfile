@@ -60,6 +60,4 @@ RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
 
-RUN /usr/share/kibana/bin/kibana-plugin remove opendistro_security
-
 ENTRYPOINT ./entrypoint.sh
