@@ -3,7 +3,7 @@ services:
 
 
   elasticsearch:
-    build: elasticsearch
+    image: wazuh/wazuh-elasticsearch:3.9.3_7.1.1-opendistro
     container_name: elasticsearch
     ulimits:
       memlock:
@@ -40,7 +40,7 @@ services:
       - odfe-net
 
   kibana:
-    build: kibana
+    image: wazuh/wazuh-kibana:3.9.3_7.1.1-opendistro
     hostname: kibana
     restart: always
     depends_on:
