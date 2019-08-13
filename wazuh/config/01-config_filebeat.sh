@@ -13,7 +13,7 @@ fi
 
 # Install Wazuh Filebeat Module
 
-curl -s "https://packages-dev.wazuh.com/3.x/filebeat/${WAZUH_FILEBEAT_MODULE}" | tar -xvz -C /usr/share/filebeat/module
+curl -s "https://packages.wazuh.com/3.x/filebeat/${WAZUH_FILEBEAT_MODULE}" | tar -xvz -C /usr/share/filebeat/module
 mkdir -p /usr/share/filebeat/module/wazuh
 chmod 755 -R /usr/share/filebeat/module/wazuh
 
