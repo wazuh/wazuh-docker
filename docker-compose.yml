@@ -1,7 +1,7 @@
 version: '3'
 services:
   wazuh:
-    build: wazuh
+    image: wazuh/wazuh:3.9.4_7.1.1-opendistro-security
     hostname: wazuh-manager
     container_name: wazuh
     restart: always
