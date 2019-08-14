@@ -1,7 +1,7 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM amazon/opendistro-for-elasticsearch-kibana:1.1.0
 ARG ELASTIC_VERSION=7.1.1
-ARG WAZUH_VERSION=3.9.3
+ARG WAZUH_VERSION=3.9.4
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 USER root
@@ -59,5 +59,7 @@ RUN chmod +x ./welcome_wazuh.sh
 RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
+
+ENV ELASTICSEARCH_URL "--cacert /usr/share/elasticsearch/config/root-ca.pem -u admin:admin -k https://elasticsearch:9200"
 
 ENTRYPOINT ./entrypoint.sh
