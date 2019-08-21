@@ -92,7 +92,7 @@ elasticsearch.ssl.certificateAuthorities: [\"/usr/share/kibana/config/$SECURITY_
 server.ssl.enabled: true
 server.ssl.certificate: $SECURITY_KIBANA_SSL_CERT_PATH/kibana-access.pem
 server.ssl.key: $SECURITY_KIBANA_SSL_KEY_PATH/kibana-access.key
-server.ssl.supportedProtocols: TLSv1.1, TLSv1.2
+server.ssl.supportedProtocols: [TLSv1.1, TLSv1.2]
 " >> /usr/share/kibana/config/kibana.yml
 
   echo "Create SSL directories."
