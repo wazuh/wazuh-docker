@@ -261,7 +261,7 @@ main() {
   chmod -R g+rw ${WAZUH_INSTALL_PATH}
   
   # Files inside /var/ossec/integrations should not have write permissions for group and other.
-  chmod -R go-w "/var/ossec/integrations/"
+  chmod -R 750 "/var/ossec/integrations/"
 }
 
 main
