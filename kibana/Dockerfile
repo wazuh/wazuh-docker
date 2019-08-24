@@ -55,21 +55,13 @@ ARG CHANGE_WELCOME="false"
 
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 
-RUN chmod +x ./wazuh_app_config.sh
-
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 
-RUN chmod +x ./kibana_settings.sh
-
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
-
-RUN chmod +x ./xpack_config.sh
 
 RUN ./xpack_config.sh
 
 COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
-
-RUN chmod +x ./welcome_wazuh.sh
 
 RUN ./welcome_wazuh.sh
 
