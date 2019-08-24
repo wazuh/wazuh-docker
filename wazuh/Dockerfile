@@ -67,12 +67,6 @@ COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
 COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
-RUN chmod +x /etc/service/wazuh-api/run && \
-   chmod +x /etc/service/wazuh/run && \
-   chmod +x /etc/service/postfix/run && \
-   chmod +x /etc/service/filebeat/run 
-
-
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
