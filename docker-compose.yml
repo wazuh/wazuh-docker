@@ -39,7 +39,7 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    image: wazuh/wazuh-nginx:3.9.5_7.3.0
+    image: wazuh/wazuh-nginx:3.9.5_7.3.0-oss
     hostname: nginx
     restart: always
     environment:
