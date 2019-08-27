@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-version: '2'
+version: '3'
 
 services:
   wazuh:
@@ -27,7 +27,10 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 2g
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
   kibana:
     build: kibana
