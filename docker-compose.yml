@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-version: '3'
+version: '2'
 
 services:
   wazuh:
@@ -11,7 +11,8 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-
+    volumes:
+      - '/mnt/wazuh/:/var/ossec/data:z'
   elasticsearch:
     build: elasticsearch
     hostname: elasticsearch
@@ -27,10 +28,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    deploy:
-      resources:
-        limits:
-          memory: 2G
+    mem_limit: 2g
 
   kibana:
     build: kibana
