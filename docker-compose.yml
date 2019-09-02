@@ -3,7 +3,7 @@ version: '2'
 
 services:
   wazuh:
-    image: wazuh/wazuh:3.8.2_6.5.4
+    image: wazuh/wazuh:3.9.3_6.8.1
     hostname: wazuh-manager
     restart: always
     ports:
@@ -14,7 +14,7 @@ services:
     depends_on:
       - logstash
   logstash:
-    image: wazuh/wazuh-logstash:3.8.2_6.5.4
+    image: wazuh/wazuh-logstash:3.9.3_6.8.1
     hostname: logstash
     restart: always
     links:
@@ -25,8 +25,14 @@ services:
       - elasticsearch
     environment:
       - LS_HEAP_SIZE=2048m
+      - SECURITY_ENABLED=yes
+      - SECURITY_LOGSTASH_USER=service_logstash
+      - SECURITY_LOGSTASH_PASS=logstash_pass
+      - LOGSTASH_OUTPUT=https://elasticsearch:9200
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - SECURITY_CA_PEM=server.TEST-CA-signed.pem
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.8.2_6.5.4
+    image: wazuh/wazuh-elasticsearch:3.9.3_6.8.1
     hostname: elasticsearch
     restart: always
     ports:
@@ -37,13 +43,33 @@ services:
       - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTICSEARCH_PROTOCOL=https
+      - ELASTICSEARCH_IP=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - SECURITY_ENABLED=yes
+      - SECURITY_ADMIN_USER=wazuh_admin
+      - SECURITY_ADMIN_PASS=admin_pass
+      - SECURITY_ELASTIC_PASSWORD=elastic_pass
+      - SECURITY_KIBANA_USER=service_kibana
+      - SECURITY_KIBANA_PASS=kibana_pass
+      - SECURITY_LOGSTASH_USER=service_logstash 
+      - SECURITY_LOGSTASH_PASS=logstash_pass
+      - SECURITY_CA_PASSPHRASE=ca_pass
+      - SECURITY_CERTIFICATE_DNS=elasticsearch
+      - SECURITY_CA_PEM=server.TEST-CA-signed.pem
+      - SECURITY_CA_KEY=server.TEST-CA.key
+      - SECURITY_CA_TRUST=server.TEST-CA-signed.pem
+      - SECURITY_MAIN_NODE=elasticsearch
+      - SECURITY_OPENSSL_CONF=TEST_openssl.cnf
+      - SECURITY_MONITORING_USER=service_monitoring
+      - SECURITY_MONITORING_PASS=monitoring_pass
     ulimits:
       memlock:
         soft: -1
         hard: -1
     mem_limit: 2g
   kibana:
-    image: wazuh/wazuh-kibana:3.8.2_6.5.4
+    image: wazuh/wazuh-kibana:3.9.3_6.8.1
     hostname: kibana
     restart: always
     depends_on:
@@ -51,17 +77,14 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
-  nginx:
-    image: wazuh/wazuh-nginx:3.8.2_6.5.4
-    hostname: nginx
-    restart: always
     environment:
-      - NGINX_PORT=443
-      - NGINX_CREDENTIALS
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - SECURITY_ENABLED=yes
+      - SECURITY_KIBANA_USER=service_kibana
+      - SECURITY_KIBANA_PASS=kibana_pass
+      - SECURITY_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
+      - SECURITY_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
+      - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
+      - SECURITY_CA_PEM=server.TEST-CA-signed.pem
     ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - kibana
-    links:
-      - kibana:kibana
+      - "5601:5601"

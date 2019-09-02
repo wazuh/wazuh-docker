@@ -1,6 +1,80 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.9.3_7.0.0
+
+## Wazuh Docker v3.9.3_6.8.1
+
+### Added
+
+- Update to Wazuh version 3.9.3_6.8.1
+
+### Added
+
+- Option to disable additionals X-Pack applications and hide unnecesary management links ([@SitoRBJ](https://github.com/SitoRBJ)) ([#163](https://github.com/wazuh/wazuh-docker/pull/163))
+
+## Wazuh Docker v3.9.2_6.8.0
+
+### Added
+
+- Update to Wazuh version 3.9.2_6.8.0
+
+
+## Wazuh Docker v3.9.1_6.8.0
+
+### Added
+
+- Update to Wazuh version 3.9.1_6.8.0 ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+- Security for Elastic Stack in Docker implemented ([#186](https://github.com/wazuh/wazuh-docker/issues/186))
+
+### Fixed
+
+- Fixed `ELASTICSEARCH_KIBANA_IP` environment variable ([@manuasir](https://github.com/manuasir)) ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
+## Wazuh Docker v3.9.0_6.7.2
+
+### Changed
+
+- Update Elastic Stack version to 6.7.2.
+
+## Wazuh Docker v3.9.0_6.7.1
+
+
+### Added
+
+- Support for xPACK authorized requests ([@manuasir](https://github.com/manuasir)) ([#119](https://github.com/wazuh/wazuh-docker/pull/119))
+- Add Elasticsearch cluster configuration ([@SitoRBJ](https://github.com/SitoRBJ)). ([#146](https://github.com/wazuh/wazuh-docker/pull/146))
+- Add Elasticsearch cluster configuration ([@Phandora](https://github.com/Phandora)) ([#140](https://github.com/wazuh/wazuh-docker/pull/140))
+- Setting Nginx to support several user/passwords in Kibana ([@toniMR](https://github.com/toniMR)) ([#136](https://github.com/wazuh/wazuh-docker/pull/136))
+
+
+### Changed
+
+- Use LS_JAVA_OPTS instead of old LS_HEAP_SIZE ([@ruffy91](https://github.com/ruffy91)) ([#139](https://github.com/wazuh/wazuh-docker/pull/139))
+- Changing the original Wazuh docker image to allow adding code in the entrypoint ([@Phandora](https://github.com/phandora)) ([#151](https://github.com/wazuh/wazuh-docker/pull/151))
+
+### Removed
+
+- Removing files from Wazuh image ([@Phandora](https://github.com/phandora)) ([#153](https://github.com/wazuh/wazuh-docker/pull/153))
+
+## Wazuh Docker v3.8.2_6.7.0
+
+### Changed
+
+- Update Elastic Stack version to 6.7.0. ([#144](https://github.com/wazuh/wazuh-docker/pull/144))
+
+## Wazuh Docker v3.8.2_6.6.2
+
+### Changed
+
+- Update Elastic Stack version to 6.6.2. ([#130](https://github.com/wazuh/wazuh-docker/pull/130))
+
+## Wazuh Docker v3.8.2_6.6.1
+
+### Changed
+
+- Update Elastic Stack version to 6.6.1. ([#129](https://github.com/wazuh/wazuh-docker/pull/129))
+
 ## Wazuh Docker v3.8.2_6.5.4
 
 ### Added
@@ -12,7 +86,6 @@ All notable changes to this project will be documented in this file.
 - Adding env variables for alerts data flow. ([#118](https://github.com/wazuh/wazuh-docker/pull/118))
 - New Logstash entrypoint added. ([#135](https://github.com/wazuh/wazuh-docker/pull/135/files))
 - Welcome screen management. ([#133](https://github.com/wazuh/wazuh-docker/pull/133))
-- Add Elasticsearch cluster configuration. ([#146](https://github.com/wazuh/wazuh-docker/pull/146))
 
 ### Changed
 
