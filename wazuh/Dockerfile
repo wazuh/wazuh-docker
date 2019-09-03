@@ -95,7 +95,7 @@ RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh
 
 # Workaround. 
-# Issues:
+# Issues: Wazuh-api
 # https://github.com/wazuh/wazuh-api/issues/440  
 # https://github.com/wazuh/wazuh-api/issues/443
 COPY --chown=root:ossec config/agents.js /var/ossec/api/controllers/agents.js
