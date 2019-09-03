@@ -9,8 +9,6 @@ ARG WAZUH_VERSION=3.9.3-1
 ENV API_USER="foo" \
     API_PASS="bar"
 
-COPY config/wazuh-manager_3.9.3-3.9.3-2_amd64.deb /tmp/wazuh-manager_3.9.3-3.9.3-2_amd64.deb
-
 # Install packages
 RUN set -x && \
     echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
@@ -25,8 +23,8 @@ RUN set -x && \
     apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
     apt-get --no-install-recommends --no-install-suggests -y install openssl apt-transport-https vim expect python-boto python-pip python-cryptography && \
     apt-get --no-install-recommends --no-install-suggests -y install postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
-    apt-get --no-install-recommends --no-install-suggests -y install /tmp/wazuh-manager_3.9.3-3.9.3-2_amd64.deb
-RUN apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
+    apt-get --no-install-recommends --no-install-suggests -y install wazuh-manager=${WAZUH_VERSION} && \
+    apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
@@ -38,7 +36,6 @@ RUN apt-get --no-install-recommends --no-install-suggests -y install nodejs wazu
     rm /var/ossec/var/run/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb && \
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb
-
 
 # Services
 RUN mkdir /etc/service/wazuh && \
