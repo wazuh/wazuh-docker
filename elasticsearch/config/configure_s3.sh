@@ -76,15 +76,15 @@ function CreateRepo()
     repository="$repository_name-$version"
     s3_path="$path/$version"
 
-    curl ${auth} -X PUT "$elastic_ip_port/_snapshot/$repository" -H 'Content-Type: application/json' -d'
-        {
-            "type": "s3",
-            "settings": {
-            "bucket": "'$bucket_name'",
-            "base_path": "'$s3_path'"
-        }
-    }
-    '
+    >&2 echo "Create S3 repository"
+
+    until curl ${auth} -X PUT "$elastic_ip_port/_snapshot/$repository" -H 'Content-Type: application/json' -d' {"type": "s3", "settings": { "bucket": "'$bucket_name'", "base_path": "'$s3_path'"} }'; do
+      >&2 echo "Elastic is unavailable, S3 repository not created - sleeping"
+      sleep 5
+    done
+
+    >&2 echo "S3 repository created"
+
 
 }
 
