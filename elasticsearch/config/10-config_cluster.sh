@@ -3,6 +3,9 @@
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
+original_file="/usr/share/elasticsearch/config/original-elasticsearch.yml"
+
+cp $elastic_config_file $original_file 
 
 # If Elasticsearch cluster is enable
 if [[ $ELASTIC_CLUSTER == "true" ]]
