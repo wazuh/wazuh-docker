@@ -3,7 +3,7 @@ FROM phusion/baseimage:latest
 
 # Arguments
 ARG FILEBEAT_VERSION=6.8.1
-ARG WAZUH_VERSION=3.9.3-1
+ARG WAZUH_VERSION=3.9.4-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -80,6 +80,7 @@ VOLUME ["/var/ossec/queue"]
 VOLUME ["/var/ossec/var/multigroups"]
 VOLUME ["/var/ossec/integrations"]
 VOLUME ["/var/ossec/active-response/bin"]
+VOLUME ["/var/ossec/wodles"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
 VOLUME ["/var/lib/filebeat"]
