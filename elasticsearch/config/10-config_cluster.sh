@@ -3,6 +3,9 @@
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
+original_file="/usr/share/elasticsearch/config/original-elasticsearch.yml"
+
+cp $elastic_config_file $original_file 
 
 # If Elasticsearch cluster is enable
 if [[ $ELASTIC_CLUSTER == "true" ]]
@@ -10,7 +13,6 @@ then
   
   # Set the cluster.name and discovery.zen.minimun_master_nodes variables
   sed -i 's:cluster.name\: "docker-cluster":cluster.name\: "'$CLUSTER_NAME'":g' $elastic_config_file
-  sed -i 's:discovery.zen.minimum_master_nodes\: 1:discovery.zen.minimum_master_nodes\: '$CLUSTER_NUMBER_OF_MASTERS':g' $elastic_config_file
 
   # Add the cluster configuration
   echo "
@@ -28,6 +30,7 @@ bootstrap:
 discovery:
   zen:
     ping.unicast.hosts: ${CLUSTER_DISCOVERY_SERVICE}
+    minimum_master_nodes: ${CLUSTER_NUMBER_OF_MASTERS}
   
 " >> $elastic_config_file
 fi

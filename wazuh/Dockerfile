@@ -3,13 +3,11 @@ FROM phusion/baseimage:latest
 
 # Arguments
 ARG FILEBEAT_VERSION=6.8.1
-ARG WAZUH_VERSION=3.9.3-1
+ARG WAZUH_VERSION=3.9.4-1
 
 # Environment variables
 ENV API_USER="foo" \
     API_PASS="bar"
-
-COPY config/wazuh-manager_3.9.3-3.9.3-2_amd64.deb /tmp/wazuh-manager_3.9.3-3.9.3-2_amd64.deb
 
 # Install packages
 RUN set -x && \
@@ -25,8 +23,8 @@ RUN set -x && \
     apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
     apt-get --no-install-recommends --no-install-suggests -y install openssl apt-transport-https vim expect python-boto python-pip python-cryptography && \
     apt-get --no-install-recommends --no-install-suggests -y install postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
-    apt-get --no-install-recommends --no-install-suggests -y install /tmp/wazuh-manager_3.9.3-3.9.3-2_amd64.deb
-RUN apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
+    apt-get --no-install-recommends --no-install-suggests -y install wazuh-manager=${WAZUH_VERSION} && \
+    apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
@@ -38,7 +36,6 @@ RUN apt-get --no-install-recommends --no-install-suggests -y install nodejs wazu
     rm /var/ossec/var/run/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb && \
     dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb
-
 
 # Services
 RUN mkdir /etc/service/wazuh && \
@@ -83,6 +80,7 @@ VOLUME ["/var/ossec/queue"]
 VOLUME ["/var/ossec/var/multigroups"]
 VOLUME ["/var/ossec/integrations"]
 VOLUME ["/var/ossec/active-response/bin"]
+VOLUME ["/var/ossec/wodles"]
 VOLUME ["/etc/filebeat"]
 VOLUME ["/etc/postfix"]
 VOLUME ["/var/lib/filebeat"]
@@ -96,6 +94,13 @@ COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh
+
+# Workaround. 
+# Issues: Wazuh-api
+# https://github.com/wazuh/wazuh-api/issues/440  
+# https://github.com/wazuh/wazuh-api/issues/443
+COPY --chown=root:ossec config/agents.js /var/ossec/api/controllers/agents.js
+RUN chmod 770 /var/ossec/api/controllers/agents.js
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
