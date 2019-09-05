@@ -61,7 +61,7 @@ COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
 
 RUN chmod +x ./load_settings.sh
 
-RUN bin/elasticsearch-plugin install --batch https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-6.8.1.zip
+RUN bin/elasticsearch-plugin install --batch https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-6.8.2.zip
 
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh
