@@ -1,5 +1,5 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/logstash/logstash:6.8.2
+FROM docker.elastic.co/logstash/logstash:6.8.1
 
 COPY --chown=logstash:logstash config/entrypoint.sh /entrypoint.sh
 

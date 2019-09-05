@@ -255,13 +255,6 @@ main() {
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
-  # Grant proper permissions
-  # When modifiying some files using the Wazuh API (i.e. /var/ossec/etc/ossec.conf), group rw permissions are needed for changes to take place.  
-  # https://github.com/wazuh/wazuh/issues/3647
-  #chmod -R g+rw ${WAZUH_INSTALL_PATH}
-  
-  # Files inside /var/ossec/integrations should not have write permissions for group and other.
-  #chmod -R 750 "/var/ossec/integrations/"
 }
 
 main
