@@ -1,5 +1,5 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.1
 
 ENV ALERTS_SHARDS="1" \
     ALERTS_REPLICAS="0"
@@ -11,7 +11,7 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ENV TEMPLATE_VERSION=v3.9.4
+ENV TEMPLATE_VERSION=v3.9.3
 
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
