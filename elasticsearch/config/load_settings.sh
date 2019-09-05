@@ -100,13 +100,16 @@ done
 if [ $ENABLE_CONFIGURE_S3 ]; then
   #Wait for Elasticsearch to be ready to create the repository
   sleep 10
-
+  >&2 echo "Configure S3"
   if [ "x$S3_PATH" != "x" ]; then
-
+    >&2 echo "S3_PATH"
+    >&2 echo $S3_PATH
     if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
+      >&2 echo "Elasticsearch major version:"
+      >&2 echo $S3_ELASTIC_MAJOR
       bash /usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
-
     else
+      >&2 echo "Elasticserach major version not given"
       bash /usr/share/elasticsearch/config/configure_s3.sh $el_url $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
