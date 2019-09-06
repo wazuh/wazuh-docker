@@ -71,6 +71,12 @@ apply_exclusion_data() {
   for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
     if [  -e ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file}  ]
     then
+      DIR=$(dirname "${exclusion_file}")
+      if [ ! -e ${DIR}  ]
+      then
+        mkdir -p ${DIR}
+      fi
+      
       print "Updating ${exclusion_file}"
       exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
     fi
