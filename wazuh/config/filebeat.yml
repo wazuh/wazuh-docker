@@ -1,18 +1,16 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-filebeat:
- prospectors:
-  - type: log
-    paths:
-     - "/var/ossec/logs/alerts/alerts.json"
-    document_type: json
-    json.message_key: log
-    json.keys_under_root: true
-    json.overwrite_keys: true
-    tail_files: true
 
-output:
- logstash:
-   # The Logstash hosts
-   hosts: ["logstash:5000"]
-#   ssl:
-#     certificate_authorities: ["/etc/filebeat/logstash.crt"]
+# Wazuh - Filebeat configuration file
+filebeat.modules:
+  - module: wazuh
+    alerts:
+      enabled: true
+    archives:
+      enabled: false
+
+setup.template.json.enabled: true
+setup.template.json.path: '/etc/filebeat/wazuh-template.json'
+setup.template.json.name: 'wazuh'
+setup.template.overwrite: true
+setup.ilm.enabled: false
+
+output.elasticsearch.hosts: ['http://elasticsearch:9200']

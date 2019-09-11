@@ -1,5 +1,10 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+ARG ELASTIC_VERSION=7.2.1
+FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+ARG S3_PLUGIN_URL="https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-${ELASTIC_VERSION}.zip"
+ARG TEMPLATE_VERSION=v3.9.5
+
+ENV ELASTICSEARCH_URL="http://elasticsearch:9200"
 
 ENV ALERTS_SHARDS="1" \
     ALERTS_REPLICAS="0"
@@ -29,17 +34,20 @@ ARG SECURITY_CA_TRUST_LOCATION=""
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
+# CLUSTER_INITIAL_MASTER_NODES set to own node by default.
 ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NAME="wazuh" \
-    CLUSTER_NODE_MASTER="true" \
+    CLUSTER_NODE_MASTER="false" \
     CLUSTER_NODE_DATA="true" \
     CLUSTER_NODE_INGEST="true" \
     CLUSTER_NODE_NAME="wazuh-elasticsearch" \
+    CLUSTER_MASTER_NODE_NAME="master-node" \
     CLUSTER_MEMORY_LOCK="true" \
     CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch" \
     CLUSTER_NUMBER_OF_MASTERS="2" \
     CLUSTER_MAX_NODES="1" \
-    CLUSTER_DELAYED_TIMEOUT="1m"
+    CLUSTER_DELAYED_TIMEOUT="1m" \
+    CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
@@ -61,7 +69,7 @@ COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
 
 RUN chmod +x ./load_settings.sh
 
-RUN bin/elasticsearch-plugin install --batch https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-6.8.2.zip
+RUN ${bin/elasticsearch-plugin install --batch S3_PLUGIN_URL}
 
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh

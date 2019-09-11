@@ -1,9 +1,12 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:6.8.2
-ARG WAZUH_APP_VERSION=3.9.4_6.8.2
+FROM docker.elastic.co/kibana/kibana:7.2.1
+ARG ELASTIC_VERSION=7.2.1
+ARG WAZUH_VERSION=3.9.5
+ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
+
 USER root
 
-ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 
 # This CA is created for testing. Please set your own CA pem signed certificate. 
 # command: $ docker build <kibana_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION>
@@ -15,9 +18,8 @@ ARG SECURITY_CA_PEM_LOCATION=""
 # CA for secure communication with Elastic
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
 
-RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
-    chown -R kibana:kibana /usr/share/kibana &&\
-    rm -rf /tmp/*
+RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 RUN yum install openssl -y
 
