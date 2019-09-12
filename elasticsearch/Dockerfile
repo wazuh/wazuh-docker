@@ -6,9 +6,6 @@ ARG TEMPLATE_VERSION=v3.9.5
 
 ENV ELASTICSEARCH_URL="http://elasticsearch:9200"
 
-ENV ALERTS_SHARDS="1" \
-    ALERTS_REPLICAS="0"
-
 ENV API_USER="foo" \
     API_PASS="bar"
 

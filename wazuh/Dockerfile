@@ -11,6 +11,9 @@ ENV API_USER="foo" \
 
 ARG TEMPLATE_VERSION="v3.9.5"
 
+ENV WAZUH_ALERTS_SHARDS="1" \
+    WAZUH_ALERTS_REPLICAS="0"
+
 # Install packages
 RUN set -x && \
     echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
