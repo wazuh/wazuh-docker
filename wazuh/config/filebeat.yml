@@ -13,4 +13,4 @@ setup.template.json.name: 'wazuh'
 setup.template.overwrite: true
 setup.ilm.enabled: false
 
-output.elasticsearch.hosts: ['http://elasticsearch:9200']
+output.elasticsearch.hosts: ['http://logstash:5000']
