@@ -96,8 +96,13 @@ RUN mkdir /entrypoint-scripts
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 
+# Migration scripts
+COPY migration/data_dirs.env /data_dirs.env
+COPY migration/02-volume_loader.sh /entrypoint-scripts/02-volume_loader.sh
+
 RUN chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/01-wazuh.sh
+    chmod 755 /entrypoint-scripts/01-wazuh.sh && \
+    chmod 755 /entrypoint-scripts/02-volume_loader.sh
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
