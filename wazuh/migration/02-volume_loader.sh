@@ -2,22 +2,26 @@
 
 source /data_dirs.env
 
-### Sources (container paths where 3.9_volumes are mounted)
-OSSEC_BACKUP=/migration/ossec_backup/
-FILEBEAT_BACKUP=/migration/filebeat_backup/
-FILEBEAT_LIB_BACKUP=/migration/filebeat-lib_backup/
-POSTFIX_BACKUP=/migration/postfix_backup/
+##############################################################################
+# Copy will be executed from the custom mounting path (key) 
+# to destination path (value) when iterating through the array  
+# For example in the first custom path:
+#    cp -pr "/migration/ossec_backup/ /var/ossec/" will be executed
+# Please ensure the key path is correctly mounted in the container
+# For more information please check:
+##############################################################################
 
-### Destinations (container paths where files and folders will be copied)
-WAZUH_INSTALLATION_PATH=/var/ossec/
-FILEBEAT_INSTALLATION_PATH=/etc/filebeat/
-FILEBEAT_LIB_INSTALLATION_PATH=/var/lib/filebeat/
-POSTFIX_INSTALLATION_PATH=/etc/postfix/
+declare -A custom_paths
+
+custom_paths+=( ["/migration/ossec_backup/"]=/var/ossec/ )
+custom_paths+=( ["/migration/filebeat_backup/"]=/etc/filebeat/ )
+custom_paths+=( ["/migration/filebeat-lib_backup/"]=/var/lib/filebeat/ )
+custom_paths+=( ["/migration/postfix_backup/"]=/etc/postfix/ )
 
 ### Auxiliar methods
 
 print() {
-    echo -e $1
+    echo -e "$1"
 }
 
 error_and_exit() {
@@ -27,47 +31,40 @@ error_and_exit() {
 }
 
 exec_cmd() {
-    eval $1 > /dev/null 2>&1 || error_and_exit "$1"
+    eval "$1" > /dev/null 2>&1 || error_and_exit "$1"
 }
 
 exec_cmd_stdout() {
-    eval $1 2>&1 || error_and_exit "$1"
+    eval "$1" 2>&1 || error_and_exit "$1"
 }
 
-### Restoring directories in "data_dirs.env" from 3.9 volume to container
+### Restoring directories 
 
-for ossecdir in "${DATA_DIRS[@]}"; do
-    if [[ ! -e "${WAZUH_INSTALLATION_PATH}${ossecdir}" ]]
+declare -A custom_paths
+
+custom_paths+=( ["/migration/ossec_backup/"]=/var/ossec/ )
+custom_paths+=( ["/migration/filebeat_backup/"]=/etc/filebeat/ )
+custom_paths+=( ["/migration/filebeat-lib_backup/"]=/var/lib/filebeat/ )
+custom_paths+=( ["/migration/postfix_backup/"]=/etc/postfix/ )
+
+for sourcedir in "${!custom_paths[@]}"; do
+    if [[ ! -e "${custom_paths[${sourcedir}]}" ]]
     then
-        print "BACKUP: The folder ${WAZUH_INSTALLATION_PATH}${ossecdir} doesn't exists in the container. Creating it..."
-        exec_cmd "mkdir -p ${WAZUH_INSTALLATION_PATH}${ossecdir}"
+        print "BACKUP: The folder ${custom_paths[${sourcedir}]} doesn't exists in the container. Creating it..."
+        exec_cmd "mkdir -p ${custom_paths[${sourcedir}]}"
     fi
-    if [[ -d "${WAZUH_INSTALLATION_PATH}${ossecdir}" ]]; then
-        print "BACKUP: Copying data from folder ${OSSEC_BACKUP}${ossecdir} in 3.9 volume to ${WAZUH_INSTALLATION_PATH}${ossecdir}"
-        exec_cmd "cp -pr ${OSSEC_BACKUP}${ossecdir}/* ${WAZUH_INSTALLATION_PATH}${ossecdir}"
-    elif [[ -f "${WAZUH_INSTALLATION_PATH}${ossecdir}" ]]; then
-        print "BACKUP: Copying file ${OSSEC_BACKUP}${ossecdir} in 3.9 volume to ${WAZUH_INSTALLATION_PATH}${ossecdir}"
-        exec_cmd "cp -pr ${OSSEC_BACKUP}${ossecdir} ${WAZUH_INSTALLATION_PATH}${ossecdir}"
+
+    if [[ -e "${sourcedir}" ]]
+    then
+        if [[ -d "${sourcedir}" ]]; then
+            print "BACKUP: Copying data from folder ${sourcedir} in 3.9 volume to ${custom_paths[${sourcedir}]}"
+            exec_cmd "cp -pr ${sourcedir}* ${custom_paths[${sourcedir}]}"
+        elif [[ -f "${sourcedir}" ]]; then
+            print "BACKUP: Copying file ${sourcedir} in 3.9 volume to ${custom_paths[${sourcedir}]}"
+            exec_cmd "cp -pr ${sourcedir} ${custom_paths[${sourcedir}]}"
+        fi
+    else
+        print "The folder ${sourcedir} doesn't exists in the volume. Ignoring it..."
     fi
+
 done
-
-### Restoring Filebeat from backup volume to current installation path
-
-if [[ -d "${FILEBEAT_BACKUP}" ]]; then
-    print "BACKUP: Copying Filebeat configuration from ${FILEBEAT_BACKUP} to ${FILEBEAT_INSTALLATION_PATH}"
-    exec_cmd "cp -pr ${FILEBEAT_BACKUP}* ${FILEBEAT_INSTALLATION_PATH}"
-fi
-
-### Restoring Filebeat lib from backup volume to current installation path
-
-if [[ -d "${FILEBEAT_LIB_BACKUP}" ]]; then
-    print "BACKUP: Copying Filebeat Library configuration from ${FILEBEAT_LIB_BACKUP} to ${FILEBEAT_LIB_INSTALLATION_PATH}"
-    exec_cmd "cp -pr ${FILEBEAT_LIB_BACKUP}* ${FILEBEAT_LIB_INSTALLATION_PATH}"
-fi
-
-### Restoring Postfix from backup volume to current installation path
-
-if [[ -d "${POSTFIX_BACKUP}" ]]; then
-    print "BACKUP: Copying Postfix Library configuration from ${POSTFIX_BACKUP} to ${POSTFIX_INSTALLATION_PATH}"
-    exec_cmd "cp -pr ${POSTFIX_BACKUP}* ${POSTFIX_INSTALLATION_PATH}"
-fi
