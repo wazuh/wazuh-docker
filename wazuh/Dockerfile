@@ -96,11 +96,9 @@ RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
-COPY config/02-config_filebeat.sh /entrypoint-scripts/02-config_filebeat.sh
 
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
-    chmod 755 /entrypoint-scripts/02-config_filebeat.sh
 
 # Workaround. 
 # Issues: Wazuh-api

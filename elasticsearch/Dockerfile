@@ -13,8 +13,7 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ENV TEMPLATE_VERSION=v3.9.4
-
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
 # command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_KEY_LOCATION=<CA_KEY_LOCATION>
@@ -45,8 +44,6 @@ ENV ELASTIC_CLUSTER="false" \
     CLUSTER_MAX_NODES="1" \
     CLUSTER_DELAYED_TIMEOUT="1m" \
     CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"
-
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # CA cert for Transport SSL
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config

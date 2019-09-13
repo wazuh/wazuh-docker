@@ -160,8 +160,15 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   fi
 fi
 
-#Insert default templates
+# Modify wazuh-alerts template shards and replicas
+sed -i 's:"index.number_of_shards"\: "3":"index.number_of_shards"\: "'$WAZUH_ALERTS_SHARDS'":g' /usr/share/elasticsearch/config/wazuh-template.json
+sed -i 's:"index.number_of_replicas"\: "0":"index.number_of_replicas"\: "'$WAZUH_ALERTS_REPLICAS'":g' /usr/share/elasticsearch/config/wazuh-template.json
 
+# Insert default templates
+cat /usr/share/elasticsearch/config/wazuh-template.json | curl -XPUT "$el_url/_template/wazuh" ${auth} -H 'Content-Type: application/json' -d @-
+sleep 5
+
+# Prepare Wazuh API credentials
 API_PASS_Q=`echo "$WAZH_API_PASS" | tr -d '"'`
 API_USER_Q=`echo "$WAZH_API_USER" | tr -d '"'`
 API_PASSWORD=`echo -n $API_PASS_Q | base64`
