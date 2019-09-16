@@ -61,7 +61,7 @@ services:
       - SECURITY_MONITORING_PASS=monitoring_pass
       - ELASTIC_CLUSTER=true
       - CLUSTER_NODE_MASTER=true
-      - CLUSTER_MASTER_NODE_NAME=es01
+      - CLUSTER_MASTER_NODE_NAME=elasticsearch
     ulimits:
       memlock:
         soft: -1

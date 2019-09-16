@@ -16,13 +16,17 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "Setting configuration options."
 
+  ELASTIC_HOSTNAME=`hostname`
+
   # Create instances.yml for elasticsearch .p12 certificate and key
   echo "
 instances:
-- name: \"elasticsearch\"
+- name: \"${ELASTIC_HOSTNAME}\"
   dns: 
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
+
+  cp instances.yml /usr/share/elasticsearch
 
   # Change permissions and owner of ca
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
@@ -32,6 +36,7 @@ instances:
   # Genereate .p12 certificate and key
   SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   /usr/share/elasticsearch/bin/elasticsearch-certutil csr --in instances.yml --out certs.zip --pass $SECURITY_KEY_PASSPHRASE
+  mv /usr/share/elasticsearch/certs.zip /usr/share/elasticsearch/config/certs.zip
   unzip certs.zip
   rm certs.zip 
 

@@ -11,9 +11,6 @@ ENV API_USER="foo" \
 
 ARG TEMPLATE_VERSION="v3.9.5"
 
-ENV WAZUH_ALERTS_SHARDS="1" \
-    WAZUH_ALERTS_REPLICAS="0"
-
 # Install packages
 RUN set -x && \
     echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
@@ -98,7 +95,7 @@ COPY config/entrypoint.sh /entrypoint.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 
 RUN chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/01-wazuh.sh && \
+    chmod 755 /entrypoint-scripts/01-wazuh.sh
 
 # Workaround. 
 # Issues: Wazuh-api
@@ -106,10 +103,6 @@ RUN chmod 755 /entrypoint.sh && \
 # https://github.com/wazuh/wazuh-api/issues/443
 COPY --chown=root:ossec config/agents.js /var/ossec/api/controllers/agents.js
 RUN chmod 770 /var/ossec/api/controllers/agents.js
-
-## Add seds to change shards, ...
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
-RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]

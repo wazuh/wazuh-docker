@@ -109,7 +109,7 @@ curl $auth -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: 
 
 sleep 5
 # Do not ask user to help providing usage statistics to Elastic
-curl $auth -POST "$kibana_secure_ip:5601/api/telemetry/v1/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl $auth -POST "$kibana_secure_ip:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
 # Remove credentials file
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
