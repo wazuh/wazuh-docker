@@ -26,7 +26,7 @@ if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_
 node.master: $CLUSTER_NODE_MASTER
 node.data: $CLUSTER_NODE_DATA
 node.ingest: $CLUSTER_NODE_INGEST
-node.max_local_storage_nodes: $CLUSTER_NUMBER_OF_MASTERS
+node.max_local_storage_nodes: $CLUSTER_MAX_NODES
 
 # end cluster node settings 
 EOF
