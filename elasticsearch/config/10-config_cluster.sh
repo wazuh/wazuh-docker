@@ -21,6 +21,17 @@ if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_
   # Remove the old configuration
   remove_single_node_conf $elastic_config_file
   remove_cluster_config $elastic_config_file
+  cat > $elastic_config_file << EOF
+# cluster node settings
+node.master: $CLUSTER_NODE_MASTER
+node.data: $CLUSTER_NODE_DATA
+node.ingest: $CLUSTER_NODE_INGEST
+node.max_local_storage_nodes: $CLUSTER_NUMBER_OF_MASTERS
+
+# end cluster node settings 
+EOF
+
+
 
 if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
 # Add the master configuration
@@ -29,7 +40,6 @@ cat > $elastic_config_file << EOF
 # cluster node
 network.host: 0.0.0.0
 node.name: $CLUSTER_MASTER_NODE_NAME
-node.master: $CLUSTER_NODE_MASTER
 cluster.initial_master_nodes: 
   - $CLUSTER_MASTER_NODE_NAME
 # end cluster config" 
