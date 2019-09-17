@@ -29,6 +29,7 @@ if [[ $ELASTIC_HOSTAME == $SECURITY_MAIN_NODE ]]; then
 # cluster.initial_master_nodes for bootstrap the cluster
 cat > $elastic_config_file << EOF
 # cluster node
+cluster.name: $CLUSTER_NAME
 network.host: 0.0.0.0
 node.name: $ELASTIC_HOSTAME
 node.master: $CLUSTER_NODE_MASTER
@@ -47,6 +48,7 @@ remove_cluster_config $elastic_config_file
 
 cat > $elastic_config_file << EOF
 # cluster node
+cluster.name: $CLUSTER_NAME
 network.host: 0.0.0.0
 node.name: $ELASTIC_HOSTAME
 node.master: $CLUSTER_NODE_MASTER
