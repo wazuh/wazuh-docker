@@ -3,6 +3,7 @@
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 original_file="/usr/share/elasticsearch/config/original-elasticsearch.yml"
+ELASTIC_HOSTAME=`hostname`
 
 cp $elastic_config_file $original_file 
 
@@ -17,35 +18,29 @@ remove_cluster_config(){
 }
 
 # If Elasticsearch cluster is enable, then set up the elasticsearch.yml
-if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $CLUSTER_MASTER_NODE_NAME != "" ]]; then
+if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $ELASTIC_HOSTAME != "" ]]; then
   # Remove the old configuration
   remove_single_node_conf $elastic_config_file
   remove_cluster_config $elastic_config_file
-  cat > $elastic_config_file << EOF
-# cluster node settings
-node.master: $CLUSTER_NODE_MASTER
-node.data: $CLUSTER_NODE_DATA
-node.ingest: $CLUSTER_NODE_INGEST
-node.max_local_storage_nodes: $CLUSTER_MAX_NODES
-
-# end cluster node settings 
-EOF
 
 
-
-if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
+if [[ $ELASTIC_HOSTAME == $SECURITY_MAIN_NODE ]]; then
 # Add the master configuration
 # cluster.initial_master_nodes for bootstrap the cluster
 cat > $elastic_config_file << EOF
 # cluster node
 network.host: 0.0.0.0
-node.name: $CLUSTER_MASTER_NODE_NAME
+node.name: $ELASTIC_HOSTAME
+node.master: $CLUSTER_NODE_MASTER
+node.data: $CLUSTER_NODE_DATA
+node.ingest: $CLUSTER_NODE_INGEST
+node.max_local_storage_nodes: $CLUSTER_MAX_NODES
 cluster.initial_master_nodes: 
-  - $CLUSTER_MASTER_NODE_NAME
+  - $ELASTIC_HOSTAME
 # end cluster config" 
 EOF
 
-elif [[ $CLUSTER_NODE_NAME != "" ]];then
+elif [[ $CLUSTER_DISCOVERY_SEED != "" ]];then
 # Remove the old configuration
 remove_single_node_conf $elastic_config_file
 remove_cluster_config $elastic_config_file
@@ -53,11 +48,13 @@ remove_cluster_config $elastic_config_file
 cat > $elastic_config_file << EOF
 # cluster node
 network.host: 0.0.0.0
-node.name: $CLUSTER_NODE_NAME
-node.master: false
+node.name: $ELASTIC_HOSTAME
+node.master: $CLUSTER_NODE_MASTER
+node.data: $CLUSTER_NODE_DATA
+node.ingest: $CLUSTER_NODE_INGEST
+node.max_local_storage_nodes: $CLUSTER_MAX_NODES
 discovery.seed_hosts: 
-  - $CLUSTER_MASTER_NODE_NAME
-  - $CLUSTER_NODE_NAME
+  - $CLUSTER_DISCOVERY_SEED
 # end cluster config" 
 EOF
 fi
