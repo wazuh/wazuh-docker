@@ -21,7 +21,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   # Create instances.yml for elasticsearch .p12 certificate and key
   echo "
 instances:
-- name: \"${ELASTIC_HOSTNAME}\"
+- name: \"elasticsearch\"
   dns: 
     - $SECURITY_CERTIFICATE_DNS
 " > instances.yml
