@@ -30,6 +30,7 @@ if [[ $ELASTIC_HOSTAME == $SECURITY_MAIN_NODE ]]; then
 cat > $elastic_config_file << EOF
 # cluster node
 cluster.name: $CLUSTER_NAME
+bootstrap.memory_lock: $CLUSTER_MEMORY_LOCK
 network.host: 0.0.0.0
 node.name: $ELASTIC_HOSTAME
 node.master: $CLUSTER_NODE_MASTER
@@ -49,6 +50,7 @@ remove_cluster_config $elastic_config_file
 cat > $elastic_config_file << EOF
 # cluster node
 cluster.name: $CLUSTER_NAME
+bootstrap.memory_lock: $CLUSTER_MEMORY_LOCK
 network.host: 0.0.0.0
 node.name: $ELASTIC_HOSTAME
 node.master: $CLUSTER_NODE_MASTER
