@@ -92,6 +92,6 @@ RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
 
-RUN chmod +w /user/share/kibana/plugins/wazuh/config.yml
+RUN chmod +w /usr/share/kibana/plugins/wazuh/config.yml
 
 ENTRYPOINT ./entrypoint.sh
