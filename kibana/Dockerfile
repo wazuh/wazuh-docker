@@ -94,7 +94,7 @@ RUN /usr/local/bin/kibana-docker --optimize
 
 USER root
 
-RUN chmod +w /usr/share/kibana/plugins/wazuh/config.yml
+RUN chmod 777 /usr/share/kibana/plugins/wazuh/config.yml
 
 USER kibana
 
