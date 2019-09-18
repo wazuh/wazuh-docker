@@ -23,7 +23,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 instances:
 - name: \"$ELASTIC_HOSTNAME\"
   dns: 
-    - $SECURITY_CERTIFICATE_DNS
+    - $ELASTIC_HOSTNAME
 " > instances.yml
 
   cp instances.yml /usr/share/elasticsearch
