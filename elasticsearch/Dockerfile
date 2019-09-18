@@ -44,7 +44,8 @@ ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NUMBER_OF_MASTERS="2" \
     CLUSTER_MAX_NODES="1" \
     CLUSTER_DELAYED_TIMEOUT="1m" \
-    CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"
+    CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch" \
+    CLUSTER_DISCOVERY_SEED="elasticsearch"
 
 # CA cert for Transport SSL
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config
