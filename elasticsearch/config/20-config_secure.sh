@@ -43,7 +43,7 @@ instances:
   # Change permissions and owner of certificates
   chown -R elasticsearch: /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME
   chmod -R 770 /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME
-  chmod 400 /usr/share/elasticsearch/config/elasticsearch/$ELASTIC_HOSTNAME.csr
+  chmod 400 /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME/$ELASTIC_HOSTNAME.csr
 
   # Prepare directories for openssl
   mkdir /root/ca
@@ -93,14 +93,14 @@ instances:
 xpack.security.enabled: true
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME/elasticsearch.key
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME/$ELASTIC_HOSTNAME.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch.cert.pem
 xpack.security.transport.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/$SECURITY_CA_TRUST\"]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
-xpack.security.http.ssl.key: /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME/elasticsearch.key
+xpack.security.http.ssl.key: /usr/share/elasticsearch/config/$ELASTIC_HOSTNAME/$ELASTIC_HOSTNAME.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch.cert.pem
 xpack.security.http.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/$SECURITY_CA_TRUST\"]
 " >> $elastic_config_file
