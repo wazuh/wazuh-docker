@@ -23,7 +23,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   # Create instances.yml for elasticsearch .p12 certificate and key
   echo "
 instances:
-- name: \"$POD_DNS\"
+- name: \"elasticsearch\"
   dns:
     - \"$POD_DNS\"
     - \"$SVC_DNS\"
@@ -44,9 +44,9 @@ instances:
   rm certs.zip 
 
   # Change permissions and owner of certificates
-  chown -R elasticsearch: /usr/share/elasticsearch/config/$POD_DNS
-  chmod -R 770 /usr/share/elasticsearch/config/$POD_DNS
-  chmod 400 /usr/share/elasticsearch/config/$POD_DNS/$POD_DNS.csr
+  chown -R elasticsearch: /usr/share/elasticsearch/config/elasticsearch
+  chmod -R 770 /usr/share/elasticsearch/config/elasticsearch
+  chmod 400 /usr/share/elasticsearch/config/elasticsearch/elasticsearch.csr
 
   # Prepare directories for openssl
   mkdir /root/ca
@@ -64,7 +64,7 @@ instances:
 
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
 
-    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in $POD_DNS/$POD_DNS.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $SECURITY_CA_PASSPHRASE -out elasticsearch.cert.pem
+    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $SECURITY_CA_PASSPHRASE -out elasticsearch.cert.pem
   
   else
     input=${SECURITY_CREDENTIALS_FILE}
@@ -77,7 +77,7 @@ instances:
       fi
     done < "$input"
     
-    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in $POD_DNS/$POD_DNS.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $CA_PASSPHRASE_FROM_FILE -out elasticsearch.cert.pem 
+    openssl ca -batch -config $SECURITY_OPENSSL_CONF  -in elasticsearch/elasticsearch.csr -cert $SECURITY_CA_PEM  -keyfile $SECURITY_CA_KEY  -key $CA_PASSPHRASE_FROM_FILE -out elasticsearch.cert.pem 
   
   fi
   
@@ -96,14 +96,14 @@ instances:
 xpack.security.enabled: true
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/$POD_DNS/$POD_DNS.key
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch.cert.pem
 xpack.security.transport.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/$SECURITY_CA_TRUST\"]
 
 # HTTP layer
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
-xpack.security.http.ssl.key: /usr/share/elasticsearch/config/$POD_DNS/$POD_DNS.key
+xpack.security.http.ssl.key: /usr/share/elasticsearch/config/elasticsearch/elasticsearch.key
 xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/elasticsearch.cert.pem
 xpack.security.http.ssl.certificate_authorities: [\"/usr/share/elasticsearch/config/$SECURITY_CA_TRUST\"]
 " >> $elastic_config_file
