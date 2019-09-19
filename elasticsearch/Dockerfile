@@ -1,7 +1,6 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 ARG ELASTIC_VERSION=7.2.1
 FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-ARG S3_PLUGIN_URL="https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-${ELASTIC_VERSION}.zip"
 ARG TEMPLATE_VERSION=v3.9.5
 
 ENV ELASTICSEARCH_URL="http://elasticsearch:9200"
@@ -66,7 +65,7 @@ COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
 
 RUN chmod +x ./load_settings.sh
 
-RUN ${bin/elasticsearch-plugin install --batch S3_PLUGIN_URL}
+RUN bin/elasticsearch-plugin install repository-s3 -b
 
 COPY config/configure_s3.sh ./config/configure_s3.sh
 RUN chmod 755 ./config/configure_s3.sh
