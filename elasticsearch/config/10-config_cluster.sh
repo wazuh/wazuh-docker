@@ -5,6 +5,14 @@ elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 original_file="/usr/share/elasticsearch/config/original-elasticsearch.yml"
 ELASTIC_HOSTAME=`hostname`
 
+echo "CLUSTER CONFIGURATION"
+echo "Hostname"
+echo $ELASTIC_HOSTAME
+echo "Security main node"
+echo $SECURITY_MAIN_NODE
+echo "Discovery seed"
+echo $CLUSTER_DISCOVERY_SEED
+
 cp $elastic_config_file $original_file 
 
 remove_single_node_conf(){
@@ -22,11 +30,13 @@ if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_
   # Remove the old configuration
   remove_single_node_conf $elastic_config_file
   remove_cluster_config $elastic_config_file
-
+  echo "Remove old configuration"
 
 if [[ $ELASTIC_HOSTAME == $SECURITY_MAIN_NODE ]]; then
 # Add the master configuration
 # cluster.initial_master_nodes for bootstrap the cluster
+echo "Add the master configuration"
+
 cat > $elastic_config_file << EOF
 # cluster node
 cluster.name: $CLUSTER_NAME
@@ -42,10 +52,11 @@ cluster.initial_master_nodes:
 # end cluster config" 
 EOF
 
-elif [[ $CLUSTER_DISCOVERY_SEED != "" ]];then
+elif [[ $CLUSTER_DISCOVERY_SEED != "" ]]; then
 # Remove the old configuration
 remove_single_node_conf $elastic_config_file
 remove_cluster_config $elastic_config_file
+echo "Add standard cluster configuration."
 
 cat > $elastic_config_file << EOF
 # cluster node
