@@ -74,7 +74,7 @@ COPY --chown=elasticsearch:elasticsearch ./config/10-config_cluster.sh /entrypoi
 RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
 
 COPY --chown=elasticsearch:elasticsearch ./config/20-config_secure.sh /entrypoint-scripts/20-config_secure.sh
-RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
+RUN chmod +x /entrypoint-scripts/20-config_cluster.sh
 
 COPY --chown=elasticsearch:elasticsearch ./config/30-entrypoint.sh /entrypoint-scripts/30-entrypoint.sh
 RUN chmod +x /entrypoint-scripts/30-entrypoint.sh
