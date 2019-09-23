@@ -9,7 +9,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
     echo "SECURITY - Elasticserach keystore management."
 
     # Create keystore
-    /usr/share/elasticsearch/bin/elasticsearch-keystore create
+    # /usr/share/elasticsearch/bin/elasticsearch-keystore create
 
     # Add keys to keystore by the user. 
     # Example
