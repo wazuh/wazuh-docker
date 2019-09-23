@@ -70,8 +70,14 @@ RUN chmod 755 ./config/configure_s3.sh
 COPY --chown=elasticsearch:elasticsearch ./config/10-config_cluster.sh /entrypoint-scripts/10-config_cluster.sh
 RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/20-config_secure.sh /entrypoint-scripts/20-config_secure.sh
-RUN chmod +x /entrypoint-scripts/20-config_cluster.sh
+COPY --chown=elasticsearch:elasticsearch ./config/20-security_instances.sh /entrypoint-scripts/20-security_instances.sh
+COPY --chown=elasticsearch:elasticsearch ./config/22-security_certs.sh /entrypoint-scripts/22-security_certs.sh
+COPY --chown=elasticsearch:elasticsearch ./config/24-security_configuration.sh /entrypoint-scripts/24-security_configuration.sh
+COPY --chown=elasticsearch:elasticsearch ./config/26-security_keystore.sh /entrypoint-scripts/26-security_keystore.sh
+RUN chmod +x /entrypoint-scripts/20-security_instances.sh && \
+    chmod +x /entrypoint-scripts/22-security_certs.sh && \
+    chmod +x /entrypoint-scripts/24-security_configuration.sh && \
+    chmod +x /entrypoint-scripts/26-security_keystore.sh
 
 COPY --chown=elasticsearch:elasticsearch ./config/30-entrypoint.sh /entrypoint-scripts/30-entrypoint.sh
 RUN chmod +x /entrypoint-scripts/30-entrypoint.sh
