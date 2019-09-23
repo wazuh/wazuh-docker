@@ -52,9 +52,6 @@ ADD $SECURITY_CA_KEY_LOCATION /usr/share/elasticsearch/config
 ADD $SECURITY_OPENSSL_CONF_LOCATION /usr/share/elasticsearch/config 
 ADD $SECURITY_CA_TRUST_LOCATION /usr/share/elasticsearch/config 
 
-RUN yum install openssl -y && \
-    yum install unzip -y
-
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
