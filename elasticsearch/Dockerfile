@@ -77,7 +77,7 @@ RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
     chmod +x /entrypoint-scripts/22-security_certs.sh && \
     chmod +x /entrypoint-scripts/24-security_configuration.sh && \
     chmod +x /entrypoint-scripts/26-security_keystore.sh && \
-    chmod +x /entrypoint-scripts/30-decrypt_credentials && \
+    chmod +x /entrypoint-scripts/30-decrypt_credentials.sh && \
     chmod +x /entrypoint-scripts/35-entrypoint.sh && \
     chmod +x ./35-entrypoint_load_settings.sh && \
     chmod 755 ./config/35-load_settings_configure_s3.sh && \
