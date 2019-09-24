@@ -39,26 +39,12 @@ services:
       - "9200:9200"
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTICSEARCH_PROTOCOL=https
+      - ELASTICSEARCH_PROTOCOL=http
       - ELASTICSEARCH_IP=elasticsearch
       - ELASTICSEARCH_PORT=9200
-      - SECURITY_ENABLED=yes
-      - SECURITY_ADMIN_USER=wazuh_admin
-      - SECURITY_ADMIN_PASS=admin_pass
+      - SECURITY_ENABLED=no
       - SECURITY_ELASTIC_PASSWORD=elastic_pass
-      - SECURITY_KIBANA_USER=service_kibana
-      - SECURITY_KIBANA_PASS=kibana_pass
-      - SECURITY_LOGSTASH_USER=service_logstash 
-      - SECURITY_LOGSTASH_PASS=logstash_pass
-      - SECURITY_CA_PASSPHRASE=ca_pass
-      - SECURITY_CERTIFICATE_DNS=elasticsearch
-      - SECURITY_CA_PEM=server.TEST-CA-signed.pem
-      - SECURITY_CA_KEY=server.TEST-CA.key
-      - SECURITY_CA_TRUST=server.TEST-CA-signed.pem
       - SECURITY_MAIN_NODE=elasticsearch
-      - SECURITY_OPENSSL_CONF=TEST_openssl.cnf
-      - SECURITY_MONITORING_USER=service_monitoring
-      - SECURITY_MONITORING_PASS=monitoring_pass
       - ELASTIC_CLUSTER=true
       - CLUSTER_NODE_MASTER=true
       - CLUSTER_MASTER_NODE_NAME=elasticsearch
