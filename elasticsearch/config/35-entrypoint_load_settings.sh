@@ -23,13 +23,18 @@ echo "LOAD SETTINGS - Elasticsearch url: $el_url"
 
 
 ##############################################################################
-# If Elasticsearch security is enabled get the elastic user password.
+# If Elasticsearch security is enabled get the elastic user password and
+# WAZUH API credentials.
 ##############################################################################
 
 ELASTIC_PASS=""
+WAZH_API_USER=""
+WAZH_API_PASS=""
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   ELASTIC_PASS=${SECURITY_ELASTIC_PASSWORD}
+  WAZH_API_USER=${API_USER}
+  WAZH_API_PASS=${API_PASS}
 else
   input=${SECURITY_CREDENTIALS_FILE}
   while IFS= read -r line
@@ -37,6 +42,12 @@ else
     if [[ $line == *"ELASTIC_PASSWORD"* ]]; then
       arrIN=(${line//:/ })
       ELASTIC_PASS=${arrIN[1]}
+    elif [[ $line == *"WAZUH_API_USER"* ]]; then
+      arrIN=(${line//:/ })
+      WAZH_API_USER=${arrIN[1]}
+    elif [[ $line == *"WAZUH_API_PASSWORD"* ]]; then
+      arrIN=(${line//:/ })
+      WAZH_API_PASS=${arrIN[1]}
     fi
   done < "$input"
  
