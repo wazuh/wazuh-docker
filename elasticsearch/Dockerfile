@@ -58,29 +58,31 @@ COPY config/entrypoint.sh /entrypoint.sh
 
 RUN chmod 755 /entrypoint.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
-
-RUN chmod +x ./load_settings.sh
-
 RUN bin/elasticsearch-plugin install repository-s3 -b
 
-COPY config/configure_s3.sh ./config/configure_s3.sh
-RUN chmod 755 ./config/configure_s3.sh
-
 COPY --chown=elasticsearch:elasticsearch ./config/10-config_cluster.sh /entrypoint-scripts/10-config_cluster.sh
-RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
-
+COPY --chown=elasticsearch:elasticsearch ./config/15-get_CA_key.sh /entrypoint-scripts/15-get_CA_key.sh
 COPY --chown=elasticsearch:elasticsearch ./config/20-security_instances.sh /entrypoint-scripts/20-security_instances.sh
 COPY --chown=elasticsearch:elasticsearch ./config/22-security_certs.sh /entrypoint-scripts/22-security_certs.sh
 COPY --chown=elasticsearch:elasticsearch ./config/24-security_configuration.sh /entrypoint-scripts/24-security_configuration.sh
 COPY --chown=elasticsearch:elasticsearch ./config/26-security_keystore.sh /entrypoint-scripts/26-security_keystore.sh
-RUN chmod +x /entrypoint-scripts/20-security_instances.sh && \
+COPY --chown=elasticsearch:elasticsearch ./config/30-decrypt_credentials.sh /entrypoint-scripts/30-decrypt_credentials.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint.sh /entrypoint-scripts/35-entrypoint.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint_load_settings.sh ./
+COPY config/35-load_settings_configure_s3.sh ./config/35-load_settings_configure_s3.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_users_management.sh ./
+RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
+    chmod +x /entrypoint-scripts/15-get_CA_key.sh && \
+    chmod +x /entrypoint-scripts/20-security_instances.sh && \
     chmod +x /entrypoint-scripts/22-security_certs.sh && \
     chmod +x /entrypoint-scripts/24-security_configuration.sh && \
-    chmod +x /entrypoint-scripts/26-security_keystore.sh
+    chmod +x /entrypoint-scripts/26-security_keystore.sh && \
+    chmod +x /entrypoint-scripts/30-decrypt_credentials && \
+    chmod +x /entrypoint-scripts/35-entrypoint.sh && \
+    chmod +x ./35-entrypoint_load_settings.sh && \
+    chmod 755 ./config/35-load_settings_configure_s3.sh && \
+    chmod +x ./35-load_settings_users_management.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/30-entrypoint.sh /entrypoint-scripts/30-entrypoint.sh
-RUN chmod +x /entrypoint-scripts/30-entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
