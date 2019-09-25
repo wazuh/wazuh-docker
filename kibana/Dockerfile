@@ -21,8 +21,6 @@ ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
 RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
-RUN yum install openssl -y
-
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
 RUN mkdir /entrypoint-scripts
@@ -74,9 +72,12 @@ RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
 RUN chmod +x /entrypoint-scripts/20-entrypoint.sh
 
-COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
-
-RUN chmod +x ./kibana_settings.sh
+COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_security_configuration.sh ./
+RUN chmod +x ./20-entrypoint_kibana_settings.sh && \
+    chmod +x ./20-entrypoint_certs_management.sh && \
+    chmod +x ./20-entrypoint_security_configuration.sh
 
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 
