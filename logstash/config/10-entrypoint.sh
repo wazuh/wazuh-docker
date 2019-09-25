@@ -100,7 +100,7 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config create
 
   ## Settings for logstash.yml
-  bash /usr/share/logstash/config/10-entrypoint_configuration 
+  bash /usr/share/logstash/config/10-entrypoint_configuration.sh 
   
   ## Settings for 01-wazuh.conf
   
