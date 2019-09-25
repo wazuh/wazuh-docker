@@ -34,7 +34,7 @@ RUN chmod -R 774 /entrypoint-scripts
 RUN chown -R logstash:logstash /entrypoint-scripts
 
 COPY --chown=logstash:logstash ./config/05-decrypt_credentials.sh /entrypoint-scripts/05-decrypt_credentials.sh
-COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh3
+COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh
 COPY --chown=logstash:logstash ./config/10-entrypoint_configuration.sh ./config/10-entrypoint_configuration.sh
 COPY --chown=logstash:logstash ./config/10-entrypoint_pipeline.sh ./config/10-entrypoint_pipeline.sh
 RUN chmod +x /entrypoint-scripts/05-decrypt_credentials.sh && \
