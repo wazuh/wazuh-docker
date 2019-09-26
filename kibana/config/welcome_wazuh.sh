@@ -9,7 +9,7 @@ then
     kibana_path="/usr/share/kibana"
     # Set Wazuh app as the default landing page
     echo "Set Wazuh app as the default landing page"
-    echo "server.defaultRoute: /app/wazuh" >> /usr/share/kibana/config/kibana.yml
+    echo "server.defaultRoute: /app/wazuh" >> $kibana_path/config/kibana.yml
 
     # Redirect Kibana welcome screen to Discover
     echo "Redirect Kibana welcome screen to Discover"

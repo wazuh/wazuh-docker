@@ -83,6 +83,5 @@ RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
     chmod 755 ./config/35-load_settings_configure_s3.sh && \
     chmod +x ./35-load_settings_users_management.sh
 
-
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
