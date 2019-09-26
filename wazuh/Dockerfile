@@ -95,16 +95,14 @@ COPY config/entrypoint.sh /entrypoint.sh
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 COPY config/05-remove_credentials_file.sh /entrypoint-scripts/05-remove_credentials_file.sh
-COPY config/10-cloud-backups.sh /entrypoint-scripts/10-cloud-backups.sh
-COPY config/20-cloud-configuration.sh /entrypoint-scripts/20-cloud-configuration.sh
-COPY config/postfix-configuration.sh /postfix-configuration.sh
+COPY config/10-backups.sh /entrypoint-scripts/10-backups.sh
+COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/05-remove_credentials_file.sh && \
-    chmod 755 /entrypoint-scripts/10-cloud-backups.sh && \
-    chmod 755 /entrypoint-scripts/20-cloud-configuration.sh && \
-    chmod 755 /postfix-configuration.sh
+    chmod 755 /entrypoint-scripts/10-backups.sh && \
+    chmod 755 /entrypoint-scripts/20-ossec-configuration.sh
 
 # Workaround. 
 # Issues: Wazuh-api
