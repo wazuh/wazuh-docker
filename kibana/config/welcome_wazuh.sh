@@ -23,5 +23,6 @@ then
     sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/cross_cluster_replication/public/register_routes.js
     sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/remote_clusters/public/index.js
     sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/upgrade_assistant/public/index.js
+    sed -i 's#visible: true#visible: false#g' $kibana_path/x-pack/plugins/snapshot_restore/public/plugin.js
 fi
 
