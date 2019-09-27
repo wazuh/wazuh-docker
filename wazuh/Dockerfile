@@ -2,7 +2,7 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=7.3.1
+ARG FILEBEAT_VERSION=7.3.2
 ARG WAZUH_VERSION=3.10.2-1
 
 # Environment variables

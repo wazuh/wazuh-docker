@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-ARG ELASTIC_VERSION=7.3.1
+ARG ELASTIC_VERSION=7.3.2
 FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
 ARG TEMPLATE_VERSION=v3.10.2
 
