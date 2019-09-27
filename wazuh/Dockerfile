@@ -2,14 +2,14 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=7.2.1
-ARG WAZUH_VERSION=3.9.5-1
+ARG FILEBEAT_VERSION=7.3.1
+ARG WAZUH_VERSION=3.10.2-1
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.9.5"
+ARG TEMPLATE_VERSION="v3.10.2"
 
 # Install packages
 RUN set -x && \
