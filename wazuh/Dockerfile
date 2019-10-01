@@ -2,14 +2,14 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=7.2.1
-ARG WAZUH_VERSION=3.9.5-1
+ARG FILEBEAT_VERSION=7.3.2
+ARG WAZUH_VERSION=3.10.2-1
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.9.5"
+ARG TEMPLATE_VERSION="v3.10.2"
 
 # Install packages
 RUN set -x && \
@@ -92,10 +92,17 @@ VOLUME ["/var/lib/filebeat"]
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
+COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
-
+COPY config/05-remove_credentials_file.sh /entrypoint-scripts/05-remove_credentials_file.sh
+COPY config/10-backups.sh /entrypoint-scripts/10-backups.sh
+COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 RUN chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/01-wazuh.sh
+    chmod 755 /entrypoint-scripts/01-wazuh.sh && \
+    chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
+    chmod 755 /entrypoint-scripts/05-remove_credentials_file.sh && \
+    chmod 755 /entrypoint-scripts/10-backups.sh && \
+    chmod 755 /entrypoint-scripts/20-ossec-configuration.sh
 
 # Workaround. 
 # Issues: Wazuh-api

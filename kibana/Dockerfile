@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:7.2.1
-ARG ELASTIC_VERSION=7.2.1
-ARG WAZUH_VERSION=3.9.5
+FROM docker.elastic.co/kibana/kibana:7.3.2
+ARG ELASTIC_VERSION=7.3.2
+ARG WAZUH_VERSION=3.10.2
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 USER root
@@ -20,8 +20,6 @@ ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
 
 RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
-
-RUN yum install openssl -y
 
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
@@ -65,18 +63,22 @@ ARG XPACK_MONITORING="false"
 ARG XPACK_APM="false"
 ARG XPACK_MAPS="false"
 ARG XPACK_UPTIME="false"
+ARG XPACK_SIEM="false"
 
 ARG CHANGE_WELCOME="true"
 
 COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
-RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh
-
+COPY --chown=kibana:kibana ./config/15-decrypt_credentials.sh /entrypoint-scripts/15-decrypt_credentials.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
-RUN chmod +x /entrypoint-scripts/20-entrypoint.sh
-
-COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
-
-RUN chmod +x ./kibana_settings.sh
+COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_security_configuration.sh ./
+RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
+    chmod +x /entrypoint-scripts/15-decrypt_credentials.sh && \
+    chmod +x /entrypoint-scripts/20-entrypoint.sh && \
+    chmod +x ./20-entrypoint_kibana_settings.sh && \
+    chmod +x ./20-entrypoint_certs_management.sh && \
+    chmod +x ./20-entrypoint_security_configuration.sh
 
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 

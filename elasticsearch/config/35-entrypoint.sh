@@ -43,7 +43,7 @@ fi
 
 # Run load settings script.
 
-bash /usr/share/elasticsearch/load_settings.sh &
+bash /usr/share/elasticsearch/35-entrypoint_load_settings.sh &
 
 # Execute elasticsearch
 
