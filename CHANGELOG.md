@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.10.2_7.3.2
+
+### Added
+
+- Update to Wazuh version 3.10.2_7.3.2
+
+## Wazuh Docker v3.10.0_7.3.2
+
+### Added
+
+- Update to Wazuh version 3.10.0_7.3.2
+
+## Wazuh Docker v3.9.5_7.2.1
+
+### Added
+
+- Update to Wazuh version 3.9.5_7.2.1
+
+## Wazuh Docker v3.9.4_7.2.0
+
+### Added
+
+- Update to Wazuh version 3.9.4_7.2.0
+- Implemented Wazuh Filebeat Module ([jm404](https://www.github.com/jm404)) [#2a77c6a](https://github.com/wazuh/wazuh-docker/commit/2a77c6a6e6bf78f2492adeedbade7a507d9974b2)
+
 ## Wazuh Docker v3.9.3_7.2.0
 
 ### Fixed
