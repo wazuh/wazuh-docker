@@ -16,13 +16,20 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   echo "Setting configuration options."
 
+  ELASTIC_HOSTNAME=`hostname`
+  POD_DNS="$ELASTIC_HOSTNAME.$NAMESPACE.pod.cluster.local"
+  SVC_DNS="elasticsearch.$NAMESPACE.svc.cluster.local"
+
   # Create instances.yml for elasticsearch .p12 certificate and key
   echo "
 instances:
 - name: \"elasticsearch\"
-  dns: 
-    - $SECURITY_CERTIFICATE_DNS
+  dns:
+    - \"$POD_DNS\"
+    - \"$SVC_DNS\"
 " > instances.yml
+
+  cp instances.yml /usr/share/elasticsearch
 
   # Change permissions and owner of ca
   chown elasticsearch: /usr/share/elasticsearch/config/$SECURITY_CA_PEM
@@ -32,6 +39,7 @@ instances:
   # Genereate .p12 certificate and key
   SECURITY_KEY_PASSPHRASE=`date +%s | sha256sum | base64 | head -c 32 ; echo`
   /usr/share/elasticsearch/bin/elasticsearch-certutil csr --in instances.yml --out certs.zip --pass $SECURITY_KEY_PASSPHRASE
+  mv /usr/share/elasticsearch/certs.zip /usr/share/elasticsearch/config/certs.zip
   unzip certs.zip
   rm certs.zip 
 
@@ -108,4 +116,3 @@ xpack.security.http.ssl.certificate_authorities: [\"/usr/share/elasticsearch/con
   echo -e "$SECURITY_KEY_PASSPHRASE" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.secure_key_passphrase --stdin
 
 fi
-

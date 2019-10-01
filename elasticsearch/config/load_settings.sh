@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 set -e
 
@@ -84,7 +84,7 @@ fi
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
   auth="-uelastic:${ELASTIC_PASS} -k"
-elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+elif [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
   auth=""
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
@@ -160,22 +160,24 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   fi
 fi
 
-#Insert default templates
+# Modify wazuh-alerts template shards and replicas
+sed -i 's:"index.number_of_shards"\: "3":"index.number_of_shards"\: "'$WAZUH_ALERTS_SHARDS'":g' /usr/share/elasticsearch/config/wazuh-template.json
+sed -i 's:"index.number_of_replicas"\: "0":"index.number_of_replicas"\: "'$WAZUH_ALERTS_REPLICAS'":g' /usr/share/elasticsearch/config/wazuh-template.json
 
-sed -i 's|    "index.refresh_interval": "5s"|    "index.refresh_interval": "5s",    "number_of_shards" :   '"${ALERTS_SHARDS}"',    "number_of_replicas" : '"${ALERTS_REPLICAS}"'|' /usr/share/elasticsearch/config/wazuh-template.json
-
+# Insert default templates
 cat /usr/share/elasticsearch/config/wazuh-template.json | curl -XPUT "$el_url/_template/wazuh" ${auth} -H 'Content-Type: application/json' -d @-
 sleep 5
 
-
+# Prepare Wazuh API credentials
 API_PASS_Q=`echo "$WAZH_API_PASS" | tr -d '"'`
 API_USER_Q=`echo "$WAZH_API_USER" | tr -d '"'`
 API_PASSWORD=`echo -n $API_PASS_Q | base64`
 
 echo "Setting API credentials into Wazuh APP"
-CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/wazuh-configuration/1513629884013 ${auth})
-if [ "x$CONFIG_CODE" = "x404" ]; then
-  curl -s -XPOST $el_url/.wazuh/wazuh-configuration/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
+
+if [ "x$CONFIG_CODE" != "x200" ]; then
+  curl -s -XPOST $el_url/.wazuh/_doc/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
   {
     "api_user": "'"$API_USER_Q"'",
     "api_password": "'"$API_PASSWORD"'",

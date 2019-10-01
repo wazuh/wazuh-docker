@@ -1,13 +1,15 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=6.8.2
-ARG WAZUH_VERSION=3.9.4-1
+ARG FILEBEAT_VERSION=7.2.1
+ARG WAZUH_VERSION=3.9.5-1
 
 # Environment variables
 ENV API_USER="foo" \
-    API_PASS="bar"
+   API_PASS="bar"
+
+ARG TEMPLATE_VERSION="v3.9.5"
 
 # Install packages
 RUN set -x && \
@@ -39,9 +41,9 @@ RUN set -x && \
 
 # Services
 RUN mkdir /etc/service/wazuh && \
-    mkdir /etc/service/wazuh-api && \
-    mkdir /etc/service/postfix && \
-    mkdir /etc/service/filebeat
+   mkdir /etc/service/wazuh-api && \
+   mkdir /etc/service/postfix && \
+   mkdir /etc/service/filebeat
 
 COPY config/wazuh.runit.service /etc/service/wazuh/run
 COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
@@ -49,9 +51,9 @@ COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
 RUN chmod +x /etc/service/wazuh-api/run && \
-    chmod +x /etc/service/wazuh/run && \
-    chmod +x /etc/service/postfix/run && \
-    chmod +x /etc/service/filebeat/run 
+   chmod +x /etc/service/wazuh/run && \
+   chmod +x /etc/service/postfix/run && \
+   chmod +x /etc/service/filebeat/run 
 
 # Copy configuration files from repository
 COPY config/filebeat.yml /etc/filebeat/
