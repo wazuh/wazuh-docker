@@ -14,6 +14,7 @@ then
     [xpack.monitoring.enabled]=$XPACK_MONITORING
     [xpack.maps.enabled]=$XPACK_MAPS
     [xpack.uptime.enabled]=$XPACK_UPTIME
+    [xpack.siem.enabled]=$XPACK_SIEM
     [console.enabled]=$XPACK_DEVTOOLS
   )
   for i in "${!CONFIG_MAP[@]}"
@@ -34,6 +35,7 @@ xpack.infra.enabled: $XPACK_INFRA
 xpack.monitoring.enabled: $XPACK_MONITORING
 xpack.maps.enabled: $XPACK_MAPS
 xpack.uptime.enabled: $XPACK_UPTIME
+xpack.siem.enabled: $XPACK_SIEM
 console.enabled: $XPACK_DEVTOOLS
 " >> $kibana_config_file
 fi

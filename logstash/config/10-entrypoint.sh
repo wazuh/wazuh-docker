@@ -8,7 +8,7 @@
 set -e
 
 ##############################################################################
-# Waiting for elasticsearch
+# Set elasticsearch url.
 ##############################################################################
 
 if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
@@ -16,6 +16,12 @@ if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
 else
   el_url="${ELASTICSEARCH_URL}"
 fi
+
+echo "ENTRYPOINT - Elasticsearch url: $el_url"
+
+##############################################################################
+# Get Logstash credentials.
+##############################################################################
 
 LOGSTASH_USER=""
 LOGSTASH_PASS=""
@@ -38,6 +44,12 @@ else
  
 fi
 
+echo "ENTRYPOINT - Logstash credentials obtained."
+
+##############################################################################
+# Set authentication for curl command. 
+##############################################################################
+
 if [ ${SECURITY_ENABLED} != "no" ]; then
   auth="-u ${LOGSTASH_USER}:${LOGSTASH_PASS} -k"
 elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
@@ -46,36 +58,41 @@ else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
 fi
 
+echo "ENTRYPOINT - curl authentication established"
+
 
 ##############################################################################
-# Customize logstash output ip
+# Customize logstash output ip.
 ##############################################################################
 
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
-  >&2 echo "Customize Logstash ouput ip."
+  >&2 echo "ENTRYPOINT - Customize Logstash ouput ip."
   sed -i 's|elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/pipeline/01-wazuh.conf
   sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml
 fi
 
+
+##############################################################################
+# Waiting for elasticsearch.
+##############################################################################
+
 until curl $auth -XGET $el_url; do
-  >&2 echo "Elastic is unavailable - sleeping."
+  >&2 echo "ENTRYPOINT - Elastic is unavailable - sleeping."
   sleep 5
 done
 
 sleep 2
 
->&2 echo "Elasticsearch is up."
+>&2 echo "ENTRYPOINT - Elasticsearch is up."
 
 
 ##############################################################################
-# Set Logstash password
-##############################################################################
-
-##############################################################################
-# If Secure access to Kibana is enabled, we must set the credentials.
+# Create keystore if security is enabled.
 ##############################################################################
 
 if [[ $SECURITY_ENABLED == "yes" ]]; then
+
+  echo "ENTRYPOINT - Create Keystore."
 
   ## Create secure keystore
   SECURITY_RANDOM_PASS=`date +%s | sha256sum | base64 | head -c 32 ; echo`
@@ -83,30 +100,16 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
   /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config create
 
   ## Settings for logstash.yml
-  echo "
-# Required set the passwords
-xpack.monitoring.enabled: true
-xpack.monitoring.elasticsearch.username: \${LOGSTASH_KS_USER}
-xpack.monitoring.elasticsearch.password: \${LOGSTASH_KS_PASS}
-xpack.monitoring.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/$SECURITY_CA_PEM
-
-xpack.management.elasticsearch.hosts: \"$LOGSTASH_OUTPUT/\"
-xpack.management.elasticsearch.username: \${LOGSTASH_KS_USER}
-xpack.management.elasticsearch.password: \${LOGSTASH_KS_PASS}
-xpack.management.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/$SECURITY_CA_PEM
-" >> /usr/share/logstash/config/logstash.yml
-
+  bash /usr/share/logstash/config/10-entrypoint_configuration.sh 
+  
   ## Settings for 01-wazuh.conf
-  sed -i 's:#user => service_logstash:user => "${LOGSTASH_KS_USER}":g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#password => service_logstash_internal_password:password => "${LOGSTASH_KS_PASS}":g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#ssl => true:ssl => true:g' /usr/share/logstash/pipeline/01-wazuh.conf
-  sed -i 's:#cacert => "/path/to/cert.pem":cacert => "/usr/share/logstash/config/'$SECURITY_CA_PEM'":g' /usr/share/logstash/pipeline/01-wazuh.conf 
+  
+  bash /usr/share/logstash/config/10-entrypoint_pipeline.sh
 
   ## Add keys to the keystore
   echo -e "$LOGSTASH_USER" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_USER
   echo -e "$LOGSTASH_PASS" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_PASS
-  
-  
+
 fi
   
 
@@ -120,28 +123,28 @@ while [[ $strlen -eq 0 ]]
 do
   template=$(curl $auth $el_url/_cat/templates/wazuh -s)
   strlen=${#template}
-  >&2 echo "Wazuh alerts template not loaded - sleeping."
+  >&2 echo "ENTRYPOINT - Wazuh alerts template not loaded - sleeping."
   sleep 2
 done
 
 sleep 2
 
->&2 echo "Wazuh alerts template is loaded."
+>&2 echo "ENTRYPOINT - Wazuh alerts template is loaded."
 
 
 ##############################################################################
 # Remove credentials file
 ##############################################################################
 
->&2 echo "Removing unnecessary files."
+>&2 echo "ENTRYPOINT - Removing unnecessary files."
 
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
-  echo "Security credentials file not used. Nothing to do."
+  echo "ENTRYPOINT - Security credentials file not used. Nothing to do."
 else
   shred -zvu ${SECURITY_CREDENTIALS_FILE}
 fi
 
->&2 echo "Unnecessary files removed."
+>&2 echo "ENTRYPOINT - Unnecessary files removed."
 
 ##############################################################################
 # Map environment variables to entries in logstash.yml.

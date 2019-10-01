@@ -22,6 +22,8 @@ if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
   sed -i 's|http://elasticsearch:9200|'$ELASTICSEARCH_KIBANA_IP'|g' /usr/share/kibana/config/kibana.yml
 fi
 
+echo "SETTINGS - Update Elasticsearch host."
+
 # If KIBANA_INDEX was set, then change the default index in kibana.yml configuration file. If there was an index, then delete it and recreate.
 if [ "$KIBANA_INDEX" != "" ]; then
   if grep -q 'kibana.index' /usr/share/kibana/config/kibana.yml; then
@@ -39,7 +41,7 @@ if [ "$XPACK_SECURITY_ENABLED" != "" ]; then
 fi
 
 ##############################################################################
-# Set url and credentials
+# Get Kibana credentials
 ##############################################################################
 
 if [ "$KIBANA_IP" != "" ]; then
@@ -69,6 +71,12 @@ else
  
 fi
 
+echo "SETTINGS - Kibana credentials obtained."
+
+
+##############################################################################
+# Set url authentication.
+##############################################################################
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
   auth="-k -u $KIBANA_USER:${KIBANA_PASS}"
@@ -78,14 +86,26 @@ else
   kibana_secure_ip="http://$kibana_ip"
 fi
 
+echo "SETTINGS - Kibana authentication established."
+
+
+##############################################################################
+# Waiting for Kibana.
+##############################################################################
 
 while [[ "$(curl $auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_secure_ip:5601/status)" != "200" ]]; do
-  echo "Waiting for Kibana API. Sleeping 5 seconds"
+  echo "SETTINGS - Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
 
+echo "SETTINGS - Kibana API is running"
+
+
+##############################################################################
 # Prepare index selection.
-echo "Kibana API is running"
+##############################################################################
+
+echo "SETTINGS - Prepare index selection."
 
 default_index="/tmp/default_index.json"
 
@@ -98,20 +118,47 @@ cat > ${default_index} << EOF
 EOF
 
 sleep 5
+
+
+##############################################################################
 # Add the wazuh alerts index as default.
+##############################################################################
+
+echo "SETTINGS - Add the wazuh alerts index as default."
+
 curl $auth -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
 sleep 5
+
+
+##############################################################################
 # Configuring Kibana TimePicker.
+##############################################################################
+
+echo "SETTINGS - Configuring Kibana TimePicker."
+
 curl $auth -POST "$kibana_secure_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
 '{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-24h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
 sleep 5
-# Do not ask user to help providing usage statistics to Elastic
+
+
+##############################################################################
+# Do not ask user to help providing usage statistics to Elastic.
+##############################################################################
+
+echo "SETTINGS - Do not ask user to help providing usage statistics to Elastic."
+
 curl $auth -POST "$kibana_secure_ip:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
-# Remove credentials file
+
+##############################################################################
+# Remove credentials file.
+##############################################################################
+
+echo "SETTINGS - Remove credentials file."
+
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   echo "Security credentials file not used. Nothing to do."
 else
