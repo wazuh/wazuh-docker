@@ -1,4 +1,5 @@
 #!/bin/bash
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 kibana_config_file="/usr/share/kibana/config/kibana.yml"
 if grep -Fq  "#xpack features" "$kibana_config_file";
@@ -9,7 +10,6 @@ then
     [xpack.searchprofiler.enabled]=$XPACK_DEVTOOLS
     [xpack.ml.enabled]=$XPACK_ML
     [xpack.canvas.enabled]=$XPACK_CANVAS
-    [xpack.logstash.enabled]=$XPACK_LOGS
     [xpack.infra.enabled]=$XPACK_INFRA
     [xpack.monitoring.enabled]=$XPACK_MONITORING
     [xpack.maps.enabled]=$XPACK_MAPS
@@ -30,7 +30,6 @@ xpack.grokdebugger.enabled: $XPACK_DEVTOOLS
 xpack.searchprofiler.enabled: $XPACK_DEVTOOLS
 xpack.ml.enabled: $XPACK_ML
 xpack.canvas.enabled: $XPACK_CANVAS
-xpack.logstash.enabled: $XPACK_LOGS
 xpack.infra.enabled: $XPACK_INFRA
 xpack.monitoring.enabled: $XPACK_MONITORING
 xpack.maps.enabled: $XPACK_MAPS

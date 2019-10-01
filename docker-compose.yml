@@ -3,7 +3,7 @@ version: '2'
 
 services:
   wazuh:
-    image: wazuh/wazuh:3.9.3_6.8.1
+    image: wazuh/wazuh:3.9.5_7.2.1
     hostname: wazuh-manager
     restart: always
     ports:
@@ -32,16 +32,12 @@ services:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.3_6.8.1
+    image: wazuh/wazuh-elasticsearch:3.9.5_7.2.1
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
     environment:
-      - node.name=node-1
-      - cluster.name=wazuh
-      - network.host=0.0.0.0
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - ELASTICSEARCH_PROTOCOL=https
       - ELASTICSEARCH_IP=elasticsearch
@@ -63,13 +59,20 @@ services:
       - SECURITY_OPENSSL_CONF=TEST_openssl.cnf
       - SECURITY_MONITORING_USER=service_monitoring
       - SECURITY_MONITORING_PASS=monitoring_pass
+      - ELASTIC_CLUSTER=true
+      - CLUSTER_NODE_MASTER=true
+      - CLUSTER_MASTER_NODE_NAME=elasticsearch
+      - CLUSTER_NODE_DATA=true
+      - CLUSTER_NODE_INGEST=true
+      - CLUSTER_MAX_NODES=3
     ulimits:
       memlock:
         soft: -1
         hard: -1
     mem_limit: 2g
+
   kibana:
-    image: wazuh/wazuh-kibana:3.9.3_6.8.1
+    image: wazuh/wazuh-kibana:3.9.5_7.2.1
     hostname: kibana
     restart: always
     depends_on:

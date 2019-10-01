@@ -133,12 +133,15 @@ sleep 2
 # Remove credentials file
 ##############################################################################
 
+>&2 echo "Removing unnecessary files."
+
 if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
   echo "Security credentials file not used. Nothing to do."
 else
   shred -zvu ${SECURITY_CREDENTIALS_FILE}
 fi
 
+>&2 echo "Unnecessary files removed."
 
 ##############################################################################
 # Map environment variables to entries in logstash.yml.
