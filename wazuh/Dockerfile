@@ -10,6 +10,7 @@ ENV API_USER="foo" \
    API_PASS="bar"
 
 ARG TEMPLATE_VERSION="v3.10.2"
+ENV FILEBEAT_DESTINATION="elasticsearch"
 
 # Install packages
 RUN set -x && \
@@ -56,8 +57,11 @@ RUN chmod +x /etc/service/wazuh-api/run && \
    chmod +x /etc/service/filebeat/run 
 
 # Copy configuration files from repository
-COPY config/filebeat.yml /etc/filebeat/
-RUN chmod go-w /etc/filebeat/filebeat.yml
+COPY config/filebeat_to_elasticsearch.yml ./
+COPY config/filebeat_to_logstash.yml ./
+COPY config/set_filebeat_destination.sh ./
+RUN chmod +x set_filebeat_destination.sh && \
+    bash set_filebeat_destination.sh
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
