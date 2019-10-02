@@ -211,6 +211,13 @@ else
       }
     }
     '
+    curl -s ${auth} -XPUT "https://elasticsearch:9200/.wazuh-backup/_settings?pretty" -H 'Content-Type: application/json' -d'
+    {
+        "index" : {
+            "number_of_replicas" : 0
+        }
+    }
+    '
 
   fi
 
