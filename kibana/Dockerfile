@@ -85,7 +85,8 @@ RUN /usr/local/bin/kibana-docker --optimize
 
 USER root
 
-RUN chmod 757 /usr/share/kibana/plugins/wazuh/config.yml
+RUN chmod 660 /usr/share/kibana/plugins/wazuh/config.yml
+RUN chown root:kibana /usr/share/kibana/plugins/wazuh/config.yml
 
 USER kibana
 
