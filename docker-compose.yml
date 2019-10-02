@@ -13,26 +13,26 @@ services:
       - "55000:55000"
     depends_on:
       - logstash
-  logstash:
-    image: wazuh/wazuh-elasticsearch:3.10.2_7.3.2
-    hostname: logstash
-    restart: always
-    links:
-      - elasticsearch:elasticsearch
-    ports:
-      - "5000:5000"
-    depends_on:
-      - elasticsearch
-    environment:
-      - LS_HEAP_SIZE=2048m
-      - SECURITY_ENABLED=yes
-      - SECURITY_LOGSTASH_USER=service_logstash
-      - SECURITY_LOGSTASH_PASS=logstash_pass
-      - LOGSTASH_OUTPUT=https://elasticsearch:9200
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
-      - SECURITY_CA_PEM=server.TEST-CA-signed.pem
+  # logstash:
+  #   image: wazuh/wazuh-elasticsearch:3.10.2_7.3.2
+  #   hostname: logstash
+  #   restart: always
+  #   links:
+  #     - elasticsearch:elasticsearch
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - elasticsearch
+  #   environment:
+  #     - LS_HEAP_SIZE=2048m
+  #     - SECURITY_ENABLED=no
+  #     - SECURITY_LOGSTASH_USER=service_logstash
+  #     - SECURITY_LOGSTASH_PASS=logstash_pass
+  #     - LOGSTASH_OUTPUT=https://elasticsearch:9200
+  #     - ELASTICSEARCH_URL=https://elasticsearch:9200
+  #     - SECURITY_CA_PEM=server.TEST-CA-signed.pem
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.9.5_7.2.1
+    image: wazuh/wazuh-elasticsearch:3.10.2_7.3.2
     hostname: elasticsearch
     restart: always
     ports:
@@ -68,7 +68,7 @@ services:
       - wazuh:wazuh
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
-      - SECURITY_ENABLED=yes
+      - SECURITY_ENABLED=no
       - SECURITY_KIBANA_USER=service_kibana
       - SECURITY_KIBANA_PASS=kibana_pass
       - SECURITY_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
@@ -77,3 +77,18 @@ services:
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
     ports:
       - "5601:5601"
+
+  nginx:
+    image: wazuh/wazuh-nginx:3.10.2_7.3.2
+    hostname: nginx
+    restart: always
+    environment:
+      - NGINX_PORT=443
+      - NGINX_CREDENTIALS
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - kibana
+    links:
+      - kibana:kibana
