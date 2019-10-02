@@ -174,6 +174,46 @@ if [ "x$CONFIG_CODE" != "x200" ]; then
   ' > /dev/null
 else
   echo "LOAD SETTINGS - Wazuh APP already configured"
+  echo "LOAD SETTINGS - Check if it is an upgrade from Elasticsearch 6.x to 7.x"
+  wazuh_search_request=`curl -s ${auth} "$el_url/.wazuh/_search?pretty"`
+  full_type=`echo $wazuh_search_request | jq .hits.hits | jq .[] | jq ._type`
+  elasticsearch_request=`curl -s $auth "$el_url"`
+  full_elasticsearch_version=`echo $elasticsearch_request | jq .version.number`
+  type=`echo "$full_type" | tr -d '"'`
+  elasticsearch_version=`echo "$full_elasticsearch_version" | tr -d '"'`
+  elasticsearch_major="${elasticsearch_version:0:1}"
+
+  if [[ $type == "wazuh-configuration" ]] && [[ $elasticsearch_major == "7" ]]; then
+    echo "LOAD SETTINGS - Elasticsearch major = $elasticsearch_major."
+    echo "LOAD SETTINGS - Reindex .wazuh in .wazuh-backup."
+    
+    curl -s ${auth} -XPOST "$el_url/_reindex" -H 'Content-Type: application/json' -d'
+    {
+      "source": {
+        "index": ".wazuh"
+      },
+      "dest": {
+        "index": ".wazuh-backup"
+      }
+    }
+    '
+    echo "LOAD SETTINGS - Remove .wazuh index."
+    curl -s  ${auth} -XDELETE "$el_url/.wazuh"
+
+    echo "LOAD SETTINGS - Reindex .wazuh-backup in .wazuh."
+    curl -s ${auth} -XPOST "$el_url/_reindex" -H 'Content-Type: application/json' -d'
+    {
+      "source": {
+        "index": ".wazuh-backup"
+      },
+      "dest": {
+        "index": ".wazuh"
+      }
+    }
+    '
+
+  fi
+
 fi
 sleep 5
 

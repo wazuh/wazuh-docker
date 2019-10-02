@@ -17,6 +17,8 @@ ENV WAZUH_ALERTS_SHARDS="1" \
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /usr/share/elasticsearch/config
 
+RUN yum install jq -y
+
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
 # command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_KEY_LOCATION=<CA_KEY_LOCATION>
 # ENV variables are necessary: SECURITY_CA_PEM, SECURITY_CA_KEY, SECURITY_CA_TRUST, SECURITY_OPENSSL_CONF 
