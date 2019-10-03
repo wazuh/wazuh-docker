@@ -1,4 +1,4 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM docker.elastic.co/kibana/kibana:7.3.2
 ARG ELASTIC_VERSION=7.3.2
 ARG WAZUH_VERSION=3.10.2
@@ -7,17 +7,6 @@ ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 USER root
 
 ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
-
-# This CA is created for testing. Please set your own CA pem signed certificate. 
-# command: $ docker build <kibana_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION>
-# ENV variables are necessary: SECURITY_CA_PEM 
-# Sample:
-# ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
-ARG SECURITY_CA_PEM_LOCATION=""
-
-# CA for secure communication with Elastic
-ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
-
 RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
@@ -96,8 +85,10 @@ RUN /usr/local/bin/kibana-docker --optimize
 
 USER root
 
-RUN chmod 777 /usr/share/kibana/plugins/wazuh/config.yml
-RUN chmod 777 /usr/share/kibana/plugins/wazuh
+RUN chmod 660 /usr/share/kibana/plugins/wazuh/config.yml && \
+    chmod 775 /usr/share/kibana/plugins/wazuh && \
+    chown root:kibana /usr/share/kibana/plugins/wazuh/config.yml && \
+    chown root:kibana /usr/share/kibana/plugins/wazuh
 
 USER kibana
 
