@@ -15,6 +15,7 @@ ENV ENABLE_CONFIGURE_S3="false"
 ENV WAZUH_ALERTS_SHARDS="1" \
     WAZUH_ALERTS_REPLICAS="0"
 
+ENV WAZUH_TEMPLATE_PATH="/usr/share/elasticsearch/config/wazuh-template.json"
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /usr/share/elasticsearch/config
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
