@@ -14,7 +14,7 @@ else
   el_url="${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 fi
 
-echo "USERS - Elasticsearch url: $el_url"
+echo "ALIASES - Elasticsearch url: $el_url"
 
 
 ##############################################################################
@@ -51,13 +51,13 @@ fi
 
 if [ ${SECURITY_ENABLED} != "no" ]; then
   auth="-uelastic:${ELASTIC_PASS} -k"
-  echo "USERS - authentication for curl established."
+  echo "ALIASES - authentication for curl established."
 elif [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
   auth=""
-  echo "USERS - authentication for curl not established."
+  echo "ALIASES - authentication for curl not established."
 else
   auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
-  echo "USERS - authentication for curl established."
+  echo "ALIASES - authentication for curl established."
 fi
 
 
@@ -66,11 +66,11 @@ fi
 ##############################################################################
 
 until curl ${auth} -XGET $el_url; do
-  >&2 echo "USERS - Elastic is unavailable - sleeping"
+  >&2 echo "ALIASES - Elastic is unavailable - sleeping"
   sleep 5
 done
 
->&2 echo "USERS - Elastic is up - executing command"
+>&2 echo "ALIASES - Elastic is up - executing command"
 
 
 ##############################################################################
@@ -80,7 +80,7 @@ done
 # The user must add the credentials of the users.
 # TO DO.
 # Example 
-# echo "USERS - Add custom_user password and role:"
+# echo "ALIASES - Add custom_user password and role:"
 # curl ${auth} -k -XPOST -H 'Content-Type: application/json' 'https://localhost:9200/_ilm/policy/my_policy?pretty' -d'
 # {  "policy": { "phases": { "hot": { "actions": { "rollover": {"max_size": "50GB", "max_age": "5m"}}}}}}'
 
