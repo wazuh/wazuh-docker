@@ -113,7 +113,7 @@ function ossec_shutdown(){
 # 2. In your ossec.conf file, set to_be_replaced_by_hostname as your node_name
 # 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
 ##############################################################################
-sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' /var/ossec/etc/ossec.conf
+sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
 
 # Trap exit signals and do a proper shutdown
 trap "ossec_shutdown; exit" SIGINT SIGTERM
