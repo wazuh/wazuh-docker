@@ -75,6 +75,8 @@ COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint.sh /entrypoint-s
 COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint_load_settings.sh ./
 COPY config/35-load_settings_configure_s3.sh ./config/35-load_settings_configure_s3.sh
 COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_users_management.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_policies.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_aliases.sh ./
 RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
     chmod +x /entrypoint-scripts/15-get_CA_key.sh && \
     chmod +x /entrypoint-scripts/20-security_instances.sh && \
@@ -85,7 +87,9 @@ RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
     chmod +x /entrypoint-scripts/35-entrypoint.sh && \
     chmod +x ./35-entrypoint_load_settings.sh && \
     chmod 755 ./config/35-load_settings_configure_s3.sh && \
-    chmod +x ./35-load_settings_users_management.sh
+    chmod +x ./35-load_settings_users_management.sh && \
+    chmod +x ./35-load_settings_policies.sh && \
+    chmod +x ./35-load_settings_aliases.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]
