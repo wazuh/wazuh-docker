@@ -128,15 +128,8 @@ sed -i 's:"index.number_of_replicas"\: "0":"index.number_of_replicas"\: "'$WAZUH
 # Load default templates
 ##############################################################################
 
-if [ -f "$WAZUH_TEMPLATE_PATH" ]; then
-  echo "LOAD SETTINGS - Loading wazuh-alerts template from $WAZUH_TEMPLATE_PATH."
-  cat $WAZUH_TEMPLATE_PATH | curl -XPUT "$el_url/_template/wazuh" ${auth} -H 'Content-Type: application/json' -d @-
-  sleep 5
-
-else
-  echo "LOAD SETTINGS - ERROR: wazuh-alerts template not found."
-  exit
-fi
+echo "LOAD SETTINGS - Loading wazuh-alerts template"
+bash /usr/share/elasticsearch/35-load_settings_templates.sh
 
 
 ##############################################################################
