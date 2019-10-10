@@ -1,8 +1,9 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+ARG ELASTIC_VERSION=7.3.2
+FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+ARG TEMPLATE_VERSION=v3.10.2
 
-ENV ALERTS_SHARDS="1" \
-    ALERTS_REPLICAS="0"
+ENV ELASTICSEARCH_URL="http://elasticsearch:9200"
 
 ENV API_USER="foo" \
     API_PASS="bar"
@@ -11,8 +12,13 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ENV TEMPLATE_VERSION=v3.9.4
+ENV WAZUH_ALERTS_SHARDS="1" \
+    WAZUH_ALERTS_REPLICAS="0"
 
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /usr/share/elasticsearch/config
+
+RUN yum install epel-release -y && \
+    yum install jq -y
 
 # This CA is created for testing. Please set your own CA zip containing the key and the signed certificate. 
 # command: $ docker build <elasticsearch_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION> --build-arg SECURITY_CA_KEY_LOCATION=<CA_KEY_LOCATION>
@@ -29,19 +35,19 @@ ARG SECURITY_CA_TRUST_LOCATION=""
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
+# CLUSTER_INITIAL_MASTER_NODES set to own node by default.
 ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NAME="wazuh" \
-    CLUSTER_NODE_MASTER="true" \
+    CLUSTER_NODE_MASTER="false" \
     CLUSTER_NODE_DATA="true" \
     CLUSTER_NODE_INGEST="true" \
-    CLUSTER_NODE_NAME="wazuh-elasticsearch" \
     CLUSTER_MEMORY_LOCK="true" \
     CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch" \
     CLUSTER_NUMBER_OF_MASTERS="2" \
     CLUSTER_MAX_NODES="1" \
-    CLUSTER_DELAYED_TIMEOUT="1m"
-
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/6.x/wazuh-template.json /usr/share/elasticsearch/config
+    CLUSTER_DELAYED_TIMEOUT="1m" \
+    CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch" \
+    CLUSTER_DISCOVERY_SEED="elasticsearch"
 
 # CA cert for Transport SSL
 ADD $SECURITY_CA_PEM_LOCATION /usr/share/elasticsearch/config
@@ -49,31 +55,42 @@ ADD $SECURITY_CA_KEY_LOCATION /usr/share/elasticsearch/config
 ADD $SECURITY_OPENSSL_CONF_LOCATION /usr/share/elasticsearch/config 
 ADD $SECURITY_CA_TRUST_LOCATION /usr/share/elasticsearch/config 
 
-RUN yum install openssl -y
-
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
 
 RUN chmod 755 /entrypoint.sh
 
-COPY --chown=elasticsearch:elasticsearch ./config/load_settings.sh ./
-
-RUN chmod +x ./load_settings.sh
-
-RUN bin/elasticsearch-plugin install --batch https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-6.8.2.zip
-
-COPY config/configure_s3.sh ./config/configure_s3.sh
-RUN chmod 755 ./config/configure_s3.sh
+RUN bin/elasticsearch-plugin install repository-s3 -b
 
 COPY --chown=elasticsearch:elasticsearch ./config/10-config_cluster.sh /entrypoint-scripts/10-config_cluster.sh
-RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
-
-COPY --chown=elasticsearch:elasticsearch ./config/20-config_secure.sh /entrypoint-scripts/20-config_secure.sh
-RUN chmod +x /entrypoint-scripts/10-config_cluster.sh
-
-COPY --chown=elasticsearch:elasticsearch ./config/30-entrypoint.sh /entrypoint-scripts/30-entrypoint.sh
-RUN chmod +x /entrypoint-scripts/30-entrypoint.sh
+COPY --chown=elasticsearch:elasticsearch ./config/15-get_CA_key.sh /entrypoint-scripts/15-get_CA_key.sh
+COPY --chown=elasticsearch:elasticsearch ./config/20-security_instances.sh /entrypoint-scripts/20-security_instances.sh
+COPY --chown=elasticsearch:elasticsearch ./config/22-security_certs.sh /entrypoint-scripts/22-security_certs.sh
+COPY --chown=elasticsearch:elasticsearch ./config/24-security_configuration.sh /entrypoint-scripts/24-security_configuration.sh
+COPY --chown=elasticsearch:elasticsearch ./config/26-security_keystore.sh /entrypoint-scripts/26-security_keystore.sh
+COPY --chown=elasticsearch:elasticsearch ./config/30-decrypt_credentials.sh /entrypoint-scripts/30-decrypt_credentials.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint.sh /entrypoint-scripts/35-entrypoint.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-entrypoint_load_settings.sh ./
+COPY config/35-load_settings_configure_s3.sh ./config/35-load_settings_configure_s3.sh
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_users_management.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_policies.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_templates.sh ./
+COPY --chown=elasticsearch:elasticsearch ./config/35-load_settings_aliases.sh ./
+RUN chmod +x /entrypoint-scripts/10-config_cluster.sh && \
+    chmod +x /entrypoint-scripts/15-get_CA_key.sh && \
+    chmod +x /entrypoint-scripts/20-security_instances.sh && \
+    chmod +x /entrypoint-scripts/22-security_certs.sh && \
+    chmod +x /entrypoint-scripts/24-security_configuration.sh && \
+    chmod +x /entrypoint-scripts/26-security_keystore.sh && \
+    chmod +x /entrypoint-scripts/30-decrypt_credentials.sh && \
+    chmod +x /entrypoint-scripts/35-entrypoint.sh && \
+    chmod +x ./35-entrypoint_load_settings.sh && \
+    chmod 755 ./config/35-load_settings_configure_s3.sh && \
+    chmod +x ./35-load_settings_users_management.sh && \
+    chmod +x ./35-load_settings_policies.sh && \
+    chmod +x ./35-load_settings_templates.sh && \
+    chmod +x ./35-load_settings_aliases.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["elasticsearch"]

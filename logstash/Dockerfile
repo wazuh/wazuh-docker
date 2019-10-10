@@ -1,5 +1,7 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/logstash/logstash:6.8.2
+
+ARG LOGSTASH_VERSION=7.3.2
+FROM docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
 
 COPY --chown=logstash:logstash config/entrypoint.sh /entrypoint.sh
 
@@ -30,8 +32,16 @@ RUN if [[ "x$SECURITY_CA_PEM_LOCATION" == x ]] ; then echo Nothing to do ; else 
 RUN mkdir /entrypoint-scripts
 RUN chmod -R 774 /entrypoint-scripts
 RUN chown -R logstash:logstash /entrypoint-scripts
+
+COPY --chown=logstash:logstash ./config/05-decrypt_credentials.sh /entrypoint-scripts/05-decrypt_credentials.sh
 COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh
-RUN chmod +x /entrypoint-scripts/10-entrypoint.sh
+COPY --chown=logstash:logstash ./config/10-entrypoint_configuration.sh ./config/10-entrypoint_configuration.sh
+COPY --chown=logstash:logstash ./config/10-entrypoint_pipeline.sh ./config/10-entrypoint_pipeline.sh
+RUN chmod +x /entrypoint-scripts/05-decrypt_credentials.sh && \
+    chmod +x /entrypoint-scripts/10-entrypoint.sh && \
+    chmod +x ./config/10-entrypoint_configuration.sh && \
+    chmod +x ./config/10-entrypoint_pipeline.sh
+
 USER logstash
 
 ENTRYPOINT /entrypoint.sh

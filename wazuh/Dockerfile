@@ -1,13 +1,16 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=6.8.2
-ARG WAZUH_VERSION=3.9.4-1
+ARG FILEBEAT_VERSION=7.3.2
+ARG WAZUH_VERSION=3.10.2-1
 
 # Environment variables
 ENV API_USER="foo" \
-    API_PASS="bar"
+   API_PASS="bar"
+
+ARG TEMPLATE_VERSION="v3.10.2"
+ENV FILEBEAT_DESTINATION="elasticsearch"
 
 # Install packages
 RUN set -x && \
@@ -39,9 +42,9 @@ RUN set -x && \
 
 # Services
 RUN mkdir /etc/service/wazuh && \
-    mkdir /etc/service/wazuh-api && \
-    mkdir /etc/service/postfix && \
-    mkdir /etc/service/filebeat
+   mkdir /etc/service/wazuh-api && \
+   mkdir /etc/service/postfix && \
+   mkdir /etc/service/filebeat
 
 COPY config/wazuh.runit.service /etc/service/wazuh/run
 COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
@@ -49,13 +52,13 @@ COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
 RUN chmod +x /etc/service/wazuh-api/run && \
-    chmod +x /etc/service/wazuh/run && \
-    chmod +x /etc/service/postfix/run && \
-    chmod +x /etc/service/filebeat/run 
+   chmod +x /etc/service/wazuh/run && \
+   chmod +x /etc/service/postfix/run && \
+   chmod +x /etc/service/filebeat/run 
 
 # Copy configuration files from repository
-COPY config/filebeat.yml /etc/filebeat/
-RUN chmod go-w /etc/filebeat/filebeat.yml 
+COPY config/filebeat_to_elasticsearch.yml ./
+COPY config/filebeat_to_logstash.yml ./
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
@@ -90,10 +93,21 @@ VOLUME ["/var/lib/filebeat"]
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
+COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
-
+COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
+COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
+COPY config/05-remove_credentials_file.sh /entrypoint-scripts/05-remove_credentials_file.sh
+COPY config/10-backups.sh /entrypoint-scripts/10-backups.sh
+COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 RUN chmod 755 /entrypoint.sh && \
-    chmod 755 /entrypoint-scripts/01-wazuh.sh
+    chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
+    chmod 755 /entrypoint-scripts/01-wazuh.sh && \
+    chmod 755 /entrypoint-scripts/02-set_filebeat_destination.sh && \
+    chmod 755 /entrypoint-scripts/03-config_filebeat.sh && \
+    chmod 755 /entrypoint-scripts/05-remove_credentials_file.sh && \
+    chmod 755 /entrypoint-scripts/10-backups.sh && \
+    chmod 755 /entrypoint-scripts/20-ossec-configuration.sh
 
 # Workaround. 
 # Issues: Wazuh-api
@@ -101,6 +115,10 @@ RUN chmod 755 /entrypoint.sh && \
 # https://github.com/wazuh/wazuh-api/issues/443
 COPY --chown=root:ossec config/agents.js /var/ossec/api/controllers/agents.js
 RUN chmod 770 /var/ossec/api/controllers/agents.js
+
+# Load wazuh alerts template.
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]

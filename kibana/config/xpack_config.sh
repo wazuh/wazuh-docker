@@ -1,4 +1,5 @@
 #!/bin/bash
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 kibana_config_file="/usr/share/kibana/config/kibana.yml"
 if grep -Fq  "#xpack features" "$kibana_config_file";
@@ -14,6 +15,7 @@ then
     [xpack.monitoring.enabled]=$XPACK_MONITORING
     [xpack.maps.enabled]=$XPACK_MAPS
     [xpack.uptime.enabled]=$XPACK_UPTIME
+    [xpack.siem.enabled]=$XPACK_SIEM
     [console.enabled]=$XPACK_DEVTOOLS
   )
   for i in "${!CONFIG_MAP[@]}"
@@ -35,6 +37,7 @@ xpack.infra.enabled: $XPACK_INFRA
 xpack.monitoring.enabled: $XPACK_MONITORING
 xpack.maps.enabled: $XPACK_MAPS
 xpack.uptime.enabled: $XPACK_UPTIME
+xpack.siem.enabled: $XPACK_SIEM
 console.enabled: $XPACK_DEVTOOLS
 " >> $kibana_config_file
 fi
