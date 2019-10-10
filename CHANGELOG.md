@@ -1,17 +1,50 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Wazuh Docker v3.9.4_6.8.1
+## Wazuh Docker v3.10.2_7.3.2
+
+### Added
+
+- Update to Wazuh version 3.10.2_7.3.2
+
+## Wazuh Docker v3.10.0_7.3.2
+
+### Added
+
+- Update to Wazuh version 3.10.0_7.3.2
+
+## Wazuh Docker v3.9.5_7.2.1
+
+### Added
+
+- Update to Wazuh version 3.9.5_7.2.1
+
+## Wazuh Docker v3.9.4_7.2.0
+
+### Added
+
+- Update to Wazuh version 3.9.4_7.2.0
+- Implemented Wazuh Filebeat Module ([jm404](https://www.github.com/jm404)) [#2a77c6a](https://github.com/wazuh/wazuh-docker/commit/2a77c6a6e6bf78f2492adeedbade7a507d9974b2)
+
+
+## Wazuh Docker v3.9.3_7.2.0
+
+### Fixed
+- Wazuh-docker reinserts cluster settings after resuming containers ([@manuasir](https://github.com/manuasir)) [#213](https://github.com/wazuh/wazuh-docker/pull/213)
+
+## Wazuh Docker v3.9.2_7.1.1
+
+### Added
+
+- Update to Wazuh version 3.9.2_7.1.1
 
 ## Wazuh Docker v3.9.3_6.8.1
 
 ### Added
 
 - Update to Wazuh version 3.9.3_6.8.1
-
-### Added
-
 - Option to disable additionals X-Pack applications and hide unnecesary management links ([@SitoRBJ](https://github.com/SitoRBJ)) ([#163](https://github.com/wazuh/wazuh-docker/pull/163))
+
 
 ## Wazuh Docker v3.9.2_6.8.0
 
@@ -19,6 +52,13 @@ All notable changes to this project will be documented in this file.
 
 - Update to Wazuh version 3.9.2_6.8.0
 
+
+## Wazuh Docker v3.9.1_7.1.0
+
+### Added
+
+- Support for Elastic v7.1.0
+- New environment variables for Kibana ([@manuasir](https://github.com/manuasir)) [#22ad43](https://github.com/wazuh/wazuh-docker/commit/22ad4360f548e54bb0c5e929f8c84a186ad2ab88)
 
 ## Wazuh Docker v3.9.1_6.8.0
 
@@ -30,6 +70,15 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed `ELASTICSEARCH_KIBANA_IP` environment variable ([@manuasir](https://github.com/manuasir)) ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
+
+
+## Wazuh Docker v3.9.1_7.1.0
+
+### Added
+
+- Support for Elastic v7.1.0
+- New environment variables for Kibana ([@manuasir](https://github.com/manuasir)) [#22ad43](https://github.com/wazuh/wazuh-docker/commit/22ad4360f548e54bb0c5e929f8c84a186ad2ab88)
+
 
 ## Wazuh Docker v3.9.0_6.7.2
 

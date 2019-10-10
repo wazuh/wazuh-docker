@@ -1,13 +1,11 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-# It will run every .sh script located in entrypoint-scripts folder in lexicographical order
-for script in `ls /entrypoint-scripts/*.sh | sort -n`; do
-  bash "$script"
-done
-
 ##############################################################################
-# Start Wazuh Server.
+# Decrypt credentials.
+# If the CA key is encrypted, it must be decrypted for later use. 
 ##############################################################################
 
-/sbin/my_init 
+echo "TO DO"
+
+# TO DO

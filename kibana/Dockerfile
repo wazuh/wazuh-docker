@@ -1,25 +1,14 @@
-# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:6.8.2
-ARG WAZUH_APP_VERSION=3.9.4_6.8.2
+# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+FROM docker.elastic.co/kibana/kibana:7.3.2
+ARG ELASTIC_VERSION=7.3.2
+ARG WAZUH_VERSION=3.10.2
+ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
+
 USER root
 
-ADD https://packages-dev.wazuh.com/pre-release/app/kibana/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
-
-# This CA is created for testing. Please set your own CA pem signed certificate. 
-# command: $ docker build <kibana_directory> --build-arg SECURITY_CA_PEM_LOCATION=<CA_PEM_LOCATION>
-# ENV variables are necessary: SECURITY_CA_PEM 
-# Sample:
-# ARG SECURITY_CA_PEM_LOCATION="config/server.TEST-CA-signed.pem"
-ARG SECURITY_CA_PEM_LOCATION=""
-
-# CA for secure communication with Elastic
-ADD $SECURITY_CA_PEM_LOCATION /usr/share/kibana/config
-
-RUN NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip &&\
-    chown -R kibana:kibana /usr/share/kibana &&\
-    rm -rf /tmp/*
-
-RUN yum install openssl -y
+ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
@@ -63,18 +52,22 @@ ARG XPACK_MONITORING="false"
 ARG XPACK_APM="false"
 ARG XPACK_MAPS="false"
 ARG XPACK_UPTIME="false"
+ARG XPACK_SIEM="false"
 
 ARG CHANGE_WELCOME="true"
 
 COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
-RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh
-
+COPY --chown=kibana:kibana ./config/15-decrypt_credentials.sh /entrypoint-scripts/15-decrypt_credentials.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
-RUN chmod +x /entrypoint-scripts/20-entrypoint.sh
-
-COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
-
-RUN chmod +x ./kibana_settings.sh
+COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
+COPY --chown=kibana:kibana ./config/20-entrypoint_security_configuration.sh ./
+RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
+    chmod +x /entrypoint-scripts/15-decrypt_credentials.sh && \
+    chmod +x /entrypoint-scripts/20-entrypoint.sh && \
+    chmod +x ./20-entrypoint_kibana_settings.sh && \
+    chmod +x ./20-entrypoint_certs_management.sh && \
+    chmod +x ./20-entrypoint_security_configuration.sh
 
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 
@@ -89,5 +82,14 @@ RUN chmod +x ./welcome_wazuh.sh
 RUN ./welcome_wazuh.sh
 
 RUN /usr/local/bin/kibana-docker --optimize
+
+USER root
+
+RUN chmod 660 /usr/share/kibana/plugins/wazuh/config.yml && \
+    chmod 775 /usr/share/kibana/plugins/wazuh && \
+    chown root:kibana /usr/share/kibana/plugins/wazuh/config.yml && \
+    chown root:kibana /usr/share/kibana/plugins/wazuh
+
+USER kibana
 
 ENTRYPOINT ./entrypoint.sh
