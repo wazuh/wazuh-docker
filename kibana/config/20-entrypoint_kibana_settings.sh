@@ -109,13 +109,28 @@ echo "SETTINGS - Prepare index selection."
 
 default_index="/tmp/default_index.json"
 
-cat > ${default_index} << EOF
+if [[ $PATTERN == "" ]]; then
+
+  cat > ${default_index} << EOF
 {
   "changes": {
     "defaultIndex": "wazuh-alerts-${WAZUH_MAJOR}.x-*"
   }
 }
 EOF
+
+else
+
+  cat > ${default_index} << EOF
+{
+  "changes": {
+    "defaultIndex": "$PATTERN"
+  }
+}
+EOF
+
+fi
+
 
 sleep 5
 
