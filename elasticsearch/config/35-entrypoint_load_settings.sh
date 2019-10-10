@@ -106,17 +106,13 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
 
 fi
 
+
 ##############################################################################
-# Elastic Stack users creation. 
-# Only security main node can manage users. 
+# Load custom policies.
 ##############################################################################
 
-echo "LOAD SETTINGS - Run users_management.sh."
-MY_HOSTNAME=`hostname`
-echo "LOAD SETTINGS - Hostname: $MY_HOSTNAME"
-if [[ $SECURITY_MAIN_NODE == $MY_HOSTNAME ]]; then
-  bash /usr/share/elasticsearch/35-load_settings_users_management.sh &
-fi
+echo "LOAD SETTINGS - Loading custom Elasticsearch policies."
+bash /usr/share/elasticsearch/35-load_settings_policies.sh
 
 
 ##############################################################################
@@ -132,9 +128,30 @@ sed -i 's:"index.number_of_replicas"\: "0":"index.number_of_replicas"\: "'$WAZUH
 # Load default templates
 ##############################################################################
 
-echo "LOAD SETTINGS - Loading wazuh-alerts template."
-cat /usr/share/elasticsearch/config/wazuh-template.json | curl -XPUT "$el_url/_template/wazuh" ${auth} -H 'Content-Type: application/json' -d @-
-sleep 5
+echo "LOAD SETTINGS - Loading wazuh-alerts template"
+bash /usr/share/elasticsearch/35-load_settings_templates.sh
+
+
+##############################################################################
+# Load custom aliases.
+##############################################################################
+
+echo "LOAD SETTINGS - Loading custom Elasticsearch aliases."
+bash /usr/share/elasticsearch/35-load_settings_aliases.sh
+
+
+##############################################################################
+# Elastic Stack users creation. 
+# Only security main node can manage users. 
+##############################################################################
+
+echo "LOAD SETTINGS - Run users_management.sh."
+MY_HOSTNAME=`hostname`
+echo "LOAD SETTINGS - Hostname: $MY_HOSTNAME"
+if [[ $SECURITY_MAIN_NODE == $MY_HOSTNAME ]]; then
+  bash /usr/share/elasticsearch/35-load_settings_users_management.sh &
+fi
+
 
 ##############################################################################
 # Prepare Wazuh API credentials
