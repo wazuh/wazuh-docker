@@ -10,7 +10,7 @@ USER root
 #ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 COPY config/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 USER kibana
-RUN  --allow-root NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 USER root
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
