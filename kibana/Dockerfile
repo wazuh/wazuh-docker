@@ -9,7 +9,7 @@ USER root
 # App: 3.10.2 - 7.3.2 with this fix: https://github.com/wazuh/wazuh-kibana-app/issues/1815
 #ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 COPY config/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
-RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+RUN sudo -u kibana  --allow-root NODE_OPTIONS="--max-old-space-size=3072" /usr/share/kibana/bin/kibana-plugin install file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 COPY config/entrypoint.sh ./entrypoint.sh
