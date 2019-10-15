@@ -6,8 +6,12 @@ ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 USER root
 
-ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
-RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+# App: 3.10.2 - 7.3.2 with this fix: https://github.com/wazuh/wazuh-kibana-app/issues/1815
+#ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+COPY config/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
+USER kibana
+RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
+USER root
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
 COPY config/entrypoint.sh ./entrypoint.sh
