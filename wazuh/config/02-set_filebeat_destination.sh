@@ -14,6 +14,7 @@ elif [[ $FILEBEAT_DESTINATION == "logstash" ]]; then
 
     echo "FILEBEAT - Set destination to Logstash"
     cp filebeat_to_logstash.yml /etc/filebeat/filebeat.yml
+    sed -i "s/logstash:5000/$FILEBEAT_OUTPUT:5000/" /etc/filebeat/filebeat.yml
 
 else
     echo "FILEBEAT - Error choosing destination. Set default filebeat.yml "
