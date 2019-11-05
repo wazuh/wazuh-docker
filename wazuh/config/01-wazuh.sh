@@ -197,20 +197,6 @@ change_api_user_credentials() {
 }
 
 
-
-
-##############################################################################
-# Customize filebeat output ip
-##############################################################################
-
-
-custom_filebeat_output_ip() {
-  if [ "$FILEBEAT_OUTPUT" != "" ]; then
-    sed -i "s/logstash:5000/$FILEBEAT_OUTPUT:5000/" /etc/filebeat/filebeat.yml
-  fi
-}
-
-
 ##############################################################################
 # Main function
 ##############################################################################
@@ -254,9 +240,6 @@ main() {
 
   # Change API user credentials
   change_api_user_credentials
-
-  # Update filebeat configuration
-  custom_filebeat_output_ip
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
