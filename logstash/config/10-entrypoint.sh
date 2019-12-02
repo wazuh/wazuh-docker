@@ -101,10 +101,6 @@ if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   ## Settings for logstash.yml
   bash /usr/share/logstash/config/10-entrypoint_configuration.sh 
-  
-  ## Settings for 01-wazuh.conf
-  
-  bash /usr/share/logstash/config/10-entrypoint_pipeline.sh
 
   ## Add keys to the keystore
   echo -e "$LOGSTASH_USER" | /usr/share/logstash/bin/logstash-keystore --path.settings /usr/share/logstash/config add LOGSTASH_KS_USER
