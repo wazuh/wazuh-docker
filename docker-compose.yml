@@ -11,8 +11,8 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-    depends_on:
-      - logstash
+  #   depends_on:
+  #     - logstash
   # logstash:
   #   image: wazuh/wazuh-elasticsearch:3.10.2_7.3.2
   #   hostname: logstash

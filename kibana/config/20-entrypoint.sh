@@ -113,7 +113,6 @@ fi
 if [[ $SECURITY_ENABLED == "yes" ]]; then
 
   bash /usr/share/kibana/20-entrypoint_certs_management.sh
-  bash /usr/share/kibana/20-entrypoint_security_configuration.sh
 
 fi
 
