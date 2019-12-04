@@ -9,6 +9,7 @@ RUN chmod 755 /entrypoint.sh
 
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 
+ENV PIPELINE_FROM_FILE="false"
 COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 
 # This CA is created for testing. Please set your own CA pem signed certificate. 
