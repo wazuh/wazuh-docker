@@ -20,6 +20,8 @@ RUN mkdir /entrypoint-scripts
 
 USER kibana
 
+ENV CONFIGURATION_FROM_FILE="false"
+
 ENV PATTERN="" \
     CHECKS_PATTERN="" \
     CHECKS_TEMPLATE="" \
