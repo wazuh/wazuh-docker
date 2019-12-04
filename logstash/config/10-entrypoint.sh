@@ -68,8 +68,8 @@ echo "ENTRYPOINT - curl authentication established"
 if [ "$LOGSTASH_OUTPUT" != "" ]; then
   >&2 echo "ENTRYPOINT - Customize Logstash ouput ip."
   sed -i 's|http://elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/config/logstash.yml
-  
-  if [[ "$PIPELINE_FROM_FILE" != "false" ]]; then
+
+  if [[ "$PIPELINE_FROM_FILE" == "false" ]]; then
     sed -i 's|elasticsearch:9200|'$LOGSTASH_OUTPUT'|g' /usr/share/logstash/pipeline/01-wazuh.conf
   fi
 fi
