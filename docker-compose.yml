@@ -11,8 +11,8 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-    depends_on:
-      - logstash
+  #   depends_on:
+  #     - logstash
   # logstash:
   #   image: wazuh/wazuh-elasticsearch:3.10.2_7.3.2
   #   hostname: logstash
@@ -71,8 +71,6 @@ services:
       - SECURITY_ENABLED=no
       - SECURITY_KIBANA_USER=service_kibana
       - SECURITY_KIBANA_PASS=kibana_pass
-      - SECURITY_KIBANA_SSL_KEY_PATH=/usr/share/kibana/config/ssl/private
-      - SECURITY_KIBANA_SSL_CERT_PATH=/usr/share/kibana/config/ssl/certs
       - ELASTICSEARCH_KIBANA_IP=https://elasticsearch:9200
       - SECURITY_CA_PEM=server.TEST-CA-signed.pem
     ports:
