@@ -9,6 +9,7 @@ RUN chmod 755 /entrypoint.sh
 
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 
+ENV PIPELINE_FROM_FILE="false"
 COPY config/01-wazuh.conf /usr/share/logstash/pipeline/01-wazuh.conf
 
 # This CA is created for testing. Please set your own CA pem signed certificate. 
@@ -36,11 +37,9 @@ RUN chown -R logstash:logstash /entrypoint-scripts
 COPY --chown=logstash:logstash ./config/05-decrypt_credentials.sh /entrypoint-scripts/05-decrypt_credentials.sh
 COPY --chown=logstash:logstash ./config/10-entrypoint.sh /entrypoint-scripts/10-entrypoint.sh
 COPY --chown=logstash:logstash ./config/10-entrypoint_configuration.sh ./config/10-entrypoint_configuration.sh
-COPY --chown=logstash:logstash ./config/10-entrypoint_pipeline.sh ./config/10-entrypoint_pipeline.sh
 RUN chmod +x /entrypoint-scripts/05-decrypt_credentials.sh && \
     chmod +x /entrypoint-scripts/10-entrypoint.sh && \
-    chmod +x ./config/10-entrypoint_configuration.sh && \
-    chmod +x ./config/10-entrypoint_pipeline.sh
+    chmod +x ./config/10-entrypoint_configuration.sh
 
 USER logstash
 
