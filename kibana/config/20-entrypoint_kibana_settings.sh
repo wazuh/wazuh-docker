@@ -17,7 +17,7 @@ WAZUH_MAJOR=3
 ##############################################################################
 # Customize elasticsearch ip
 ##############################################################################
-if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
+if [[ "$ELASTICSEARCH_KIBANA_IP" != "" && "$CONFIGURATION_FROM_FILE" == "false" ]]; then
   sed -i "s:#elasticsearch.hosts:elasticsearch.hosts:g" /usr/share/kibana/config/kibana.yml
   sed -i 's|http://elasticsearch:9200|'$ELASTICSEARCH_KIBANA_IP'|g' /usr/share/kibana/config/kibana.yml
 fi
@@ -25,7 +25,7 @@ fi
 echo "SETTINGS - Update Elasticsearch host."
 
 # If KIBANA_INDEX was set, then change the default index in kibana.yml configuration file. If there was an index, then delete it and recreate.
-if [ "$KIBANA_INDEX" != "" ]; then
+if [[ "$KIBANA_INDEX" != "" && "$CONFIGURATION_FROM_FILE" == "false" ]]; then
   if grep -q 'kibana.index' /usr/share/kibana/config/kibana.yml; then
     sed -i '/kibana.index/d' /usr/share/kibana/config/kibana.yml
   fi
@@ -33,7 +33,7 @@ if [ "$KIBANA_INDEX" != "" ]; then
 fi
 
 # If XPACK_SECURITY_ENABLED was set, then change the xpack.security.enabled option from true (default) to false.
-if [ "$XPACK_SECURITY_ENABLED" != "" ]; then
+if [[ "$XPACK_SECURITY_ENABLED" != "" && "$CONFIGURATION_FROM_FILE" == "false" ]]; then
   if grep -q 'xpack.security.enabled' /usr/share/kibana/config/kibana.yml; then
     sed -i '/xpack.security.enabled/d' /usr/share/kibana/config/kibana.yml
   fi

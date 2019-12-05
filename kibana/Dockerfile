@@ -20,6 +20,8 @@ RUN mkdir /entrypoint-scripts
 
 USER kibana
 
+ENV CONFIGURATION_FROM_FILE="false"
+
 ENV PATTERN="" \
     CHECKS_PATTERN="" \
     CHECKS_TEMPLATE="" \
@@ -65,13 +67,11 @@ COPY --chown=kibana:kibana ./config/15-decrypt_credentials.sh /entrypoint-script
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
 COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
-COPY --chown=kibana:kibana ./config/20-entrypoint_security_configuration.sh ./
 RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
     chmod +x /entrypoint-scripts/15-decrypt_credentials.sh && \
     chmod +x /entrypoint-scripts/20-entrypoint.sh && \
     chmod +x ./20-entrypoint_kibana_settings.sh && \
-    chmod +x ./20-entrypoint_certs_management.sh && \
-    chmod +x ./20-entrypoint_security_configuration.sh
+    chmod +x ./20-entrypoint_certs_management.sh
 
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 
