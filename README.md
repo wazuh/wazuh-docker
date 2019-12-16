@@ -22,6 +22,69 @@ In addition, a docker-compose file is provided to launch the containers mentione
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker hub](https://hub.docker.com/u/wazuh)
 
+## Environment Variables
+
+Default values are included when available.
+
+### Wazuh
+```
+API_USER="foo"			# Wazuh API username
+API_PASS="bar"			# Wazuh API password
+```
+
+### Nginx
+```
+NGINX_NAME="foo"		# HTTP basic auth username
+NGINX_PWD="bar"			# HTTP basic auth password
+```
+
+### Elasticsearch
+```
+ELASTIC_CLUSTER="false"					# 
+CLUSTER_NAME="wazuh"					# 
+CLUSTER_NODE_MASTER="false"				# 
+CLUSTER_NODE_DATA="true"				# 
+CLUSTER_NODE_INGEST="true"				# 
+CLUSTER_NODE_NAME="wazuh-elasticsearch"			# 
+CLUSTER_MASTER_NODE_NAME="master-node"			# 
+CLUSTER_MEMORY_LOCK="true"				# 
+CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch"		# 
+CLUSTER_NUMBER_OF_MASTERS="2"				# 
+CLUSTER_MAX_NODES="1"					# 
+CLUSTER_DELAYED_TIMEOUT="1m"				# 
+CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"	# 
+```
+
+### Kibana
+```
+PATTERN=""			# 
+CHECKS_PATTERN=""		# 
+CHECKS_TEMPLATE=""		# 
+CHECKS_API=""			# 
+CHECKS_SETUP=""			# 
+EXTENSIONS_PCI=""		# 
+EXTENSIONS_GDPR=""		# 
+EXTENSIONS_AUDIT=""		# 
+EXTENSIONS_OSCAP=""		# 
+EXTENSIONS_CISCAT=""		# 
+EXTENSIONS_AWS=""		# 
+EXTENSIONS_VIRUSTOTAL=""	# 
+EXTENSIONS_OSQUERY=""		# 
+APP_TIMEOUT=""			# 
+WAZUH_SHARDS=""			# 
+WAZUH_REPLICAS=""		# 
+WAZUH_VERSION_SHARDS=""		# 
+WAZUH_VERSION_REPLICAS=""	# 
+IP_SELECTOR=""			# 
+IP_IGNORE=""			# 
+XPACK_RBAC_ENABLED=""		# 
+WAZUH_MONITORING_ENABLED=""	# 
+WAZUH_MONITORING_FREQUENCY=""	# 
+WAZUH_MONITORING_SHARDS=""	# 
+WAZUH_MONITORING_REPLICAS=""	# 
+ADMIN_PRIVILEGES=""		# 
+```
+
 ## Directory structure
 
 	wazuh-docker
