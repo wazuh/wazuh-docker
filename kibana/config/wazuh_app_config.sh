@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-kibana_config_file="/usr/share/kibana/plugins/wazuh/config.yml"
+kibana_config_file="/usr/share/kibana/plugins/wazuh/wazuh.yml"
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
