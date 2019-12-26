@@ -32,11 +32,18 @@ declare -A CONFIG_MAP=(
   [admin]=$ADMIN_PRIVILEGES
 )
 
-sed -ie '/- default:/,+4d' $kibana_config_file
-
 for i in "${!CONFIG_MAP[@]}"
 do
     if [ "${CONFIG_MAP[$i]}" != "" ]; then
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
     fi
 done
+
+sed -ie '/- default:/,+4d' $kibana_config_file
+cat << EOF >> $kibana_config_file 
+  - default:
+      url: ${API_URL:-https://wazuh}
+      port: ${API_PORT:-55000}
+      user: ${API_USER:-foo}
+      password: ${API_PASS:-bar}
+EOF
