@@ -32,6 +32,8 @@ declare -A CONFIG_MAP=(
   [admin]=$ADMIN_PRIVILEGES
 )
 
+sed -ie '/- default:/,+4d' $kibana_config_file
+
 for i in "${!CONFIG_MAP[@]}"
 do
     if [ "${CONFIG_MAP[$i]}" != "" ]; then
