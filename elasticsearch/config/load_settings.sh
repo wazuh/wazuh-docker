@@ -5,11 +5,6 @@ set -e
 
 el_url=${ELASTICSEARCH_URL}
 
-if [ "x${WAZUH_API_URL}" = "x" ]; then
-  wazuh_url="https://wazuh"
-else
-  wazuh_url="${WAZUH_API_URL}"
-fi
 
 if [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
   auth=""
@@ -43,44 +38,6 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
 
 fi
 
-#Insert default templates
-
-API_PASS_Q=`echo "$API_PASS" | tr -d '"'`
-API_USER_Q=`echo "$API_USER" | tr -d '"'`
-API_PASSWORD=`echo -n $API_PASS_Q | base64`
-
-echo "Setting API credentials into Wazuh APP"
-CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
-
-if [ "x$CONFIG_CODE" != "x200" ]; then
-  curl -s -XPOST $el_url/.wazuh/_doc/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
-  {
-    "api_user": "'"$API_USER_Q"'",
-    "api_password": "'"$API_PASSWORD"'",
-    "url": "'"$wazuh_url"'",
-    "api_port": "55000",
-    "insecure": "true",
-    "component": "API",
-    "cluster_info": {
-      "manager": "wazuh-manager",
-      "cluster": "Disabled",
-      "status": "disabled"
-    },
-    "extensions": {
-      "oscap": true,
-      "audit": true,
-      "pci": true,
-      "aws": true,
-      "virustotal": true,
-      "gdpr": true,
-      "ciscat": true
-    }
-  }
-  ' > /dev/null
-else
-  echo "Wazuh APP already configured"
-fi
-sleep 5
 
 curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/json' -d'
 {
