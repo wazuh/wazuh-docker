@@ -44,7 +44,7 @@ do
     fi
 done
 
-# remove default API entry (starting with 3.11.0_7.5.1)
+# remove default API entry (new in 3.11.0_7.5.1)
 sed -ie '/- default:/,+4d' $kibana_config_file
 
 CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
