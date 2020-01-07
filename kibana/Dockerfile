@@ -1,20 +1,18 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:7.3.2
-ARG ELASTIC_VERSION=7.3.2
-ARG WAZUH_VERSION=3.10.2
+FROM docker.elastic.co/kibana/kibana:7.5.1
+USER kibana
+ARG ELASTIC_VERSION=7.5.1
+ARG WAZUH_VERSION=3.11.0
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
+#ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /usr/share/kibana/
+
+RUN /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
+# RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
+
 USER root
-
-ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
-
-RUN /usr/share/kibana/bin/kibana-plugin install --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
-RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
-
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
-
-USER kibana
 
 ENV PATTERN="" \
     CHECKS_PATTERN="" \
@@ -72,7 +70,7 @@ COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 RUN chmod +x ./welcome_wazuh.sh
 
 RUN ./welcome_wazuh.sh
-
+USER kibana
 RUN /usr/local/bin/kibana-docker --optimize
 
 ENTRYPOINT ./entrypoint.sh
