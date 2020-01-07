@@ -2,7 +2,7 @@
 FROM docker.elastic.co/kibana/kibana:7.5.1
 USER kibana
 ARG ELASTIC_VERSION=7.5.1
-ARG WAZUH_VERSION=3.11.0
+ARG WAZUH_VERSION=3.11.1
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 #ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /usr/share/kibana/

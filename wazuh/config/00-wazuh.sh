@@ -104,6 +104,17 @@ function ossec_shutdown(){
   ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
 }
 
+##############################################################################
+# Allow users to set the container hostname as <node_name> dynamically on
+# container start.
+#
+# To use this:
+# 1. Create your own ossec.conf file
+# 2. In your ossec.conf file, set to_be_replaced_by_hostname as your node_name
+# 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
+##############################################################################
+sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+
 # Trap exit signals and do a proper shutdown
 trap "ossec_shutdown; exit" SIGINT SIGTERM
 

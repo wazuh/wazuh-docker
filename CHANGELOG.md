@@ -1,13 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.11.1_7.5.1
+
+### Added
+
+- Update to Wazuh version 3.11.1_7.5.1
+- Filebeat configuration file updated to latest version ([@manuasir](https://github.com/manuasir)) [#271](https://github.com/wazuh/wazuh-docker/pull/271)
+- Allow using the hostname as node_name for managers ([@JPLachance](https://github.com/JPLachance)) [#261](https://github.com/wazuh/wazuh-docker/pull/261)
+
 ## Wazuh Docker v3.11.0_7.5.1
 
 ### Added
 
 - Update to Wazuh version 3.11.0_7.5.1
-- Filebeat configuration file updated to latest version ([@manuasir](https://github.com/manuasir)) [#271](https://github.com/wazuh/wazuh-docker/pull/271)
-- Allow using the hostname as node_name for managers ([@JPLachance](https://github.com/JPLachance)) [#261](https://github.com/wazuh/wazuh-docker/pull/261)
 
 ## Wazuh Docker v3.10.2_7.5.0
 
