@@ -63,5 +63,4 @@ EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
-# Run all services
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT [ "/init" ]
