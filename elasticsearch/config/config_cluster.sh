@@ -13,7 +13,7 @@ remove_cluster_config(){
   sed -i '/# cluster node/,/# end cluster config/d' $1
 }
 
-# If Elasticsearch cluster is enable, then set up the elasticsearch.yml
+# If Elasticsearch cluster is enabled, then set up the elasticsearch.yml
 if [[ $ELASTIC_CLUSTER == "true" && $CLUSTER_NODE_MASTER != "" && $CLUSTER_NODE_DATA != "" && $CLUSTER_NODE_INGEST != "" && $CLUSTER_MASTER_NODE_NAME != "" ]]; then
   # Remove the old configuration
   remove_single_node_conf $elastic_config_file
