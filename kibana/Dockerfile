@@ -63,11 +63,13 @@ ARG XPACK_SIEM="false"
 ARG CHANGE_WELCOME="true"
 
 COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
+COPY --chown=kibana:kibana ./config/12-custom_logos.sh /entrypoint-scripts/12-custom_logos.sh
 COPY --chown=kibana:kibana ./config/15-decrypt_credentials.sh /entrypoint-scripts/15-decrypt_credentials.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
 COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
 RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
+    chmod +x /entrypoint-scripts/12-custom_logos.sh && \
     chmod +x /entrypoint-scripts/15-decrypt_credentials.sh && \
     chmod +x /entrypoint-scripts/20-entrypoint.sh && \
     chmod +x ./20-entrypoint_kibana_settings.sh && \
