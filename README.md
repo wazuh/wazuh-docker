@@ -24,33 +24,50 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 ## Directory structure
 
-	wazuh-docker
-	├── docker-compose.yml
-	├── kibana
-	│   ├── config
-	│   │   ├── entrypoint.sh
-	│   │   └── kibana.yml
-	│   └── Dockerfile
-	├── LICENSE
-	├── nginx
-	│   ├── config
-	│   │   └── entrypoint.sh
-	│   └── Dockerfile
-	├── README.md
-	├── CHANGELOG.md
-	├── VERSION
-	├── test.txt
-	└── wazuh
-	    ├── config
-	    │   ├── data_dirs.env
-	    │   ├── entrypoint.sh
-	    │   ├── filebeat.runit.service
-	    │   ├── filebeat.yml
-	    │   ├── init.bash
-	    │   ├── postfix.runit.service
-	    │   ├── wazuh-api.runit.service
-	    │   └── wazuh.runit.service
-	    └── Dockerfile
+    wazuh-docker
+    ├── CHANGELOG.md
+    ├── docker-compose.yml
+    ├── elasticsearch
+    │   ├── config
+    │   │   ├── config_cluster.sh
+    │   │   ├── configure_s3.sh
+    │   │   ├── entrypoint.sh
+    │   │   └── load_settings.sh
+    │   └── Dockerfile
+    ├── kibana
+    │   ├── config
+    │   │   ├── entrypoint.sh
+    │   │   ├── kibana_settings.sh
+    │   │   ├── wazuh_app_config.sh
+    │   │   ├── welcome_wazuh.sh
+    │   │   └── xpack_config.sh
+    │   └── Dockerfile
+    ├── LICENSE
+    ├── nginx
+    │   ├── config
+    │   │   └── entrypoint.sh
+    │   └── Dockerfile
+    ├── README.md
+    ├── VERSION
+    └── wazuh
+        ├── config
+        │   ├── data_dirs.env
+        │   ├── etc
+        │   │   ├── cont-init.d
+        │   │   │   ├── 0-wazuh-init
+        │   │   │   ├── 1-config-filebeat
+        │   │   │   └── 2-manager
+        │   │   └── services.d
+        │   │       ├── api
+        │   │       │   ├── finish
+        │   │       │   └── run
+        │   │       └── filebeat
+        │   │           ├── finish
+        │   │           └── run
+        │   ├── init.bash
+        │   └── wazuh.repo
+        └── Dockerfile
+
 
 
 ## Branches
