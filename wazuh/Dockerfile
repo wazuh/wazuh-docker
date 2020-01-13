@@ -37,19 +37,13 @@ RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releas
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
     rm  /tmp/s6-overlay-amd64.tar.gz
 
-# Adding first run script and entrypoint
-COPY config/data_dirs.env config/init.bash /
-
-# Sync calls are due to https://github.com/docker/docker/issues/9547
-RUN chmod 755 /init.bash && \
-   sync && /init.bash && \
-   sync && rm /init.bash
-
 COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
 COPY config/etc/ /etc/
+
+COPY config/data_dirs.env /
 
 # Setting volumes
 VOLUME ["/var/ossec/data"]

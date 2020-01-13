@@ -5,7 +5,6 @@
 # variables expected by this script.
 
 # Startup the services
-source /data_dirs.env
 
 FIRST_TIME_INSTALLATION=true
 
@@ -35,16 +34,6 @@ exec_cmd_stdout() {
 edit_configuration() { # $1 -> setting,  $2 -> value
     sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${DATA_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
 }
-
-for ossecdir in "${DATA_DIRS[@]}"; do
-  if [ ! -e "${DATA_PATH}/${ossecdir}" ]
-  then
-    print "Installing ${ossecdir}"
-    exec_cmd "mkdir -p $(dirname ${DATA_PATH}/${ossecdir})"
-    exec_cmd "cp -pr /var/ossec/${ossecdir}-template ${DATA_PATH}/${ossecdir}"
-    FIRST_TIME_INSTALLATION=true
-  fi
-done
 
 if [  -e ${WAZUH_INSTALL_PATH}/etc-template  ]
 then
