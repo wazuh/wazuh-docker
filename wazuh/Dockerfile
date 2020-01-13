@@ -53,7 +53,6 @@ COPY config/etc/ /etc/
 # Setting volumes
 VOLUME ["/var/ossec/data"]
 VOLUME ["/etc/filebeat"]
-VOLUME ["/etc/postfix"]
 VOLUME ["/var/lib/filebeat"]
 
 # Services ports
