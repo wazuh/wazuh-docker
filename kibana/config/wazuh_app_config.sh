@@ -1,7 +1,12 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-kibana_config_file="/usr/share/kibana/plugins/wazuh/config.yml"
+wazuh_url="${WAZUH_API_URL:-http://wazuh}"
+wazuh_port="${API_PORT:-55000}"
+api_user="${API_USER:-foo}"
+api_password="${API_PASS:-bar}"
+
+kibana_config_file="/usr/share/kibana/plugins/wazuh/wazuh.yml"
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -38,3 +43,23 @@ do
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
     fi
 done
+
+# remove default API entry (new in 3.11.0_7.5.1)
+sed -ie '/- default:/,+4d' $kibana_config_file
+
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
+
+grep -q 1513629884013 $kibana_config_file
+_config_exists=$?
+
+if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
+cat << EOF >> $kibana_config_file 
+  - 1513629884013:
+      url: $wazuh_url
+      port: $wazuh_port
+      user: $api_user
+      password: $api_password
+EOF
+else
+  echo "Wazuh APP already configured"
+fi
