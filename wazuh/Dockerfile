@@ -25,9 +25,6 @@ RUN yum --enablerepo=updates clean metadata && \
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm
 
-RUN curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/${TEMPLATE_VERSION}/extensions/filebeat/7.x/filebeat.yml &&\
-  chmod go+r /etc/filebeat/filebeat.yml
-
 RUN curl -so /etc/filebeat/wazuh-template.json https://raw.githubusercontent.com/wazuh/wazuh/${TEMPLATE_VERSION}/extensions/elasticsearch/7.x/wazuh-template.json &&\
   chmod go+r /etc/filebeat/wazuh-template.json
 
@@ -47,6 +44,10 @@ COPY config/data_dirs.env config/init.bash /
 RUN chmod 755 /init.bash && \
    sync && /init.bash && \
    sync && rm /init.bash
+
+COPY config/filebeat.yml /etc/filebeat/
+
+RUN chmod go-w /etc/filebeat/filebeat.yml
 
 COPY config/etc/ /etc/
 
