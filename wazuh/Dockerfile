@@ -41,20 +41,19 @@ COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+RUN chmod go-w /etc/filebeat/wazuh-template.json
+
 COPY config/etc/ /etc/
 
-COPY config/data_dirs.env /
-
-# Setting volumes
-VOLUME ["/var/ossec/data"]
-VOLUME ["/etc/filebeat"]
-VOLUME ["/var/lib/filebeat"]
+# Prepare permanent data
+# Sync calls are due to https://github.com/docker/docker/issues/9547
+COPY config/permanent_data.env config/permanent_data.sh /
+RUN chmod 755 /permanent_data.sh && \
+    sync && /permanent_data.sh && \
+    sync && rm /permanent_data.sh
 
 # Services ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
-
-
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
-RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 ENTRYPOINT [ "/init" ]
