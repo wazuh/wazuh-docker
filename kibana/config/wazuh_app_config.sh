@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-wazuh_url="${WAZUH_API_URL:-http://wazuh}"
+wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
 api_user="${API_USER:-foo}"
 api_password="${API_PASS:-bar}"
