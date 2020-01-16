@@ -1,8 +1,5 @@
 #!/usr/bin/with-contenv bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-
-# Wazuh container bootstrap. See the README for information of the environment
-# variables expected by this script.
+# Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
 # Variables
 source /permanent_data.env
@@ -16,31 +13,31 @@ API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
 ##############################################################################
 # Aux functions
 ##############################################################################
-
 print() {
-    echo -e $1
+  echo -e $1
 }
 
 error_and_exit() {
-    echo "Error executing command: '$1'."
-    echo 'Exiting.'
-    exit 1
+  echo "Error executing command: '$1'."
+  echo 'Exiting.'
+  exit 1
 }
 
 exec_cmd() {
-    eval $1 > /dev/null 2>&1 || error_and_exit "$1"
+  eval $1 > /dev/null 2>&1 || error_and_exit "$1"
 }
 
 exec_cmd_stdout() {
-    eval $1 2>&1 || error_and_exit "$1"
+  eval $1 2>&1 || error_and_exit "$1"
 }
+
 
 ##############################################################################
 # Edit configuration
 ##############################################################################
 
 edit_configuration() { # $1 -> setting,  $2 -> value
-    sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${DATA_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
+  sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${WAZUH_INSTALL_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
 }
 
 ##############################################################################
@@ -146,7 +143,6 @@ mount_files() {
   fi
 }
 
-
 ##############################################################################
 # Stop OSSEC
 ##############################################################################
@@ -177,25 +173,8 @@ docker_custom_args() {
 
 change_api_user_credentials() {
   pushd /var/ossec/api/configuration/auth/
-  if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
-    WAZUH_API_USER=${API_USER}
-    WAZUH_API_PASS=${API_PASS}
-  else
-    input=${SECURITY_CREDENTIALS_FILE}
-    while IFS= read -r line
-    do
-      if [[ $line == *"WAZUH_API_USER"* ]]; then
-        arrIN=(${line//:/ })
-        WAZUH_API_USER=${arrIN[1]}
-      elif [[ $line == *"WAZUH_API_PASS"* ]]; then
-        arrIN=(${line//:/ })
-        WAZUH_API_PASS=${arrIN[1]}
-      fi
-    done < "$input"
-  fi
-
   echo "Change Wazuh API user credentials"
-  change_user="node htpasswd -b -c user $WAZUH_API_USER $WAZUH_API_PASS"
+  change_user="node htpasswd -b -c user $API_USER $API_PASS"
   eval $change_user
   popd
 }
