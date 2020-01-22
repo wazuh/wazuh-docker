@@ -3,12 +3,12 @@ FROM phusion/baseimage:latest
 
 ARG FILEBEAT_VERSION=7.5.1
 
-ARG WAZUH_VERSION=3.11.1-1
+ARG WAZUH_VERSION=3.11.2-1
 
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.11.1"
+ARG TEMPLATE_VERSION="v3.11.2"
 
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
