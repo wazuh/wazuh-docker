@@ -13,7 +13,7 @@ ARG TEMPLATE_VERSION="v3.11.2"
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
-   curl --silent --location https://deb.nodesource.com/setup_8.x | bash - && \
+   curl --silent --location https://deb.nodesource.com/setup_10.x | bash - && \
    echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
    groupadd -g 1000 ossec && useradd -u 1000 -g 1000 -d /var/ossec ossec
