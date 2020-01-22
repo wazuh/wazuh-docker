@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v3.11.2_7.5.1
 
+### Added
+
+- Bumped Node.js to version 10 ([@xr09](https://github.com/xr09)) [#8615cd4](https://github.com/wazuh/wazuh-docker/commit/8615cd4d2152601e55becc7c3675360938e74b6a)
+
 ### Fixed
 
 - Fix S3 Plugin ([@AnthonySendra](https://github.com/AnthonySendra)) [#293](https://github.com/wazuh/wazuh-docker/pull/293)
