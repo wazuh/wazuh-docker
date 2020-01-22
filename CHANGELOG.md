@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.11.2_7.5.1
+
+### Fixed
+
+- Fix S3 Plugin ([@AnthonySendra](https://github.com/AnthonySendra)) [#293](https://github.com/wazuh/wazuh-docker/pull/293)
+
 ## Wazuh Docker v3.11.1_7.5.1
 
 ### Added
