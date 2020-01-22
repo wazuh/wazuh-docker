@@ -38,8 +38,8 @@ COPY config/01-config_filebeat.sh /entrypoint-scripts/01-config_filebeat.sh
 RUN chmod 755 /init.bash && \
    sync && /init.bash && \
    sync && rm /init.bash && \
-   curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb &&\
-   dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb && \
+   curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-oss-${FILEBEAT_VERSION}-amd64.deb &&\
+   dpkg -i filebeat-oss-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-oss-${FILEBEAT_VERSION}-amd64.deb && \
    chmod 755 /entrypoint.sh && \
    chmod 755 /entrypoint-scripts/00-wazuh.sh && \
    chmod 755 /entrypoint-scripts/01-config_filebeat.sh

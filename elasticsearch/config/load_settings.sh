@@ -6,13 +6,7 @@ set -e
 el_url=${ELASTICSEARCH_URL}
 
 
-if [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
-  auth=""
-else
-  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
-fi
-
-until curl ${auth} -XGET $el_url; do
+until curl -XGET $el_url; do
   >&2 echo "Elastic is unavailable - sleeping"
   sleep 5
 done
@@ -39,14 +33,6 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
 fi
 
 
-curl -XPUT "$el_url/_cluster/settings" ${auth} -H 'Content-Type: application/json' -d'
-{
-  "persistent": {
-    "xpack.monitoring.collection.enabled": true
-  }
-}
-'
-
 # Set cluster delayed timeout when node falls
 curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
 {
@@ -55,6 +41,5 @@ curl -X PUT "$el_url/_all/_settings" -H 'Content-Type: application/json' -d'
   }
 }
 '
-
 
 echo "Elasticsearch is ready."

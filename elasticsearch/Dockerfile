@@ -1,6 +1,6 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 ARG ELASTIC_VERSION=7.5.1
-FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+FROM docker.elastic.co/elasticsearch/elasticsearch-oss:${ELASTIC_VERSION}
 ARG ELASTIC_VERSION
 ARG S3_PLUGIN_URL="https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-${ELASTIC_VERSION}.zip"
 
@@ -11,8 +11,6 @@ ENV ALERTS_SHARDS="1" \
 
 ENV API_USER="foo" \
     API_PASS="bar"
-
-ENV XPACK_ML="true" 
 
 ENV ENABLE_CONFIGURE_S3="false"
 
