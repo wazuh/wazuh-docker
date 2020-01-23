@@ -16,7 +16,7 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
-  yum -y install openssl && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
+  yum -y install openssl which && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
   curl --silent --location https://rpm.nodesource.com/setup_10.x | bash - && \
   yum -y install nodejs && yum -y install wazuh-api-${WAZUH_VERSION} && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
