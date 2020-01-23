@@ -22,8 +22,8 @@ RUN yum --enablerepo=updates clean metadata && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
 
-RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm &&\
-  rpm -i filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm &&\
+  rpm -i filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm
 
 RUN curl -so /etc/filebeat/wazuh-template.json https://raw.githubusercontent.com/wazuh/wazuh/${TEMPLATE_VERSION}/extensions/elasticsearch/7.x/wazuh-template.json &&\
   chmod go+r /etc/filebeat/wazuh-template.json
