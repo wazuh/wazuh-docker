@@ -15,4 +15,4 @@ VOLUME ["/etc/nginx/conf.d"]
 ENV NGINX_NAME="foo" \
     NGINX_PWD="bar"
 
-ENTRYPOINT /entrypoint.sh
+ENTRYPOINT [ "/entrypoint.sh" ]
