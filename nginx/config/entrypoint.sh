@@ -75,4 +75,4 @@ server {
 }
 EOF
 
-nginx -g 'daemon off;'
+exec nginx -g 'daemon off;'
