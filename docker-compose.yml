@@ -47,12 +47,9 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
   nginx:
-    build: nginx
+    image: nginx:stable
     hostname: nginx
     restart: always
-    environment:
-      - NGINX_PORT=443
-      - NGINX_CREDENTIALS
     ports:
       - "80:80"
       - "443:443"
@@ -60,6 +57,8 @@ services:
       - kibana
     links:
       - kibana:kibana
+    volumes:
+      - ./nginx_conf:/etc/nginx/conf.d:ro
 
 volumes:
   ossec_api_configuration:
