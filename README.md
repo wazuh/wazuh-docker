@@ -9,7 +9,7 @@ In this repository you will find the containers to run:
 
 * wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
 * wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
-* wazuh-nginx: Proxies the Kibana container, adding HTTPS (via self-signed SSL certificate) and [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme).
+* nginx: Proxies the Kibana container, adding HTTPS (via your [own certificate or self-signed](nginx_conf/ssl/README.md)) and [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme). **It is required to set up SSL certificate before deploying**
 * wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).** 
 
 In addition, a docker-compose file is provided to launch the containers mentioned above. 

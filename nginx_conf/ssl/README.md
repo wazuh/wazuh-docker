@@ -18,6 +18,6 @@ nginx_conf/
 
 #### Using a Self Signed Certificate
 
-In case you want to use a self-signed certificate we provided a script to generate one. You may create your own with more relevant information.
+In case you want to use a self-signed certificate we provided a script to generate one.
 
 Execute `bash generate-self-signed-cert.sh` on this same directory and the right files will be generated. You must have installed `openssl` locally.
