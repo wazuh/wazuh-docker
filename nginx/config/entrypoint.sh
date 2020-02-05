@@ -60,8 +60,8 @@ server {
 }
 
 server {
-    listen ${NGINX_PORT} default_server ssl;
-    listen [::]:${NGINX_PORT} ssl;
+    listen ${NGINX_PORT} default_server ssl http2;
+    listen [::]:${NGINX_PORT} ssl http2;
     ssl_certificate /etc/nginx/conf.d/ssl/certs/kibana-access.pem;
     ssl_certificate_key /etc/nginx/conf.d/ssl/private/kibana-access.key;
     location / {
