@@ -10,4 +10,7 @@ done
 # Start Wazuh Server.
 ##############################################################################
 
-/sbin/my_init 
+function init_process(){
+  /sbin/my_init 
+}
+trap "init_process; exit" SIGINT SIGTERM
