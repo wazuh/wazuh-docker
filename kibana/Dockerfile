@@ -5,11 +5,10 @@ ARG ELASTIC_VERSION=7.6.1
 ARG WAZUH_VERSION=3.11.4
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
-#ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /usr/share/kibana/
+WORKDIR /usr/share/kibana
+RUN ./bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
-RUN /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
-# RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
-
+WORKDIR /
 USER root
 COPY config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
