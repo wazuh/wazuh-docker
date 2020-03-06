@@ -71,6 +71,6 @@ RUN chmod +x ./welcome_wazuh.sh
 
 RUN ./welcome_wazuh.sh
 USER kibana
-RUN /usr/local/bin/kibana-docker --optimize
+RUN NODE_OPTIONS="--max-old-space-size=2048" /usr/local/bin/kibana-docker --optimize
 
 ENTRYPOINT ./entrypoint.sh
