@@ -1,11 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Wazuh Docker v3.11.4_7.6.2
+## Wazuh Docker v3.11.4_7.6.1
 
 ### Added
 
-- Update to Wazuh version 3.11.4_7.6.2
+- Update to Wazuh version 3.11.4_7.6.1
 
 - Enable HTTP v2 on nginx ([@xr09](https://github.com/xr09)) [#308](https://github.com/wazuh/wazuh-docker/pull/308)
 
