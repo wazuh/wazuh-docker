@@ -30,14 +30,14 @@ if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
     do
       IFS=':' read -r -a credentials <<< "${users[index]}"
       if [ $index -eq 0 ]; then
-        echo ${credentials[1]}|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd ${credentials[0]} >/dev/null
+        htpasswd -b -c /etc/nginx/conf.d/kibana.htpasswd ${credentials[0]} ${credentials[1]} >/dev/null
       else
-        echo ${credentials[1]}|htpasswd -i /etc/nginx/conf.d/kibana.htpasswd  ${credentials[0]} >/dev/null
+        htpasswd -b /etc/nginx/conf.d/kibana.htpasswd  ${credentials[0]} ${credentials[1]} >/dev/null
       fi
     done
   else
     # NGINX_PWD and NGINX_NAME are declared in nginx/Dockerfile 
-    echo $NGINX_PWD|htpasswd -i -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME >/dev/null
+    htpasswd -b -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME $NGINX_PWD >/dev/null
   fi
 else
   echo "Kibana credentials already configured"
@@ -60,9 +60,8 @@ server {
 }
 
 server {
-    listen ${NGINX_PORT} default_server;
-    listen [::]:${NGINX_PORT};
-    ssl on;
+    listen ${NGINX_PORT} default_server ssl http2;
+    listen [::]:${NGINX_PORT} ssl http2;
     ssl_certificate /etc/nginx/conf.d/ssl/certs/kibana-access.pem;
     ssl_certificate_key /etc/nginx/conf.d/ssl/private/kibana-access.key;
     location / {
@@ -76,4 +75,4 @@ server {
 }
 EOF
 
-nginx -g 'daemon off;'
+exec nginx -g 'daemon off;'
