@@ -1,7 +1,50 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
-kibana_config_file="/usr/share/kibana/plugins/wazuh/config.yml"
+##############################################################################
+# If Elasticsearch security is enabled get the kibana user, the Kibana 
+# password and WAZUH API credentials.
+##############################################################################
+
+KIBANA_USER=""
+KIBANA_PASS=""
+WAZH_API_USER=""
+WAZH_API_PASS=""
+
+if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
+  KIBANA_USER=${SECURITY_KIBANA_USER}
+  KIBANA_PASS=${SECURITY_KIBANA_PASS}
+  WAZH_API_USER=${API_USER}
+  WAZH_API_PASS=${API_PASS}
+  echo "USERS - Credentials obtained from environment variables."
+else
+  input=${SECURITY_CREDENTIALS_FILE}
+  while IFS= read -r line
+  do
+    if [[ $line == *"KIBANA_USER"* ]]; then
+      arrIN=(${line//:/ })
+      KIBANA_USER=${arrIN[1]}
+    elif [[ $line == *"KIBANA_PASSWORD"* ]]; then
+      arrIN=(${line//:/ })
+      KIBANA_PASS=${arrIN[1]}
+    elif [[ $line == *"WAZUH_API_USER"* ]]; then
+      arrIN=(${line//:/ })
+      WAZH_API_USER=${arrIN[1]}
+    elif [[ $line == *"WAZUH_API_PASSWORD"* ]]; then
+      arrIN=(${line//:/ })
+      WAZH_API_PASS=${arrIN[1]}
+    fi
+  done < "$input"
+  echo "USERS - Credentials obtained from file."
+fi
+
+auth="-k -u $KIBANA_USER:$KIBANA_PASS"
+
+##############################################################################
+# Set custom wazuh.yml config
+##############################################################################
+
+kibana_config_file="/usr/share/kibana/plugins/wazuh/wazuh.yml"
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -38,3 +81,24 @@ do
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
     fi
 done
+
+# remove default API entry (new in 3.11.0_7.5.1)
+sed -ie '/- default:/,+4d' $kibana_config_file
+
+# If this is an update to 3.11
+CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $ELASTICSEARCH_URL/.wazuh/_doc/1513629884013 ${auth})
+
+grep -q 1513629884013 $kibana_config_file
+_config_exists=$?
+
+if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
+cat << EOF >> $kibana_config_file 
+  - 1513629884013:
+      url: $wazuh_url
+      port: 55000
+      user: $WAZH_API_USER
+      password: $WAZH_API_PASS
+EOF
+else
+  echo "Wazuh APP already configured"
+fi
