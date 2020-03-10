@@ -38,7 +38,17 @@ else
   echo "USERS - Credentials obtained from file."
 fi
 
-auth="-k -u $KIBANA_USER:$KIBANA_PASS"
+##############################################################################
+# Establish the way to run the curl command, with or without authentication. 
+##############################################################################
+
+if [ ${SECURITY_ENABLED} != "no" ]; then
+  auth="-u ${KIBANA_USER}:${KIBANA_PASS} -k"
+elif [ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]; then
+  auth=""
+else
+  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+fi
 
 ##############################################################################
 # Set custom wazuh.yml config
