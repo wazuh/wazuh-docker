@@ -165,6 +165,16 @@ echo "LOAD SETTINGS - Setting API credentials into Wazuh APP"
 CONFIG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013 ${auth})
 
 if [ "x$CONFIG_CODE" != "x200" ]; then
+
+  curl -s ${auth} -X PUT "$el_url/.wazuh/?pretty" -H 'Content-Type: application/json' -d'
+  {
+    "settings" : {
+          "number_of_shards" : 1,
+          "number_of_replicas" : 0,
+          "auto_expand_replicas": "0-1"
+    }
+  }
+  '
   curl -s -XPOST $el_url/.wazuh/_doc/1513629884013 ${auth} -H 'Content-Type: application/json' -d'
   {
     "api_user": "'"$API_USER_Q"'",
