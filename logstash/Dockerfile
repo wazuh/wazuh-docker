@@ -1,6 +1,6 @@
 # Wazuh App Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 
-ARG LOGSTASH_VERSION=7.3.2
+ARG LOGSTASH_VERSION=7.4.2
 FROM docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
 
 COPY --chown=logstash:logstash config/entrypoint.sh /entrypoint.sh

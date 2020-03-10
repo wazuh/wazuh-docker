@@ -2,14 +2,14 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=7.3.2
-ARG WAZUH_VERSION=3.10.2-1
+ARG FILEBEAT_VERSION=7.4.2
+ARG WAZUH_VERSION=3.11.4-1
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.10.2"
+ARG TEMPLATE_VERSION="v3.11.4"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
 # Install packages
