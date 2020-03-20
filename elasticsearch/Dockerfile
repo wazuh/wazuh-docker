@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 ARG ELASTIC_VERSION=7.6.1
 FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
 ARG ELASTIC_VERSION
@@ -12,11 +12,11 @@ ENV ALERTS_SHARDS="1" \
 ENV API_USER="foo" \
     API_PASS="bar"
 
-ENV XPACK_ML="true" 
+ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ARG TEMPLATE_VERSION=v3.11.4
+ARG TEMPLATE_VERSION=v3.12.0
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
@@ -35,7 +35,7 @@ ENV ELASTIC_CLUSTER="false" \
     CLUSTER_DELAYED_TIMEOUT="1m" \
     CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"
 
-COPY config/entrypoint.sh /entrypoint.sh 
+COPY config/entrypoint.sh /entrypoint.sh
 
 RUN chmod 755 /entrypoint.sh
 

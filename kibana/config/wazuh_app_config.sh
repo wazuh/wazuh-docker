@@ -1,12 +1,12 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
 api_user="${API_USER:-foo}"
 api_password="${API_PASS:-bar}"
 
-kibana_config_file="/usr/share/kibana/plugins/wazuh/wazuh.yml"
+kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -53,7 +53,7 @@ grep -q 1513629884013 $kibana_config_file
 _config_exists=$?
 
 if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
-cat << EOF >> $kibana_config_file 
+cat << EOF >> $kibana_config_file
   - 1513629884013:
       url: $wazuh_url
       port: $wazuh_port

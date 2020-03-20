@@ -1,9 +1,9 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 kibana_config_file="/usr/share/kibana/config/kibana.yml"
 if grep -Fq  "#xpack features" "$kibana_config_file";
-then 
+then
   declare -A CONFIG_MAP=(
     [xpack.apm.ui.enabled]=$XPACK_APM
     [xpack.grokdebugger.enabled]=$XPACK_DEVTOOLS
@@ -23,7 +23,7 @@ then
 else
   echo "
 #xpack features
-xpack.apm.ui.enabled: $XPACK_APM 
+xpack.apm.ui.enabled: $XPACK_APM
 xpack.grokdebugger.enabled: $XPACK_DEVTOOLS
 xpack.searchprofiler.enabled: $XPACK_DEVTOOLS
 xpack.ml.enabled: $XPACK_ML

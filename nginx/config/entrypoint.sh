@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 set -e
 
@@ -36,7 +36,7 @@ if [ ! -f /etc/nginx/conf.d/kibana.htpasswd ]; then
       fi
     done
   else
-    # NGINX_PWD and NGINX_NAME are declared in nginx/Dockerfile 
+    # NGINX_PWD and NGINX_NAME are declared in nginx/Dockerfile
     htpasswd -b -c /etc/nginx/conf.d/kibana.htpasswd $NGINX_NAME $NGINX_PWD >/dev/null
   fi
 else

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 # For more information https://github.com/elastic/elasticsearch-docker/blob/6.8.0/build/elasticsearch/bin/docker-entrypoint.sh
 
@@ -24,7 +24,7 @@ run_as_other_user_if_needed() {
 
 elasticsearch_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 if grep -Fq  "#xpack features" "$elasticsearch_config_file";
-then 
+then
   declare -A CONFIG_MAP=(
   [xpack.ml.enabled]=$XPACK_ML
   )
@@ -49,4 +49,4 @@ fi
 
 # Execute elasticsearch
 
-run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch 
+run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch

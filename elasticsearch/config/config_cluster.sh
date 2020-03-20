@@ -1,11 +1,11 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 elastic_config_file="/usr/share/elasticsearch/config/elasticsearch.yml"
 
 remove_single_node_conf(){
   if grep -Fq "discovery.type" $1; then
-    sed -i '/discovery.type\: /d' $1 
+    sed -i '/discovery.type\: /d' $1
   fi
 }
 
@@ -27,9 +27,9 @@ cat > $elastic_config_file << EOF
 network.host: 0.0.0.0
 node.name: $CLUSTER_MASTER_NODE_NAME
 node.master: $CLUSTER_NODE_MASTER
-cluster.initial_master_nodes: 
+cluster.initial_master_nodes:
   - $CLUSTER_MASTER_NODE_NAME
-# end cluster config" 
+# end cluster config"
 EOF
 
 elif [[ $CLUSTER_NODE_NAME != "" ]];then
@@ -42,10 +42,10 @@ cat > $elastic_config_file << EOF
 network.host: 0.0.0.0
 node.name: $CLUSTER_NODE_NAME
 node.master: false
-discovery.seed_hosts: 
+discovery.seed_hosts:
   - $CLUSTER_MASTER_NODE_NAME
   - $CLUSTER_NODE_NAME
-# end cluster config" 
+# end cluster config"
 EOF
 fi
 # If the cluster is disabled, then set a single-node configuration

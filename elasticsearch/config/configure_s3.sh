@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 set -e
 
@@ -10,7 +10,7 @@ function CheckArgs()
 {
     if [ $1 != 4 ] && [ $1 != 5 ];then
         echo "Use: configure_s3.sh <Elastic_Server_IP:Port> <Bucket> <Path> <RepositoryName> (By default <current_elasticsearch_major_version> is added to the path and the repository name)"
-        echo "or use: configure_s3.sh <Elastic_Server_IP:Port> <Bucket> <Path> <RepositoryName> <Elasticsearch major version>" 
+        echo "or use: configure_s3.sh <Elastic_Server_IP:Port> <Bucket> <Path> <RepositoryName> <Elasticsearch major version>"
         exit 1
 
     fi

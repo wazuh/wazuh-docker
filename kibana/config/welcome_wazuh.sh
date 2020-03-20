@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 if [[ $CHANGE_WELCOME == "true" ]]
 then
@@ -21,4 +21,3 @@ then
     sed -i 's#visible: true#visible: false#g' $kibana_path/node_modules/x-pack/plugins/rollup/public/crud_app/index.js
     sed -i 's#visible: true#visible: false#g' $kibana_path/node_modules/x-pack/plugins/license_management/public/management_section.js
 fi
-
