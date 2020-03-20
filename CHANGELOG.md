@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## Wazuh Docker v3.11.4_7.6.1
+## Wazuh Docker v3.12.0_7.6.1
 
 ### Added
 
