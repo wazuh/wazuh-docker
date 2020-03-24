@@ -7,6 +7,8 @@ api_user="${API_USER:-foo}"
 api_password="${API_PASS:-bar}"
 
 kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
+mkdir -p /usr/share/kibana/optimize/wazuh/config/
+touch $kibana_config_file
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
