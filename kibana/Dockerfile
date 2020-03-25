@@ -1,15 +1,14 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:7.3.2
-ARG ELASTIC_VERSION=7.3.2
-ARG WAZUH_VERSION=3.10.2
+FROM docker.elastic.co/kibana/kibana:7.4.2
+ARG ELASTIC_VERSION=7.4.2
+ARG WAZUH_VERSION=3.11.4
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 USER root
 
-# App: 3.10.2 - 7.3.2 with this fix: https://github.com/wazuh/wazuh-kibana-app/issues/1815
-#ADD  https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 COPY config/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 USER kibana
+#RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
 RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 USER root
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
@@ -47,7 +46,8 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES=""
+    ADMIN_PRIVILEGES="" \
+    API_SELECTOR=""
 
 ARG XPACK_CANVAS="false"
 ARG XPACK_LOGS="false"
@@ -62,15 +62,15 @@ ARG XPACK_SIEM="false"
 
 ARG CHANGE_WELCOME="true"
 
+COPY --chown=kibana:kibana ./config/05-decrypt_credentials.sh /entrypoint-scripts/05-decrypt_credentials.sh
 COPY --chown=kibana:kibana ./config/10-wazuh_app_config.sh /entrypoint-scripts/10-wazuh_app_config.sh
 COPY --chown=kibana:kibana ./config/12-custom_logos.sh /entrypoint-scripts/12-custom_logos.sh
-COPY --chown=kibana:kibana ./config/15-decrypt_credentials.sh /entrypoint-scripts/15-decrypt_credentials.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint.sh /entrypoint-scripts/20-entrypoint.sh
 COPY --chown=kibana:kibana ./config/20-entrypoint_kibana_settings.sh ./
 COPY --chown=kibana:kibana ./config/20-entrypoint_certs_management.sh ./
-RUN chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
+RUN chmod +x /entrypoint-scripts/05-decrypt_credentials.sh  && \
+    chmod +x /entrypoint-scripts/10-wazuh_app_config.sh && \
     chmod +x /entrypoint-scripts/12-custom_logos.sh && \
-    chmod +x /entrypoint-scripts/15-decrypt_credentials.sh && \
     chmod +x /entrypoint-scripts/20-entrypoint.sh && \
     chmod +x ./20-entrypoint_kibana_settings.sh && \
     chmod +x ./20-entrypoint_certs_management.sh
@@ -91,9 +91,9 @@ RUN /usr/local/bin/kibana-docker --optimize
 
 USER root
 
-RUN chmod 660 /usr/share/kibana/plugins/wazuh/config.yml && \
+RUN chmod 660 /usr/share/kibana/plugins/wazuh/wazuh.yml && \
     chmod 775 /usr/share/kibana/plugins/wazuh && \
-    chown root:kibana /usr/share/kibana/plugins/wazuh/config.yml && \
+    chown root:kibana /usr/share/kibana/plugins/wazuh/wazuh.yml && \
     chown root:kibana /usr/share/kibana/plugins/wazuh
 
 USER kibana
