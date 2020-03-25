@@ -6,8 +6,10 @@ ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 USER root
 
+COPY config/wazuhapp-${WAZUH_APP_VERSION}.zip /tmp
 USER kibana
-RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
+#RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root https://packages.wazuh.com/wazuhapp/wazuhapp-${WAZUH_APP_VERSION}.zip
+RUN /usr/share/kibana/bin/kibana-plugin install  --allow-root file:///tmp/wazuhapp-${WAZUH_APP_VERSION}.zip 
 USER root
 RUN rm -rf /tmp/wazuhapp-${WAZUH_APP_VERSION}.zip
 
