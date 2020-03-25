@@ -83,6 +83,7 @@ declare -A CONFIG_MAP=(
   [wazuh.monitoring.shards]=$WAZUH_MONITORING_SHARDS
   [wazuh.monitoring.replicas]=$WAZUH_MONITORING_REPLICAS
   [admin]=$ADMIN_PRIVILEGES
+  [api.selector]=$API_SELECTOR
 )
 
 for i in "${!CONFIG_MAP[@]}"
