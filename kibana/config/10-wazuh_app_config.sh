@@ -103,7 +103,7 @@ _config_exists=$?
 
 if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
 cat << EOF >> $kibana_config_file 
-  - 1513629884013:
+  - 1:
       url: https://wazuh
       port: 55000
       user: $WAZH_API_USER
