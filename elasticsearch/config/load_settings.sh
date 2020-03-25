@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 set -e
 
@@ -24,13 +24,13 @@ if [ $ENABLE_CONFIGURE_S3 ]; then
   sleep 10
   IP_PORT="${ELASTICSEARCH_IP}:${ELASTICSEARCH_PORT}"
 
-  if [ "x$S3_PATH" != "x" ]; then 
+  if [ "x$S3_PATH" != "x" ]; then
 
-    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then 
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR 
+    if [ "x$S3_ELASTIC_MAJOR" != "x" ]; then
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME $S3_ELASTIC_MAJOR
 
     else
-      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME 
+      ./config/configure_s3.sh $IP_PORT $S3_BUCKET_NAME $S3_PATH $S3_REPOSITORY_NAME
 
     fi
 

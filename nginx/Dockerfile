@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 FROM nginx:latest
 
 ENV DEBIAN_FRONTEND noninteractive

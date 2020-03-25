@@ -10,9 +10,9 @@ In this repository you will find the containers to run:
 * wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
 * wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
 * wazuh-nginx: Proxies the Kibana container, adding HTTPS (via self-signed SSL certificate) and [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme).
-* wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).** 
+* wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
-In addition, a docker-compose file is provided to launch the containers mentioned above. 
+In addition, a docker-compose file is provided to launch the containers mentioned above.
 
 * Elasticsearch cluster. In the Elasticsearch Dockerfile we can visualize variables to configure an Elasticsearch Cluster. These variables are used in the file *config_cluster.sh* to set them in the *elasticsearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
 
@@ -70,7 +70,7 @@ We thank you them and everyone else who has contributed to this project.
 
 ## License and copyright
 
-Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 ## Web references
 

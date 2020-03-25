@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 # Wazuh container bootstrap. See the README for information of the environment
 # variables expected by this script.

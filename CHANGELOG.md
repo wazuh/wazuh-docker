@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+
+## Wazuh Docker v3.12.0_7.6.1
+
+### Added
+
+- Update to Wazuh version 3.12.0_7.6.1
+
+
 ## Wazuh Docker v3.11.4_7.6.1
 
 ### Added
@@ -201,7 +209,7 @@ All notable changes to this project will be documented in this file.
 - Add env credentials for nginx. ([#86](https://github.com/wazuh/wazuh-docker/pull/86))
 - Improve filebeat configuration ([#88](https://github.com/wazuh/wazuh-docker/pull/88))
 
-### Fixed 
+### Fixed
 
 - Temporary fix for Wazuh cluster master node in Kubernetes. ([#84](https://github.com/wazuh/wazuh-docker/pull/84))
 

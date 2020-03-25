@@ -1,12 +1,12 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
 WAZUH_MAJOR=3
 
 ##############################################################################
 # Wait for the Kibana API to start. It is necessary to do it in this container
-# because the others are running Elastic Stack and we can not interrupt them. 
-# 
+# because the others are running Elastic Stack and we can not interrupt them.
+#
 # The following actions are performed:
 #
 # Add the wazuh alerts index as default.
@@ -49,7 +49,7 @@ while [[ "$(curl -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_ip:5601/s
   sleep 5
 done
 
-# Prepare index selection. 
+# Prepare index selection.
 echo "Kibana API is running"
 
 default_index="/tmp/default_index.json"
