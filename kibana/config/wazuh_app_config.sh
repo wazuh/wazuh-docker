@@ -55,7 +55,8 @@ grep -q 1513629884013 $kibana_config_file
 _config_exists=$?
 
 if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
-cat << EOF >> $kibana_config_file
+cat << EOF > $kibana_config_file
+hosts:
   - 1513629884013:
       url: $wazuh_url
       port: $wazuh_port
