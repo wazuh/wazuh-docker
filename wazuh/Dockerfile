@@ -97,17 +97,17 @@ COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
 COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
-COPY config/05-remove_credentials_file.sh /entrypoint-scripts/05-remove_credentials_file.sh
-COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
 COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
+COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
+COPY config/35-remove_credentials_file.sh /entrypoint-scripts/35-remove_credentials_file.sh
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
     chmod 755 /entrypoint-scripts/02-set_filebeat_destination.sh && \
     chmod 755 /entrypoint-scripts/03-config_filebeat.sh && \
-    chmod 755 /entrypoint-scripts/05-remove_credentials_file.sh && \
+    chmod 755 /entrypoint-scripts/20-ossec-configuration.sh && \
     chmod 755 /entrypoint-scripts/25-backups.sh && \
-    chmod 755 /entrypoint-scripts/20-ossec-configuration.sh
+    chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh
 
 # Workaround. 
 # Issues: Wazuh-api
