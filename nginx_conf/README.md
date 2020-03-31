@@ -20,4 +20,15 @@ nginx_conf/
 
 In case you want to use a self-signed certificate we provided a script to generate one.
 
-Execute `bash generate-self-signed-cert.sh` on this same directory and the right files will be generated. You must have installed `openssl` locally.
+Execute `bash generate-self-signed-cert.sh` inside the `ssl` directory and it will be generated. You must install `openssl` first.
+
+
+### Setup Basic Authentication
+
+The nginx configuration expects the file `kibana.htpasswd`.
+
+This file can be generated with the `htpasswd` command.
+
+```bash
+htpasswd -c kibana.htpasswd username
+```
