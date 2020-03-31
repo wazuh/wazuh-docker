@@ -9,10 +9,10 @@ In this repository you will find the containers to run:
 
 * wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
 * wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
-* nginx: Proxies the Kibana container, adding HTTPS (via your [own certificate or self-signed](nginx_conf/ssl/README.md)) and [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme). **It is required to set up SSL certificate before deploying**
-* wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).** 
+* nginx: Proxies the Kibana container, adding HTTPS (via your [own certificate or self-signed](nginx_conf/README.md)) and [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme). **It is required to set up SSL certificate before deploying**
+* wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
-In addition, a docker-compose file is provided to launch the containers mentioned above. 
+In addition, a docker-compose file is provided to launch the containers mentioned above.
 
 * Elasticsearch cluster. In the Elasticsearch Dockerfile we can visualize variables to configure an Elasticsearch Cluster. These variables are used in the file *config_cluster.sh* to set them in the *elasticsearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
 
@@ -21,6 +21,13 @@ In addition, a docker-compose file is provided to launch the containers mentione
 * [Wazuh full documentation](http://documentation.wazuh.com)
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker hub](https://hub.docker.com/u/wazuh)
+
+### Setup SSL certificate and Basic Authentication
+
+Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed) and setup the basic auth.
+
+Documentation on how to provide these two can be found at [nginx_conf/README.md](nginx_conf/README.md).
+
 
 ## Directory structure
 
@@ -43,10 +50,11 @@ In addition, a docker-compose file is provided to launch the containers mentione
     │   │   └── xpack_config.sh
     │   └── Dockerfile
     ├── LICENSE
-    ├── nginx
-    │   ├── config
-    │   │   └── entrypoint.sh
-    │   └── Dockerfile
+    ├── nginx_conf
+    │   ├── kibana-web.conf
+    │   ├── README.md
+    │   └── ssl
+    │       └── generate-self-signed-cert.sh
     ├── README.md
     ├── VERSION
     └── wazuh
@@ -59,15 +67,12 @@ In addition, a docker-compose file is provided to launch the containers mentione
         │   │   │   └── 2-manager
         │   │   └── services.d
         │   │       ├── api
-        │   │       │   ├── finish
-        │   │       │   └── run
         │   │       └── filebeat
-        │   │           ├── finish
-        │   │           └── run
-        │   ├── init.bash
+        │   ├── filebeat.yml
+        │   ├── permanent_data.env
+        │   ├── permanent_data.sh
         │   └── wazuh.repo
         └── Dockerfile
-
 
 
 ## Branches
