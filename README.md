@@ -40,12 +40,6 @@ API_USER="foo"			# Wazuh API username
 API_PASS="bar"			# Wazuh API password
 ```
 
-### Nginx
-```
-NGINX_NAME="foo"		# HTTP basic auth username
-NGINX_PWD="bar"			# HTTP basic auth password
-```
-
 ### Elasticsearch
 ```
 ELASTIC_CLUSTER="false"					#
