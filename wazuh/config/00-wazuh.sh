@@ -52,6 +52,15 @@ then
 fi
 rm /var/ossec/queue/db/.template.db
 
+# copy missing files from queue-template (in case this is an upgrade from previous versions)
+for filename in /var/ossec/queue-template/*; do
+  fname=$(basename $filename)
+  echo $fname
+  if test ! -e "/var/ossec/data/queue/$fname"; then
+    cp -rp "/var/ossec/queue-template/$fname" /var/ossec/data/queue/
+  fi
+done
+
 touch ${DATA_PATH}/process_list
 chgrp ossec ${DATA_PATH}/process_list
 chmod g+rw ${DATA_PATH}/process_list

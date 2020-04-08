@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.12.1_7.6.2
+
+### Added
+
+- Update to Wazuh version 3.12.1_7.6.2
+
+### Fixed
+
+- Agent timestamp not being properly saved ([@xr09](https://github.com/xr09)) [#323](https://github.com/wazuh/wazuh-docker/pull/323)
+
 
 ## Wazuh Docker v3.12.0_7.6.1
 
