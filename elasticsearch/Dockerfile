@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
-ARG ELASTIC_VERSION=7.6.1
+ARG ELASTIC_VERSION=7.6.2
 FROM docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
 ARG ELASTIC_VERSION
 ARG S3_PLUGIN_URL="https://artifacts.elastic.co/downloads/elasticsearch-plugins/repository-s3/repository-s3-${ELASTIC_VERSION}.zip"
@@ -16,7 +16,7 @@ ENV XPACK_ML="true"
 
 ENV ENABLE_CONFIGURE_S3="false"
 
-ARG TEMPLATE_VERSION=v3.12.0
+ARG TEMPLATE_VERSION=v3.12.1
 
 # Elasticearch cluster configuration environment variables
 # If ELASTIC_CLUSTER is set to "true" the following variables will be added to the Elasticsearch configuration
