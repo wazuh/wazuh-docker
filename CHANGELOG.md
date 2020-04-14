@@ -1,6 +1,73 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.12.2_7.6.2
+
+### Added
+
+- Update to Wazuh version 3.12.2_7.6.2
+
+## Wazuh Docker v3.12.1_7.6.2
+
+### Added
+
+- Update to Wazuh version 3.12.1_7.6.2
+
+### Fixed
+
+- Agent timestamp not being properly saved ([@xr09](https://github.com/xr09)) [#323](https://github.com/wazuh/wazuh-docker/pull/323)
+
+
+## Wazuh Docker v3.12.0_7.6.1
+
+### Added
+
+- Update to Wazuh version 3.12.0_7.6.1
+
+
+## Wazuh Docker v3.11.4_7.6.1
+
+### Added
+
+- Update to Wazuh version 3.11.4_7.6.1
+
+- Enable HTTP v2 on nginx ([@xr09](https://github.com/xr09)) [#308](https://github.com/wazuh/wazuh-docker/pull/308)
+
+### Fixed
+
+- Updated NGINX config syntax ([@xr09](https://github.com/xr09)) [#303](https://github.com/wazuh/wazuh-docker/pull/303)
+
+
+## Wazuh Docker v3.11.3_7.5.2
+
+### Added
+
+- Update to Wazuh version 3.11.3_7.5.2
+
+## Wazuh Docker v3.11.2_7.5.1
+
+### Added
+
+- Bumped Node.js to version 10 ([@xr09](https://github.com/xr09)) [#8615cd4](https://github.com/wazuh/wazuh-docker/commit/8615cd4d2152601e55becc7c3675360938e74b6a)
+
+### Fixed
+
+- Fix S3 Plugin ([@AnthonySendra](https://github.com/AnthonySendra)) [#293](https://github.com/wazuh/wazuh-docker/pull/293)
+
+## Wazuh Docker v3.11.1_7.5.1
+
+### Added
+
+- Update to Wazuh version 3.11.1_7.5.1
+- Filebeat configuration file updated to latest version ([@manuasir](https://github.com/manuasir)) [#271](https://github.com/wazuh/wazuh-docker/pull/271)
+- Allow using the hostname as node_name for managers ([@JPLachance](https://github.com/JPLachance)) [#261](https://github.com/wazuh/wazuh-docker/pull/261)
+
+## Wazuh Docker v3.11.0_7.5.1
+
+### Added
+
+- Update to Wazuh version 3.11.0_7.5.1
+
 ## Wazuh Docker v3.10.2_7.5.0
 
 ### Added
@@ -158,7 +225,7 @@ All notable changes to this project will be documented in this file.
 - Add env credentials for nginx. ([#86](https://github.com/wazuh/wazuh-docker/pull/86))
 - Improve filebeat configuration ([#88](https://github.com/wazuh/wazuh-docker/pull/88))
 
-### Fixed 
+### Fixed
 
 - Temporary fix for Wazuh cluster master node in Kubernetes. ([#84](https://github.com/wazuh/wazuh-docker/pull/84))
 
