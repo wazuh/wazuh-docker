@@ -59,7 +59,6 @@ Documentation on how to provide these two can be found at [nginx_conf/README.md]
     ├── VERSION
     └── wazuh
         ├── config
-        │   ├── data_dirs.env
         │   ├── etc
         │   │   ├── cont-init.d
         │   │   │   ├── 0-wazuh-init
