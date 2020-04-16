@@ -33,6 +33,7 @@ services:
       - "9300:9300"
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - bootstrap.memory_lock=true
       - node.name=es01
       - node.master=true
       - cluster.initial_master_nodes=es01
