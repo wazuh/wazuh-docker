@@ -35,8 +35,8 @@ RUN set -x && \
     apt-get --no-install-recommends --no-install-suggests -y install nodejs && \
     dpkg -i /wazuh-api_3.11.5-1_amd64.deb && apt-get install -f && \
 #   Disable updates to this package
-    echo "wazuh-manager hold" | sudo dpkg --set-selections && \
-    echo "wazuh-api hold" | sudo dpkg --set-selections && \
+    echo "wazuh-manager hold" | dpkg --set-selections && \
+    echo "wazuh-api hold" | dpkg --set-selections && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
