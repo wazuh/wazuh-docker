@@ -3,7 +3,7 @@ FROM phusion/baseimage:latest
 
 # Arguments
 ARG FILEBEAT_VERSION=7.4.2
-ARG WAZUH_VERSION=3.11.4-1
+ARG WAZUH_VERSION=3.11.5-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -13,6 +13,7 @@ ARG TEMPLATE_VERSION="v3.11.5"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
 COPY config/wazuh-manager_3.11.5-1_amd64.deb /wazuh-manager_3.11.5-1_amd64.deb
+COPY config/wazuh-api_3.11.5-1_amd64.deb /wazuh-api_3.11.5-1_amd64.deb
 
 # Install packages
 RUN set -x && \
@@ -30,7 +31,12 @@ RUN set -x && \
     apt-get --no-install-recommends --no-install-suggests -y install postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
 #   apt-get --no-install-recommends --no-install-suggests -y install wazuh-manager=${WAZUH_VERSION} && \
     dpkg -i /wazuh-manager_3.11.5-1_amd64.deb && apt-get install -f && \
-    apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
+#   apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
+    apt-get --no-install-recommends --no-install-suggests -y install nodejs && \
+    dpkg -i /wazuh-api_3.11.5-1_amd64.deb && apt-get install -f && \
+#   Disable updates to this package
+    echo "wazuh-manager hold" | sudo dpkg --set-selections && \
+    echo "wazuh-api hold" | sudo dpkg --set-selections && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
