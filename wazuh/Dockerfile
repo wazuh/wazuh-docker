@@ -3,7 +3,7 @@ FROM phusion/baseimage:latest
 
 # Arguments
 ARG FILEBEAT_VERSION=7.4.2
-ARG WAZUH_VERSION=3.11.5-1
+ARG WAZUH_VERSION=3.11.4-1
 
 # Environment variables
 ENV API_USER="foo" \
