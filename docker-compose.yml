@@ -23,21 +23,24 @@ services:
       - ossec_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
+
   elasticsearch:
-    build: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
+      - "9300:9300"
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTIC_CLUSTER=true
-      - CLUSTER_NODE_MASTER=true
-      - CLUSTER_MASTER_NODE_NAME=es01
+      - node.name=es01
+      - node.master=true
+      - cluster.initial_master_nodes=es01
     ulimits:
       memlock:
         soft: -1
         hard: -1
+
   kibana:
     build: kibana
     hostname: kibana
@@ -47,6 +50,7 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
+
   nginx:
     image: nginx:stable
     hostname: nginx
