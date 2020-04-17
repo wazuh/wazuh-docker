@@ -39,6 +39,8 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - ./elastic_conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
   kibana:
     build: kibana
