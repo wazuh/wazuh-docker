@@ -6,7 +6,9 @@ wazuh_port="${API_PORT:-55000}"
 api_user="${API_USER:-foo}"
 api_password="${API_PASS:-bar}"
 
-kibana_config_file="/usr/share/kibana/plugins/wazuh/wazuh.yml"
+kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
+mkdir -p /usr/share/kibana/optimize/wazuh/config/
+touch $kibana_config_file
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -53,7 +55,8 @@ grep -q 1513629884013 $kibana_config_file
 _config_exists=$?
 
 if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
-cat << EOF >> $kibana_config_file 
+cat << EOF > $kibana_config_file
+hosts:
   - 1513629884013:
       url: $wazuh_url
       port: $wazuh_port
