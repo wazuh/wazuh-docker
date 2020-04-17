@@ -30,7 +30,6 @@ services:
     restart: always
     ports:
       - "9200:9200"
-      - "9300:9300"
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - bootstrap.memory_lock=true
