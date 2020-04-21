@@ -31,6 +31,25 @@ exec_cmd_stdout() {
   eval $1 2>&1 || error_and_exit "$1"
 }
 
+check_update() {
+  if [ -e /var/ossec/etc/ossec-init.conf ]
+  then
+    current_version=$(cat /var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
+    upcoming_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
+
+    if [  $current_version == $upcoming_version ]
+    then
+      echo "Same Wazuh version in the EBS and image"
+      return 0
+    else
+      echo "Different Wazuh version: Update"
+      return 1
+    fi
+  else
+    echo "First time mounting EBS"
+    return 0
+  fi
+}
 
 ##############################################################################
 # Edit configuration
@@ -90,7 +109,7 @@ apply_exclusion_data() {
 
 remove_data_files() {
   for del_file in "${PERMANENT_DATA_DEL[@]}"; do
-    if [ -e ${del_file} ]
+    if [ -e ${del_file[0]} ]
     then 
       print "Removing ${del_file}"
       exec_cmd "rm ${del_file}"
@@ -202,14 +221,25 @@ change_api_user_credentials() {
 ##############################################################################
 
 main() {
+
+  # Check Wazuh version in the image and EBS (It returns 1 when updating the environment)
+  check_update
+  update=$?
+
   # Mount permanent data  (i.e. ossec.conf)
   mount_permanent_data
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
 
-  # Remove some files in permanent_data (i.e. .template.db)
-  remove_data_files
+  # When updating the environment, remove some files in permanent_data (i.e. .template.db)
+  if [ $update == 1 ]
+  then
+    echo "Removing databases"
+    remove_data_files
+  else
+    echo "Keeping databases"
+  fi
 
   # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
