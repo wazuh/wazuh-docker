@@ -35,8 +35,9 @@ check_update() {
   if [ -e /var/ossec/etc/ossec-init.conf ]
   then
     current_version=$(cat /var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
+    echo "Current version: $current_version"
     upcoming_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
-
+    echo "Upcoming version: $upcoming_version"
     if [  $current_version == $upcoming_version ]
     then
       echo "Same Wazuh version in the EBS and image"
