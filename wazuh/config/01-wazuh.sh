@@ -126,7 +126,7 @@ apply_exclusion_data() {
 
 remove_data_files() {
   for del_file in "${PERMANENT_DATA_DEL[@]}"; do
-    if [ -e ${del_file[0]} ]
+    if [ $(ls ${del_file} 2> /dev/null | wc -l) -ne 0 ]
     then 
       print "Removing ${del_file}"
       exec_cmd "rm ${del_file}"
