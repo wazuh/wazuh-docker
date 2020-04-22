@@ -31,19 +31,35 @@ exec_cmd_stdout() {
   eval $1 2>&1 || error_and_exit "$1"
 }
 
+
+##############################################################################
+# Check_update
+# This function considers the following cases:
+# - If /var/ossec/etc/ossec-init.conf does not exist -> There is no data in the EBS. First time deploying Wazuh 
+# - If /var/ossec/etc/VERSION does not exist -> Update (The previous version was prior to 3.11.5) 
+# - If both files exist with different Wazuh versions -> Update (The previous version was later to 3.11.5)
+# - If both files exist with the same Wazuh versions -> Current version matches the upcoming one
+##############################################################################
+
 check_update() {
   if [ -e /var/ossec/etc/ossec-init.conf ]
   then
-    current_version=$(cat /var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
-    echo "Current version: $current_version"
-    upcoming_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
-    echo "Upcoming version: $upcoming_version"
-    if [  $current_version == $upcoming_version ]
+    if [ -e /var/ossec/etc/VERSION ]
     then
-      echo "Same Wazuh version in the EBS and image"
-      return 0
+      current_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
+      echo "Current version: $current_version"
+      upcoming_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
+      echo "Upcoming version: $upcoming_version"
+      if [ $current_version == $upcoming_version ]
+      then
+        echo "Same Wazuh version in the EBS and image"
+        return 0
+      else
+        echo "Different Wazuh version: Update"
+        return 1
+      fi
     else
-      echo "Different Wazuh version: Update"
+      echo "Previous version prior to 3.11.5: Update"
       return 1
     fi
   else
