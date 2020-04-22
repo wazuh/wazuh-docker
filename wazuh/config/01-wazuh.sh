@@ -37,8 +37,8 @@ exec_cmd_stdout() {
 # This function considers the following cases:
 # - If /var/ossec/etc/ossec-init.conf does not exist -> There is no data in the EBS. First time deploying Wazuh 
 # - If /var/ossec/etc/VERSION does not exist -> Update (The previous version was prior to 3.11.5) 
-# - If both files exist with different Wazuh versions -> Update (The previous version was later to 3.11.5)
-# - If both files exist with the same Wazuh versions -> Current version matches the upcoming one
+# - If both files exist: different Wazuh version -> Update (The previous version was later to 3.11.5)
+# - If both files exist: the same Wazuh version -> Current version matches the upcoming one
 ##############################################################################
 
 check_update() {
