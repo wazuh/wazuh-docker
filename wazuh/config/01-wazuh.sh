@@ -33,6 +33,42 @@ exec_cmd_stdout() {
 
 
 ##############################################################################
+# Check_update
+# This function considers the following cases:
+# - If /var/ossec/etc/ossec-init.conf does not exist -> Action Nothing. There is no data in the EBS. First time deploying Wazuh
+# - If /var/ossec/etc/VERSION does not exist -> Action: Update. The previous version was prior to 3.11.5.
+# - If both files exist: different Wazuh version -> Action: Update. The previous version is older than the current one.
+# - If both files exist: the same Wazuh version -> Acton: Nothing. Same Wazuh version.
+##############################################################################
+
+check_update() {
+  if [ -e /var/ossec/etc/ossec-init.conf ]
+  then
+    if [ -e /var/ossec/etc/VERSION ]
+    then
+      previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
+      echo "Previous version: $previous_version"
+      current_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
+      echo "Current version: $current_version"
+      if [ $previous_version == $current_version ]
+      then
+        echo "Same Wazuh version in the EBS and image"
+        return 0
+      else
+        echo "Different Wazuh version: Update"
+        return 1
+      fi
+    else
+      echo "Previous version prior to 3.11.5: Update"
+      return 1
+    fi
+  else
+    echo "First time mounting EBS"
+    return 0
+  fi
+}
+
+##############################################################################
 # Edit configuration
 ##############################################################################
 
@@ -90,7 +126,7 @@ apply_exclusion_data() {
 
 remove_data_files() {
   for del_file in "${PERMANENT_DATA_DEL[@]}"; do
-    if [ -e ${del_file} ]
+    if [ $(ls ${del_file} 2> /dev/null | wc -l) -ne 0 ]
     then 
       print "Removing ${del_file}"
       exec_cmd "rm ${del_file}"
@@ -202,14 +238,25 @@ change_api_user_credentials() {
 ##############################################################################
 
 main() {
+
+  # Check Wazuh version in the image and EBS (It returns 1 when updating the environment)
+  check_update
+  update=$?
+
   # Mount permanent data  (i.e. ossec.conf)
   mount_permanent_data
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
 
-  # Remove some files in permanent_data (i.e. .template.db)
-  remove_data_files
+  # When updating the environment, remove some files in permanent_data (i.e. .template.db)
+  if [ $update == 1 ]
+  then
+    echo "Removing databases"
+    remove_data_files
+  else
+    echo "Keeping databases"
+  fi
 
   # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
