@@ -110,6 +110,7 @@ COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
 COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
 COPY config/35-remove_credentials_file.sh /entrypoint-scripts/35-remove_credentials_file.sh
+COPY config/85-save_wazuh_version.sh /entrypoint-scripts/85-save_wazuh_version.sh
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
@@ -117,7 +118,8 @@ RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/03-config_filebeat.sh && \
     chmod 755 /entrypoint-scripts/20-ossec-configuration.sh && \
     chmod 755 /entrypoint-scripts/25-backups.sh && \
-    chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh
+    chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
+    chmod 755 /entrypoint-scripts/85-save_wazuh_version.sh
 
 # Workaround. 
 # Issues: Wazuh-api
