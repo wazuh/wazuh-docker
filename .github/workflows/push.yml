@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build wazuh/Dockerfile --tag wazuh:$(date +%s)
+      run: docker build wazuh --file Dockerfile --tag wazuh:$(date +%s)
