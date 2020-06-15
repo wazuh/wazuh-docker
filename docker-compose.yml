@@ -19,6 +19,7 @@ services:
       - ossec_var_multigroups:/var/ossec/var/multigroups
       - ossec_integrations:/var/ossec/integrations
       - ossec_active_response:/var/ossec/active-response/bin
+      - ossec_agentless:/var/ossec/agentless
       - ossec_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
@@ -68,6 +69,7 @@ volumes:
   ossec_var_multigroups:
   ossec_integrations:
   ossec_active_response:
+  ossec_agentless:
   ossec_wodles:
   filebeat_etc:
   filebeat_var:
