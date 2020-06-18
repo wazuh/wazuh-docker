@@ -44,7 +44,12 @@ else
   kibana_ip="kibana"
 fi
 
-while [[ "$(curl -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_ip:5601/status)" != "200" ]]; do
+# Add auth headers if required
+if [ "$ELASTICSEARCH_USERNAME" != "" ] && [ "$ELASTICSEARCH_PASSWORD" != "" ]; then
+    curl_auth="-u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD"
+fi
+
+while [[ "$(curl $curl_auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_ip:5601/status)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
