@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.13.0_7.7.1
+
+### Added
+
+- Update to Wazuh version 3.13.3_7.7.1
+
+### Fixed
+
+- Save agentless state ([@xr09](https://github.com/xr09)) [#350](https://github.com/wazuh/wazuh-docker/pull/350)
+- Use HTTP credentials for service check when required ([@xr09](https://github.com/xr09)) [#356](https://github.com/wazuh/wazuh-docker/pull/356)
+
 ## Wazuh Docker v3.12.3_7.6.2
 
 ### Added
