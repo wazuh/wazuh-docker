@@ -128,6 +128,7 @@ sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOST
 trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
+chmod 750 /var/ossec/agentless/*
 
 ##############################################################################
 # Interpret any passed arguments (via docker command to this entrypoint) as
