@@ -111,13 +111,6 @@ RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
     chmod 755 /entrypoint-scripts/85-save_wazuh_version.sh
 
-# Workaround. 
-# Issues: Wazuh-api
-# https://github.com/wazuh/wazuh-api/issues/440  
-# https://github.com/wazuh/wazuh-api/issues/443
-COPY --chown=root:ossec config/agents.js /var/ossec/api/controllers/agents.js
-RUN chmod 770 /var/ossec/api/controllers/agents.js
-
 # Load wazuh alerts template.
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
