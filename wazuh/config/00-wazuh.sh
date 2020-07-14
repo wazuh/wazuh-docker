@@ -50,7 +50,6 @@ if [  -e ${WAZUH_INSTALL_PATH}/etc-template  ]
 then
     cp -p /var/ossec/etc-template/internal_options.conf /var/ossec/etc/internal_options.conf
 fi
-rm /var/ossec/queue/db/.template.db
 
 # copy missing files from queue-template (in case this is an upgrade from previous versions)
 for filename in /var/ossec/queue-template/*; do

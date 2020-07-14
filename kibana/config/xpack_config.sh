@@ -11,7 +11,7 @@ then
     [xpack.ml.enabled]=$XPACK_ML
     [xpack.canvas.enabled]=$XPACK_CANVAS
     [xpack.infra.enabled]=$XPACK_INFRA
-    [xpack.monitoring.enabled]=$XPACK_MONITORING
+    [monitoring.enabled]=$XPACK_MONITORING
     [console.enabled]=$XPACK_DEVTOOLS
   )
   for i in "${!CONFIG_MAP[@]}"
