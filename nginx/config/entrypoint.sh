@@ -52,6 +52,9 @@ if [ "x${KIBANA_HOST}" = "x" ]; then
 fi
 
 echo "Configuring NGINX"
+
+
+if [ "${NGINX_PORT}" = "443" ]; then
 cat > /etc/nginx/conf.d/default.conf <<EOF
 server {
     listen 80;
@@ -74,5 +77,24 @@ server {
     }
 }
 EOF
+fi
+
+if [ "${NGINX_PORT}" = "80" ]; then
+cat > /etc/nginx/conf.d/default.conf <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    location / {
+        auth_basic "Restricted";
+        auth_basic_user_file /etc/nginx/conf.d/kibana.htpasswd;
+        proxy_pass http://${KIBANA_HOST}/;
+        proxy_buffer_size          128k;
+        proxy_buffers              4 256k;
+        proxy_busy_buffers_size    256k;
+    }
+}
+EOF
+fi
+
 
 exec nginx -g 'daemon off;'
