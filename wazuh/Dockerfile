@@ -2,8 +2,8 @@
 FROM phusion/baseimage:latest
 
 # Arguments
-ARG FILEBEAT_VERSION=7.7.0
-ARG WAZUH_VERSION=3.13.0-1
+ARG FILEBEAT_VERSION=7.8.0
+ARG WAZUH_VERSION=3.13.1-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -117,3 +117,4 @@ RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
+
