@@ -1,18 +1,14 @@
-name: Docker Image CI
+name: Wazuh Docker pipeline
 
-on:
-  push:
-    branches: [ feature-github-actions ]
-  pull_request:
-    branches: [ feature-github-actions ]
+on: [push]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build wazuh --tag wazuh:$(date +%s)
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Build the docker-compose stack
+      run: docker-compose -f docker-compose.yml
+    - name: Check running containers
+      run: docker ps -a
