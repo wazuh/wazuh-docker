@@ -50,7 +50,6 @@ if [  -e ${WAZUH_INSTALL_PATH}/etc-template  ]
 then
     cp -p /var/ossec/etc-template/internal_options.conf /var/ossec/etc/internal_options.conf
 fi
-rm /var/ossec/queue/db/.template.db
 
 # copy missing files from queue-template (in case this is an upgrade from previous versions)
 for filename in /var/ossec/queue-template/*; do
@@ -128,6 +127,7 @@ sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOST
 trap "ossec_shutdown; exit" SIGINT SIGTERM
 
 chmod -R g+rw ${DATA_PATH}
+chmod 750 /var/ossec/agentless/*
 
 ##############################################################################
 # Interpret any passed arguments (via docker command to this entrypoint) as
