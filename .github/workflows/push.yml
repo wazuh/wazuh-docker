@@ -3,7 +3,7 @@ name: Wazuh Docker pipeline
 on: [push]
 
 jobs:
-  build:
+  build-stack:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
