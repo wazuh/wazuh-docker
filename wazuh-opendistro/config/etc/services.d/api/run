@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+echo >&2 "starting API"
+
+exec /bin/node /var/ossec/api/app.js
