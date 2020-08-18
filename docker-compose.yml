@@ -3,7 +3,8 @@ version: '3.7'
 
 services:
   wazuh:
-    build: wazuh
+    build: wazuh-opendistro/
+    image: wazuh-opendistro
     hostname: wazuh-manager
     restart: always
     ports:
@@ -25,24 +26,23 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    image: amazon/opendistro-for-elasticsearch:1.9.0
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
     environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - bootstrap.memory_lock=true
       - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - ./elastic_conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
   kibana:
-    build: kibana
+    build: kibana-opendistro/
+    image: wazuh-kibana-opendistro
     hostname: kibana
     restart: always
     depends_on:
