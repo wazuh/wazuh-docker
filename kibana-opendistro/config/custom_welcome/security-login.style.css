@@ -1,0 +1,118 @@
+#security-login-app .content {
+  background: url(./wazuh_wazuh_bg.svg) !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: cover !important;
+}
+
+.app-wrapper {
+  left: 0;
+}
+
+.global-nav.is-global-nav-open+.app-wrapper {
+  left: 0;
+}
+
+.btn-default {
+  background-color: #00a9e5!important;
+  border-color: #00a0e5!important;
+  color: #ffffff;
+  padding: 8px;
+}
+
+.btn-default:hover {
+  background-color: #00a9e5!important;
+  border-color: #00a0e5!important;
+  color: #ffffff;
+}
+
+.brand-image-container {
+  text-align: center;
+}
+
+.brand-image {
+  display: none;
+}
+
+.login-wrapper {
+  position: absolute;
+  width: 430px;
+  top: 55px;
+  border-radius: 1px;
+  padding: 1em;
+}
+
+.login-wrapper .login-title {
+  text-align: center;
+  padding-bottom: 10px;
+  color: #ffffff !important;
+  font-size: 35px !important;
+  font-weight: 300;
+}
+
+.login-wrapper .login-subtitle {
+  text-align: center;
+  padding-bottom: 15px;
+  color: #ffffff !important;
+  font-size: 16px !important;
+}
+
+.login-wrapper .login-form {
+  padding: 16px;
+  box-shadow: 0 2px 2px -1px rgba(152, 162, 179, 0.3), 0 1px 5px -2px rgba(152, 162, 179, 0.3);
+  background-color: #FFF;
+  border: 1px solid #D3DAE6;
+  border-radius: 4px;
+  -webkit-box-flex: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  margin-top: 32px;
+}
+
+.login-wrapper .login-form .input-group {
+  margin-bottom: 1em;
+}
+
+.login-wrapper .login-form .kuiTextInput {
+  cursor: initial;
+}
+
+.login-wrapper .login-form .kuiTextInput:invalid:not(.ng-touched) {
+  border-color: #D9D9D9;
+}
+
+.login-wrapper .login-form .kuiTextInput.has-error {
+  border-color: #A30000;
+}
+
+.login-wrapper .login-form .btn-login {
+  width: 100%;
+}
+
+.login-wrapper .error-message {
+  color: #b4251d;
+  font-size: 14px;
+  margin-top: 16px;
+  margin-bottom: 0;
+  background-color: #f8e9e9;
+  padding: 8px;
+  font-weight: 400;
+  border-left: 2px solid #BD271E;
+}
+
+.loginWelcome__logo {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  text-align: center;
+  background-color: #FFF;
+  border-radius: 100%;
+  padding: 16px;
+  box-shadow: 0 6px 12px -1px rgba(152, 162, 179, 0.2), 0 4px 4px -1px rgba(152, 162, 179, 0.2), 0 2px 2px 0 rgba(152, 162, 179, 0.2);
+  margin-bottom: 32px;
+}
+
+.loginWelcome__logo {
+  background: url(./wazuh_logo_circle.svg) center center no-repeat !important;
+}
