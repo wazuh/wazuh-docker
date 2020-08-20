@@ -13,9 +13,10 @@ setup.template.json.name: 'wazuh'
 setup.template.overwrite: true
 setup.ilm.enabled: false
 output.elasticsearch:
-  hosts: ['http://elasticsearch:9200']
+  hosts: ['https://elasticsearch:9200']
+  #username:
+  #password:
+  #ssl.verification_mode:
   #ssl.certificate_authorities:
   #ssl.certificate:
   #ssl.key:
-  #username:
-  #password:
