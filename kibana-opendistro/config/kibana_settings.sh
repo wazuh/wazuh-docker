@@ -17,10 +17,9 @@ WAZUH_MAJOR=3
 ##############################################################################
 # Customize elasticsearch ip
 ##############################################################################
-if [ "$ELASTICSEARCH_KIBANA_IP" != "" ]; then
-  sed -i "s:#elasticsearch.hosts:elasticsearch.hosts:g" /usr/share/kibana/config/kibana.yml
-  sed -i 's|http://elasticsearch:9200|'$ELASTICSEARCH_KIBANA_IP'|g' /usr/share/kibana/config/kibana.yml
-fi
+sed -i "s|elasticsearch.hosts:.*|elasticsearch.hosts: $el_url|g" /usr/share/kibana/config/kibana.yml
+# disable multitenancy
+sed -i "s|opendistro_security.multitenancy.enabled:.*|opendistro_security.multitenancy.enabled: false|g" /usr/share/kibana/config/kibana.yml
 
 # If KIBANA_INDEX was set, then change the default index in kibana.yml configuration file. If there was an index, then delete it and recreate.
 if [ "$KIBANA_INDEX" != "" ]; then
@@ -31,17 +30,12 @@ if [ "$KIBANA_INDEX" != "" ]; then
 fi
 
 if [ "$KIBANA_IP" != "" ]; then
-  kibana_ip="$KIBANA_IP"
+  kibana_url="$KIBANA_IP"
 else
-  kibana_ip="kibana"
+  kibana_url="kibana"
 fi
 
-# Add auth headers if required
-if [ "$ELASTICSEARCH_USERNAME" != "" ] && [ "$ELASTICSEARCH_PASSWORD" != "" ]; then
-    curl_auth="-u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD"
-fi
-
-while [[ "$(curl $curl_auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' $kibana_ip:5601/status)" != "200" ]]; do
+while [[ "$(curl -XGET -I  -s -o /dev/null -w '%{http_code}' $kibana_url:5601/login)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
@@ -61,16 +55,12 @@ EOF
 
 sleep 5
 # Add the wazuh alerts index as default.
-curl -POST "http://$kibana_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
+curl ${auth} -POST $kibana_url:5601/api/kibana/settings -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
 sleep 5
 # Configuring Kibana TimePicker.
-curl -POST "http://$kibana_ip:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
-'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-24h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
-
-sleep 5
-# Do not ask user to help providing usage statistics to Elastic
-curl -POST "http://$kibana_ip:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl ${auth} -POST "http://$kibana_url:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
+'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
 echo "End settings"
