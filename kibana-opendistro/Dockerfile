@@ -45,13 +45,13 @@ RUN chmod +x ./wazuh_app_config.sh
 COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
 RUN chmod +x ./kibana_settings.sh
 
+USER kibana
+RUN NODE_OPTIONS="--max-old-space-size=2048" /usr/local/bin/kibana-docker --optimize
+
 COPY ./config/custom_welcome /tmp/custom_welcome
 COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 RUN chmod +x ./welcome_wazuh.sh
-ARG CHANGE_WELCOME="false"
+ARG CHANGE_WELCOME="true"
 RUN ./welcome_wazuh.sh
-
-USER kibana
-RUN NODE_OPTIONS="--max-old-space-size=2048" /usr/local/bin/kibana-docker --optimize
 
 ENTRYPOINT ./entrypoint.sh
