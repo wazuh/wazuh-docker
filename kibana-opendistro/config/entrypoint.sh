@@ -60,4 +60,6 @@ sleep 5
 
 ./kibana_settings.sh &
 
+sleep 2
+
 /usr/local/bin/kibana-docker
