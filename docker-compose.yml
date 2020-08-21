@@ -54,8 +54,7 @@ services:
     restart: always
     environment:
       - ELASTICSEARCH_USERNAME=admin
-      - ELASTICSEARCH_PASSWORD=SecretPass
-      - ELASTICSEARCH_KIBANA_IP="https://elasticsearch:9200"
+      - ELASTICSEARCH_PASSWORD=admin
     depends_on:
       - elasticsearch
     links:
