@@ -23,6 +23,7 @@ ARG TEMPLATE_VERSION=v3.13.1
 # CLUSTER_INITIAL_MASTER_NODES set to own node by default.
 ENV ELASTIC_CLUSTER="false" \
     CLUSTER_NAME="wazuh" \
+    CLUSTER_NETWORK_HOST="0.0.0.0" \
     CLUSTER_NODE_MASTER="false" \
     CLUSTER_NODE_DATA="true" \
     CLUSTER_NODE_INGEST="true" \
