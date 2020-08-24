@@ -59,7 +59,7 @@ hosts:
   - 1513629884013:
       url: $wazuh_url
       port: $wazuh_port
-      user: $api_user
+      username: $api_user
       password: $api_password
 EOF
 else
