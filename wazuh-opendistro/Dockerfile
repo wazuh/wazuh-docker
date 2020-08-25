@@ -2,7 +2,7 @@
 FROM centos:7
 
 ARG FILEBEAT_VERSION=7.8.0
-ARG WAZUH_VERSION=4.0.0-braulio.test
+ARG WAZUH_VERSION=4.0.0-c6test
 ARG TEMPLATE_VERSION="develop"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
@@ -16,7 +16,7 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 # COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
-  curl --fail --silent https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/warehouse/test/4.0/rpm/var/wazuh-manager-${WAZUH_VERSION}.x86_64.rpm \
+  curl --fail --silent https://packages-dev.wazuh.com/warehouse/test/4.0/rpm/var/wazuh-manager-${WAZUH_VERSION}.x86_64.rpm \
   -o wazuh-manager.rpm && \
   yum -y install openssl which && yum -y install wazuh-manager.rpm -y && \
   yum clean all && rm -rf /var/cache/yum
