@@ -7,7 +7,6 @@ source /permanent_data.env
 WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 AUTO_ENROLLMENT_ENABLED=${AUTO_ENROLLMENT_ENABLED:-true}
-API_GENERATE_CERTS=${API_GENERATE_CERTS:-true}
 
 
 ##############################################################################
@@ -33,18 +32,10 @@ exec_cmd_stdout() {
 
 
 ##############################################################################
-# Edit configuration
-##############################################################################
-
-edit_configuration() { # $1 -> setting,  $2 -> value
-  sed -i "s/^config.$1\s=.*/config.$1 = \"$2\";/g" "${WAZUH_INSTALL_PATH}/api/configuration/config.js" || error_and_exit "sed (editing configuration)"
-}
-
-##############################################################################
-# This function will attempt to mount every directory in PERMANENT_DATA 
-# into the respective path. 
-# If the path is empty means permanent data volume is also empty, so a backup  
-# will be copied into it. Otherwise it will not be copied because there is  
+# This function will attempt to mount every directory in PERMANENT_DATA
+# into the respective path.
+# If the path is empty means permanent data volume is also empty, so a backup
+# will be copied into it. Otherwise it will not be copied because there is
 # already data inside the volume for the specified path.
 ##############################################################################
 
@@ -61,9 +52,9 @@ mount_permanent_data() {
 }
 
 ##############################################################################
-# This function will replace from the permanent data volume every file 
+# This function will replace from the permanent data volume every file
 # contained in PERMANENT_DATA_EXCP
-# Some files as 'internal_options.conf' are saved as permanent data, but 
+# Some files as 'internal_options.conf' are saved as permanent data, but
 # they must be updated to work properly if wazuh version is changed.
 ##############################################################################
 
@@ -76,7 +67,7 @@ apply_exclusion_data() {
       then
         mkdir -p ${DIR}
       fi
-      
+
       print "Updating ${exclusion_file}"
       exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
     fi
@@ -84,14 +75,14 @@ apply_exclusion_data() {
 }
 
 ##############################################################################
-# This function will delete from the permanent data volume every file 
+# This function will delete from the permanent data volume every file
 # contained in PERMANENT_DATA_DEL
 ##############################################################################
 
 remove_data_files() {
   for del_file in "${PERMANENT_DATA_DEL[@]}"; do
     if [ -e ${del_file} ]
-    then 
+    then
       print "Removing ${del_file}"
       exec_cmd "rm ${del_file}"
     fi
@@ -106,22 +97,6 @@ create_ossec_key_cert() {
   print "Creating ossec-authd key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
-}
-
-##############################################################################
-# Create certificates: API
-##############################################################################
-
-create_api_key_cert() {
-  print "Enabling Wazuh API HTTPS"
-  edit_configuration "https" "yes"
-  print "Create Wazuh API key and cert"
-  exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key 4096"
-  exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt -days 3650 -subj /CN=${HOSTNAME}/"
-
-  # Granting proper permissions 
-  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key
-  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt
 }
 
 ##############################################################################
@@ -153,7 +128,7 @@ function ossec_shutdown(){
 
 ##############################################################################
 # Interpret any passed arguments (via docker command to this entrypoint) as
-# paths or commands, and execute them. 
+# paths or commands, and execute them.
 #
 # This can be useful for actions that need to be run before the services are
 # started, such as "/var/ossec/bin/ossec-control enable agentless".
@@ -166,19 +141,6 @@ docker_custom_args() {
     exec_cmd_stdout "${CUSTOM_COMMAND}"
   done
 }
-
-##############################################################################
-# Change Wazuh API user credentials.
-##############################################################################
-
-change_api_user_credentials() {
-  pushd /var/ossec/api/configuration/auth/
-  echo "Change Wazuh API user credentials"
-  change_user="node htpasswd -b -c user $API_USER $API_PASS"
-  eval $change_user
-  popd
-}
-
 
 ##############################################################################
 # Main function
@@ -203,15 +165,6 @@ main() {
     fi
   fi
 
-  # Generate API certs if API_GENERATE_CERTS is true and does not exist
-  if [ $API_GENERATE_CERTS == true ]
-  then
-    if [ ! -e ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt ]
-    then
-      create_api_key_cert
-    fi
-  fi
-
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
@@ -220,9 +173,6 @@ main() {
 
   # Execute custom args
   docker_custom_args
-
-  # Change API user credentials
-  change_api_user_credentials
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
