@@ -18,7 +18,7 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 RUN yum --enablerepo=updates clean metadata && \
   curl --fail --silent https://packages-dev.wazuh.com/warehouse/test/4.0/rpm/var/wazuh-manager-${WAZUH_VERSION}.x86_64.rpm \
   -o wazuh-manager.rpm && \
-  yum -y install openssl which && yum -y install wazuh-manager.rpm -y && rm -f wazuh-manager.rpm \
+  yum -y install openssl which && yum -y install wazuh-manager.rpm -y && rm -f wazuh-manager.rpm && \
   yum clean all && rm -rf /var/cache/yum
   # sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
 
