@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 
-WAZUH_MAJOR=3
+WAZUH_MAJOR=4
 
 ##############################################################################
 # Wait for the Kibana API to start. It is necessary to do it in this container
