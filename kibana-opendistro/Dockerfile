@@ -41,12 +41,6 @@ ENV PATTERN="" \
     WAZUH_MONITORING_REPLICAS="" \
     ADMIN_PRIVILEGES=""
 
-COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
-RUN chmod +x ./wazuh_app_config.sh
-
-COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
-RUN chmod +x ./kibana_settings.sh
-
 USER kibana
 RUN NODE_OPTIONS="--max-old-space-size=2048" /usr/local/bin/kibana-docker --optimize
 
@@ -55,5 +49,11 @@ COPY --chown=kibana:kibana ./config/welcome_wazuh.sh ./
 RUN chmod +x ./welcome_wazuh.sh
 ARG CHANGE_WELCOME="true"
 RUN ./welcome_wazuh.sh
+
+COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
+RUN chmod +x ./wazuh_app_config.sh
+
+COPY --chown=kibana:kibana ./config/kibana_settings.sh ./
+RUN chmod +x ./kibana_settings.sh
 
 ENTRYPOINT ./entrypoint.sh
