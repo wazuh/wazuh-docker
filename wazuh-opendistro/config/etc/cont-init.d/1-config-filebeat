@@ -30,6 +30,16 @@ if [ "$SSL_CERTIFICATE_AUTHORITIES" != "" ]; then
   sed -i "s|#ssl.certificate_authorities:.*|ssl.certificate_authorities: ['$SSL_CERTIFICATE_AUTHORITIES']|g" /etc/filebeat/filebeat.yml
 fi
 
+if [ "$SSL_CERTIFICATE" != "" ]; then
+  >&2 echo "Configuring SSL Certificate."
+  sed -i "s|#ssl.certificate:.*|ssl.certificate: ['$SSL_CERTIFICATE']|g" /etc/filebeat/filebeat.yml
+fi
+
+if [ "$SSL_KEY" != "" ]; then
+  >&2 echo "Configuring SSL Key."
+  sed -i "s|#ssl.key:.*|ssl.key: ['$SSL_KEY']|g" /etc/filebeat/filebeat.yml
+fi
+
 
 chmod go-w /etc/filebeat/filebeat.yml || true
 chown root: /etc/filebeat/filebeat.yml || true
