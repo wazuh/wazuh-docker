@@ -29,7 +29,7 @@ if [ "$KIBANA_INDEX" != "" ]; then
     echo "kibana.index: $KIBANA_INDEX" >> /usr/share/kibana/config/kibana.yml
 fi
 
-while [[ "$(curl -XGET -I  -s -o /dev/null -w '%{http_code}' https://127.0.0.1/login)" != "200" ]]; do
+while [[ "$(curl -XGET -I  -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5601/login)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
@@ -49,12 +49,12 @@ EOF
 
 sleep 5
 # Add the wazuh alerts index as default.
-curl ${auth} -POST https://127.0.0.1/api/kibana/settings -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
+curl ${auth} -POST http://127.0.0.1:5601/api/kibana/settings -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
 sleep 5
 # Configuring Kibana TimePicker.
-curl ${auth} -POST "https://127.0.0.1/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
+curl ${auth} -POST "http://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
 '{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
 echo "End settings"
