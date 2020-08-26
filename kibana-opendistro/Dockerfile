@@ -6,7 +6,7 @@ ARG WAZUH_VERSION=3.13.1
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 WORKDIR /usr/share/kibana
-RUN ./bin/kibana-plugin install https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/staging/ui/kibana/wazuhapp-4.0.0_7.8.0_0.0.0.todelete.zip
+RUN ./bin/kibana-plugin install https://packages-dev.wazuh.com/warehouse/test/4.0/ui/kibana/wazuhapp-4.0.0_7.8.0_0.0.0.todelete.zip
 
 WORKDIR /
 USER root
