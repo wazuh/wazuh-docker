@@ -52,28 +52,34 @@ services:
     image: wazuh-kibana-opendistro
     hostname: kibana
     restart: always
+    ports:
+      - 443:5601
     environment:
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=admin
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/opendistroforelasticsearch.example.org.cert
+      - SERVER_SSL_KEY=/usr/share/kibana/config/opendistroforelasticsearch.example.org.key
+
     depends_on:
       - elasticsearch
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
 
-  nginx:
-    image: nginx:stable
-    hostname: nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - kibana
-    links:
-      - kibana:kibana
-    volumes:
-      - ./nginx_conf:/etc/nginx/conf.d:ro
+  # nginx:
+  #   image: nginx:stable
+  #   hostname: nginx
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   depends_on:
+  #     - kibana
+  #   links:
+  #     - kibana:kibana
+  #   volumes:
+  #     - ./nginx_conf:/etc/nginx/conf.d:ro
 
 volumes:
   ossec_api_configuration:
