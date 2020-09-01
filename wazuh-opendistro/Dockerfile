@@ -2,7 +2,7 @@
 FROM centos:7
 
 ARG FILEBEAT_VERSION=7.8.0
-ARG WAZUH_VERSION=4.0.0-c6test
+ARG WAZUH_VERSION=4.0.0-0.0.0.developtestingaugust
 ARG TEMPLATE_VERSION="develop"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
