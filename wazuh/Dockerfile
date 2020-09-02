@@ -76,5 +76,8 @@ RUN chmod +x /etc/service/wazuh-api/run && \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
+ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
+RUN curl -s https://packages.wazuh.com/3.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
+
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
