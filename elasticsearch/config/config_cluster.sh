@@ -24,7 +24,7 @@ if [[ $CLUSTER_NODE_MASTER == "true" ]]; then
 # cluster.initial_master_nodes for bootstrap the cluster
 cat > $elastic_config_file << EOF
 # cluster node
-network.host: 0.0.0.0
+network.host: $CLUSTER_NETWORK_HOST
 node.name: $CLUSTER_MASTER_NODE_NAME
 node.master: $CLUSTER_NODE_MASTER
 cluster.initial_master_nodes:
@@ -39,7 +39,7 @@ remove_cluster_config $elastic_config_file
 
 cat > $elastic_config_file << EOF
 # cluster node
-network.host: 0.0.0.0
+network.host: $CLUSTER_NETWORK_HOST
 node.name: $CLUSTER_NODE_NAME
 node.master: false
 discovery.seed_hosts:
