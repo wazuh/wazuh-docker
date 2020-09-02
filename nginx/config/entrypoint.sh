@@ -77,13 +77,11 @@ server {
     }
 }
 EOF
-fi
-
-if [ "${NGINX_PORT}" = "80" ]; then
+else
 cat > /etc/nginx/conf.d/default.conf <<EOF
 server {
-    listen 80;
-    listen [::]:80;
+    listen ${NGINX_PORT};
+    listen [::]:${NGINX_PORT};
     location / {
         auth_basic "Restricted";
         auth_basic_user_file /etc/nginx/conf.d/kibana.htpasswd;
@@ -95,6 +93,5 @@ server {
 }
 EOF
 fi
-
 
 exec nginx -g 'daemon off;'
