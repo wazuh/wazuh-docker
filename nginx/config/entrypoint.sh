@@ -59,7 +59,7 @@ cat > /etc/nginx/conf.d/default.conf <<EOF
 server {
     listen 80;
     listen [::]:80;
-    return 301 https://\$host:${NGINX_PORT}\$request_uri;
+    return 301 https://\$host\$request_uri;
 }
 
 server {
