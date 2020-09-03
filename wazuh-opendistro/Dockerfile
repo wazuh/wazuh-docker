@@ -2,7 +2,7 @@
 FROM centos:7
 
 ARG FILEBEAT_VERSION=7.8.0
-ARG WAZUH_VERSION=4.0.0-0.0.0.developtestingaugust
+ARG WAZUH_VERSION=4.0.0-1
 ARG TEMPLATE_VERSION="develop"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
@@ -13,15 +13,12 @@ ENV API_USER="foo" \
 # Set repositories.
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-# COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
+COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
-  curl --fail --silent https://packages-dev.wazuh.com/warehouse/test/4.0/rpm/var/wazuh-manager-${WAZUH_VERSION}.x86_64.rpm \
-  -o wazuh-manager.rpm && \
-  yum -y install openssl which && yum -y install wazuh-manager.rpm -y && rm -f wazuh-manager.rpm && \
+  yum -y install openssl which && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
+  sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
-  # sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
-
 
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm
