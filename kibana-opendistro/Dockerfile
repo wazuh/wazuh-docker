@@ -7,8 +7,6 @@ ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 WORKDIR /usr/share/kibana
 RUN ./bin/kibana-plugin install https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuh_kibana-${WAZUH_APP_VERSION}-1.zip
-RUN cp -Rf ./plugins/wazuh/node_modules/brace ./node_modules/
-RUN rm -Rf plugins/wazuh/node_modules/brace
 
 WORKDIR /
 USER root
