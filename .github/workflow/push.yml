@@ -1,0 +1,18 @@
+name: Wazuh Docker pipeline
+
+on: [push]
+
+jobs:
+  build-stack:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Build the docker-compose stack
+      run: docker-compose up -d --build
+    - name: Check running containers
+      run: docker ps -a
+    - name: test prueba        
+      run: |
+        if (( $( curl -v http://localhost:9200/_cluster/health 2>&1 | grep -c "green" ) > 0 )) ; then printf "Esta"; else exit 1; fi
+        if (( $( curl -v -u foo:bar -k -X GET https://127.0.0.1:55000/manager/status?pretty 2>&1 | grep -c '"error": 0' ) > 1 )) ; then printf "No Anda"; else printf "Anda\n"; fi
