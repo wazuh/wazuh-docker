@@ -14,5 +14,6 @@ jobs:
       run: docker ps -a
     - name: test prueba        
       run: |
-        if (( $( curl -v http://localhost:9200/_cluster/health 2>&1 | grep -c "green" ) > 0 )) ; then printf "Esta"; else exit 1; fi
+        sleep 30s
         if (( $( curl -v -u foo:bar -k -X GET https://127.0.0.1:55000/manager/status?pretty 2>&1 | grep -c '"error": 0' ) > 0 )) ; then printf "ANDA\n"; else exit 1; fi
+        if (( $( curl -v http://localhost:9200/_cluster/health 2>&1 | grep -c "green" ) > 0 )) ; then printf "Esta"; else exit 1; fi
