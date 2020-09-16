@@ -32,12 +32,12 @@ fi
 
 if [ "$SSL_CERTIFICATE" != "" ]; then
   >&2 echo "Configuring SSL Certificate."
-  sed -i "s|#ssl.certificate:.*|ssl.certificate: ['$SSL_CERTIFICATE']|g" /etc/filebeat/filebeat.yml
+  sed -i "s|#ssl.certificate:.*|ssl.certificate: '$SSL_CERTIFICATE'|g" /etc/filebeat/filebeat.yml
 fi
 
 if [ "$SSL_KEY" != "" ]; then
   >&2 echo "Configuring SSL Key."
-  sed -i "s|#ssl.key:.*|ssl.key: ['$SSL_KEY']|g" /etc/filebeat/filebeat.yml
+  sed -i "s|#ssl.key:.*|ssl.key: '$SSL_KEY'|g" /etc/filebeat/filebeat.yml
 fi
 
 
