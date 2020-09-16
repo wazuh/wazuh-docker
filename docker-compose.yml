@@ -70,20 +70,6 @@ services:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
 
-  # nginx:
-  #   image: nginx:stable
-  #   hostname: nginx
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   depends_on:
-  #     - kibana
-  #   links:
-  #     - kibana:kibana
-  #   volumes:
-  #     - ./nginx_conf:/etc/nginx/conf.d:ro
-
 volumes:
   ossec_api_configuration:
   ossec_etc:
