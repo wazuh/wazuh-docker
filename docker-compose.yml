@@ -46,6 +46,9 @@ services:
       memlock:
         soft: -1
         hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
 
   kibana:
     build: kibana-opendistro/
