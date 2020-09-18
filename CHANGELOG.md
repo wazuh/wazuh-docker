@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Too many redirects when running on port 80 ([@chowmean](https://github.com/chowmean)) [#377](https://github.com/wazuh/wazuh-docker/pull/377)
-- Move Filebeat installation to build stage ([@xr09](https://github.com/xr09)) [378](https://github.com/wazuh/wazuh-docker/pull/378)
+- Move Filebeat installation to build stage ([@xr09](https://github.com/xr09)) [#378](https://github.com/wazuh/wazuh-docker/pull/378)
 
 
 ## Wazuh Docker v3.13.1_7.8.0
