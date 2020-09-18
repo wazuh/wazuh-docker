@@ -1,14 +1,14 @@
 # Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
 FROM phusion/baseimage:0.10.2
 
-ARG FILEBEAT_VERSION=7.8.0
+ARG FILEBEAT_VERSION=7.9.1
 
-ARG WAZUH_VERSION=3.13.1-1
+ARG WAZUH_VERSION=3.13.2-1
 
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.13.1"
+ARG TEMPLATE_VERSION="v3.13.2"
 
 # Set repositories.
 RUN set -x && echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
