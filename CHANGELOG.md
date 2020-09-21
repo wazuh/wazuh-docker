@@ -1,11 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.13.2_7.9.1
+
+### Added
+
+- Update to Wazuh version 3.13.2_7.9.1
+- Add CLUSTER_NETWORK_HOST environment variable ([@jfut](https://github.com/jfut)) [#372](https://github.com/wazuh/wazuh-docker/pull/372)
+
+### Fixed
+
+- Too many redirects when running on port 80 ([@chowmean](https://github.com/chowmean)) [#377](https://github.com/wazuh/wazuh-docker/pull/377)
+- Move Filebeat installation to build stage ([@xr09](https://github.com/xr09)) [#378](https://github.com/wazuh/wazuh-docker/pull/378)
+
+
 ## Wazuh Docker v3.13.1_7.8.0
 
 ### Added
 
 - Update to Wazuh version 3.13.1_7.8.0
+
 
 ## Wazuh Docker v3.13.0_7.7.1
 
