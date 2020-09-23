@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM 242503654864.dkr.ecr.us-east-2.amazonaws.com/waystonesystems-centos7-custom:latest
+FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.7.0
