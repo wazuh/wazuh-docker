@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-FROM phusion/baseimage:0.10.2
+FROM 883265639555.dkr.ecr.us-west-1.amazonaws.com/waystonesystems-centos7-custom:latest
 
 # Arguments
 ARG FILEBEAT_VERSION=7.7.0
@@ -12,23 +12,45 @@ ENV API_USER="foo" \
 ARG TEMPLATE_VERSION="v3.13.0"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
+RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+
+RUN echo $'[wazuh_repo] \n\
+gpgcheck=1\n\
+gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
+gpgcheck=0\n\
+enabled=1\n\
+name=Wazuh repository\n\
+baseurl=https://packages.wazuh.com/3.x/yum/\n\
+protect=1\n'\
+>> /etc/yum.repos.d/wazuh.repo
+
 # Install packages
 RUN set -x && \
-    echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
-    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
-    curl --silent --location https://deb.nodesource.com/setup_8.x | bash - && \
-    echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
-    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
+    #echo "deb https://packages.wazuh.com/3.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list && \
+    #curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
+    curl -sL https://rpm.nodesource.com/setup_8.x | bash - && \
+    #echo "postfix postfix/mailname string wazuh-manager" | debconf-set-selections && \
+    #echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
     groupadd -g 1000 ossec && \
     useradd -u 1000 -g 1000 -d /var/ossec ossec && \
-    add-apt-repository universe && \
-    apt-get update && \
-    apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
-    apt-get --no-install-recommends --no-install-suggests -y install openssl apt-transport-https vim expect python-boto python-pip python-cryptography && \
-    apt-get --no-install-recommends --no-install-suggests -y install postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
-    apt-get --no-install-recommends --no-install-suggests -y install wazuh-manager=${WAZUH_VERSION} && \
-    apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
-    apt-get clean && \
+    #add-apt-repository universe && \
+    #apt-get update && \
+    yum update -y && \
+    #apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
+    yum upgrade -y &&\
+    #apt-get --no-install-recommends --no-install-suggests -y install openssl apt-transport-https vim expect python-boto python-pip python-cryptography && \
+    yum install -y openssl vim expect python-boto python-pip python-cryptography && \
+    #apt-get --no-install-recommends --no-install-suggests -y install postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
+    #yum install -y postfix bsd-mailx mailutils libsasl2-2 ca-certificates libsasl2-modules && \
+    yum install -y postfix bsd-mailx mailx ca-certificates && \
+    #apt-get --no-install-recommends --no-install-suggests -y install wazuh-manager=${WAZUH_VERSION} && \
+    #yum install -y wazuh-manager=${WAZUH_VERSION} && \
+    yum install -y wazuh-manager && \
+    #apt-get --no-install-recommends --no-install-suggests -y install nodejs wazuh-api=${WAZUH_VERSION} && \
+    #yum install -y nodejs wazuh-api=${WAZUH_VERSION} && \
+    yum install -y nodejs wazuh-api && \
+    #apt-get clean && \
+    yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
     rm -f /var/ossec/logs/archives/*/*/* && \
@@ -37,8 +59,10 @@ RUN set -x && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
     rm -f /var/ossec/logs/ossec/*/*/* && \
     rm /var/ossec/var/run/* && \
-    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb && \
-    dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb
+    #curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-amd64.deb && \
+    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
+    #dpkg -i filebeat-${FILEBEAT_VERSION}-amd64.deb && rm -f filebeat-${FILEBEAT_VERSION}-amd64.deb
+    rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm
 
 # Services
 RUN mkdir /etc/service/wazuh && \
