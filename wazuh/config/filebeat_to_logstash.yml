@@ -6,8 +6,6 @@ filebeat:
   - type: log
     paths:
       - "/var/ossec/logs/alerts/alerts.json"
-  #   fields:
-  #     wazuh_log_file: "alerts"
   # - type: log
   #   paths:
   #     - "/var/ossec/logs/archives/archives.json"
