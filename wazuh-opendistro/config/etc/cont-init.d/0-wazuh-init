@@ -126,21 +126,6 @@ function ossec_shutdown(){
   ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
 }
 
-##############################################################################
-# Interpret any passed arguments (via docker command to this entrypoint) as
-# paths or commands, and execute them.
-#
-# This can be useful for actions that need to be run before the services are
-# started, such as "/var/ossec/bin/ossec-control enable agentless".
-##############################################################################
-
-docker_custom_args() {
-  for CUSTOM_COMMAND in "$@"
-  do
-    echo "Executing command \`${CUSTOM_COMMAND}\`"
-    exec_cmd_stdout "${CUSTOM_COMMAND}"
-  done
-}
 
 ##############################################################################
 # Main function
@@ -169,10 +154,7 @@ main() {
   mount_files
 
   # Trap exit signals and do a proper shutdown
-  trap "ossec_shutdown; exit" SIGINT SIGTERM
-
-  # Execute custom args
-  docker_custom_args
+  trap "ossec_shutdown; exit" SIGINT SIGTERM  
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
