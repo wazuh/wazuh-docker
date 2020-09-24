@@ -5,7 +5,12 @@ filebeat:
  inputs:
   - type: log
     paths:
-     - "/var/ossec/logs/alerts/alerts.json"
+      - "/var/ossec/logs/alerts/alerts.json"
+  # - type: log
+  #   paths:
+  #     - "/var/ossec/logs/archives/archives.json"
+  #   fields:
+  #     wazuh_log_file: "archives"
 
 output:
  logstash:
