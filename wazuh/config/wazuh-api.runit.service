@@ -1,5 +1,5 @@
 #!/bin/sh
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
-service wazuh-api start
+/etc/init.d/wazuh-api start
 tail -f /var/ossec/logs/api.log
 
