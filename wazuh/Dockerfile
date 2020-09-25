@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.7.0
-ARG WAZUH_VERSION=3.13.1
+ARG WAZUH_VERSION=3.13.1-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -33,8 +33,8 @@ RUN set -x && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
-    yum install -y wazuh-manager=${WAZUH_VERSION} && \
-    yum install -y nodejs wazuh-manager=${WAZUH_VERSION} && \
+    yum install -y wazuh-manager-${WAZUH_VERSION} && \
+    yum install -y nodejs wazuh-api-{WAZUH_VERSION} && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
