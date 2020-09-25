@@ -34,7 +34,7 @@ RUN set -x && \
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
     yum install -y wazuh-manager-${WAZUH_VERSION} && \
-    yum install -y nodejs wazuh-api-{WAZUH_VERSION} && \
+    yum install -y nodejs wazuh-api-${WAZUH_VERSION} && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
