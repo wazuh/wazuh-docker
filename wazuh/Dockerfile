@@ -3,13 +3,13 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.7.0
-ARG WAZUH_VERSION=3.13.1
+ARG WAZUH_VERSION=3.13.1-1
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.13.2"
+ARG TEMPLATE_VERSION="v3.13.1"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
