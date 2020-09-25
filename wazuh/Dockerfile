@@ -9,7 +9,7 @@ ARG WAZUH_VERSION=3.13.2-1
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.13.0"
+ARG TEMPLATE_VERSION="v3.13.2"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
