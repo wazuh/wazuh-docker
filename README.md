@@ -40,23 +40,6 @@ API_USER="foo"			# Wazuh API username
 API_PASS="bar"			# Wazuh API password
 ```
 
-### Elasticsearch
-```
-ELASTIC_CLUSTER="false"					# Setup a cluster
-CLUSTER_NAME="wazuh"					# Cluster name
-CLUSTER_NODE_MASTER="false"				# Set node as master
-CLUSTER_NODE_DATA="true"				# Store data on this node
-CLUSTER_NODE_INGEST="true"				# Setup as ingest node
-CLUSTER_NODE_NAME="wazuh-elasticsearch"                 # Name for this node
-CLUSTER_MASTER_NODE_NAME="master-node"			# Name of the master node
-CLUSTER_MEMORY_LOCK="true"				# Set Elasticsearch memory lock
-CLUSTER_DISCOVERY_SERVICE="wazuh-elasticsearch"         # Set discovery service
-CLUSTER_NUMBER_OF_MASTERS="2"				# Number of masters on the cluster
-CLUSTER_MAX_NODES="1"					# Max number of nodes on the cluster
-CLUSTER_DELAYED_TIMEOUT="1m"				# Set delayed timeout
-CLUSTER_INITIAL_MASTER_NODES="wazuh-elasticsearch"	# Elastic bootstrap node
-```
-
 ### Kibana
 ```
 PATTERN=""			#
