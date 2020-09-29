@@ -36,8 +36,15 @@ Default values are included when available.
 
 ### Wazuh
 ```
-API_USER="foo"			# Wazuh API username
-API_PASS="bar"			# Wazuh API password
+API_USER="foo"			                        # Wazuh API username
+API_PASS="bar"			                        # Wazuh API password
+ELASTICSEARCH_URL=https://elasticsearch:9200
+ELASTIC_USERNAME=admin
+ELASTIC_PASSWORD=SecretPassword
+FILEBEAT_SSL_VERIFICATION_MODE=full             # full or none
+SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
+SSL_CERTIFICATE=/etc/ssl/filebeat.pem
+SSL_KEY=/etc/ssl/filebeat.key
 ```
 
 ### Kibana
