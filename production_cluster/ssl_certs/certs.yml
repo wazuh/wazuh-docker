@@ -1,0 +1,30 @@
+ca:
+   root:
+      dn: CN=root-ca,OU=CA,O=Example\, Inc.,DC=example,DC=com
+      pkPassword: none
+      keysize: 2048
+      file: root-ca.pem 
+   intermediate:
+      dn: CN=intermediate,OU=CA,O=Example\, Inc.,DC=example,DC=com
+      keysize: 2048
+      validityDays: 3650  
+      pkPassword: intermediate-ca-password
+      file: intermediate-ca.pem
+
+nodes:
+  - name: node1
+    dn: CN=node1,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+    dns: 
+      - elasticsearch
+  - name: node2
+    dn: CN=node2,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+    dns: 
+      - elasticsearch-2
+  - name: node3
+    dn: CN=node3,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+    dns: 
+      - elasticsearch-3
+  - name: filebeat
+    dn: CN=filebeat,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+    dns: 
+      - wazuh 
