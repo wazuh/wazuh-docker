@@ -26,9 +26,6 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed) and setup the basic auth.
 
-Documentation on how to provide these two can be found at [nginx_conf/README.md](nginx_conf/README.md).
-
-
 ## Directory structure
 
     wazuh-docker
@@ -50,11 +47,6 @@ Documentation on how to provide these two can be found at [nginx_conf/README.md]
     │   │   └── xpack_config.sh
     │   └── Dockerfile
     ├── LICENSE
-    ├── nginx_conf
-    │   ├── kibana-web.conf
-    │   ├── README.md
-    │   └── ssl
-    │       └── generate-self-signed-cert.sh
     ├── README.md
     ├── VERSION
     └── wazuh
