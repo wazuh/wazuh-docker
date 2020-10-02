@@ -3,7 +3,7 @@ FROM centos:7
 
 ARG FILEBEAT_VERSION=7.8.0
 ARG WAZUH_VERSION=4.0.0-1
-ARG TEMPLATE_VERSION="develop"
+ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
 ENV API_USER="foo" \
@@ -16,7 +16,7 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
-  yum -y install openssl which && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
+  yum -y install openssl which expect openssh-clients && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
 
@@ -25,7 +25,7 @@ RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-os
 
 RUN curl -s https://packages-dev.wazuh.com/utils/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
-ARG S6_VERSION="v2.0.0.1"
+ARG S6_VERSION="v2.1.0.0"
 RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
