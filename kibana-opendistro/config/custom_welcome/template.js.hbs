@@ -1,7 +1,8 @@
 var kbnCsp = JSON.parse(document.querySelector('kbn-csp').getAttribute('data'));
 window.__kbnStrictCsp__ = kbnCsp.strictCsp;
-window.__kbnDarkMode__ = {{darkMode}};
+window.__kbnThemeTag__ = "{{themeTag}}";
 window.__kbnPublicPath__ = {{publicPathMap}};
+window.__kbnBundles__ = {{kbnBundlesLoaderSource}}
 
 if (window.__kbnStrictCsp__ && window.__kbnCspNotEnforced__) {
   var legacyBrowserError = document.getElementById('kbn_legacy_browser_error');
@@ -14,20 +15,24 @@ if (window.__kbnStrictCsp__ && window.__kbnCspNotEnforced__) {
   loadingMessage.style.display = 'flex';
 
   window.onload = function () {
-      //WAZUH 
+    //WAZUH 
       var interval = setInterval(() => {  
-        var title = document.getElementsByClassName('login-title');
-        if ((title || []).length) {
+        var title = document.querySelector("#kibana-body > div > div.app-wrapper.hidden-chrome > div > div.application > div > ul > div.euiText.euiText--medium > div")
+        if (!!title) {
           clearInterval(interval);
-          title[0].textContent = "Welcome to Wazuh";
-          var subtitle = document.getElementsByClassName('login-subtitle');
-          subtitle[0].textContent = "The Open Source Security Platform";
-          var logo = document.getElementsByClassName('brand-image-container');
-          $(logo).append('<span class="loginWelcome__logo"></span>');
+	  var content = document.querySelector("#kibana-body > div");
+          content.classList.add("wz-login")
+          title.textContent = "Welcome to Wazuh";
+          var subtitle = document.querySelector("#kibana-body > div > div.app-wrapper.hidden-chrome > div > div.application > div > ul > div.euiText.euiText--small > div")
+          subtitle.textContent = "The Open Source Security Platform";
+          var logo = document.querySelector("#kibana-body > div > div.app-wrapper.hidden-chrome > div > div.application > div > ul > figure");
+          logo.remove();
+          var logoContainer = document.querySelector("#kibana-body > div > div.app-wrapper.hidden-chrome > div > div.application > div > ul");
+          $(logoContainer).prepend('<span class="loginWelcome__logo"></span>');
         } 
       })  
     //
-    
+
     function failure() {
       // make subsequent calls to failure() noop
       failure = function () {};
@@ -43,7 +48,7 @@ if (window.__kbnStrictCsp__ && window.__kbnCspNotEnforced__) {
       document.body.innerHTML = err.outerHTML;
     }
 
-var stylesheetTarget = document.querySelector('head meta[name="add-styles-here"]')
+    var stylesheetTarget = document.querySelector('head meta[name="add-styles-here"]')
     function loadStyleSheet(url, cb) {
       var dom = document.createElement('link');
       dom.rel = 'stylesheet';
@@ -91,12 +96,7 @@ var stylesheetTarget = document.querySelector('head meta[name="add-styles-here"]
       {{/each}}
     ], function () {
       {{#unless legacyBundlePath}}
-        if (!__kbnBundles__ || !__kbnBundles__['entry/core'] || typeof __kbnBundles__['entry/core'].__kbnBootstrap__ !== 'function') {
-          console.error('entry/core bundle did not load correctly');
-          failure();
-        } else {
-          __kbnBundles__['entry/core'].__kbnBootstrap__()
-        }
+        __kbnBundles__.get('entry/core/public').__kbnBootstrap__();
       {{/unless}}
 
       load([
