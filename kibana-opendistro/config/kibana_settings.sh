@@ -29,7 +29,7 @@ if [ "$KIBANA_INDEX" != "" ]; then
     echo "kibana.index: $KIBANA_INDEX" >> /usr/share/kibana/config/kibana.yml
 fi
 
-while [[ "$(curl -XGET -I  -s -o /dev/null -w '%{http_code}' -k https://127.0.0.1:5601/login)" != "200" ]]; do
+while [[ "$(curl -XGET -I  -s -o /dev/null -w '%{http_code}' -k https://127.0.0.1:5601/app/login)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
