@@ -119,14 +119,6 @@ mount_files() {
 }
 
 ##############################################################################
-# Stop OSSEC
-##############################################################################
-
-function ossec_shutdown(){
-  ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
-}
-
-##############################################################################
 # Allow users to set the container hostname as <node_name> dynamically on
 # container start.
 #
@@ -163,9 +155,6 @@ main() {
 
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
-
-  # Trap exit signals and do a proper shutdown
-  trap "ossec_shutdown; exit" SIGINT SIGTERM
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
