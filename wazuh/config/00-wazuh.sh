@@ -123,6 +123,9 @@ function ossec_shutdown(){
 ##############################################################################
 sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
 
+# Setting Wazuh cluster key
+sed -i 's/<key>to_be_replaced_by_cluster_key<\/key>/<key>'"${WAZUH_CLUSTER_KEY}"'<\/key>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+
 # Trap exit signals and do a proper shutdown
 trap "ossec_shutdown; exit" SIGINT SIGTERM
 
