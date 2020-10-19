@@ -7,8 +7,6 @@ api_user="${API_USER:-wazuh}"
 api_password="${API_PASS:-wazuh}"
 
 kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
-mkdir -p /usr/share/kibana/optimize/wazuh/config/
-touch $kibana_config_file
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -44,9 +42,6 @@ do
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $kibana_config_file
     fi
 done
-
-# remove default API entry (new in 3.11.0_7.5.1)
-sed -ie '/- default:/,+4d' $kibana_config_file
 
 CONFIG_CODE=$(curl ${auth} -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013)
 

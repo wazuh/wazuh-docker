@@ -48,6 +48,7 @@ RUN chmod +x ./welcome_wazuh.sh
 ARG CHANGE_WELCOME="true"
 RUN ./welcome_wazuh.sh
 
+COPY --chown=kibana:kibana ./config/wazuh.yml /usr/share/kibana/optimize/wazuh/config/wazuh.yml
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 RUN chmod +x ./wazuh_app_config.sh
 
