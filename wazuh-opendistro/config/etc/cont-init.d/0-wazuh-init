@@ -159,6 +159,8 @@ main() {
 
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
+
+  # Allow setting custom hostname
   set_custom_hostname
 
   # Delete temporary data folder
