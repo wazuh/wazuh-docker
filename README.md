@@ -76,8 +76,6 @@ API_SELECTOR=""         # Defines if the user is allowed to change the selected 
 IP_SELECTOR=""			# Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
 IP_IGNORE=""			# List of index patterns to be ignored
 
-XPACK_RBAC_ENABLED=""		# Custom setting to enable/disable built-in X-Pack RBAC security capabilities. Default: enabled
-
 WAZUH_MONITORING_ENABLED=""	    # Custom settings to enable/disable wazuh-monitoring indices
 WAZUH_MONITORING_FREQUENCY=""   # Custom setting to set the frequency for wazuh-monitoring indices cron task
 WAZUH_MONITORING_SHARDS=""      # Configure wazuh-monitoring-* indices shards and replicas
