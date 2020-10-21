@@ -36,45 +36,54 @@ Default values are included when available.
 
 ### Wazuh
 ```
-API_USER="foo"			                        # Wazuh API username
-API_PASS="bar"			                        # Wazuh API password
-ELASTICSEARCH_URL=https://elasticsearch:9200
-ELASTIC_USERNAME=admin
-ELASTIC_PASSWORD=SecretPassword
-FILEBEAT_SSL_VERIFICATION_MODE=full             # full or none
-SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
-SSL_CERTIFICATE=/etc/ssl/filebeat.pem
-SSL_KEY=/etc/ssl/filebeat.key
+API_USER="foo"			                            # Wazuh API username
+API_PASS="bar"			                            # Wazuh API password
+ELASTICSEARCH_URL=https://elasticsearch:9200        # Elasticsearch URL
+ELASTIC_USERNAME=admin                              # Elasticsearch Username
+ELASTIC_PASSWORD=SecretPassword                     # Elasticsearch Password
+FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
+SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem    # Filebeat SSL CA
+SSL_CERTIFICATE=/etc/ssl/filebeat.pem               # Filebeat SSL Certificate
+SSL_KEY=/etc/ssl/filebeat.key                       # Filebeat SSL Key
 ```
 
 ### Kibana
 ```
-PATTERN=""			#
-CHECKS_PATTERN=""		#
-CHECKS_TEMPLATE=""		#
+PATTERN=""			    # Default index pattern to use
+
+CHECKS_PATTERN=""		# Defines which checks must to be consider by the healthcheck
+CHECKS_TEMPLATE=""		# step once the Wazuh app starts. Values must to be true or false
 CHECKS_API=""			#
 CHECKS_SETUP=""			#
-EXTENSIONS_PCI=""		#
-EXTENSIONS_GDPR=""		#
-EXTENSIONS_AUDIT=""		#
-EXTENSIONS_OSCAP=""		#
-EXTENSIONS_CISCAT=""		#
-EXTENSIONS_AWS=""		#
-EXTENSIONS_VIRUSTOTAL=""	#
-EXTENSIONS_OSQUERY=""		#
-APP_TIMEOUT=""			#
-WAZUH_SHARDS=""			#
-WAZUH_REPLICAS=""		#
-WAZUH_VERSION_SHARDS=""		#
-WAZUH_VERSION_REPLICAS=""	#
-IP_SELECTOR=""			#
-IP_IGNORE=""			#
-XPACK_RBAC_ENABLED=""		#
-WAZUH_MONITORING_ENABLED=""	#
-WAZUH_MONITORING_FREQUENCY=""	#
-WAZUH_MONITORING_SHARDS=""	#
-WAZUH_MONITORING_REPLICAS=""	#
-ADMIN_PRIVILEGES=""		#
+
+EXTENSIONS_PCI=""		# Enable PCI Extension
+EXTENSIONS_GDPR=""		# Enable GDPR Extension
+EXTENSIONS_HIPAA=""     # Enable HIPAA Extension
+EXTENSIONS_NIST=""      # Enable NIST Extension
+EXTENSIONS_TSC=""       # Enable TSC Extension
+EXTENSIONS_AUDIT=""		# Enable Audit Extension
+EXTENSIONS_OSCAP=""		# Enable OpenSCAP Extension
+EXTENSIONS_CISCAT=""	# Enable CISCAT Extension
+EXTENSIONS_AWS=""		# Enable AWS Extension
+EXTENSIONS_GCP=""       # Enable GCP Extension
+EXTENSIONS_VIRUSTOTAL=""	# Enable Virustotal Extension
+EXTENSIONS_OSQUERY=""		# Enable OSQuery Extension
+EXTENSIONS_DOCKER=""    # Enable Docker Extension
+
+APP_TIMEOUT=""			# Defines maximum timeout to be used on the Wazuh app requests
+
+API_SELECTOR=""         # Defines if the user is allowed to change the selected API directly from the Wazuh app top menu
+IP_SELECTOR=""			# Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
+IP_IGNORE=""			# List of index patterns to be ignored
+
+XPACK_RBAC_ENABLED=""		# Custom setting to enable/disable built-in X-Pack RBAC security capabilities. Default: enabled
+
+WAZUH_MONITORING_ENABLED=""	    # Custom settings to enable/disable wazuh-monitoring indices
+WAZUH_MONITORING_FREQUENCY=""   # Custom setting to set the frequency for wazuh-monitoring indices cron task
+WAZUH_MONITORING_SHARDS=""      # Configure wazuh-monitoring-* indices shards and replicas
+WAZUH_MONITORING_REPLICAS=""    #
+
+ADMIN_PRIVILEGES=""		# App privileges
 ```
 
 ## Directory structure
