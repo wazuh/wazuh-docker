@@ -47,6 +47,14 @@ function_wazuh_migration(){
       chown ossec:ossec /var/ossec/etc/shared/default/agent.conf
       chmod 660 /var/ossec/etc/shared/default/agent.conf
 
+      \cp -f /wazuh-migration/data/etc/decoders/* /var/ossec/etc/decoders/
+      chown ossec:ossec /var/ossec/etc/decoders/*
+      chmod 660 /var/ossec/etc/decoders/*
+
+      \cp -f /wazuh-migration/data/etc/rules/* /var/ossec/etc/rules/
+      chown ossec:ossec /var/ossec/etc/rules/*
+      chmod 660 /var/ossec/etc/rules/*
+
       if [ -e /wazuh-migration/data/agentless/.passlist ]; then
         \cp -f /wazuh-migration/data/agentless/.passlist /var/ossec/agentless/.passlist
         chown root:ossec /var/ossec/agentless/.passlist
