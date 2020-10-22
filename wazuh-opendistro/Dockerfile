@@ -6,10 +6,6 @@ ARG WAZUH_VERSION=4.0.0-1
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
-ENV API_USER="foo" \
-   API_PASS="bar"
-
-
 # Set repositories.
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
@@ -40,6 +36,7 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/e
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 COPY config/etc/ /etc/
+COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
