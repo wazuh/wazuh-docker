@@ -36,8 +36,8 @@ Default values are included when available.
 
 ### Wazuh
 ```
-API_USER="foo"			                            # Wazuh API username
-API_PASS="bar"			                            # Wazuh API password
+API_USERNAME="my-custom-login"                      # Wazuh API username
+API_PASSWORD="Str0ngP455w0rd.!*-"                   # Wazuh API password - Must comply with requirements (8+ length, uppercase, lowercase, specials chars)
 ELASTICSEARCH_URL=https://elasticsearch:9200        # Elasticsearch URL
 ELASTIC_USERNAME=admin                              # Elasticsearch Username
 ELASTIC_PASSWORD=SecretPassword                     # Elasticsearch Password
