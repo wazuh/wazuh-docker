@@ -84,7 +84,7 @@ function_create_custom_user() {
 }
 EOF
 
-  # insert user into API database
+  # create or customize API user
   /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py
   fi
 }

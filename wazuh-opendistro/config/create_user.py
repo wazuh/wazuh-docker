@@ -1,6 +1,8 @@
 import logging
 import sys
 import json
+import random
+import string
 import os
 
 # Set framework path
@@ -43,7 +45,9 @@ if __name__ == "__main__":
         # abort if no user file detected
         sys.exit(0)
     username, password = read_user_file()
-    if username not in db_users():
+    initial_users = db_users()
+    if username not in initial_users:
+        # create a new user
         create_user(username=username, password=password)
         users = db_users()
         uid = users[username]
@@ -57,3 +61,30 @@ if __name__ == "__main__":
                 str(rid),
             ],
         )
+    else:
+        # modify an existing user ("wazuh" or "wazuh-wui")
+        uid = initial_users[username]
+        update_user(
+            user_id=[
+                str(uid),
+            ],
+            password=password,
+        )
+    # set a random password for all other users
+    for name, id in initial_users.items():
+        if name != username:
+            random_pass = "".join(
+                random.choices(
+                    string.ascii_uppercase
+                    + string.ascii_lowercase
+                    + string.digits
+                    + "@$!%*?&-_",
+                    k=16,
+                )
+            )
+            update_user(
+                user_id=[
+                    str(id),
+                ],
+                password=random_pass,
+            )
