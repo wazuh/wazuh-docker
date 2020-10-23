@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Wazuh Docker v4.0.0
+## Wazuh Docker v4.0.0_1.10.1
 
 ### Added
 
