@@ -131,6 +131,14 @@ ADMIN_PRIVILEGES=true               # App privileges
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `Wazuh.Version_ElasticStack.Version` (for example 3.10.2_7.5.0) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
 
+
+## Compatibility Matrix
+
+| Wazuh version | ODFE    |
+|---------------|---------|
+| v4.0.0        | 1.10.1  |
+
+
 ## Credits and Thank you
 
 These Docker containers are based on:
