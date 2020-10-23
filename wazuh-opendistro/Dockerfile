@@ -4,7 +4,7 @@ FROM centos:7
 ARG FILEBEAT_VERSION=7.9.1
 ARG WAZUH_VERSION=4.0.0-1
 ARG TEMPLATE_VERSION="master"
-ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
+ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 # Set repositories.
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
@@ -19,7 +19,7 @@ RUN yum --enablerepo=updates clean metadata && \
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-oss-${FILEBEAT_VERSION}-x86_64.rpm
 
-RUN curl -s https://packages-dev.wazuh.com/utils/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
+RUN curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
 ARG S6_VERSION="v2.1.0.2"
 RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
