@@ -3,8 +3,7 @@ version: '3.7'
 
 services:
   wazuh:
-    build: wazuh-opendistro/
-    image: wazuh-opendistro
+    image: wazuh/wazuh-odfe:4.0.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -51,8 +50,7 @@ services:
         hard: 65536
 
   kibana:
-    build: kibana-opendistro/
-    image: wazuh-kibana-opendistro
+    image: wazuh/wazuh-kibana-odfe:4.0.0
     hostname: kibana
     restart: always
     ports:

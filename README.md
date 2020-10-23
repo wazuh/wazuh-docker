@@ -87,37 +87,57 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 ## Directory structure
 
-    wazuh-docker
     ├── CHANGELOG.md
     ├── docker-compose.yml
-    ├── elasticsearch
+    ├── elastic_conf
+    │   └── elasticsearch.yml
+    ├── generate-opendistro-certs.yml
+    ├── kibana-odfe
     │   ├── config
-    │   │   ├── config_cluster.sh
-    │   │   ├── configure_s3.sh
-    │   │   ├── entrypoint.sh
-    │   │   └── load_settings.sh
-    │   └── Dockerfile
-    ├── kibana
-    │   ├── config
+    │   │   ├── custom_welcome
+    │   │   │   ├── light_theme.style.css
+    │   │   │   ├── template.js.hbs
+    │   │   │   ├── wazuh_logo_circle.svg
+    │   │   │   └── wazuh_wazuh_bg.svg
     │   │   ├── entrypoint.sh
     │   │   ├── kibana_settings.sh
     │   │   ├── wazuh_app_config.sh
-    │   │   ├── welcome_wazuh.sh
-    │   │   └── xpack_config.sh
+    │   │   ├── wazuh.yml
+    │   │   └── welcome_wazuh.sh
     │   └── Dockerfile
     ├── LICENSE
+    ├── production_cluster
+    │   ├── elastic_opendistro
+    │   │   ├── elasticsearch-node1.yml
+    │   │   ├── elasticsearch-node2.yml
+    │   │   ├── elasticsearch-node3.yml
+    │   │   └── internal_users.yml
+    │   ├── kibana_ssl
+    │   │   └── generate-self-signed-cert.sh
+    │   ├── nginx
+    │   │   ├── nginx.conf
+    │   │   └── ssl
+    │   │       └── generate-self-signed-cert.sh
+    │   ├── ssl_certs
+    │   │   └── certs.yml
+    │   └── wazuh_cluster
+    │       ├── wazuh_manager.conf
+    │       └── wazuh_worker.conf
+    ├── production-cluster.yml
     ├── README.md
     ├── VERSION
-    └── wazuh
+    └── wazuh-odfe
         ├── config
+        │   ├── create_user.py
         │   ├── etc
         │   │   ├── cont-init.d
         │   │   │   ├── 0-wazuh-init
         │   │   │   ├── 1-config-filebeat
         │   │   │   └── 2-manager
         │   │   └── services.d
-        │   │       ├── api
         │   │       └── filebeat
+        │   │           ├── finish
+        │   │           └── run
         │   ├── filebeat.yml
         │   ├── permanent_data.env
         │   ├── permanent_data.sh
@@ -125,9 +145,10 @@ ADMIN_PRIVILEGES=true               # App privileges
         └── Dockerfile
 
 
+
 ## Branches
 
-* `stable` branch on correspond to the latest Wazuh-Docker stable version.
+* `4.0` branch on correspond to the latest Wazuh-Docker stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `Wazuh.Version_ElasticStack.Version` (for example 3.10.2_7.5.0) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
 
