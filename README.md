@@ -92,7 +92,7 @@ ADMIN_PRIVILEGES=true               # App privileges
     ├── elastic_conf
     │   └── elasticsearch.yml
     ├── generate-opendistro-certs.yml
-    ├── kibana-opendistro
+    ├── kibana-odfe
     │   ├── config
     │   │   ├── custom_welcome
     │   │   │   ├── light_theme.style.css
@@ -126,7 +126,7 @@ ADMIN_PRIVILEGES=true               # App privileges
     ├── production-cluster.yml
     ├── README.md
     ├── VERSION
-    └── wazuh-opendistro
+    └── wazuh-odfe
         ├── config
         │   ├── create_user.py
         │   ├── etc
@@ -143,6 +143,7 @@ ADMIN_PRIVILEGES=true               # App privileges
         │   ├── permanent_data.sh
         │   └── wazuh.repo
         └── Dockerfile
+
 
 
 ## Branches
