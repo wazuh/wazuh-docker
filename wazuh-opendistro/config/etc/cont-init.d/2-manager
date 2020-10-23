@@ -22,6 +22,11 @@ function echoyellow()
   echo $(__colortext "$1" "33")
 }
 
+function echored()
+{
+  echo $(__colortext "$1" "31")
+}
+
 function_wazuh_migration(){
   if [ -d "/wazuh-migration" ]; then
     if [ ! -e /wazuh-migration/.migration-completed ]; then
@@ -84,8 +89,16 @@ function_create_custom_user() {
 }
 EOF
 
-  # create or customize API user
-  /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py
+    # create or customize API user
+    if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
+      # remove json if exit code is 0
+      rm /var/ossec/api/configuration/admin.json
+    else
+      echored "There was an error configuring the API user"
+      # terminate container to avoid unpredictable behavior
+      exec s6-svscanctl -t /var/run/s6/services
+      exit 1
+    fi
   fi
 }
 
