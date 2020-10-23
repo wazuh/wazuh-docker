@@ -1,14 +1,36 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-# Change Log
-All notable changes to this project will be documented in this file.
+## Wazuh Docker v4.0.0
+
+### Added
+
+- Update to Wazuh version 4.0.0
+- Updating Wazuh cluster key dynamically ([@1stOfHisGame](https://github.com/1stOfHisGame))  [#393](https://github.com/wazuh/wazuh-docker/pull/393)
+- Switched to CentOS 7 for base image ([@xr09](https://github.com/xr09)) [#259](https://github.com/wazuh/wazuh-docker/issues/259)
+- Using s6-overlay for process management ([@xr09](https://github.com/xr09)) [#274](https://github.com/wazuh/wazuh-docker/issues/274)
+- Allow the creation of custom API users ([@xr09](https://github.com/xr09)) [#395](https://github.com/wazuh/wazuh-docker/issues/395)
+
+
+## Wazuh Docker v3.13.2_7.9.1
+
+### Added
+
+- Update to Wazuh version 3.13.2_7.9.1
+- Add CLUSTER_NETWORK_HOST environment variable ([@jfut](https://github.com/jfut)) [#372](https://github.com/wazuh/wazuh-docker/pull/372)
+
+### Fixed
+
+- Too many redirects when running on port 80 ([@chowmean](https://github.com/chowmean)) [#377](https://github.com/wazuh/wazuh-docker/pull/377)
+- Move Filebeat installation to build stage ([@xr09](https://github.com/xr09)) [#378](https://github.com/wazuh/wazuh-docker/pull/378)
+
 
 ## Wazuh Docker v3.13.1_7.8.0
 
 ### Added
 
 - Update to Wazuh version 3.13.1_7.8.0
+
 
 ## Wazuh Docker v3.13.0_7.7.1
 
@@ -26,6 +48,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Update to Wazuh version 3.12.3_7.6.2
+
 
 ## Wazuh Docker v3.12.2_7.6.2
 
