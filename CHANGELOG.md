@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Switched to CentOS 7 for base image ([@xr09](https://github.com/xr09)) [#259](https://github.com/wazuh/wazuh-docker/issues/259)
 - Using s6-overlay for process management ([@xr09](https://github.com/xr09)) [#274](https://github.com/wazuh/wazuh-docker/issues/274)
 - Allow the creation of custom API users ([@xr09](https://github.com/xr09)) [#395](https://github.com/wazuh/wazuh-docker/issues/395)
+- Use official Elastic images ([@xr09](https://github.com/xr09)) [#333](https://github.com/wazuh/wazuh-docker/pull/333)
+- OpenDistro support ([@xr09](https://github.com/xr09)) [#373](https://github.com/wazuh/wazuh-docker/pull/373)
 
 
 ## Wazuh Docker v3.13.2_7.9.1
