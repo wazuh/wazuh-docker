@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v4.0.0_1.10.1
+
+### Added
+
+- Update to Wazuh version 4.0.0
+- Updating Wazuh cluster key dynamically ([@1stOfHisGame](https://github.com/1stOfHisGame))  [#393](https://github.com/wazuh/wazuh-docker/pull/393)
+- Switched to CentOS 7 for base image ([@xr09](https://github.com/xr09)) [#259](https://github.com/wazuh/wazuh-docker/issues/259)
+- Using s6-overlay for process management ([@xr09](https://github.com/xr09)) [#274](https://github.com/wazuh/wazuh-docker/issues/274)
+- Allow the creation of custom API users ([@xr09](https://github.com/xr09)) [#395](https://github.com/wazuh/wazuh-docker/issues/395)
+- OpenDistro support ([@xr09](https://github.com/xr09)) [#373](https://github.com/wazuh/wazuh-docker/pull/373)
+
+
+### Changed
+
+- Removal of Elastic images
+
+
 ## Wazuh Docker v3.13.2_7.9.1
 
 ### Added

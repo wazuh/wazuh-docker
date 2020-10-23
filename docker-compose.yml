@@ -1,28 +1,46 @@
 # Wazuh App Copyright (C) 2020 Wazuh Inc. (License GPLv2)
-version: '2'
+version: '3.7'
 
 services:
   wazuh:
-    image: wazuh/wazuh:3.13.2_7.9.1
+    image: wazuh/wazuh-odfe:4.0.0_1.10.1
     hostname: wazuh-manager
     restart: always
     ports:
-      - "1514:1514/udp"
+      - "1514:1514"
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
+    environment:
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - ELASTIC_USERNAME=admin
+      - ELASTIC_PASSWORD=admin
+      - FILEBEAT_SSL_VERIFICATION_MODE=none
+    volumes:
+      - ossec_api_configuration:/var/ossec/api/configuration
+      - ossec_etc:/var/ossec/etc
+      - ossec_logs:/var/ossec/logs
+      - ossec_queue:/var/ossec/queue
+      - ossec_var_multigroups:/var/ossec/var/multigroups
+      - ossec_integrations:/var/ossec/integrations
+      - ossec_active_response:/var/ossec/active-response/bin
+      - ossec_agentless:/var/ossec/agentless
+      - ossec_wodles:/var/ossec/wodles
+      - filebeat_etc:/etc/filebeat
+      - filebeat_var:/var/lib/filebeat
 
   elasticsearch:
-    image: wazuh/wazuh-elasticsearch:3.13.2_7.9.1
+    image: amazon/opendistro-for-elasticsearch:1.10.1
     hostname: elasticsearch
     restart: always
     ports:
       - "9200:9200"
     environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTIC_CLUSTER=true
-      - CLUSTER_NODE_MASTER=true
-      - CLUSTER_MASTER_NODE_NAME=es01
+      - discovery.type=single-node
+      - cluster.name=wazuh-cluster
+      - network.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
     ulimits:
       memlock:
         soft: -1
@@ -30,29 +48,35 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    mem_limit: 2g
 
   kibana:
-    image: wazuh/wazuh-kibana:3.13.2_7.9.1
+    image: wazuh/wazuh-kibana-odfe:4.0.0_1.10.1
     hostname: kibana
     restart: always
+    ports:
+      - 443:5601
+    environment:
+      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_PASSWORD=admin
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/opendistroforelasticsearch.example.org.cert
+      - SERVER_SSL_KEY=/usr/share/kibana/config/opendistroforelasticsearch.example.org.key
+
     depends_on:
       - elasticsearch
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
 
-  nginx:
-    image: wazuh/wazuh-nginx:3.13.2_7.9.1
-    hostname: nginx
-    restart: always
-    environment:
-      - NGINX_PORT=443
-      - NGINX_CREDENTIALS
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - kibana
-    links:
-      - kibana:kibana
+volumes:
+  ossec_api_configuration:
+  ossec_etc:
+  ossec_logs:
+  ossec_queue:
+  ossec_var_multigroups:
+  ossec_integrations:
+  ossec_active_response:
+  ossec_agentless:
+  ossec_wodles:
+  filebeat_etc:
+  filebeat_var:
