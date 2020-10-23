@@ -44,9 +44,9 @@ ELASTICSEARCH_URL=https://elasticsearch:9200        # Elasticsearch URL
 ELASTIC_USERNAME=admin                              # Elasticsearch Username
 ELASTIC_PASSWORD=admin                              # Elasticsearch Password
 FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
-SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem    # Filebeat SSL CA
-SSL_CERTIFICATE=/etc/ssl/filebeat.pem               # Filebeat SSL Certificate
-SSL_KEY=/etc/ssl/filebeat.key                       # Filebeat SSL Key
+SSL_CERTIFICATE_AUTHORITIES=""                      # Path of Filebeat SSL CA
+SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certificate
+SSL_KEY=""                                          # Path of Filebeat SSL Key
 ```
 
 ### Kibana
