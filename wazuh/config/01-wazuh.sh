@@ -207,8 +207,10 @@ docker_custom_args() {
 # Change Wazuh API user credentials.
 ##############################################################################
 
-change_api_user_credentials() {
-  pushd /var/ossec/api/configuration/auth/
+
+function_create_custom_user() {
+
+  # get custom credentials
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
     WAZUH_API_USER=${API_USER}
     WAZUH_API_PASS=${API_PASS}
@@ -226,11 +228,28 @@ change_api_user_credentials() {
     done < "$input"
   fi
 
-  echo "Change Wazuh API user credentials"
-  change_user="node htpasswd -b -c user $WAZUH_API_USER $WAZUH_API_PASS"
-  eval $change_user
-  popd
+
+  if [[ ! -z $WAZUH_API_USER ]] && [[ ! -z $WAZUH_API_PASS ]]; then
+  cat << EOF > /var/ossec/api/configuration/admin.json
+{
+  "username": "$WAZUH_API_USER",
+  "password": "$WAZUH_API_PASS"
 }
+EOF
+
+    # create or customize API user
+    if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
+      # remove json if exit code is 0
+      rm /var/ossec/api/configuration/admin.json
+    else
+      echored "There was an error configuring the API user"
+      # terminate container to avoid unpredictable behavior
+      kill -s SIGINT 1
+    fi
+  fi
+}
+
+
 
 
 ##############################################################################
@@ -286,7 +305,7 @@ main() {
   docker_custom_args
 
   # Change API user credentials
-  change_api_user_credentials
+  function_create_custom_user
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
