@@ -2,8 +2,8 @@
 FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
-ARG FILEBEAT_VERSION=7.7.0
-ARG WAZUH_VERSION=3.13.2-1
+ARG FILEBEAT_VERSION=7.9.1
+ARG WAZUH_VERSION=4.0.0-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -88,6 +88,7 @@ VOLUME ["/var/ossec/api/configuration"]
 VOLUME ["/var/ossec/etc"]
 VOLUME ["/var/ossec/logs"]
 VOLUME ["/var/ossec/queue"]
+VOLUME ["/var/ossec/agentless"]
 VOLUME ["/var/ossec/var/multigroups"]
 VOLUME ["/var/ossec/integrations"]
 VOLUME ["/var/ossec/active-response/bin"]
