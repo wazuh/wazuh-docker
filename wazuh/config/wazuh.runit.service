@@ -1,5 +1,4 @@
 #!/bin/sh
 # Wazuh Docker Copyright (C) 2019 Wazuh Inc. (License GPLv2)
 /etc/init.d/wazuh-manager start
-tail -f /var/ossec/logs/api.log &
 tail -f /var/ossec/logs/ossec.log
