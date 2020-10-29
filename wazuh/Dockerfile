@@ -14,13 +14,13 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh_repo] \n\
+RUN echo $'[wazuh] \n\
 gpgcheck=1\n\
 gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
 gpgcheck=0\n\
 enabled=1\n\
 name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/3.x/yum/\n\
+baseurl=https://packages.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
@@ -34,7 +34,6 @@ RUN set -x && \
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
     yum install -y wazuh-manager-${WAZUH_VERSION} && \
-    yum install -y nodejs wazuh-api-${WAZUH_VERSION} && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
@@ -50,17 +49,14 @@ RUN set -x && \
 
 # Services
 RUN mkdir /etc/service/wazuh && \
-   mkdir /etc/service/wazuh-api && \
    mkdir /etc/service/postfix && \
    mkdir /etc/service/filebeat
 
 COPY config/wazuh.runit.service /etc/service/wazuh/run
-COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
 COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
-RUN chmod +x /etc/service/wazuh-api/run && \
-   chmod +x /etc/service/wazuh/run && \
+RUN chmod +x /etc/service/wazuh/run && \
    chmod +x /etc/service/postfix/run && \
    chmod +x /etc/service/filebeat/run 
 
