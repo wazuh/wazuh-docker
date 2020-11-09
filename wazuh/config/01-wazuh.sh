@@ -225,6 +225,8 @@ EOF
     # create or customize API user
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
+      echo "CHECK CREDENTIALS"
+      cat /var/ossec/api/configuration/admin.json
       rm /var/ossec/api/configuration/admin.json
     else
       cat /var/ossec/api/configuration/admin.json
