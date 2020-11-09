@@ -227,7 +227,8 @@ EOF
       # remove json if exit code is 0
       rm /var/ossec/api/configuration/admin.json
     else
-      echored "There was an error configuring the API user"
+      cat /var/ossec/api/configuration/admin.json
+      echo "There was an error configuring the API user"
       # terminate container to avoid unpredictable behavior
       kill -s SIGINT 1
     fi
