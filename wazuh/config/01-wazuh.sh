@@ -230,6 +230,7 @@ EOF
       cat /var/ossec/api/configuration/admin.json
       echo "There was an error configuring the API user"
       # terminate container to avoid unpredictable behavior
+      sleep 180
       kill -s SIGINT 1
     fi
   fi
