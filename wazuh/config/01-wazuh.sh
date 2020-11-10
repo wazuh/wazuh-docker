@@ -225,13 +225,13 @@ EOF
     # create or customize API user
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
-      "ENTRA Y PONE PASS"
+      echo "ENTRA Y PONE PASS"
       cat /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py | grep "_user_password"
       cat /etc/ossec-init.conf
       cat /var/ossec/api/configuration/admin.json
       rm /var/ossec/api/configuration/admin.json
     else
-      "FALLA MISERABLEMENTE"
+      echo "FALLA MISERABLEMENTE"
       cat /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py | grep "_user_password"
       cat /etc/ossec-init.conf
       cat /var/ossec/api/configuration/admin.json
