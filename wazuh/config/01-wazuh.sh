@@ -225,8 +225,14 @@ EOF
     # create or customize API user
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
+      "ENTRA Y PONE PASS"
+      cat /etc/ossec-init.conf
+      cat /var/ossec/api/configuration/admin.json
       rm /var/ossec/api/configuration/admin.json
     else
+      "FALLA MISERABLEMENTE"
+      cat /etc/ossec-init.conf
+      cat /var/ossec/api/configuration/admin.json
       echo "There was an error configuring the API user"
       # terminate container to avoid unpredictable behavior
       kill -s SIGINT 1
