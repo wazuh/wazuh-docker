@@ -3,8 +3,8 @@
 
 wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
-api_username="${API_USERNAME:-wazuh}"
-api_password="${API_PASSWORD:-wazuh}"
+api_username="${API_USERNAME:-wazuh-wui}"
+api_password="${API_PASSWORD:-wazuh-wui}"
 
 kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
 
