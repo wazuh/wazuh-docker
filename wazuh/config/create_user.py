@@ -8,6 +8,7 @@ import re
 # Set framework path
 sys.path.append(os.path.dirname(sys.argv[0]) + "/../framework")
 USER_FILE_PATH = "/var/ossec/api/configuration/admin.json"
+WUI_USER_FILE_PATH = "/var/ossec/api/configuration/wui-user.json"
 try:
     from wazuh.security import (
         create_user,
@@ -23,6 +24,10 @@ def read_user_file(path=USER_FILE_PATH):
     with open(path) as user_file:
         data = json.load(user_file)
         return data["username"], data["password"]
+def read_wui_user_file(path=WUI_USER_FILE_PATH):
+    with open(path) as wui_user_file:
+        data = json.load(wui_user_file)
+        return data["password"]
 def db_users():
     users_result = get_users()
     return {user["username"]: user["id"] for user in users_result.affected_items}
@@ -34,6 +39,7 @@ if __name__ == "__main__":
         # abort if no user file detected
         sys.exit(0)
     username, password = read_user_file()
+    wui_password = read_wui_user_file()
     initial_users = db_users()
     if username not in initial_users:
         # create a new user
@@ -65,15 +71,19 @@ if __name__ == "__main__":
     # set a random password for all other users
     for name, id in initial_users.items():
         if name != username:
-            random_pass = "".join(
-                random.choices(
-                    string.ascii_uppercase
-                    + string.ascii_lowercase
-                    + string.digits
-                    + "@$!%*?&-_",
-                    k=16,
+            if name == "wazuh-wui":
+                random_pass = wui_password
+            else:
+                random_pass = "".join(
+                    random.choices(
+                        string.ascii_uppercase
+                        + string.ascii_lowercase
+                        + string.digits
+                        + "@$!%*?&-_",
+                        k=16,
+                    )
                 )
-            )
+
             update_user(
                 user_id=[
                     str(id),

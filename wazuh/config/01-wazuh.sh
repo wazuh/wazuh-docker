@@ -210,6 +210,10 @@ function_create_custom_user() {
         arrIN=(${line//:/ })
         WAZUH_API_PASS=${arrIN[1]}
       fi
+      elif [[ $line == *"WUI_API_PASS"* ]]; then
+        arrIN=(${line//:/ })
+        WUI_API_PASS=${arrIN[1]}
+      fi
     done < "$input"
   fi
 
@@ -222,6 +226,13 @@ function_create_custom_user() {
 }
 EOF
 
+  if [[ ! -z $WUI_API_PASS ]]; then
+  cat << EOF > "/var/ossec/api/configuration/wui-user.json"
+{
+  "password": "$WUI_API_PASS"
+}
+EOF
+
     # create or customize API user
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
@@ -230,6 +241,7 @@ EOF
     else
       cat /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py | grep "_user_password"
       cat /var/ossec/api/configuration/admin.json
+      cat /var/ossec/api/configuration/wui-user.json
       echo "There was an error configuring the API user"
       # terminate container to avoid unpredictable behavior
       kill -s SIGINT 1
