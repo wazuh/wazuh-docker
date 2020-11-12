@@ -116,6 +116,11 @@ RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
     chmod 755 /entrypoint-scripts/85-save_wazuh_version.sh
 
+
+COPY config/security.py /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py
+RUN chmod 755 /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py && \
+    chown 1000:1000 /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py
+
 # Load wazuh alerts template.
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
