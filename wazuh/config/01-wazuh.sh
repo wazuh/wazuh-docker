@@ -209,7 +209,6 @@ function_create_custom_user() {
       elif [[ $line == *"WAZUH_API_PASS"* ]]; then
         arrIN=(${line//:/ })
         WAZUH_API_PASS=${arrIN[1]}
-      fi
       elif [[ $line == *"WUI_API_PASS"* ]]; then
         arrIN=(${line//:/ })
         WUI_API_PASS=${arrIN[1]}
