@@ -217,18 +217,19 @@ function_create_custom_user() {
   fi
 
 
+  if [[ ! -z $WUI_API_PASS ]]; then
+  cat << EOF > "/var/ossec/api/configuration/wui-user.json"
+{
+  "password": "$WUI_API_PASS"
+}
+EOF
+  fi
+
   if [[ ! -z $WAZUH_API_USER ]] && [[ ! -z $WAZUH_API_PASS ]]; then
   cat << EOF > /var/ossec/api/configuration/admin.json
 {
   "username": "$WAZUH_API_USER",
   "password": "$WAZUH_API_PASS"
-}
-EOF
-
-  if [[ ! -z $WUI_API_PASS ]]; then
-  cat << EOF > "/var/ossec/api/configuration/wui-user.json"
-{
-  "password": "$WUI_API_PASS"
 }
 EOF
 
@@ -247,8 +248,6 @@ EOF
     fi
   fi
 }
-
-
 
 
 ##############################################################################
