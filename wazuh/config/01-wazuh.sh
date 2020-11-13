@@ -243,6 +243,8 @@ EOF
       cat /var/ossec/api/configuration/admin.json
       cat /var/ossec/api/configuration/wui-user.json
       echo "There was an error configuring the API user"
+      sleep 10
+      cat /var/ossec/logs/api.log | grep "TESTING"
       # terminate container to avoid unpredictable behavior
       kill -s SIGINT 1
     fi
