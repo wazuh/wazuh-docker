@@ -296,7 +296,9 @@ main() {
   docker_custom_args
 
   # Change API user credentials
-  function_create_custom_user
+  if [[ ${CLUSTER_NODE_TYPE} == "master" ]]; then
+    function_create_custom_user
+  fi
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
