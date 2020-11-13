@@ -9,7 +9,8 @@ ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 # Set repositories.
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
+# Docker must known who i-node is the parent
+COPY /config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
   yum -y install openssl which expect openssh-clients && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
