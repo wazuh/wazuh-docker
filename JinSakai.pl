@@ -15,7 +15,13 @@ chomp(my $IP_ = `hostname -I | cut -d' ' -f1`);
 my $pack_ = `apt-get install docker docker-compose git vim gcc -y`;
 
 # Managing performance
+# # Appending and clearing, if someone is already installed the Wazuh Docker ENV
+my $clearing_if_inst = `sed -i '/vm.max_map_count=262144/d' /etc/sysctl.conf`;
+my $appending_ = `echo "vm.max_map_count=262144" >> /etc/sysctl.conf`;
+
+# Be sure for that is appending
 my $setup_max_map = `sed -i 's/vm.max_map_count=262144/vm.max_map_count=262144/g' /etc/sysctl.conf`;
+
 # Fast way
 my $korendil = `sysctl -w vm.max_map_count=262144`;
 
