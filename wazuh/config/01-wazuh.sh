@@ -238,6 +238,7 @@ EOF
       # remove json if exit code is 0
       echo "Wazuh API credentials changed"
       rm /var/ossec/api/configuration/admin.json
+      rm /var/ossec/api/configuration/wui-user.json
     else
       cat /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py | grep "_user_password"
       cat /var/ossec/api/configuration/admin.json
