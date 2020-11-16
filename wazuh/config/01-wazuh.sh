@@ -58,12 +58,12 @@ check_update() {
         echo "Different Wazuh version: Update"
         mayor_previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2 | cut -d'.' -f1)
         if [[ ${mayor_previous_version} == "v3" ]]; then
-          echo "Remove old global.db"
-          rm "${WAZUH_INSTALL_PATH}/var/db/global.db*"
           echo "Remove Wazuh API deprecated files"
           rm -rf "${WAZUH_INSTALL_PATH}/api/configuration/auth"
           rm "${WAZUH_INSTALL_PATH}/api/configuration/config.js"
           rm "${WAZUH_INSTALL_PATH}/api/configuration/preloaded_vars.conf"
+          echo "Load new API configuration"
+          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/api/configuration/. /var/ossec/api/configuration"
         fi
         return 1
       fi
