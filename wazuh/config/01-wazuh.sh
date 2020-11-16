@@ -64,6 +64,8 @@ check_update() {
           rm "${WAZUH_INSTALL_PATH}/api/configuration/preloaded_vars.conf"
           echo "Load new API configuration"
           exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/api/configuration/. /var/ossec/api/configuration"
+          echo "Remove Wazuh agent-info queue"
+          rm -rf "${WAZUH_INSTALL_PATH}/queue/agent-info"
         fi
         return 1
       fi
