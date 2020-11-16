@@ -60,7 +60,7 @@ check_update() {
         if [[ ${mayor_previous_version} == "v3" ]]; then
           echo "Copy global.db to new location"
           set -e
-          cp -a "${WAZUH_INSTALL_PATH}/var/db/global.db  ${WAZUH_INSTALL_PATH}/queue/global.db"
+          cp -a "${WAZUH_INSTALL_PATH}/var/db/global.db"  "${WAZUH_INSTALL_PATH}/queue/db/global.db"
           set +e
           echo "Remove old global.db"
           rm "${WAZUH_INSTALL_PATH}/var/db/global.db*"
