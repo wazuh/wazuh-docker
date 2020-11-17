@@ -70,6 +70,7 @@ if __name__ == "__main__":
         )
     # set a random password for all other users
     for name, id in initial_users.items():
+        random_pass = None
         if name == "wazuh-wui":
             random_pass = wui_password
         elif name == "wazuh":
@@ -85,10 +86,11 @@ if __name__ == "__main__":
 
             random.shuffle(random_pass)
             random_pass = ''.join(random_pass)
-
-        update_user(
-            user_id=[
-                str(id),
-            ],
-            password=random_pass,
-        )
+        
+        if random_pass:
+            update_user(
+                user_id=[
+                    str(id),
+                ],
+                password=random_pass,
+            )
