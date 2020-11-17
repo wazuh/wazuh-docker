@@ -251,9 +251,6 @@ EOF
       rm /var/ossec/api/configuration/admin.json
       rm /var/ossec/api/configuration/wui-user.json
     else
-      cat /var/ossec/framework/python/lib/python3.8/site-packages/wazuh-4.0.0-py3.8.egg/wazuh/security.py | grep "_user_password"
-      cat /var/ossec/api/configuration/admin.json
-      cat /var/ossec/api/configuration/wui-user.json
       echo "There was an error configuring the API user"
       sleep 10
       cat /var/ossec/logs/api.log | grep "TESTING"

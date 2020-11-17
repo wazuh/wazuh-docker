@@ -74,15 +74,18 @@ if __name__ == "__main__":
             if name == "wazuh-wui":
                 random_pass = wui_password
             else:
-                random_pass = "".join(
-                    random.choices(
-                        string.ascii_uppercase
-                        + string.ascii_lowercase
-                        + string.digits
-                        + "@$!%*?&-_",
-                        k=16,
-                    )
-                )
+                random_pass = ([random.choice("@$!%*?&-_"),
+                           random.choice(string.digits),
+                           random.choice(string.ascii_lowercase),
+                           random.choice(string.ascii_uppercase),
+                           ]
+                          + [random.choice(string.ascii_lowercase
+                                           + string.ascii_uppercase
+                                           + "@$!%*?&-_"
+                                           + string.digits) for i in range(12)])
+
+                random.shuffle(random_pass)
+                random_pass = ''.join(random_pass)
 
             update_user(
                 user_id=[
