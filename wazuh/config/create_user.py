@@ -73,7 +73,7 @@ if __name__ == "__main__":
         if name != username:
             if name == "wazuh-wui":
                 random_pass = wui_password
-            else:
+            elif name == "wazuh":
                 random_pass = ([random.choice("@$!%*?&-_"),
                            random.choice(string.digits),
                            random.choice(string.ascii_lowercase),
