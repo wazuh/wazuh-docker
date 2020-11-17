@@ -70,26 +70,25 @@ if __name__ == "__main__":
         )
     # set a random password for all other users
     for name, id in initial_users.items():
-        if name != username:
-            if name == "wazuh-wui":
-                random_pass = wui_password
-            elif name == "wazuh":
-                random_pass = ([random.choice("@$!%*?&-_"),
-                           random.choice(string.digits),
-                           random.choice(string.ascii_lowercase),
-                           random.choice(string.ascii_uppercase),
-                           ]
-                          + [random.choice(string.ascii_lowercase
-                                           + string.ascii_uppercase
-                                           + "@$!%*?&-_"
-                                           + string.digits) for i in range(12)])
+        if name == "wazuh-wui":
+            random_pass = wui_password
+        elif name == "wazuh":
+            random_pass = ([random.choice("@$!%*?&-_"),
+                        random.choice(string.digits),
+                        random.choice(string.ascii_lowercase),
+                        random.choice(string.ascii_uppercase),
+                        ]
+                        + [random.choice(string.ascii_lowercase
+                                        + string.ascii_uppercase
+                                        + "@$!%*?&-_"
+                                        + string.digits) for i in range(12)])
 
-                random.shuffle(random_pass)
-                random_pass = ''.join(random_pass)
+            random.shuffle(random_pass)
+            random_pass = ''.join(random_pass)
 
-            update_user(
-                user_id=[
-                    str(id),
-                ],
-                password=random_pass,
-            )
+        update_user(
+            user_id=[
+                str(id),
+            ],
+            password=random_pass,
+        )
