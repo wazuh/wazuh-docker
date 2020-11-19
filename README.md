@@ -89,8 +89,6 @@ ADMIN_PRIVILEGES=true               # App privileges
 
     ├── CHANGELOG.md
     ├── docker-compose.yml
-    ├── elastic_conf
-    │   └── elasticsearch.yml
     ├── generate-opendistro-certs.yml
     ├── kibana-odfe
     │   ├── config
@@ -157,8 +155,9 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 | Wazuh version | ODFE    |
 |---------------|---------|
+| v4.0.1        | 1.11.0  |
+|---------------|---------|
 | v4.0.0        | 1.10.1  |
-
 
 ## Credits and Thank you
 
