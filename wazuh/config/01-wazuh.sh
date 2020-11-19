@@ -208,25 +208,17 @@ function_create_custom_user() {
 
   # get custom credentials
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
-    WAZUH_API_USER=${API_USER}
-    WAZUH_API_PASS=${API_PASS}
+    echo "No security credentials file used"
   else
     input=${SECURITY_CREDENTIALS_FILE}
     while IFS= read -r line
     do
-      if [[ $line == *"WAZUH_API_USER"* ]]; then
-        arrIN=(${line//:/ })
-        WAZUH_API_USER=${arrIN[1]}
-      elif [[ $line == *"WAZUH_API_PASS"* ]]; then
-        arrIN=(${line//:/ })
-        WAZUH_API_PASS=${arrIN[1]}
-      elif [[ $line == *"WUI_API_PASS"* ]]; then
+      if [[ $line == *"WUI_API_PASS"* ]]; then
         arrIN=(${line//:/ })
         WUI_API_PASS=${arrIN[1]}
       fi
     done < "$input"
   fi
-
 
   if [[ ! -z $WUI_API_PASS ]]; then
   cat << EOF > "/var/ossec/api/configuration/wui-user.json"
@@ -234,26 +226,15 @@ function_create_custom_user() {
   "password": "$WUI_API_PASS"
 }
 EOF
-  fi
-
-  if [[ ! -z $WAZUH_API_USER ]] && [[ ! -z $WAZUH_API_PASS ]]; then
-  cat << EOF > /var/ossec/api/configuration/admin.json
-{
-  "username": "$WAZUH_API_USER",
-  "password": "$WAZUH_API_PASS"
-}
-EOF
 
     # create or customize API user
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
       echo "Wazuh API credentials changed"
-      rm /var/ossec/api/configuration/admin.json
       rm /var/ossec/api/configuration/wui-user.json
     else
-      echo "There was an error configuring the API user"
+      echo "There was an error configuring the API users"
       sleep 10
-      cat /var/ossec/logs/api.log | grep "TESTING"
       # terminate container to avoid unpredictable behavior
       kill -s SIGINT 1
     fi
