@@ -89,8 +89,6 @@ ADMIN_PRIVILEGES=true               # App privileges
 
     ├── CHANGELOG.md
     ├── docker-compose.yml
-    ├── elastic_conf
-    │   └── elasticsearch.yml
     ├── generate-opendistro-certs.yml
     ├── kibana-odfe
     │   ├── config
