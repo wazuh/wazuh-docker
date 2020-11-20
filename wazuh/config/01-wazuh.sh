@@ -216,8 +216,20 @@ function_create_custom_user() {
       if [[ $line == *"WUI_API_PASS"* ]]; then
         arrIN=(${line//:/ })
         WUI_API_PASS=${arrIN[1]}
+      elif [[ $line == *"WAZUH_API_PASS"* ]]; then
+        arrIN=(${line//:/ })
+        WAZUH_API_PASS=${arrIN[1]}
       fi
     done < "$input"
+  fi
+
+
+    if [[ ! -z $WAZUH_API_PASS ]]; then
+  cat << EOF > "/var/ossec/api/configuration/wazuh-user.json"
+{
+  "password": "$WAZUH_API_PASS"
+}
+EOF
   fi
 
   if [[ ! -z $WUI_API_PASS ]]; then
@@ -232,6 +244,7 @@ EOF
       # remove json if exit code is 0
       echo "Wazuh API credentials changed"
       rm /var/ossec/api/configuration/wui-user.json
+      rm /var/ossec/api/configuration/wazuh-user.json
     else
       echo "There was an error configuring the API users"
       sleep 10
