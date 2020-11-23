@@ -56,6 +56,17 @@ check_update() {
         return 0
       else
         echo "Different Wazuh version: Update"
+        mayor_previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2 | cut -d'.' -f1)
+        if [[ ${mayor_previous_version} == "v3" ]]; then
+          echo "Remove Wazuh API deprecated files"
+          rm -rf "${WAZUH_INSTALL_PATH}/api/configuration/auth"
+          rm "${WAZUH_INSTALL_PATH}/api/configuration/config.js"
+          rm "${WAZUH_INSTALL_PATH}/api/configuration/preloaded_vars.conf"
+          echo "Load new API configuration"
+          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/api/configuration/. /var/ossec/api/configuration"
+          echo "Remove Wazuh agent-info queue"
+          rm -rf "${WAZUH_INSTALL_PATH}/queue/agent-info"
+        fi
         return 1
       fi
     else
@@ -144,21 +155,6 @@ create_ossec_key_cert() {
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
 }
 
-##############################################################################
-# Create certificates: API
-##############################################################################
-
-create_api_key_cert() {
-  print "Enabling Wazuh API HTTPS"
-  edit_configuration "https" "yes"
-  print "Create Wazuh API key and cert"
-  exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key 4096"
-  exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key -out ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt -days 3650 -subj /CN=${HOSTNAME}/"
-
-  # Granting proper permissions 
-  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.key
-  chmod 400 ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt
-}
 
 ##############################################################################
 # Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
@@ -207,18 +203,19 @@ docker_custom_args() {
 # Change Wazuh API user credentials.
 ##############################################################################
 
-change_api_user_credentials() {
-  pushd /var/ossec/api/configuration/auth/
+
+function_create_custom_user() {
+
+  # get custom credentials
   if [[ "x${SECURITY_CREDENTIALS_FILE}" == "x" ]]; then
-    WAZUH_API_USER=${API_USER}
-    WAZUH_API_PASS=${API_PASS}
+    echo "No security credentials file used"
   else
     input=${SECURITY_CREDENTIALS_FILE}
     while IFS= read -r line
     do
-      if [[ $line == *"WAZUH_API_USER"* ]]; then
+      if [[ $line == *"WUI_API_PASS"* ]]; then
         arrIN=(${line//:/ })
-        WAZUH_API_USER=${arrIN[1]}
+        WUI_API_PASS=${arrIN[1]}
       elif [[ $line == *"WAZUH_API_PASS"* ]]; then
         arrIN=(${line//:/ })
         WAZUH_API_PASS=${arrIN[1]}
@@ -226,10 +223,35 @@ change_api_user_credentials() {
     done < "$input"
   fi
 
-  echo "Change Wazuh API user credentials"
-  change_user="node htpasswd -b -c user $WAZUH_API_USER $WAZUH_API_PASS"
-  eval $change_user
-  popd
+
+    if [[ ! -z $WAZUH_API_PASS ]]; then
+  cat << EOF > "/var/ossec/api/configuration/wazuh-user.json"
+{
+  "password": "$WAZUH_API_PASS"
+}
+EOF
+  fi
+
+  if [[ ! -z $WUI_API_PASS ]]; then
+  cat << EOF > "/var/ossec/api/configuration/wui-user.json"
+{
+  "password": "$WUI_API_PASS"
+}
+EOF
+
+    # create or customize API user
+    if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
+      # remove json if exit code is 0
+      echo "Wazuh API credentials changed"
+      rm /var/ossec/api/configuration/wui-user.json
+      rm /var/ossec/api/configuration/wazuh-user.json
+    else
+      echo "There was an error configuring the API users"
+      sleep 10
+      # terminate container to avoid unpredictable behavior
+      kill -s SIGINT 1
+    fi
+  fi
 }
 
 
@@ -267,15 +289,6 @@ main() {
     fi
   fi
 
-  # Generate API certs if API_GENERATE_CERTS is true and does not exist
-  if [ $API_GENERATE_CERTS == true ]
-  then
-    if [ ! -e ${WAZUH_INSTALL_PATH}/api/configuration/ssl/server.crt ]
-    then
-      create_api_key_cert
-    fi
-  fi
-
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
@@ -286,7 +299,9 @@ main() {
   docker_custom_args
 
   # Change API user credentials
-  change_api_user_credentials
+  if [[ ${CLUSTER_NODE_TYPE} == "master" ]]; then
+    function_create_custom_user
+  fi
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp

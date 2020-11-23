@@ -52,4 +52,4 @@ output.elasticsearch:
   hosts: ['http://elasticsearch:9200']
   #pipeline: geoip
   indices:
-    - index: 'wazuh-alerts-3.x-%{+yyyy.MM.dd}'
+    - index: 'wazuh-alerts-4.x-%{+yyyy.MM.dd}'

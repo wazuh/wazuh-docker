@@ -2,25 +2,25 @@
 FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
-ARG FILEBEAT_VERSION=7.7.0
-ARG WAZUH_VERSION=3.13.2-1
+ARG FILEBEAT_VERSION=7.9.1
+ARG WAZUH_VERSION=4.0.1-1
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
-ARG TEMPLATE_VERSION="v3.13.2"
+ARG TEMPLATE_VERSION="4.0"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh_repo] \n\
+RUN echo $'[wazuh] \n\
 gpgcheck=1\n\
 gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
 gpgcheck=0\n\
 enabled=1\n\
 name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/3.x/yum/\n\
+baseurl=https://packages.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
@@ -34,7 +34,6 @@ RUN set -x && \
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
     yum install -y wazuh-manager-${WAZUH_VERSION} && \
-    yum install -y nodejs wazuh-api-${WAZUH_VERSION} && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
@@ -43,24 +42,20 @@ RUN set -x && \
     rm -f /var/ossec/logs/api/*/*/* && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
     rm -f /var/ossec/logs/ossec/*/*/* && \
-    rm /var/ossec/var/run/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
     rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
     sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
 
 # Services
 RUN mkdir /etc/service/wazuh && \
-   mkdir /etc/service/wazuh-api && \
    mkdir /etc/service/postfix && \
    mkdir /etc/service/filebeat
 
 COPY config/wazuh.runit.service /etc/service/wazuh/run
-COPY config/wazuh-api.runit.service /etc/service/wazuh-api/run
 COPY config/postfix.runit.service /etc/service/postfix/run
 COPY config/filebeat.runit.service /etc/service/filebeat/run
 
-RUN chmod +x /etc/service/wazuh-api/run && \
-   chmod +x /etc/service/wazuh/run && \
+RUN chmod +x /etc/service/wazuh/run && \
    chmod +x /etc/service/postfix/run && \
    chmod +x /etc/service/filebeat/run 
 
@@ -88,6 +83,7 @@ VOLUME ["/var/ossec/api/configuration"]
 VOLUME ["/var/ossec/etc"]
 VOLUME ["/var/ossec/logs"]
 VOLUME ["/var/ossec/queue"]
+VOLUME ["/var/ossec/agentless"]
 VOLUME ["/var/ossec/var/multigroups"]
 VOLUME ["/var/ossec/integrations"]
 VOLUME ["/var/ossec/active-response/bin"]
@@ -101,6 +97,7 @@ VOLUME ["/var/lib/filebeat"]
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
+COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
