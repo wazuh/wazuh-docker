@@ -32,24 +32,24 @@ In addition, a docker-compose file is provided to launch the containers mentione
 	├── VERSION
 	├── test.txt
 	└── wazuh
-	    ├── config
-	    │   ├── 00-decrypt_credentials.sh
-	    │   ├── 01-wazuh.sh
-		│   ├── 02-set_filebeat_destination.sh
-		│   ├── 03-config_filebeat.sh
-		│   ├── 20-ossec-configuration.sh
-		│   ├── 25-backups.sh
-		│   ├── 35-remove_credentials_file.sh
-		│   ├── 85-save_wazuh_version.sh
-		│   ├── create_user.py
-		│   ├── entrypoint.sh
-		│   ├── filebeat_to_elasticsearch.yml
-		│   ├── filebeat_to_logstash.yml
-		│   ├── filebeat.runit.service
-		│   ├── permanent_data.env
-		│   ├── postfix.runit.service
-	    │   └── wazuh.runit.service
-	    └── Dockerfile
+		├── config
+		│	├── 00-decrypt_credentials.sh
+		│	├── 01-wazuh.sh
+		│	├── 02-set_filebeat_destination.sh
+		│	├── 03-config_filebeat.sh
+		│	├── 20-ossec-configuration.sh
+		│	├── 25-backups.sh
+		│	├── 35-remove_credentials_file.sh
+		│	├── 85-save_wazuh_version.sh
+		│	├── create_user.py
+		│	├── entrypoint.sh
+		│	├── filebeat_to_elasticsearch.yml
+		│	├── filebeat_to_logstash.yml
+		│	├── filebeat.runit.service
+		│	├── permanent_data.env
+		│	├── postfix.runit.service
+		│	└── wazuh.runit.service
+		└── Dockerfile
 
 
 ## Branches
