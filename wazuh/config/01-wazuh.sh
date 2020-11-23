@@ -58,13 +58,6 @@ check_update() {
         echo "Different Wazuh version: Update"
         mayor_previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2 | cut -d'.' -f1)
         if [[ ${mayor_previous_version} == "v3" ]]; then
-        #   if [[ -e  "${WAZUH_INSTALL_PATH}/etc/global.db" ]]; then
-        #     echo "Move global.db to old original path (3.x)"
-        #     mv "${WAZUH_INSTALL_PATH}/etc/global.db" "${WAZUH_INSTALL_PATH}/var/db/"
-        #   else
-        #     echo "global.db not found. Killing container. Wazuh agent-info not removed yet. Try to recover previous version."
-        #     kill -s SIGINT 1
-          # fi
           echo "Remove Wazuh API deprecated files"
           rm -rf "${WAZUH_INSTALL_PATH}/api/configuration/auth"
           rm "${WAZUH_INSTALL_PATH}/api/configuration/config.js"
