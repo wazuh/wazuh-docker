@@ -9,6 +9,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
     - name: Build the docker-compose stack
-      run: docker-compose up -d --build
+      run: docker-compose -f build-from-sources.yml up -d --build
     - name: Check running containers
       run: docker ps -a
