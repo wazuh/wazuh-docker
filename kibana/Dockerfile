@@ -50,6 +50,8 @@ RUN NODE_OPTIONS="--max-old-space-size=2048" /usr/local/bin/kibana-docker --opti
 COPY --chown=kibana:kibana config/entrypoint.sh ./entrypoint.sh
 RUN chmod 755 ./entrypoint.sh
 
+RUN printf "\nserver.defaultRoute: /app/wazuh\n" >> /usr/share/kibana/config/kibana.yml
+
 COPY --chown=kibana:kibana ./config/wazuh.yml /usr/share/kibana/optimize/wazuh/config/wazuh.yml
 COPY --chown=kibana:kibana ./config/wazuh_app_config.sh ./
 RUN chmod +x ./wazuh_app_config.sh
