@@ -61,6 +61,5 @@ RUN chmod +x ./kibana_settings.sh
 
 COPY --chown=kibana:kibana ./config/xpack_config.sh ./
 RUN chmod +x ./xpack_config.sh
-RUN ./xpack_config.sh
 
 ENTRYPOINT ./entrypoint.sh
