@@ -110,4 +110,4 @@ function_wazuh_migration
 function_create_custom_user
 
 # Start Wazuh
-/var/ossec/bin/ossec-control start
+/var/ossec/bin/wazuh-control start
