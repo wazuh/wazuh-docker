@@ -94,7 +94,7 @@ remove_data_files() {
 ##############################################################################
 
 create_ossec_key_cert() {
-  print "Creating ossec-authd key and cert"
+  print "Creating wazuh-authd key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
 }
@@ -161,7 +161,7 @@ main() {
   # Remove some files in permanent_data (i.e. .template.db)
   remove_data_files
 
-  # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
+  # Generate wazuh-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
     if [ ! -e ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ]
