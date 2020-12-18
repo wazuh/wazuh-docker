@@ -20,11 +20,11 @@ jobs:
       run: docker-compose -f build-from-sources.yml kill
 
     - name: Install Goss
-        uses: e1himself/goss-installation-action@v1.0.3
-        with:
-          version: v0.3.16
+      uses: e1himself/goss-installation-action@v1.0.3
+      with:
+        version: v0.3.16
 
     - name: Execute Goss tests
-        run: dgoss run wazuh/wazuh-odfe:dev-version
-        env:
-          GOSS_FILE: .goss.yaml
+      run: dgoss run wazuh/wazuh-odfe:dev-version
+      env:
+        GOSS_FILE: .goss.yaml
