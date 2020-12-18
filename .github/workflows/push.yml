@@ -27,4 +27,5 @@ jobs:
     - name: Execute Goss tests
       run: dgoss run wazuh/wazuh-odfe:dev-version
       env:
+        GOSS_SLEEP: 30
         GOSS_FILE: .goss.yaml
