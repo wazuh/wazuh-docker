@@ -49,9 +49,6 @@ RUN set -x && \
     rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
     sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
 
-# Remove Wazuh package
-RUN rm /tmp/wazuh-manager-4.0.3-1.x86_64.rpm
-
 # Services
 RUN mkdir /etc/service/wazuh && \
    mkdir /etc/service/postfix && \
