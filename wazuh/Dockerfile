@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.9.1
-ARG WAZUH_VERSION=4.0.1-1
+ARG WAZUH_VERSION=4.0.3-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -24,6 +24,9 @@ baseurl=https://packages.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
+# Copy Wazuh Manager custom package
+COPY config/wazuh-manager-4.0.3-1.x86_64.rpm /tmp/wazuh-manager-4.0.3-1.x86_64.rpm
+
 # Install packages
 RUN set -x && \
     curl -sL https://rpm.nodesource.com/setup_8.x | bash - && \
@@ -33,7 +36,7 @@ RUN set -x && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
-    yum install -y wazuh-manager-${WAZUH_VERSION} && \
+    yum install -y /tmp/wazuh-manager-4.0.3-1.x86_64.rpm && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
