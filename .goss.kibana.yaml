@@ -1,0 +1,25 @@
+file:
+  /usr/share/kibana/config/kibana.yml:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/optimize/wazuh/config/wazuh.yml:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: kibana
+    filetype: file
+    contains: []
+user:
+  kibana:
+    exists: true
+    groups:
+    - kibana
+    home: /usr/share/kibana
+    shell: /bin/bash
+group:
+  kibana:
+    exists: true
