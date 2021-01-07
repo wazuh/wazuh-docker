@@ -13,11 +13,39 @@ file:
     group: root
     filetype: file
     contains: []
+  /var/ossec/etc/lists/audit-keys:
+    exists: true
+    mode: "0660"
+    owner: ossec
+    group: ossec
+    filetype: file
+    contains: []
   /var/ossec/etc/ossec.conf:
     exists: true
     mode: "0660"
     owner: root
     group: ossec
+    filetype: file
+    contains: []
+  /var/ossec/etc/rules/local_rules.xml:
+    exists: true
+    mode: "0660"
+    owner: ossec
+    group: ossec
+    filetype: file
+    contains: []
+  /var/ossec/etc/sslmanager.cert:
+    exists: true
+    mode: "0640"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+  /var/ossec/etc/sslmanager.key:
+    exists: true
+    mode: "0640"
+    owner: root
+    group: root
     filetype: file
     contains: []
 package:
@@ -70,6 +98,12 @@ process:
   ossec-analysisd:
     running: true
   ossec-authd:
+    running: true
+  ossec-execd:
+    running: true
+  ossec-monitord:
+    running: true
+  ossec-remoted:
     running: true
   ossec-syscheckd:
     running: true
