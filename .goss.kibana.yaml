@@ -6,11 +6,39 @@ file:
     group: root
     filetype: file
     contains: []
+  /usr/share/kibana/optimize/bundles/light_theme.style.css:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/optimize/bundles/wazuh_logo_circle.svg:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/optimize/bundles/wazuh_wazuh_bg.svg:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
   /usr/share/kibana/optimize/wazuh/config/wazuh.yml:
     exists: true
     mode: "0644"
     owner: kibana
     group: kibana
+    filetype: file
+    contains: []
+  /usr/share/kibana/src/legacy/ui/ui_render/bootstrap/template.js.hbs:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
     filetype: file
     contains: []
 user:
