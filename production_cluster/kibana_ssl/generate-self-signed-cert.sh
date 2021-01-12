@@ -9,4 +9,6 @@ then
     exit
 else
     openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
+    chmod 0666 key.pem
+    chmod 0666 cert.pem
 fi
