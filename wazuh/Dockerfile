@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.9.1
-ARG WAZUH_VERSION=4.0.3-1
+ARG WAZUH_VERSION=4.0.4-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -14,18 +14,14 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh] \n\
+RUN echo $'[wazuh_pre_release] \n\
 gpgcheck=1\n\
-gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
-gpgcheck=0\n\
+gpgkey=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH\n\
 enabled=1\n\
-name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/4.x/yum/\n\
+name=EL-$releasever - Wazuh\n\
+baseurl=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
-
-# Copy Wazuh Manager custom package
-COPY config/wazuh-manager-4.0.3-1.x86_64.rpm /tmp/wazuh-manager-4.0.3-1.x86_64.rpm
 
 # Install packages
 RUN set -x && \
@@ -36,7 +32,7 @@ RUN set -x && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
     yum install -y postfix bsd-mailx mailx ca-certificates && \
-    yum install -y /tmp/wazuh-manager-4.0.3-1.x86_64.rpm && \
+    yum install -y wazuh-manager-${WAZUH_VERSION} && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
