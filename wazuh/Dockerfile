@@ -14,13 +14,13 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh_pre_release]\n
-gpgcheck=1\n
-gpgkey=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH\n
-enabled=1\n
-name=EL-$releasever - Wazuh\n
-baseurl=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/\n
-protect=1'\n'\
+RUN echo $'[wazuh_pre_release] \n\
+gpgcheck=1\n\
+gpgkey=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/key/GPG-KEY-WAZUH\n\
+enabled=1\n\
+name=EL-$releasever - Wazuh\n\
+baseurl=https://s3-us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/\n\
+protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
 # Install packages
