@@ -155,6 +155,8 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 | Wazuh version | ODFE    |
 |---------------|---------|
+| v4.0.4        | 1.11.0  |
+|---------------|---------|
 | v4.0.3        | 1.11.0  |
 |---------------|---------|
 | v4.0.2        | 1.11.0  |
@@ -174,7 +176,7 @@ We thank you them and everyone else who has contributed to this project.
 
 ## License and copyright
 
-Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
+Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 
 ## Web references
 

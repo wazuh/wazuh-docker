@@ -1,8 +1,8 @@
-# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM centos:7
 
 ARG FILEBEAT_VERSION=7.9.1
-ARG WAZUH_VERSION=4.0.3-1
+ARG WAZUH_VERSION=4.0.4-1
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
