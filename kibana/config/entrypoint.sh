@@ -13,10 +13,10 @@ else
   export el_url="${ELASTICSEARCH_URL}"
 fi
 
-if [[ ${ENABLED_XPACK} != "true" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
-  auth=""
+if [[ ${ENABLED_SECURITY} == "false" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
+  export auth=""
 else
-  auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+  export auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD} -k"
 fi
 
 until curl -XGET $el_url ${auth}; do
