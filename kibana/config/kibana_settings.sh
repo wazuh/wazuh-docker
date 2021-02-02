@@ -37,12 +37,6 @@ if [ "$XPACK_SECURITY_ENABLED" != "" ]; then
     echo "xpack.security.enabled: $XPACK_SECURITY_ENABLED" >> /usr/share/kibana/config/kibana.yml
 fi
 
-if [ "$KIBANA_IP" != "" ]; then
-  kibana_ip="$KIBANA_IP"
-else
-  kibana_ip="kibana"
-fi
-
 # Add auth headers if required
 if [ "$ELASTICSEARCH_USERNAME" != "" ] && [ "$ELASTICSEARCH_PASSWORD" != "" ]; then
     curl_auth="-u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD"
