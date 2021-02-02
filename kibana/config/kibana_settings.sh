@@ -27,7 +27,10 @@ if [ "$KIBANA_INDEX" != "" ]; then
     echo "kibana.index: $KIBANA_INDEX" >> /usr/share/kibana/config/kibana.yml
 fi
 
+kibana_proto="http"
+
 if [ "$XPACK_SECURITY_ENABLED" != "" ]; then
+  kibana_proto="https"
   if grep -q 'xpack.security.enabled' /usr/share/kibana/config/kibana.yml; then
     sed -i '/xpack.security.enabled/d' /usr/share/kibana/config/kibana.yml
   fi
@@ -45,7 +48,7 @@ if [ "$ELASTICSEARCH_USERNAME" != "" ] && [ "$ELASTICSEARCH_PASSWORD" != "" ]; t
     curl_auth="-u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD"
 fi
 
-while [[ "$(curl $curl_auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' kibana:5601/status)" != "200" ]]; do
+while [[ "$(curl $curl_auth -XGET -I  -s -o /dev/null -w ''%{http_code}'' -k $kibana_proto://127.0.0.1:5601/status)" != "200" ]]; do
   echo "Waiting for Kibana API. Sleeping 5 seconds"
   sleep 5
 done
@@ -67,16 +70,16 @@ EOF
 
 sleep 5
 # Add the wazuh alerts index as default.
-curl ${auth} -POST -k https://127.0.0.1:5601/api/kibana/settings -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
+curl ${auth} -POST -k "$kibana_proto://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d@${default_index}
 rm -f ${default_index}
 
 sleep 5
 # Configuring Kibana TimePicker.
-curl ${auth} -POST -k "https://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
+curl ${auth} -POST -k "$kibana_proto://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
 '{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
 
 sleep 5
 # Do not ask user to help providing usage statistics to Elastic
-curl -POST "http://$kibana_ip:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl -POST "$kibana_proto://127.0.0.1:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
 echo "End settings"
