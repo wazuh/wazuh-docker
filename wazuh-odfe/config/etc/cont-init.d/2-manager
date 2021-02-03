@@ -102,12 +102,25 @@ EOF
   fi
 }
 
+function_entrypoint_scripts() {
+  # It will run every .sh script located in entrypoint-scripts folder in lexicographical order
+  if [ -d "/entrypoint-scripts/" ]
+  then
+    for script in `ls /entrypoint-scripts/*.sh | sort -n`; do
+      bash "$script"
+    done
+  fi
+}
+
 
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
 
 # create API custom user
 function_create_custom_user
+
+# run entrypoint scripts
+function_entrypoint_scripts
 
 # Start Wazuh
 /var/ossec/bin/ossec-control start
