@@ -2,9 +2,8 @@
 FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
-ARG FILEBEAT_VERSION=7.9.1
+ARG FILEBEAT_VERSION=7.10.0
 ARG WAZUH_VERSION=4.0.4-1
-
 
 # Environment variables
 ENV API_USER="foo" \
