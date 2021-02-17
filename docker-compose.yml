@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh:
-    image: wazuh/wazuh-odfe:4.0.4_1.11.0
+    image: wazuh/wazuh-odfe:4.1.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -30,7 +30,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   elasticsearch:
-    image: amazon/opendistro-for-elasticsearch:1.11.0
+    image: amazon/opendistro-for-elasticsearch:1.12.0
     hostname: elasticsearch
     restart: always
     ports:
@@ -50,7 +50,7 @@ services:
         hard: 65536
 
   kibana:
-    image: wazuh/wazuh-kibana-odfe:4.0.4_1.11.0
+    image: wazuh/wazuh-kibana-odfe:4.1.0
     hostname: kibana
     restart: always
     ports:
