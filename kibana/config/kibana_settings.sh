@@ -74,6 +74,6 @@ curl ${auth} -POST -k "$kibana_proto://127.0.0.1:5601/api/kibana/settings" -H "C
 
 sleep 5
 # Do not ask user to help providing usage statistics to Elastic
-curl -POST "$kibana_proto://127.0.0.1:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
+curl ${auth} -POST -k "$kibana_proto://127.0.0.1:5601/api/telemetry/v2/optIn" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{"enabled":false}'
 
 echo "End settings"
