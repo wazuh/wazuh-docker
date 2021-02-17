@@ -6,7 +6,7 @@ wazuh_port="${API_PORT:-55000}"
 api_username="${API_USERNAME:-wazuh-wui}"
 api_password="${API_PASSWORD:-wazuh-wui}"
 
-kibana_config_file="/usr/share/kibana/optimize/wazuh/config/wazuh.yml"
+kibana_config_file="/usr/share/kibana/data/wazuh/config/wazuh.yml"
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
