@@ -52,11 +52,11 @@ package:
   filebeat:
     installed: true
     versions:
-    - 7.9.1
+    - 7.10.0
   wazuh-manager:
     installed: true
     versions:
-    - 4.0.4
+    - 4.1.0
 port:
   tcp:1514:
     listening: true
