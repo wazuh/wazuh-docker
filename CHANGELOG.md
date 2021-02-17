@@ -1,5 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## Wazuh Docker v4.1.0
+### Added
+
+- Update Wazuh to version [4.1.0](https://github.com/wazuh/wazuh/blob/v4.1.0/CHANGELOG.md#v410)
+- Update ODFE compatibility to version 1.12.0
+- Add support for Elasticsearch (xpack) images once again (7.10.2)  ([@xr09](https://github.com/xr09)) [#409](https://github.com/wazuh/wazuh-docker/pull/409)
+- Re-enable entrypoint scripts  ([@xr09](https://github.com/xr09)) [#435](https://github.com/wazuh/wazuh-docker/pull/435)
+- Add Goss binary for healthchecks ([@xr09](https://github.com/xr09)) [$441](https://github.com/wazuh/wazuh-docker/pull/441)
+- Update s6-overlay to latest version
 
 ## Wazuh Docker v4.0.4_1.11.0
 
