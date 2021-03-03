@@ -17,17 +17,17 @@ services:
       - ELASTIC_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
     volumes:
-      - ossec_api_configuration:/var/ossec/api/configuration
-      - ossec_etc:/var/ossec/etc
-      - ossec_logs:/var/ossec/logs
-      - ossec_queue:/var/ossec/queue
-      - ossec_var_multigroups:/var/ossec/var/multigroups
-      - ossec_integrations:/var/ossec/integrations
-      - ossec_active_response:/var/ossec/active-response/bin
-      - ossec_agentless:/var/ossec/agentless
-      - ossec_wodles:/var/ossec/wodles
-      - filebeat_etc:/etc/filebeat
-      - filebeat_var:/var/lib/filebeat
+      - ./ossec_api_configuration:/var/ossec/api/configuration
+      - ./ossec_etc:/var/ossec/etc
+      - ./ossec_logs:/var/ossec/logs
+      - ./ossec_queue:/var/ossec/queue
+      - ./ossec_var_multigroups:/var/ossec/var/multigroups
+      - ./ossec_integrations:/var/ossec/integrations
+      - ./ossec_active_response:/var/ossec/active-response/bin
+      - ./ossec_agentless:/var/ossec/agentless
+      - ./ossec_wodles:/var/ossec/wodles
+      - ./filebeat_etc:/etc/filebeat
+      - ./filebeat_var:/var/lib/filebeat
 
   elasticsearch:
     image: amazon/opendistro-for-elasticsearch:1.12.0
@@ -35,6 +35,8 @@ services:
     restart: always
     ports:
       - "9200:9200"
+    volumes:
+      - ./odfe-data:/usr/share/elasticsearch/data
     environment:
       - discovery.type=single-node
       - cluster.name=wazuh-cluster
@@ -67,16 +69,3 @@ services:
     links:
       - elasticsearch:elasticsearch
       - wazuh:wazuh
-
-volumes:
-  ossec_api_configuration:
-  ossec_etc:
-  ossec_logs:
-  ossec_queue:
-  ossec_var_multigroups:
-  ossec_integrations:
-  ossec_active_response:
-  ossec_agentless:
-  ossec_wodles:
-  filebeat_etc:
-  filebeat_var:
