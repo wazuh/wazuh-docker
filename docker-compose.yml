@@ -14,7 +14,7 @@ services:
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - ELASTIC_USERNAME=admin
-      - ELASTIC_PASSWORD=admin
+      - ELASTIC_PASSWORD=M@lwarebytes9!
       - FILEBEAT_SSL_VERIFICATION_MODE=none
     volumes:
       - ossec_api_configuration:/var/ossec/api/configuration
@@ -30,7 +30,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   elasticsearch:
-    image: amazon/opendistro-for-elasticsearch:1.12.0
+    image: amazon/opendistro-for-elasticsearch:1.13.1
     hostname: elasticsearch
     restart: always
     ports:
@@ -39,7 +39,7 @@ services:
       - discovery.type=single-node
       - cluster.name=wazuh-cluster
       - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - bootstrap.memory_lock=true
     ulimits:
       memlock:
@@ -57,7 +57,7 @@ services:
       - 443:5601
     environment:
       - ELASTICSEARCH_USERNAME=admin
-      - ELASTICSEARCH_PASSWORD=admin
+      - ELASTICSEARCH_PASSWORD=M@lwarebytes9!
       - SERVER_SSL_ENABLED=true
       - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/opendistroforelasticsearch.example.org.cert
       - SERVER_SSL_KEY=/usr/share/kibana/config/opendistroforelasticsearch.example.org.key
