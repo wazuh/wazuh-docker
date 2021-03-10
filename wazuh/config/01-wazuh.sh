@@ -57,11 +57,11 @@ check_update() {
       else
         echo "Different Wazuh version: Update"
         if [[ ${previous_version} == "v4.0.4" ]]; then
-          print "Installing /var/ossec/queue/task directory and subdirectories"
-          mkdir /var/ossec/queue/task
-          chown ossec:ossec  /var/ossec/queue/task
-          chmod 770 /var/ossec/queue/task
-          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/task/. /var/ossec/queue/task"
+          print "Installing /var/ossec/queue/tasks directory and subdirectories"
+          mkdir /var/ossec/queue/tasks
+          chown ossec:ossec  /var/ossec/queue/tasks
+          chmod 770 /var/ossec/queue/tasks
+          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/tasks/. /var/ossec/queue/tasks"
         fi
         return 1
       fi
