@@ -123,4 +123,4 @@ function_create_custom_user
 function_entrypoint_scripts
 
 # Start Wazuh
-/var/ossec/bin/ossec-control start
+/var/ossec/bin/wazuh-control start
