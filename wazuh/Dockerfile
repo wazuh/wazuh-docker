@@ -2,7 +2,7 @@
 FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
-ARG FILEBEAT_VERSION=7.10.0
+ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_VERSION=4.1.4-1
 
 # Environment variables
