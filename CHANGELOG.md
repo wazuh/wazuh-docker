@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [v5.0.0]
+
+### Added
+
+- Update to [Wazuh v5.0.0](https://github.com/wazuh/wazuh/tree/5.0-dev)
+
 ## Wazuh Docker v4.3.0
 ### Added
 
