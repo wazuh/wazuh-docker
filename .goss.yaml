@@ -6,7 +6,7 @@ file:
     group: root
     filetype: file
     contains: []
-  /var/ossec/bin/ossec-control:
+  /var/ossec/bin/wazuh-control:
     exists: true
     mode: "0750"
     owner: root
