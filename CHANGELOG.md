@@ -73,7 +73,7 @@ All notable changes to this project will be documented in this file.
 
 - Update to Wazuh version 4.0.1
 - Opendistro 1.11.0 compatiblity
-- Re-enabled dumping wazuh.log to stdout
+- Re-enabled dumping ossec.log to stdout
 
 ## Wazuh Docker v4.0.0_1.10.1
 
