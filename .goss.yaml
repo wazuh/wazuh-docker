@@ -99,13 +99,9 @@ process:
     running: true
   ossec-authd:
     running: true
-  ossec-execd:
-    running: true
   ossec-monitord:
     running: true
   ossec-remoted:
-    running: true
-  ossec-syscheckd:
     running: true
   s6-supervise:
     running: true
