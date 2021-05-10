@@ -1,7 +1,7 @@
 # Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
-FROM docker.elastic.co/kibana/kibana:7.9.1
+FROM docker.elastic.co/kibana/kibana:7.9.2
 USER kibana
-ARG ELASTIC_VERSION=7.9.1
+ARG ELASTIC_VERSION=7.9.2
 ARG WAZUH_VERSION=3.13.3
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
