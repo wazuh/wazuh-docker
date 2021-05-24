@@ -2,7 +2,7 @@
 FROM amazon/opendistro-for-elasticsearch-kibana:1.12.0
 USER kibana
 ARG ELASTIC_VERSION=7.10.0
-ARG WAZUH_VERSION=4.1.5
+ARG WAZUH_VERSION=4.3.0
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 WORKDIR /usr/share/kibana
