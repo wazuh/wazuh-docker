@@ -146,9 +146,8 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 ## Branches
 
-* `4.0` branch on correspond to the latest Wazuh-Docker stable version.
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `Wazuh.Version` (for example 3.13.1_7.8.0 or 4.1.0) branch. This branch contains the current release referenced in Docker Hub. The container images are installed under the current version of this branch.
+* `stable` branch on correspond to the last Wazuh stable version.
 
 
 ## Compatibility Matrix
