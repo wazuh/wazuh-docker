@@ -1,6 +1,118 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v4.1.5
+### Added
+
+- Update Wazuh to version [4.1.5](https://github.com/wazuh/wazuh/blob/v4.1.5/CHANGELOG.md#v415)
+- Update ODFE compatibility to version 1.13.2
+
+## Wazuh Docker v4.1.4
+### Added
+
+- Update Wazuh to version [4.1.4](https://github.com/wazuh/wazuh/blob/v4.1.4/CHANGELOG.md#v414)
+
+## Wazuh Docker v4.1.3
+### Added
+
+- Update Wazuh to version [4.1.3](https://github.com/wazuh/wazuh/blob/v4.1.3/CHANGELOG.md#v413)
+
+## Wazuh Docker v4.1.2
+### Added
+
+- Update Wazuh to version [4.1.2](https://github.com/wazuh/wazuh/blob/v4.1.2/CHANGELOG.md#v412)
+
+## Wazuh Docker v4.1.1
+### Added
+
+- Update Wazuh to version [4.1.1](https://github.com/wazuh/wazuh/blob/v4.1.1/CHANGELOG.md#v411)
+
+## Wazuh Docker v4.1.0
+### Added
+
+- Update Wazuh to version [4.1.0](https://github.com/wazuh/wazuh/blob/v4.1.0/CHANGELOG.md#v410)
+- Update ODFE compatibility to version 1.12.0
+- Add support for Elasticsearch (xpack) images once again (7.10.2)  ([@xr09](https://github.com/xr09)) [#409](https://github.com/wazuh/wazuh-docker/pull/409)
+- Re-enable entrypoint scripts  ([@xr09](https://github.com/xr09)) [#435](https://github.com/wazuh/wazuh-docker/pull/435)
+- Add Goss binary for healthchecks ([@xr09](https://github.com/xr09)) [$441](https://github.com/wazuh/wazuh-docker/pull/441)
+- Update s6-overlay to latest version
+
+## Wazuh Docker v4.0.4_1.11.0
+
+### Added
+
+- Update to Wazuh version [4.0.4](https://github.com/wazuh/wazuh/blob/v4.0.4/CHANGELOG.md#v404)
+
+
+## Wazuh Docker v4.0.3_1.11.0
+
+### Added
+
+- Update to Wazuh version 4.0.3
+
+
+## Wazuh Docker v4.0.2_1.11.0
+
+### Added
+
+- Update to Wazuh version 4.0.2
+
+## Wazuh Docker v4.0.1_1.11.0
+
+### Added
+
+- Update to Wazuh version 4.0.1
+- Opendistro 1.11.0 compatiblity
+- Re-enabled dumping ossec.log to stdout
+
+## Wazuh Docker v4.0.0_1.10.1
+
+### Added
+
+- Update to Wazuh version 4.0.0
+- Updating Wazuh cluster key dynamically ([@1stOfHisGame](https://github.com/1stOfHisGame))  [#393](https://github.com/wazuh/wazuh-docker/pull/393)
+- Switched to CentOS 7 for base image ([@xr09](https://github.com/xr09)) [#259](https://github.com/wazuh/wazuh-docker/issues/259)
+- Using s6-overlay for process management ([@xr09](https://github.com/xr09)) [#274](https://github.com/wazuh/wazuh-docker/issues/274)
+- Allow the creation of custom API users ([@xr09](https://github.com/xr09)) [#395](https://github.com/wazuh/wazuh-docker/issues/395)
+- OpenDistro support ([@xr09](https://github.com/xr09)) [#373](https://github.com/wazuh/wazuh-docker/pull/373)
+
+
+### Changed
+
+- Removal of Elastic images
+
+
+## Wazuh Docker v3.13.2_7.9.1
+
+### Added
+
+- Update to Wazuh version 3.13.2_7.9.1
+- Add CLUSTER_NETWORK_HOST environment variable ([@jfut](https://github.com/jfut)) [#372](https://github.com/wazuh/wazuh-docker/pull/372)
+
+### Fixed
+
+- Too many redirects when running on port 80 ([@chowmean](https://github.com/chowmean)) [#377](https://github.com/wazuh/wazuh-docker/pull/377)
+- Move Filebeat installation to build stage ([@xr09](https://github.com/xr09)) [#378](https://github.com/wazuh/wazuh-docker/pull/378)
+
+
+## Wazuh Docker v3.13.1_7.8.0
+
+### Added
+
+- Update to Wazuh version 3.13.1_7.8.0
+
+
+## Wazuh Docker v3.13.0_7.7.1
+
+### Added
+
+- Update to Wazuh version 3.13.3_7.7.1
+
+### Fixed
+
+- Save agentless state ([@xr09](https://github.com/xr09)) [#350](https://github.com/wazuh/wazuh-docker/pull/350)
+- Use HTTP credentials for service check when required ([@xr09](https://github.com/xr09)) [#356](https://github.com/wazuh/wazuh-docker/pull/356)
+
 ## Wazuh Docker v3.12.3_7.6.2
 
 ### Added

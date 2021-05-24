@@ -1,4 +1,0 @@
-#!/bin/sh
-# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
-service filebeat start
-tail -f /var/log/filebeat/filebeat

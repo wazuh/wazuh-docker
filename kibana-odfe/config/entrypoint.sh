@@ -7,14 +7,20 @@ set -e
 # Waiting for elasticsearch
 ##############################################################################
 
-if [ "x${ELASTICSEARCH_URL}" = "x" ]; then
-  export el_url="http://elasticsearch:9200"
+if [ "x${ELASTICSEARCH_URL}" == "x" ]; then
+  if [[ ${ENABLED_SECURITY} == "false" ]]; then
+    export el_url="http://elasticsearch:9200"
+  else
+    export el_url="https://elasticsearch:9200"
+  fi
 else
   export el_url="${ELASTICSEARCH_URL}"
 fi
 
-if [[ ${ENABLED_SECURITY} == "false" || "x${ELASTICSEARCH_USERNAME}" = "x" || "x${ELASTICSEARCH_PASSWORD}" = "x" ]]; then
-  export auth=""
+if [[ ${ENABLED_SECURITY} == "false" || "x${ELASTICSEARCH_USERNAME}" == "x" || "x${ELASTICSEARCH_PASSWORD}" == "x" ]]; then
+  auth=""
+  # remove security plugin from kibana if elasticsearch is not using it either
+  /usr/share/kibana/bin/kibana-plugin remove opendistro_security
 else
   export auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD} -k"
 fi
@@ -47,7 +53,6 @@ sleep 2
 
 >&2 echo "Wazuh alerts template is loaded."
 
-./xpack_config.sh
 
 ./wazuh_app_config.sh
 

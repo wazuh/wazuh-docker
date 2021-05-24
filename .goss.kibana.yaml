@@ -1,0 +1,53 @@
+file:
+  /usr/share/kibana/config/kibana.yml:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/src/core/server/core_app/assets/legacy_light_theme.css:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/src/core/server/core_app/assets/wazuh_logo_circle.svg:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/src/core/server/core_app/assets/wazuh_wazuh_bg.svg:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+  /usr/share/kibana/data/wazuh/config/wazuh.yml:
+    exists: true
+    mode: "0644"
+    owner: kibana
+    group: kibana
+    filetype: file
+    contains: []
+  /usr/share/kibana/src/legacy/ui/ui_render/bootstrap/template.js.hbs:
+    exists: true
+    mode: "0664"
+    owner: kibana
+    group: root
+    filetype: file
+    contains: []
+user:
+  kibana:
+    exists: true
+    groups:
+    - kibana
+    home: /usr/share/kibana
+    shell: /bin/bash
+group:
+  kibana:
+    exists: true

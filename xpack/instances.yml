@@ -1,0 +1,35 @@
+instances:
+  - name: elasticsearch
+    dns:
+      - elasticsearch
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: elasticsearch2
+    dns:
+      - elasticsearch2
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: elasticsearch3
+    dns:
+      - elasticsearch3
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: kibana
+    dns:
+      - kibana
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: wazuh
+    dns:
+      - wazuh
+      - localhost
+    ip:
+      - 127.0.0.1

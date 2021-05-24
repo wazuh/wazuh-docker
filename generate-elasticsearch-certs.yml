@@ -1,0 +1,17 @@
+version: '2.2'
+
+services:
+  generator:
+    container_name: generator
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    command: >
+      bash -c '
+        if [[ ! -f config/certificates/bundle.zip ]]; then
+          bin/elasticsearch-certutil cert --silent --pem --in config/certificates/instances.yml -out config/certificates/bundle.zip;
+          unzip config/certificates/bundle.zip -d config/certificates/;
+        fi;
+        chown -R 1000:0 /certs
+      '
+    user: "0"
+    working_dir: /usr/share/elasticsearch
+    volumes: ['./xpack:/usr/share/elasticsearch/config/certificates']

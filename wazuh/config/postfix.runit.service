@@ -1,4 +1,0 @@
-#!/bin/sh
-# Wazuh Docker Copyright (C) 2020 Wazuh Inc. (License GPLv2)
-service postfix start
-tail -f /var/log/mail.log

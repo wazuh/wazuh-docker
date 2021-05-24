@@ -1,0 +1,10 @@
+# Wazuh App Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+version: '3'
+
+services:
+  generator:
+    image: wazuh/opendistro-certs-generator:0.1
+    hostname: opendistro-certs-generator
+    volumes:
+      - ./production_cluster/ssl_certs/certs.yml:/usr/src/config/myconf.yml
+      - ./production_cluster/ssl_certs/:/usr/src/certs/out/ 
