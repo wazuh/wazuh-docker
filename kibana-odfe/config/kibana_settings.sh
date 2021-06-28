@@ -53,6 +53,6 @@ rm -f ${default_index}
 sleep 5
 # Configuring Kibana TimePicker.
 curl ${auth} -POST -k "https://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
-'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
+'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\"}"}}'
 
 echo "End settings"
