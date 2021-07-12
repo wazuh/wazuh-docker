@@ -176,7 +176,7 @@ mount_files() {
 ##############################################################################
 
 function ossec_shutdown(){
-  ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
+  ${WAZUH_INSTALL_PATH}/bin/wazuh-control stop;
 }
 
 ##############################################################################
@@ -184,7 +184,7 @@ function ossec_shutdown(){
 # paths or commands, and execute them. 
 #
 # This can be useful for actions that need to be run before the services are
-# started, such as "/var/ossec/bin/ossec-control enable agentless".
+# started, such as "/var/ossec/bin/wazuh-control enable agentless".
 ##############################################################################
 
 docker_custom_args() {
