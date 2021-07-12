@@ -35,38 +35,24 @@ exec_cmd_stdout() {
 ##############################################################################
 # Check_update
 # This function considers the following cases:
-# - If /var/ossec/etc/ossec-init.conf does not exist -> Action Nothing. There is no data in the EBS. First time deploying Wazuh
-# - If /var/ossec/etc/VERSION does not exist -> Action: Update. The previous version was prior to 3.11.5.
-# - If both files exist: different Wazuh version -> Action: Update. The previous version is older than the current one.
-# - If both files exist: the same Wazuh version -> Acton: Nothing. Same Wazuh version.
+# - If /var/ossec/etc/VERSION does not exist -> Action: Update. Action Nothing. There is no data in the EBS. First time deploying Wazuh
+# - If different Wazuh version -> Action: Update. The previous version is older than the current one.
+# - If the same Wazuh version -> Acton: Nothing. Same Wazuh version.
 ##############################################################################
 
 check_update() {
-  if [ -e /var/ossec/etc/ossec-init.conf ]
+  if [ -e /var/ossec/etc/VERSION ]
   then
-    if [ -e /var/ossec/etc/VERSION ]
+    previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
+    echo "Previous version: $previous_version"
+    current_version=$(/var/ossec/bin/wazuh-control -j info | jq .data[0].WAZUH_VERSION)
+    echo "Current version: $current_version"
+    if [ $previous_version == $current_version ]
     then
-      previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
-      echo "Previous version: $previous_version"
-      current_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
-      echo "Current version: $current_version"
-      if [ $previous_version == $current_version ]
-      then
-        echo "Same Wazuh version in the EBS and image"
-        return 0
-      else
-        echo "Different Wazuh version: Update"
-        if [[ ${previous_version} == "v4.0.4" ]]; then
-          print "Installing /var/ossec/queue/tasks directory and subdirectories"
-          mkdir /var/ossec/queue/tasks
-          chown ossec:ossec  /var/ossec/queue/tasks
-          chmod 770 /var/ossec/queue/tasks
-          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/tasks/. /var/ossec/queue/tasks"
-        fi
-        return 1
-      fi
+      echo "Same Wazuh version in the EBS and image"
+      return 0
     else
-      echo "Previous version prior to 3.11.5: Update"
+      echo "Different Wazuh version: Update"
       return 1
     fi
   else
