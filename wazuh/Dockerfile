@@ -14,15 +14,15 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh] \n\
+RUN echo $'[wazuh_repo] \n\
 gpgcheck=1\n\
 gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
-gpgcheck=0\n\
 enabled=1\n\
 name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/4.x/yum/\n\
+baseurl=https://packages-dev.wazuh.com/pre-release/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
+
 
 # Install packages
 RUN set -x && \
