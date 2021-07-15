@@ -124,3 +124,6 @@ function_entrypoint_scripts
 
 # Start Wazuh
 /var/ossec/bin/wazuh-control start
+
+# Start CronTab
+/usr/sbin/crond

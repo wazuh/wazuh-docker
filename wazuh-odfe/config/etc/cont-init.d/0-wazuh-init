@@ -147,11 +147,38 @@ set_custom_cluster_key() {
   sed -i 's/<key>to_be_replaced_by_cluster_key<\/key>/<key>'"${WAZUH_CLUSTER_KEY}"'<\/key>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
 }
 
+
+function_custom_aws_ruleset () {
+  if [[ ! -z "${WAZUH_RULESET_AWS_PATH}" ]];
+  then
+    echo "WAZUH_RULESET_AWS_PATH is set, Getting configs from ${WAZUH_RULESET_AWS_PATH}"
+    exec_cmd_stdout /usr/bin/aws s3 cp --recursive --include "*.xml" ${WAZUH_RULESET_AWS_PATH} /wazuh-migration/data/etc/rules/ || echo "Error occured while getting configs" && exit 1;
+ else
+   echo "WAZUH_RULESET_AWS_PATH is not given, Skipping Update Custom Configs!"
+  fi
+}
+
+
+function_install_cron_jobs() {
+  if [[ ! -z "${WAZUH_ENABLE_CRON}" ]];
+  then
+    echo "Installing Cron to delete logs older than a day"
+    exec_cmd_stdout crontab /app/custom-crons
+    exec_cmd_stdout chown 644 /etc/cron.d/*
+}
+
 ##############################################################################
 # Main function
 ##############################################################################
 
 main() {
+
+  # Mount Custom Rule set from AWS S3!
+  function_crontab_alert_ruleset
+
+  # Mount CronTab
+  function_install_cron_jobs
+
   # Mount permanent data  (i.e. ossec.conf)
   mount_permanent_data
 

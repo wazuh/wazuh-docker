@@ -3,7 +3,7 @@ FROM centos:7
 
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.3.0-1
+ARG WAZUH_VERSION=4.1.3
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
@@ -12,10 +12,15 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
+
+
 RUN yum --enablerepo=updates clean metadata && \
-  yum -y install openssl which expect openssh-clients && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
+  yum -y install openssl which expect openssh-clients crontabs unzip && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+  unzip awscliv2.zip && ./aws/install && rm -rf aws
 
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm
