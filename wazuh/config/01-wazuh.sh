@@ -61,14 +61,14 @@ check_update() {
         mkdir /var/ossec/queue/sockets
         chown ossec:ossec /var/ossec/queue/sockets
         chmod 770 /var/ossec/queue/sockets
-        cp -ra /var/ossec/queue/ossec /var/ossec/queue/sockets
+        cp -ra /var/ossec/queue/ossec/* /var/ossec/queue/sockets/
         rm -rf /var/ossec/queue/ossec
 
         echo "Change /var/ossec/logs/ossec path to /var/ossec/logs/wazuh"
         mkdir /var/ossec/logs/wazuh
         chown ossec:ossec /var/ossec/logs/wazuh
         chmod 750 /var/ossec/logs/wazuh
-        cp -ra /var/ossec/logs/ossec /var/ossec/logs/wazuh
+        cp -ra /var/ossec/logs/ossec/* /var/ossec/logs/wazuh/
         rm -rf /var/ossec/queue/ossec
       fi
       return 1
