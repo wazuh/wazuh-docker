@@ -70,7 +70,7 @@ check_update() {
         chmod 750 /var/ossec/logs/wazuh
         cp -ra /var/ossec/logs/ossec /var/ossec/logs/wazuh
         rm -rf /var/ossec/queue/ossec
-
+      fi
       return 1
     fi
   else
