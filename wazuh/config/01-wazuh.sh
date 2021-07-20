@@ -61,15 +61,27 @@ check_update() {
         mkdir /var/ossec/queue/sockets
         chown ossec:ossec /var/ossec/queue/sockets
         chmod 770 /var/ossec/queue/sockets
-        cp -ra /var/ossec/queue/ossec/* /var/ossec/queue/sockets/
+        exec_cmd "cp -ra /var/ossec/queue/ossec/. /var/ossec/queue/sockets/"
         rm -rf /var/ossec/queue/ossec
 
         echo "Change /var/ossec/logs/ossec path to /var/ossec/logs/wazuh"
         mkdir /var/ossec/logs/wazuh
         chown ossec:ossec /var/ossec/logs/wazuh
         chmod 750 /var/ossec/logs/wazuh
-        cp -ra /var/ossec/logs/ossec/* /var/ossec/logs/wazuh/
+        exec_cmd "cp -ra /var/ossec/logs/ossec/. /var/ossec/logs/wazuh/"
         rm -rf /var/ossec/queue/ossec
+
+        echo "Restore logcollector queue dir"
+        mkdir /var/ossec/queue/logcollector
+        chown ossec:ossec /var/ossec/queue/logcollector
+        chmod 750 /var/ossec/queue/logcollector
+        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/logcollector/. /var/ossec/queue/logcollector"
+
+        echo "Restore syscollector queue dir"
+        mkdir /var/ossec/queue/syscollector
+        chown ossec:ossec /var/ossec/queue/syscollector
+        chmod 750 /var/ossec/queue/syscollector
+        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/syscollector/. /var/ossec/queue/syscollector"
       fi
       return 1
     fi
