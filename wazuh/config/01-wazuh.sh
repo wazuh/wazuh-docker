@@ -45,7 +45,7 @@ check_update() {
   then
     previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
     echo "Previous version: $previous_version"
-    current_version=$(/var/ossec/bin/wazuh-control -j info | jq .data[0].WAZUH_VERSION)
+    current_version=$(/var/ossec/bin/wazuh-control -j info | jq .data[0].WAZUH_VERSION | cut -d'"' -f2)
     echo "Current version: $current_version"
     if [ $previous_version == $current_version ]
     then
@@ -53,6 +53,24 @@ check_update() {
       return 0
     else
       echo "Different Wazuh version: Update"
+      if [ $previous_version == "v4.1.5" ]
+      then
+        echo "Remove simbolic link from ossec-init.conf"
+        unlink /var/ossec/etc/ossec-init.conf
+        echo "Change /var/ossec/queue/ossec path to /var/ossec/queue/sockets"
+        mkdir /var/ossec/queue/sockets
+        chown ossec:ossec /var/ossec/queue/sockets
+        chmod 770 /var/ossec/queue/sockets
+        cp -ra /var/ossec/queue/ossec /var/ossec/queue/sockets
+        rm -rf /var/ossec/queue/ossec
+
+        echo "Change /var/ossec/logs/ossec path to /var/ossec/logs/wazuh"
+        mkdir /var/ossec/logs/wazuh
+        chown ossec:ossec /var/ossec/logs/wazuh
+        chmod 750 /var/ossec/logs/wazuh
+        cp -ra /var/ossec/logs/ossec /var/ossec/logs/wazuh
+        rm -rf /var/ossec/queue/ossec
+
       return 1
     fi
   else
