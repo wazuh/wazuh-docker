@@ -69,7 +69,7 @@ check_update() {
         chown ossec:ossec /var/ossec/logs/wazuh
         chmod 750 /var/ossec/logs/wazuh
         exec_cmd "cp -ra /var/ossec/logs/ossec/. /var/ossec/logs/wazuh/"
-        rm -rf /var/ossec/queue/ossec
+        rm -rf /var/ossec/logs/ossec
 
         echo "Restore logcollector queue dir"
         mkdir /var/ossec/queue/logcollector
