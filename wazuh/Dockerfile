@@ -10,7 +10,6 @@ ENV API_USER="foo" \
    API_PASS="bar"
 
 ARG TEMPLATE_VERSION="4.0"
-ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
@@ -109,8 +108,7 @@ COPY config/85-save_wazuh_version.sh /entrypoint-scripts/85-save_wazuh_version.s
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
-    chmod 755 /entrypoint-scripts/02-set_filebeat_destination.sh && \
-    chmod 755 /entrypoint-scripts/03-config_filebeat.sh && \
+    chmod 755 /entrypoint-scripts/02-set_config_filebeat_destination.sh && \
     chmod 755 /entrypoint-scripts/20-ossec-configuration.sh && \
     chmod 755 /entrypoint-scripts/25-backups.sh && \
     chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
