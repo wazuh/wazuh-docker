@@ -47,10 +47,7 @@ done
 
 CONFIG_CODE=$(curl ${auth} -s -o /dev/null -w "%{http_code}" -XGET $el_url/.wazuh/_doc/1513629884013)
 
-grep -q 1513629884013 $kibana_config_file
-_config_exists=$?
-
-if [[ "x$CONFIG_CODE" != "x200" && $_config_exists -ne 0 ]]; then
+if [[ "x$CONFIG_CODE" != "x200" ]] && ! grep -q 1513629884013 $kibana_config_file ; then
 cat << EOF >> $kibana_config_file
 hosts:
   - 1513629884013:
