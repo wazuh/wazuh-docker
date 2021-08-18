@@ -20,7 +20,7 @@ fi
 if [[ ${ENABLED_SECURITY} == "false" || "x${ELASTICSEARCH_USERNAME}" == "x" || "x${ELASTICSEARCH_PASSWORD}" == "x" ]]; then
   auth=""
   # remove security plugin from kibana if elasticsearch is not using it either
-  /usr/share/kibana/bin/kibana-plugin remove opendistro_security
+  /usr/share/kibana/bin/kibana-plugin remove opendistroSecurityKibana
 else
   export auth="--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD} -k"
 fi
