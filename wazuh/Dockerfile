@@ -99,7 +99,7 @@ COPY config/entrypoint.sh /entrypoint.sh
 COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
-COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
+COPY config/02-set_config_filebeat.sh /entrypoint-scripts/02-set_config_filebeat.sh
 COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
 COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
@@ -108,7 +108,7 @@ COPY config/85-save_wazuh_version.sh /entrypoint-scripts/85-save_wazuh_version.s
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
-    chmod 755 /entrypoint-scripts/02-set_config_filebeat_destination.sh && \
+    chmod 755 /entrypoint-scripts/02-set_config_filebeat.sh && \
     chmod 755 /entrypoint-scripts/20-ossec-configuration.sh && \
     chmod 755 /entrypoint-scripts/25-backups.sh && \
     chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
