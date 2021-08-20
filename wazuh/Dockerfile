@@ -99,7 +99,6 @@ COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/creat
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 COPY config/02-set_config_filebeat.sh /entrypoint-scripts/02-set_config_filebeat.sh
-COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
 COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
 COPY config/35-remove_credentials_file.sh /entrypoint-scripts/35-remove_credentials_file.sh
