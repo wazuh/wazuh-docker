@@ -59,8 +59,7 @@ RUN chmod +x /etc/service/wazuh/run && \
    chmod +x /etc/service/filebeat/run 
 
 # Copy configuration files from repository
-COPY config/filebeat_to_elasticsearch.yml ./
-COPY config/filebeat_to_logstash.yml ./
+COPY config/filebeat.yml ./
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
