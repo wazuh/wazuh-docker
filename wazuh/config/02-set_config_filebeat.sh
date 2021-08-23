@@ -20,6 +20,6 @@ chmod go-w /etc/filebeat/filebeat.yml
 echo "FILEBEAT - Get Filebeat Wazuh module"
 
 >&2 echo "FILEBEAT - Install Wazuh Filebeat Module."
+mkdir -p /usr/share/filebeat/module/
 curl -s "https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE}" | tar -xvz -C /usr/share/filebeat/module
-mkdir -p /usr/share/filebeat/module/wazuh
 chmod 755 -R /usr/share/filebeat/module/wazuh
