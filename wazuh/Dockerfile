@@ -116,5 +116,8 @@ RUN chmod 755 /entrypoint.sh && \
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
+# Create filebeat directories
+RUN mkdir -p /usr/share/filebeat/module/
+RUN mkdir /usr/share/filebeat/config
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
