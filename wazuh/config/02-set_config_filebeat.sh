@@ -11,10 +11,11 @@ set -e
 WAZUH_FILEBEAT_MODULE=wazuh-filebeat-0.1.tar.gz
 
 echo "FILEBEAT - Copy Filebeat config file"
-if ! [[ -L /etc/filebeat/filebeat.yml ]]
+if ! [[ -L /etc/filebeat/filebeat.yml ]]; then
     cp filebeat.yml /etc/filebeat/filebeat.yml
 else
     echo "Not needed. File already exist."
+fi
 echo "FILEBEAT - Set permissions"
 
 chmod go-w /etc/filebeat/filebeat.yml
