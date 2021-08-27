@@ -42,7 +42,7 @@ RUN set -x && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
     rm -f /var/ossec/logs/ossec/*/*/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
-    rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
+    rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
     sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
 
 # Services
