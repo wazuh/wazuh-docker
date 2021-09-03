@@ -101,7 +101,7 @@ remove_data_files() {
     if [ -e ${del_file} ]
     then
       print "Removing ${del_file}"
-      exec_cmd "rm -rf ${del_file}"
+      exec_cmd "rm -f ${del_file}"
     fi
   done
 }
