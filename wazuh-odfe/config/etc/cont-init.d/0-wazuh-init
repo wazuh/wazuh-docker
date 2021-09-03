@@ -75,6 +75,23 @@ apply_exclusion_data() {
 }
 
 ##############################################################################
+# This function will rename in the permanent data volume every file
+# contained in PERMANENT_DATA_MOVE
+##############################################################################
+
+move_data_files() {
+  for mov_file in "${PERMANENT_DATA_MOVE[@]}"; do
+    file_split=( $mov_file )
+    if [ -e ${file_split[0]} ]
+    then
+      print "moving ${mov_file}"
+      exec_cmd "mv -f ${mov_file}"
+    fi
+  done
+}
+
+
+##############################################################################
 # This function will delete from the permanent data volume every file
 # contained in PERMANENT_DATA_DEL
 ##############################################################################
@@ -84,7 +101,7 @@ remove_data_files() {
     if [ -e ${del_file} ]
     then
       print "Removing ${del_file}"
-      exec_cmd "rm ${del_file}"
+      exec_cmd "rm -f ${del_file}"
     fi
   done
 }
@@ -157,6 +174,9 @@ main() {
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
+
+  # Rename files stored in permanent data (i.e. queue/ossec)
+  move_data_files
 
   # Remove some files in permanent_data (i.e. .template.db)
   remove_data_files
