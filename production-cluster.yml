@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh-master:
-    image: wazuh/wazuh-odfe:4.2.1
+    image: wazuh/wazuh-odfe:4.2.2
     hostname: wazuh-master
     restart: always
     ports:
@@ -38,7 +38,7 @@ services:
       - ./production_cluster/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh-worker:
-    image: wazuh/wazuh-odfe:4.2.1
+    image: wazuh/wazuh-odfe:4.2.2
     hostname: wazuh-worker
     restart: always
     environment:
@@ -134,7 +134,7 @@ services:
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
 
   kibana:
-    image: wazuh/wazuh-kibana-odfe:4.2.1
+    image: wazuh/wazuh-kibana-odfe:4.2.2
     hostname: kibana
     restart: always
     ports:

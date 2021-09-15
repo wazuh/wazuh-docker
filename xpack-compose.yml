@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh:
-    image: wazuh/wazuh:4.2.1
+    image: wazuh/wazuh:4.2.2
     hostname: wazuh-manager
     restart: always
     ports:
@@ -146,7 +146,7 @@ services:
 
 
   kibana:
-    image: wazuh/wazuh-kibana:4.2.1
+    image: wazuh/wazuh-kibana:4.2.2
     hostname: kibana
     restart: always
     ports:
