@@ -35,7 +35,7 @@ exec_cmd_stdout() {
 ##############################################################################
 # Check_update
 # This function considers the following cases:
-# - If /var/ossec/etc/VERSION does not exist -> Action: Update. Action Nothing. There is no data in the EBS. First time deploying Wazuh
+# - If /var/ossec/etc/VERSION does not exist -> Action Nothing. There is no data in the EBS. First time deploying Wazuh
 # - If different Wazuh version -> Action: Update. The previous version is older than the current one.
 # - If the same Wazuh version -> Acton: Nothing. Same Wazuh version.
 ##############################################################################
