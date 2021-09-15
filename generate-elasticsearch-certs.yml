@@ -10,7 +10,7 @@ services:
           bin/elasticsearch-certutil cert --silent --pem --in config/certificates/instances.yml -out config/certificates/bundle.zip;
           unzip config/certificates/bundle.zip -d config/certificates/;
         fi;
-        chown -R 1000:0 /certs
+        chown -R 1000:0 config/certificates
       '
     user: "0"
     working_dir: /usr/share/elasticsearch
