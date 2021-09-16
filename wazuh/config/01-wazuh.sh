@@ -35,38 +35,54 @@ exec_cmd_stdout() {
 ##############################################################################
 # Check_update
 # This function considers the following cases:
-# - If /var/ossec/etc/ossec-init.conf does not exist -> Action Nothing. There is no data in the EBS. First time deploying Wazuh
-# - If /var/ossec/etc/VERSION does not exist -> Action: Update. The previous version was prior to 3.11.5.
-# - If both files exist: different Wazuh version -> Action: Update. The previous version is older than the current one.
-# - If both files exist: the same Wazuh version -> Acton: Nothing. Same Wazuh version.
+# - If /var/ossec/etc/VERSION does not exist -> Action Nothing. There is no data in the EBS. First time deploying Wazuh
+# - If different Wazuh version -> Action: Update. The previous version is older than the current one.
+# - If the same Wazuh version -> Acton: Nothing. Same Wazuh version.
 ##############################################################################
 
 check_update() {
-  if [ -e /var/ossec/etc/ossec-init.conf ]
+  if [ -e /var/ossec/etc/VERSION ]
   then
-    if [ -e /var/ossec/etc/VERSION ]
+    previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
+    echo "Previous version: $previous_version"
+    current_version=$(/var/ossec/bin/wazuh-control -j info | jq .data[0].WAZUH_VERSION | cut -d'"' -f2)
+    echo "Current version: $current_version"
+    if [ $previous_version == $current_version ]
     then
-      previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
-      echo "Previous version: $previous_version"
-      current_version=$(cat ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/etc/ossec-init.conf | grep -i version | cut -d'"' -f2)
-      echo "Current version: $current_version"
-      if [ $previous_version == $current_version ]
-      then
-        echo "Same Wazuh version in the EBS and image"
-        return 0
-      else
-        echo "Different Wazuh version: Update"
-        if [[ ${previous_version} == "v4.0.4" ]]; then
-          print "Installing /var/ossec/queue/tasks directory and subdirectories"
-          mkdir /var/ossec/queue/tasks
-          chown ossec:ossec  /var/ossec/queue/tasks
-          chmod 770 /var/ossec/queue/tasks
-          exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/tasks/. /var/ossec/queue/tasks"
-        fi
-        return 1
-      fi
+      echo "Same Wazuh version in the EBS and image"
+      return 0
     else
-      echo "Previous version prior to 3.11.5: Update"
+      echo "Different Wazuh version: Update"
+      if [ $previous_version == "v4.1.5" ]
+      then
+        echo "Remove simbolic link from ossec-init.conf"
+        unlink /var/ossec/etc/ossec-init.conf
+        echo "Change /var/ossec/queue/ossec path to /var/ossec/queue/sockets"
+        mkdir /var/ossec/queue/sockets
+        chown ossec:ossec /var/ossec/queue/sockets
+        chmod 770 /var/ossec/queue/sockets
+        exec_cmd "cp -ra /var/ossec/queue/ossec/. /var/ossec/queue/sockets/"
+        rm -rf /var/ossec/queue/ossec
+
+        echo "Change /var/ossec/logs/ossec path to /var/ossec/logs/wazuh"
+        mkdir /var/ossec/logs/wazuh
+        chown ossec:ossec /var/ossec/logs/wazuh
+        chmod 750 /var/ossec/logs/wazuh
+        exec_cmd "cp -ra /var/ossec/logs/ossec/. /var/ossec/logs/wazuh/"
+        rm -rf /var/ossec/logs/ossec
+
+        echo "Restore logcollector queue dir"
+        mkdir /var/ossec/queue/logcollector
+        chown ossec:ossec /var/ossec/queue/logcollector
+        chmod 750 /var/ossec/queue/logcollector
+        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/logcollector/. /var/ossec/queue/logcollector"
+
+        echo "Restore syscollector queue dir"
+        mkdir /var/ossec/queue/syscollector
+        chown ossec:ossec /var/ossec/queue/syscollector
+        chmod 750 /var/ossec/queue/syscollector
+        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/syscollector/. /var/ossec/queue/syscollector"
+      fi
       return 1
     fi
   else
@@ -146,7 +162,7 @@ remove_data_files() {
 ##############################################################################
 
 create_ossec_key_cert() {
-  print "Creating ossec-authd key and cert"
+  print "Creating wazuh-authd key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
 }
@@ -176,7 +192,7 @@ mount_files() {
 ##############################################################################
 
 function ossec_shutdown(){
-  ${WAZUH_INSTALL_PATH}/bin/ossec-control stop;
+  ${WAZUH_INSTALL_PATH}/bin/wazuh-control stop;
 }
 
 ##############################################################################
@@ -184,7 +200,7 @@ function ossec_shutdown(){
 # paths or commands, and execute them. 
 #
 # This can be useful for actions that need to be run before the services are
-# started, such as "/var/ossec/bin/ossec-control enable agentless".
+# started, such as "/var/ossec/bin/wazuh-control enable agentless".
 ##############################################################################
 
 docker_custom_args() {
@@ -276,7 +292,7 @@ main() {
     echo "Keeping databases"
   fi
 
-  # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
+  # Generate wazuh-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
     if [ ! -e ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ]

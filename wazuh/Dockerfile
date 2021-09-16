@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.1.5-1
+ARG WAZUH_VERSION=4.2.1-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -17,12 +17,12 @@ RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 RUN echo $'[wazuh] \n\
 gpgcheck=1\n\
 gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
-gpgcheck=0\n\
 enabled=1\n\
 name=Wazuh repository\n\
 baseurl=https://packages.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
+
 
 # Install packages
 RUN set -x && \
@@ -41,7 +41,7 @@ RUN set -x && \
     rm -f /var/ossec/logs/firewall/*/*/* && \
     rm -f /var/ossec/logs/api/*/*/* && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
-    rm -f /var/ossec/logs/ossec/*/*/* && \
+    rm -f /var/ossec/logs/wazuh/*/*/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
     rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
     sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
