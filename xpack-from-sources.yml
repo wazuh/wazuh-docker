@@ -152,7 +152,7 @@ services:
 
   kibana:
     build: kibana/
-    image: wazuh/wazuh-kibana:4.2.2
+    image: wazuh/wazuh-kibana:4.3.0
     hostname: kibana
     restart: always
     ports:

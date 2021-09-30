@@ -149,11 +149,11 @@ ADMIN_PRIVILEGES=true               # App privileges
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch on correspond to the last Wazuh stable version.
 
-
 ## Compatibility Matrix
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.3.0        | 1.13.2  | 7.11.2 |
 | v4.2.2        | 1.13.2  | 7.11.2 |
 | v4.2.1        | 1.13.2  | 7.11.2 |
 | v4.2.0        | 1.13.2  | 7.10.2 |

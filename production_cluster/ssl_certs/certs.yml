@@ -27,8 +27,13 @@ nodes:
   - name: filebeat
     dn: CN=filebeat,OU=Ops,O=Example\, Inc.,DC=example,DC=com
     dns: 
+<<<<<<< HEAD
       - wazuh
 
+=======
+      - wazuh 
+      
+>>>>>>> f34b7d0465dbc8bf717d81e2bc4f13f44a03a55d
 clients:
   - name: admin
     dn: CN=admin,OU=Ops,O=Example\, Inc.,DC=example,DC=com
