@@ -3,7 +3,11 @@ version: '3.7'
 
 services:
   wazuh-master:
+<<<<<<< HEAD
     image: wazuh/wazuh-odfe:4.2.2
+=======
+    image: wazuh/wazuh-odfe:4.1.5
+>>>>>>> 3297d86272f451a7aae390217499c605a2b8b091
     hostname: wazuh-master
     restart: always
     ports:
