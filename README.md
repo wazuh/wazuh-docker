@@ -26,7 +26,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed).
 
-Documentation on how to provide these two can be found at [Wazuh Docer Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
+Documentation on how to provide these two can be found at [Wazuh Docker Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
 
 
 ## Environment Variables
