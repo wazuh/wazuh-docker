@@ -22,11 +22,11 @@ In addition, a docker-compose file is provided to launch the containers mentione
 * [Docker hub](https://hub.docker.com/u/wazuh)
 
 
-### Setup SSL certificate and Basic Authentication
+### Setup SSL certificate
 
-Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed) and setup the basic auth.
+Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed).
 
-Documentation on how to provide these two can be found at [nginx_conf/README.md](nginx_conf/README.md).
+Documentation on how to provide these two can be found at [Wazuh Docker Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
 
 
 ## Environment Variables
@@ -154,6 +154,9 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.2.2        | 1.13.2  | 7.11.2 |
+| v4.2.1        | 1.13.2  | 7.11.2 |
+| v4.2.0        | 1.13.2  | 7.10.2 |
 | v4.1.5        | 1.13.2  | 7.10.2 |
 | v4.1.4        | 1.12.0  | 7.10.2 |
 | v4.1.3        | 1.12.0  | 7.10.2 |

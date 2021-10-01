@@ -75,6 +75,23 @@ apply_exclusion_data() {
 }
 
 ##############################################################################
+# This function will rename in the permanent data volume every file
+# contained in PERMANENT_DATA_MOVE
+##############################################################################
+
+move_data_files() {
+  for mov_file in "${PERMANENT_DATA_MOVE[@]}"; do
+    file_split=( $mov_file )
+    if [ -e ${file_split[0]} ]
+    then
+      print "moving ${mov_file}"
+      exec_cmd "mv -f ${mov_file}"
+    fi
+  done
+}
+
+
+##############################################################################
 # This function will delete from the permanent data volume every file
 # contained in PERMANENT_DATA_DEL
 ##############################################################################
@@ -84,7 +101,7 @@ remove_data_files() {
     if [ -e ${del_file} ]
     then
       print "Removing ${del_file}"
-      exec_cmd "rm ${del_file}"
+      exec_cmd "rm -f ${del_file}"
     fi
   done
 }
@@ -94,7 +111,7 @@ remove_data_files() {
 ##############################################################################
 
 create_ossec_key_cert() {
-  print "Creating ossec-authd key and cert"
+  print "Creating wazuh-authd key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
 }
@@ -158,10 +175,13 @@ main() {
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
 
+  # Rename files stored in permanent data (i.e. queue/ossec)
+  move_data_files
+
   # Remove some files in permanent_data (i.e. .template.db)
   remove_data_files
 
-  # Generate ossec-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
+  # Generate wazuh-authd certs if AUTO_ENROLLMENT_ENABLED is true and does not exist
   if [ $AUTO_ENROLLMENT_ENABLED == true ]
   then
     if [ ! -e ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ]

@@ -20,7 +20,7 @@ opendistro_security.nodes_dn:
     - 'CN=node2,OU=Ops,O=Example\, Inc.,DC=example,DC=com'
     - 'CN=node3,OU=Ops,O=Example\, Inc.,DC=example,DC=com'
     - 'CN=filebeat,OU=Ops,O=Example\, Inc.,DC=example,DC=com'
-opendistro_security.authcz.admin_dn: []
+opendistro_security.authcz.admin_dn: ['CN=admin,OU=Ops,O=Example\, Inc.,DC=example,DC=com']
 opendistro_security.audit.type: internal_elasticsearch
 opendistro_security.enable_snapshot_restore_privilege: true
 opendistro_security.check_snapshot_restore_write_privileges: true
