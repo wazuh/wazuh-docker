@@ -70,7 +70,7 @@ rm -f ${default_index}
 sleep 5
 # Configuring Kibana TimePicker.
 curl ${auth} -POST -k "$kibana_proto://127.0.0.1:5601/api/kibana/settings" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d \
-'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"}"}}'
+'{"changes":{"timepicker:timeDefaults":"{\n  \"from\": \"now-12h\",\n  \"to\": \"now\"}"}}'
 
 sleep 5
 # Do not ask user to help providing usage statistics to Elastic

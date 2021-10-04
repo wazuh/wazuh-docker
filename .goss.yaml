@@ -6,7 +6,7 @@ file:
     group: root
     filetype: file
     contains: []
-  /var/ossec/bin/ossec-control:
+  /var/ossec/bin/wazuh-control:
     exists: true
     mode: "0750"
     owner: root
@@ -95,17 +95,17 @@ group:
 process:
   filebeat:
     running: true
-  ossec-analysisd:
+  wazuh-analysisd:
     running: true
-  ossec-authd:
+  wazuh-authd:
     running: true
-  ossec-execd:
+  wazuh-execd:
     running: true
-  ossec-monitord:
+  wazuh-monitord:
     running: true
-  ossec-remoted:
+  wazuh-remoted:
     running: true
-  ossec-syscheckd:
+  wazuh-syscheckd:
     running: true
   s6-supervise:
     running: true
