@@ -26,7 +26,7 @@ In addition, a docker-compose file is provided to launch the containers mentione
 
 Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed).
 
-Documentation on how to provide these two can be found at [Wazuh Docer Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
+Documentation on how to provide these two can be found at [Wazuh Docker Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
 
 
 ## Environment Variables
@@ -149,11 +149,11 @@ ADMIN_PRIVILEGES=true               # App privileges
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch on correspond to the last Wazuh stable version.
 
-
 ## Compatibility Matrix
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.3.0        | 1.13.2  | 7.11.2 |
 | v4.2.3        | 1.13.2  | 7.11.2 |
 | v4.2.2        | 1.13.2  | 7.11.2 |
 | v4.2.1        | 1.13.2  | 7.11.2 |
