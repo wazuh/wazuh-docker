@@ -8,7 +8,7 @@ services:
       args:
         - FILEBEAT_CHANNEL=filebeat
         - FILEBEAT_VERSION=7.11.2
-    image: wazuh/wazuh:4.2.4
+    image: wazuh/wazuh:4.3.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -152,7 +152,7 @@ services:
 
   kibana:
     build: kibana/
-    image: wazuh/wazuh-kibana:4.2.4
+    image: wazuh/wazuh-kibana:4.3.0
     hostname: kibana
     restart: always
     ports:
