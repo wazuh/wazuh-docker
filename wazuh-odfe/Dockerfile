@@ -1,24 +1,24 @@
-# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
-FROM centos:7
+FROM ubuntu:focal
 
+ARG WAZUH_VERSION=4.2.4
+ARG TEMPLATE_VERSION="master"
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.2.4
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
-# Set repositories.
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+RUN apt-get update
+RUN apt install curl apt-transport-https lsb-release gnupg -y
 
-COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
+RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
+RUN echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
 
-RUN yum --enablerepo=updates clean metadata && \
-  yum -y install openssl which expect openssh-clients && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
-  sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
-  yum clean all && rm -rf /var/cache/yum
+RUN apt-get update
 
-RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
-  rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm
+RUN apt-get install wazuh-manager=${WAZUH_VERSION}-1
+
+RUN apt update && apt install curl -y && curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
+  dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb
 
 RUN curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
@@ -31,15 +31,15 @@ RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releas
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
     rm  /tmp/s6-overlay-amd64.tar.gz
 
+COPY config/etc/ /etc/
+COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
+
 COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
-
-COPY config/etc/ /etc/
-COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
