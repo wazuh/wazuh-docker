@@ -1,3 +1,4 @@
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal
 
 ARG WAZUH_VERSION=4.2.4
@@ -7,20 +8,16 @@ ARG FILEBEAT_VERSION=7.10.2
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
-RUN apt-get update
-RUN apt install curl apt-transport-https lsb-release gnupg -y
+RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
-RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
-RUN echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
+RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list && \
+    apt-get update && \
+    apt-get install wazuh-manager=${WAZUH_VERSION}-1
 
-RUN apt-get update
-
-RUN apt-get install wazuh-manager=${WAZUH_VERSION}-1
-
-RUN apt update && apt install curl -y && curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
-  dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb
-
-RUN curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
+    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
+    curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
 RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
 
@@ -43,6 +40,7 @@ RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
+
 COPY config/permanent_data.env config/permanent_data.sh /
 RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
