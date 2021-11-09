@@ -5,7 +5,6 @@ ARG WAZUH_VERSION=4.2.4
 ARG TEMPLATE_VERSION="master"
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
