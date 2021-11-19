@@ -1,7 +1,7 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal
 
-ARG WAZUH_VERSION=4.2.4
+ARG WAZUH_VERSION=4.2.5
 ARG TEMPLATE_VERSION="master"
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
