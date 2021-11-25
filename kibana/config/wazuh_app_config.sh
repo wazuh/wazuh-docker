@@ -32,6 +32,7 @@ declare -A CONFIG_MAP=(
   [ip.selector]=$IP_SELECTOR
   [ip.ignore]=$IP_IGNORE
   [wazuh.monitoring.enabled]=$WAZUH_MONITORING_ENABLED
+  [wazuh.monitoring.creation]=$WAZUH_MONITORING_CREATION
   [wazuh.monitoring.frequency]=$WAZUH_MONITORING_FREQUENCY
   [wazuh.monitoring.shards]=$WAZUH_MONITORING_SHARDS
   [wazuh.monitoring.replicas]=$WAZUH_MONITORING_REPLICAS
