@@ -90,6 +90,7 @@ services:
       - ./production_cluster/ssl_certs/admin.key:/usr/share/elasticsearch/config/admin.key
       - ./production_cluster/elastic_opendistro/elasticsearch-node1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./production_cluster/elastic_opendistro/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
   elasticsearch-2:
     image: amazon/opendistro-for-elasticsearch:1.13.2
@@ -111,6 +112,7 @@ services:
       - ./production_cluster/ssl_certs/node2.pem:/usr/share/elasticsearch/config/node2.pem
       - ./production_cluster/elastic_opendistro/elasticsearch-node2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./production_cluster/elastic_opendistro/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
   elasticsearch-3:
     image: amazon/opendistro-for-elasticsearch:1.13.2
@@ -132,6 +134,7 @@ services:
       - ./production_cluster/ssl_certs/node3.pem:/usr/share/elasticsearch/config/node3.pem
       - ./production_cluster/elastic_opendistro/elasticsearch-node3.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+      - ./production_cluster/elastic_opendistro/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
   kibana:
     image: wazuh/wazuh-kibana-odfe:4.3.0
