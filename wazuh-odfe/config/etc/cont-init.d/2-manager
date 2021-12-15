@@ -112,6 +112,15 @@ function_entrypoint_scripts() {
   fi
 }
 
+function_restart_worker() {
+  # Extract what type of node is configured in the ossec.conf file
+  node_type=`grep node_type /var/ossec/etc/ossec.conf | sed 's/<\/\?[^>]\+>//g'`
+  # If the node type is Worker, the wazuh-manager service is restarted for correct registration in the cluster
+  if [ $node_type == "worker" ] 
+  then
+    /var/ossec/bin/wazuh-control restart
+  fi
+}
 
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
@@ -124,3 +133,6 @@ function_entrypoint_scripts
 
 # Start Wazuh
 /var/ossec/bin/wazuh-control start
+
+# Restart Wazuh if node_type = worker
+function_restart_worker
