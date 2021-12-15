@@ -72,7 +72,7 @@ services:
       - ./xpack/ca/ca.crt:/usr/share/elasticsearch/config/ca.crt
       - ./xpack/elasticsearch/elasticsearch.key:/usr/share/elasticsearch/config/elasticsearch.key
       - ./xpack/elasticsearch/elasticsearch.crt:/usr/share/elasticsearch/config/elasticsearch.crt
-      - ./xpack/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
+      - ./disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
@@ -108,7 +108,7 @@ services:
       - ./xpack/ca/ca.crt:/usr/share/elasticsearch/config/ca.crt
       - ./xpack/elasticsearch2/elasticsearch2.key:/usr/share/elasticsearch/config/elasticsearch.key
       - ./xpack/elasticsearch2/elasticsearch2.crt:/usr/share/elasticsearch/config/elasticsearch.crt
-      - ./xpack/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
+      - ./disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
   elasticsearch3:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
@@ -144,7 +144,7 @@ services:
       - ./xpack/ca/ca.crt:/usr/share/elasticsearch/config/ca.crt
       - ./xpack/elasticsearch3/elasticsearch3.key:/usr/share/elasticsearch/config/elasticsearch.key
       - ./xpack/elasticsearch3/elasticsearch3.crt:/usr/share/elasticsearch/config/elasticsearch.crt
-      - ./xpack/disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
+      - ./disabledlog4j.options:/etc/elasticsearch/jvm.options.d/disabledlog4j.options
 
 
   kibana:
