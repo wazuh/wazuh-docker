@@ -48,7 +48,7 @@ services:
       - discovery.seed_hosts=elasticsearch,elasticsearch2,elasticsearch3
       - cluster.initial_master_nodes=elasticsearch,elasticsearch2,elasticsearch3
       - ELASTIC_PASSWORD=SecretPassword
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dlog4j2.formatMsgNoLookups=true"
       - bootstrap.memory_lock=true
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=true
@@ -83,7 +83,7 @@ services:
       - discovery.seed_hosts=elasticsearch,elasticsearch2,elasticsearch3
       - cluster.initial_master_nodes=elasticsearch,elasticsearch2,elasticsearch3
       - ELASTIC_PASSWORD=SecretPassword
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dlog4j2.formatMsgNoLookups=true"
       - bootstrap.memory_lock=true
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=true
@@ -118,7 +118,7 @@ services:
       - discovery.seed_hosts=elasticsearch,elasticsearch2,elasticsearch3
       - cluster.initial_master_nodes=elasticsearch,elasticsearch2,elasticsearch3
       - ELASTIC_PASSWORD=SecretPassword
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dlog4j2.formatMsgNoLookups=true"
       - bootstrap.memory_lock=true
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=true
@@ -142,7 +142,6 @@ services:
       - ./xpack/ca/ca.crt:/usr/share/elasticsearch/config/ca.crt
       - ./xpack/elasticsearch3/elasticsearch3.key:/usr/share/elasticsearch/config/elasticsearch.key
       - ./xpack/elasticsearch3/elasticsearch3.crt:/usr/share/elasticsearch/config/elasticsearch.crt
-
 
 
   kibana:
