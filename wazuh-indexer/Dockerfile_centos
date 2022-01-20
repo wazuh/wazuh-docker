@@ -1,0 +1,25 @@
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+FROM centos:8
+
+ARG FILEBEAT_CHANNEL=filebeat-oss
+ARG FILEBEAT_VERSION=7.10.2
+ARG WAZUH_VERSION=4.3.0-1
+ARG TEMPLATE_VERSION="master"
+ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
+
+USER root
+
+RUN yum install initscripts -y
+
+# Set repositories.
+RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm && \
+    rpm -i wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm
+
+COPY config/entrypoint.sh /
+
+RUN chmod 700 /entrypoint.sh
+
+# Services ports
+EXPOSE 9700
+
+ENTRYPOINT [ "/entrypoint.sh" ]
