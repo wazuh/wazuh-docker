@@ -1,13 +1,14 @@
-#!/bin/execlineb -S0
+#!/bin/bash
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 
-##
-## load default PATH (the same that Docker includes if not provided) if it doesn't exist,
-## then go ahead with stage1.
-## this was motivated due to this issue:
-## - https://github.com/just-containers/s6-overlay/issues/108
-##
+##############################################################################
+# Start Wazuh indexer
+##############################################################################
 
+export JAVA_HOME=/usr/share/wazuh-indexer/jdk/bin
 
-/bin/importas -D /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin PATH PATH
-export PATH ${PATH}
-/etc/s6/init/init-stage1 $@
+#/usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ -icl -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem
+
+service wazuh-indexer start
+
+while true; do sleep 1000; done
