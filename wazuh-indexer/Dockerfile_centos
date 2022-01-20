@@ -12,8 +12,8 @@ USER root
 RUN yum install initscripts -y
 
 # Set repositories.
-RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm && \
-    rpm -i wazuh-indexer-${WAZUH_VERSION}_.x86_64.rpm
+RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
+    rpm -i wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm
 
 COPY config/entrypoint.sh /
 
