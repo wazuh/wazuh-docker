@@ -13,7 +13,7 @@ services:
       - "514:514/udp"
       - "55000:55000"
     environment:
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - ELASTICSEARCH_URL=\"https://elasticsearch:9200\",\"https://elasticsearch1:9200'\"
       - ELASTIC_USERNAME=admin
       - ELASTIC_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
@@ -58,6 +58,10 @@ services:
     ports:
       - 443:5601
     environment:
+      # check only one node health for start kibana
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      # allow kibana connect to multi elasticsearch node
+      - ELASTICSEARCH_HOSTS=\"https://elasticsearch:9200\",\"https://elasticsearch1:9200'\"
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=admin
       - SERVER_SSL_ENABLED=true

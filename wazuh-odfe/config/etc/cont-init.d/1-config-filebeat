@@ -5,7 +5,7 @@ set -e
 
 if [ "$ELASTICSEARCH_URL" != "" ]; then
   >&2 echo "Customize Elasticsearch ouput IP"
-  sed -i "s|hosts:.*|hosts: ['$ELASTICSEARCH_URL']|g" /etc/filebeat/filebeat.yml
+  sed -i "s|hosts:.*|hosts: [$ELASTICSEARCH_URL]|g" /etc/filebeat/filebeat.yml
 fi
 
 # Configure filebeat.yml security settings

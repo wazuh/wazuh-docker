@@ -2,7 +2,7 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 
 set -e
-
+export ELASTICSEARCH_HOSTS="[$ELASTICSEARCH_HOSTS]"
 ##############################################################################
 # Waiting for elasticsearch
 ##############################################################################
