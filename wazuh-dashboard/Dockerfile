@@ -7,7 +7,7 @@ ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
-RUN apt-get update && apt install curl gnupg -y
+RUN apt-get update && apt install curl libcap2-bin -y
 
 RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/dashboard/stable/wazuh-dashboard_${WAZUH_VERSION}.deb --output wazuh-dashboard_${WAZUH_VERSION}.deb && \
     dpkg -i wazuh-dashboard_${WAZUH_VERSION}.deb

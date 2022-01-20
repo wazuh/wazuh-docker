@@ -6,5 +6,3 @@
 ##############################################################################
 
 service wazuh-dashboard start
-
-service wazuh-dashboard enable
