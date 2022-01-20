@@ -29,3 +29,5 @@ cluster.routing.allocation.disk.threshold_enabled: false
 #opendistro_security.audit.config.disabled_rest_categories: NONE
 #opendistro_security.audit.config.disabled_transport_categories: NONE
 opendistro_security.audit.log_request_body: false
+# to allow elasticsearch discovery outside docker elasticsearch enable this line (in a real project you run elasticsearch in different machines and you need this option)
+# network.publish_host: nodeDnsName Example= https://node1.dns.name
