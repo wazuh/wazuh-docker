@@ -41,7 +41,6 @@ services:
       - network.host=0.0.0.0
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - bootstrap.memory_lock=true
-      - JAVA_HOME=/usr/share/wazuh-indexer/jdk/bin
     ulimits:
       memlock:
         soft: -1
@@ -55,13 +54,12 @@ services:
     hostname: kibana
     restart: always
     ports:
-      - 443:5601
+      - 5601:5601
+      - 443:443
     environment:
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=admin
-      - SERVER_SSL_ENABLED=true
-      - SERVER_SSL_CERTIFICATE=/etc/wazuh-dashboard/config/opendistroforelasticsearch.example.org.cert
-      - SERVER_SSL_KEY=/etc/wazuh-dashboard/config/opendistroforelasticsearch.example.org.key
+      - SERVER_SSL_ENABLED=false
 
     depends_on:
       - elasticsearch
