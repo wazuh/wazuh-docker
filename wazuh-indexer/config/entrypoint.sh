@@ -5,10 +5,10 @@
 # Start Wazuh indexer
 ##############################################################################
 
-export JAVA_HOME=/usr/share/wazuh-indexer/jdk/bin
-
-#/usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ -icl -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem
-
 service wazuh-indexer start
 
-while true; do sleep 1000; done
+sleep 20
+
+export JAVA_HOME=/usr/share/wazuh-indexer/jdk/ &&  bash /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem -p 9800 -icl
+
+tail -f /var/log/wazuh-indexer/wazuh-cluster.log
