@@ -1,0 +1,20 @@
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+FROM centos:8
+
+ARG WAZUH_VERSION=4.3.0-1
+
+USER root
+
+# Update and install dependecies
+RUN yum install initscripts -y
+
+#Download and install Wazuh indexer
+RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
+    rpm -i wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
+    yum clean all && rm -rf /var/cache/yum && rm -rf wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm
+
+COPY config/entrypoint.sh /
+
+RUN chmod 700 /entrypoint.sh
+
+ENTRYPOINT [ "/entrypoint.sh" ]
