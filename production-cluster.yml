@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh-master:
-    image: wazuh/wazuh-odfe:4.3.0
+    image: wazuh/wazuh-odfe:4.2.5
     hostname: wazuh-master
     restart: always
     ports:
@@ -11,7 +11,7 @@ services:
       - "514:514/udp"
       - "55000:55000"
     environment:
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - ELASTICSEARCH_URL=https://elasticsearch:9700
       - ELASTIC_USERNAME=admin
       - ELASTIC_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=full
@@ -32,17 +32,17 @@ services:
       - ossec-wodles:/var/ossec/wodles
       - filebeat-etc:/etc/filebeat
       - filebeat-var:/var/lib/filebeat
-      - ./production_cluster/ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
-      - ./production_cluster/ssl_certs/filebeat.pem:/etc/ssl/filebeat.pem
-      - ./production_cluster/ssl_certs/filebeat.key:/etc/ssl/filebeat.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/filebeat.pem:/etc/ssl/filebeat.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/filebeat.key:/etc/ssl/filebeat.key
       - ./production_cluster/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh-worker:
-    image: wazuh/wazuh-odfe:4.3.0
+    image: wazuh/wazuh-odfe:4.2.5
     hostname: wazuh-worker
     restart: always
     environment:
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
+      - ELASTICSEARCH_URL=https://elasticsearch:9700
       - ELASTIC_USERNAME=admin
       - ELASTIC_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=full
@@ -61,17 +61,17 @@ services:
       - worker-ossec-wodles:/var/ossec/wodles
       - worker-filebeat-etc:/etc/filebeat
       - worker-filebeat-var:/var/lib/filebeat
-      - ./production_cluster/ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
-      - ./production_cluster/ssl_certs/filebeat.pem:/etc/ssl/filebeat.pem
-      - ./production_cluster/ssl_certs/filebeat.key:/etc/ssl/filebeat.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/filebeat.pem:/etc/ssl/filebeat.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/filebeat.key:/etc/ssl/filebeat.key
       - ./production_cluster/wazuh_cluster/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf
 
   elasticsearch:
-    image: amazon/opendistro-for-elasticsearch:1.13.2
+    image: wazuh/wazuh-indexer:4.3.0
     hostname: elasticsearch
     restart: always
     ports:
-      - "9200:9200"
+      - "9700:9700"
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dlog4j2.formatMsgNoLookups=true"
     ulimits:
@@ -83,16 +83,16 @@ services:
         hard: 65536
     volumes:
       - elastic-data-1:/var/lib/wazuh-indexer
-      - ./production_cluster/ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/ssl_certs/node1.key:/etc/wazuh-indexer/certs/node1.key
-      - ./production_cluster/ssl_certs/node1.pem:/etc/wazuh-indexer/certs/node1.pem
-      - ./production_cluster/ssl_certs/admin.pem:/etc/wazuh-indexer/certs/admin.pem
-      - ./production_cluster/ssl_certs/admin.key:/etc/wazuh-indexer/certs/admin.key
-      - ./production_cluster/elastic_opendistro/elasticsearch-node1.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/node1.key:/etc/wazuh-indexer/certs/node1.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/node1.pem:/etc/wazuh-indexer/certs/node1.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/admin.pem:/etc/wazuh-indexer/certs/admin.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/admin.key:/etc/wazuh-indexer/certs/admin.key
+      - ./production_cluster/elastic_opendistro/wazuh-indexer-node1.yml:/etc/wazuh-indexer/opensearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   elasticsearch-2:
-    image: amazon/opendistro-for-elasticsearch:1.13.2
+    image: wazuh/wazuh-indexer:4.3.0
     hostname: elasticsearch-2
     restart: always
     environment:
@@ -106,14 +106,14 @@ services:
         hard: 65536
     volumes:
       - elastic-data-2:/var/lib/wazuh-indexer
-      - ./production_cluster/ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/ssl_certs/node2.key:/etc/wazuh-indexer/certs/node2.key
-      - ./production_cluster/ssl_certs/node2.pem:/etc/wazuh-indexer/certs/node2.pem
-      - ./production_cluster/elastic_opendistro/elasticsearch-node2.yml:/etc/wazuh-indexer/elasticsearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/node2.key:/etc/wazuh-indexer/certs/node2.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/node2.pem:/etc/wazuh-indexer/certs/node2.pem
+      - ./production_cluster/elastic_opendistro/wazuh-indexer-node2.yml:/etc/wazuh-indexer/elasticsearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
   
   elasticsearch-3:
-    image: amazon/opendistro-for-elasticsearch:1.13.2
+    image: wazuh/wazuh-indexer:4.3.0
     hostname: elasticsearch-3
     restart: always
     environment:
@@ -127,14 +127,14 @@ services:
         hard: 65536
     volumes:
       - elastic-data-3:/var/lib/wazuh-indexer
-      - ./production_cluster/ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/ssl_certs/node3.key:/etc/wazuh-indexer/certs/node3.key
-      - ./production_cluster/ssl_certs/node3.pem:/etc/wazuh-indexer/certs/node3.pem
-      - ./production_cluster/elastic_opendistro/elasticsearch-node3.yml:/etc/wazuh-indexer/elasticsearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/node3.key:/etc/wazuh-indexer/certs/node3.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/node3.pem:/etc/wazuh-indexer/certs/node3.pem
+      - ./production_cluster/elastic_opendistro/wazuh-indexer-node3.yml:/etc/wazuh-indexer/elasticsearch.yml
       - ./production_cluster/elastic_opendistro/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
  
   kibana:
-    image: wazuh/wazuh-kibana-odfe:4.3.0
+    image: wazuh/wazuh-dashboard:4.3.0
     hostname: kibana
     restart: always
     ports:
@@ -143,14 +143,14 @@ services:
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=SecretPassword
       - SERVER_SSL_ENABLED=true
-      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/cert.pem
-      - SERVER_SSL_KEY=/usr/share/kibana/config/key.pem
+      - SERVER_SSL_CERTIFICATE=/etc/wazuh-dashboard/certs/cert.pem
+      - SERVER_SSL_KEY=/etc/wazuh-dashboard/certs/key.pem
       - WAZUH_API_URL="https://wazuh-master"
       - API_USERNAME=acme-user
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
-      - ./production_cluster/kibana_ssl/cert.pem:/usr/share/kibana/config/cert.pem
-      - ./production_cluster/kibana_ssl/key.pem:/usr/share/kibana/config/key.pem
+      - ./production_cluster/kibana_ssl/cert.pem:/etc/wazuh-dashboard/certs/cert.pem
+      - ./production_cluster/kibana_ssl/key.pem:/etc/wazuh-dashboard/certs/key.pem
 
     depends_on:
       - elasticsearch
