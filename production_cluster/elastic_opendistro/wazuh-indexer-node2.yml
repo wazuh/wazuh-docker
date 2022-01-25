@@ -2,7 +2,7 @@ network.host: elasticsearch-2
 cluster.name: wazuh-cluster
 node.name: elasticsearch-2
 discovery.seed_hosts: elasticsearch,elasticsearch-2,elasticsearch-3
-cluster.initial_master_nodes: elasticsearch,elasticsearch-2,elasticsearch-3
+cluster.initial_master_nodes: elasticsearch
 bootstrap.memory_lock: true
 
 opendistro_security.ssl.transport.pemcert_filepath: node2.pem
