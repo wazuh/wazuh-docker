@@ -30,7 +30,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   elasticsearch:
-    image: wazuh/wazuh-indexer:4.3.0
+    image: wazuh-indexer
     hostname: elasticsearch
     restart: always
     ports:
