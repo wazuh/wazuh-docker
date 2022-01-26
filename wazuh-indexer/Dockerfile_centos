@@ -9,7 +9,7 @@ USER root
 RUN yum install initscripts -y
 
 #Download and install Wazuh indexer
-RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
+RUN curl https://s3.us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/yum/wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
     rpm -i wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
     yum clean all && rm -rf /var/cache/yum && rm -rf wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm
 
