@@ -31,7 +31,7 @@ services:
 
   elasticsearch:
     image: wazuh-indexer
-    hostname: elasticsearch
+    hostname: node1
     restart: always
     ports:
       - "9700:9700"

@@ -3,7 +3,7 @@ FROM centos:7
 
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.3.0-1
+ARG WAZUH_VERSION=4.2.5-1
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
@@ -14,7 +14,7 @@ COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
 RUN yum --enablerepo=updates clean metadata && \
   yum upgrade -y && \
-  yum -y install openssl which expect openssh-clients && yum -y install wazuh-manager-${WAZUH_VERSION} -y && \
+  yum -y install openssl which expect openssh-clients && yum install wazuh-manager-${WAZUH_VERSION} -y && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
 
@@ -40,7 +40,7 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/e
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 COPY config/etc/ /etc/
-COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
+COPY --chown=root:1000 config/create_user.py /var/ossec/framework/scripts/create_user.py
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
