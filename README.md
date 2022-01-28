@@ -27,6 +27,24 @@ cp -r production_cluster.tpl production_cluster
 ```  
 and follow the documentation to run the Wazuh stack.
 
+### Usage through make  
+You can use `Makefile` to run the stack: 
+
+* build images: `make images-build`
+* run dev stack: `make dev-up`
+* stop dev stack: `make dev-down`
+* creates certificates: `make certs-create`
+* run prod elastic nodes: `make prod-elk-run`
+* run prod kibana: `make prod-kibana-run` 
+* run prod nginx: `make prod-nginx-run`
+* run prod stack: `make prod-run`
+* stop prod stack: `make prod-stop`
+* destroy prod stack: `make prod-down`
+* clean generated certificates : `make certs-clean`
+* clean the stack: `make clean`
+
+To try `wazuh`, just run `make dev-up`. 
+To run `wazuh`in production, creates certificates (`make certs-create`) and run prod stack (`make prod-run`)
 
 ### Setup SSL certificate
 
