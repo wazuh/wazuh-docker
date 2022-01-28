@@ -1,3 +1,6 @@
+WAZUH_VERSION ?= 4.4.0-1
+WAZUH_KIBANA_VERSION ?= 4.4.0
+
 DEV_STACK = docker-compose.yml 
 PROD_STACK = production-cluster.yml
 BUILD_STACK = build-from-sources.yml
@@ -12,7 +15,7 @@ COMPOSE = docker-compose
 
 
 images-build:
-	$(COMPOSE) -f $(BUILD_STACK) up
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(BUILD_STACK) up
 
 
 certs-create: prod-stop
@@ -21,31 +24,31 @@ certs-create: prod-stop
 	bash $(KIBANA_SSL)/generate-self-signed-cert.sh
 
 dev-up:
-	$(COMPOSE) up $(DEFAULT_FLAGS) 
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) up $(DEFAULT_FLAGS) 
 
 dev-down:
-	$(COMPOSE) down 
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION)	$(COMPOSE) down 
 
 prod-elk-run: 
-	$(COMPOSE) -f $(PROD_STACK) up elasticsearch elasticsearch-2 elasticsearch-3 $(DEFAULT_FLAGS)
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) up elasticsearch elasticsearch-2 elasticsearch-3 $(DEFAULT_FLAGS)
 
 prod-kibana-run: 
-	$(COMPOSE) -f $(PROD_STACK) up kibana $(DEFAULT_FLAGS)
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) up kibana $(DEFAULT_FLAGS)
 
 prod-nginx-run: 
-	$(COMPOSE) -f $(PROD_STACK) up nginx $(DEFAULT_FLAGS)
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) up nginx $(DEFAULT_FLAGS)
 
 prod-run:
-	$(COMPOSE) -f $(PROD_STACK) up $(DEFAULT_FLAGS)
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) up $(DEFAULT_FLAGS)
 
 prod-up: 
-	$(COMPOSE) -f $(PROD_STACK) up $(DEFAULT_FLAGS)
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) up $(DEFAULT_FLAGS)
 
 prod-stop:
-	$(COMPOSE) -f $(PROD_STACK) stop
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) stop
 
 prod-down: 
-	$(COMPOSE) -f $(PROD_STACK) down
+	WAZUH_VERSION=$(WAZUH_VERSION) WAZUH_KIBANA_VERSION=$(WAZUH_KIBANA_VERSION) $(COMPOSE) -f $(PROD_STACK) down
 
 certs-clean: prod-stop
 	rm -f $(SSL_DIR)/admin* $(SSL_DIR)/node* $(SSL_DIR)/root* $(SSL_DIR)/filebeat* $(SSL_DIR)/intermediate* $(SSL_DIR)/client-cert*

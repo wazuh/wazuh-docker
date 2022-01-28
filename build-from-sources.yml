@@ -3,7 +3,10 @@ version: '3.7'
 
 services:
   wazuh:
-    build:  wazuh-odfe/
+    build:  
+      context: wazuh-odfe/
+      args:
+          WAZUH_VERSION: $WAZUH_VERSION
     image: wazuh/wazuh-odfe:dev-version
     hostname: wazuh-manager
     restart: always
@@ -51,7 +54,10 @@ services:
         hard: 65536
 
   kibana:
-    build: kibana-odfe/
+    build: 
+      context: kibana-odfe/
+      args:
+        WAZUH_KIBANA_VERSION: $WAZUH_KIBANA_VERSION
     image: wazuh/wazuh-kibana-odfe:dev-version
     hostname: kibana
     restart: always
