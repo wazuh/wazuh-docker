@@ -1,0 +1,42 @@
+FROM centos:7 AS builder
+
+ENV tini_bin="tini-amd64"
+
+RUN yum install initscripts curl -y
+
+RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}
+RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}.sha256sum
+RUN sha256sum -c ${tini_bin}.sha256sum && \
+    echo ${tini_bin} \
+    rm ${tini_bin}.sha256sum && \
+    mv ${tini_bin} /tini && \
+    chmod +x /tini
+#RUN mkdir /usr/share/wazuh-indexer
+#WORKDIR /usr/share/opensearch
+#RUN tar zxf /opt/opensearch.tar.gz --strip-components=1
+#RUN sed -i -e 's/OPENSEARCH_DISTRIBUTION_TYPE=tar/OPENSEARCH_DISTRIBUTION_TYPE=docker/' /usr/share/opensearch/bin/opensearch-env
+#RUN mkdir -p config config/jvm.options.d data logs
+#RUN chmod 0775 config config/jvm.options.d data logs
+#COPY config/opensearch.yml config/log4j2.properties config/
+#RUN chmod 0660 config/opensearch.yml config/log4j2.properties
+COPY config/config.sh .
+RUN bash config.sh
+
+################################################################################
+# Build stage 1 (the actual OpenSearch image):
+#
+# Copy opensearch from stage 0
+# Add entrypoint
+################################################################################
+FROM alpine
+ENV USER="wazuh-indexer" \
+    GROUP="wazuh-indexer" \
+    NAME="wazuh-indexer" \
+    INSTALL_DIR="/usr/share/wazuh-indexer"
+RUN addgroup --system --gid 1000 $GROUP && \
+    adduser -u 1000 -G $GROUP -D -h $INSTALL_DIR $USER && \
+    chmod 0775 $INSTALL_DIR
+    #chown -R 1000:0 $INSTALL_DIR
+WORKDIR $INSTALL_DIR
+COPY --from=builder --chown=1000:0 /usr/share/wazuh-indexer /usr/share/wazuh-indexer
+COPY --from=builder --chown=0:0 /tini /tini

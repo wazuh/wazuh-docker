@@ -1,17 +1,18 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
-FROM centos:8
+FROM ubuntu:20.04
 
 ARG WAZUH_VERSION=4.3.0-1
 
-USER root
+RUN apt-get update && apt install curl -y
 
-# Update and install dependecies
-RUN yum install initscripts -y
+RUN curl https://packages-dev.wazuh.com/pre-release/apt/pool/main/w/wazuh-indexer/wazuh-indexer_${WAZUH_VERSION}_amd64.deb --output wazuh-indexer_${WAZUH_VERSION}_amd64.deb && \
+    dpkg -i wazuh-indexer_${WAZUH_VERSION}_amd64.deb
 
-#Download and install Wazuh indexer
-RUN curl https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/stable/wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm --output wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
-    rpm -i wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm && \
-    yum clean all && rm -rf /var/cache/yum && rm -rf wazuh-indexer-${WAZUH_VERSION}.x86_64.rpm
+WORKDIR /usr/share/wazuh-indexer/plugins/opensearch-security/tools/
+
+RUN rm wazuh-cert-tool.sh && \
+    curl -sO https://packages-dev.wazuh.com/resources/4.3/install_functions/opendistro/wazuh-cert-tool.sh &&\
+    chmod 750 wazuh-cert-tool.sh
 
 COPY config/entrypoint.sh /
 
