@@ -1,0 +1,40 @@
+network.host: wazuh-indexer-2
+node.name: wazuh-indexer-2
+cluster.initial_master_nodes: wazuh-indexer,wazuh-indexer-2,wazuh-indexer-3
+cluster.name: "wazuh-cluster"
+discovery.seed_hosts: wazuh-indexer,wazuh-indexer-2,wazuh-indexer-3
+http.port: 9700-9799
+transport.tcp.port: 9800-9899
+node.max_local_storage_nodes: "3"
+path.data: /var/lib/wazuh-indexer
+path.logs: /var/log/wazuh-indexer
+###############################################################################
+#                                                                             #
+#         WARNING: Insecure demo certificates set up in this file.            #
+#                  Please change on production cluster!                       #
+#                                                                             #
+###############################################################################
+plugins.security.ssl.http.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh-indexer-2.pem
+plugins.security.ssl.http.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh-indexer-2.key
+plugins.security.ssl.http.pemtrustedcas_filepath: /etc/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh-indexer-2.pem
+plugins.security.ssl.transport.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh-indexer-2.key
+plugins.security.ssl.transport.pemtrustedcas_filepath: /etc/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.ssl.transport.resolve_hostname: false
+plugins.security.audit.type: internal_opensearch
+plugins.security.authcz.admin_dn:
+- "CN=admin,OU=Docu,O=Wazuh,L=California,C=US"
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.nodes_dn:
+- "CN=wazuh-indexer,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=wazuh-indexer-2,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=wazuh-indexer-3,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=filebeat,OU=Docu,O=Wazuh,L=California,C=US"
+plugins.security.restapi.roles_enabled:
+- "all_access"
+- "security_rest_api_access"
+plugins.security.system_indices.enabled: true
+plugins.security.system_indices.indices: [".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opensearch-observability", ".opendistro-asynchronous-search-response*", ".replication-metadata-store"]

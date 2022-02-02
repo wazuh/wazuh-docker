@@ -5,38 +5,53 @@
 # Start Wazuh indexer
 ##############################################################################
 
+export USER=wazuh-indexer
+export OPENSEARCH_PATH_CONF=/etc/wazuh-indexer 
+export INSTALLATION_DIR=/usr/share/wazuh-indexer
+export JAVA_HOME=${INSTALLATION_DIR}/jdk
+export FILE=${INSTALLATION_DIR}/start
 
-
-
-    service wazuh-indexer start
-    sleep 5
-    service wazuh-indexer status
-    sleep 5 
-
-if [ $NODE_TYPE == "worker" ] 
-  then
-    echo "inicio ver node_type"
-    echo $NODE_TYPE
-    echo "fin ver node_type"
-    rm -rf /var/lib/wazuh-indexer/*
-  else
-    echo "inicio ver hostname"
-    echo $HOSTNAME
-    sleep 1
-    echo "fin ver hostname"
-    echo "inicio ver node_type"
-    echo $NODE_TYPE
-    sleep 1
-    echo "fin ver node_type"
-    export OPENSEARCH_PATH_CONF=/etc/wazuh-indexer 
-    export JAVA_HOME=/usr/share/wazuh-indexer/jdk
-    /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig -icl -p 9800 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem
-    cat /var/log/wazuh-indexer/opensearch.log
+if [ -f $FILE ] 
+  then 
+    echo "second or more start"
+  else 
+    if [ $NODE_TYPE == "worker" ] 
+      then
+        echo "node_type start"
+        echo $NODE_TYPE
+        echo "node_type end"
+        rm -rf /var/lib/wazuh-indexer/*
+        sleep 70
+        echo "worker restart"
+        touch $FILE
+      else
+        echo "hostname start"
+        echo $HOSTNAME
+        echo "hostname end"
+        echo "node_type start"
+        echo $NODE_TYPE
+        echo "node_type end"
+        service wazuh-indexer start
+        sleep 5
+        service wazuh-indexer status
+        sleep 55
+        /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig -icl -p 9800 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem -h $HOSTNAME
+        touch $FILE
+    fi  
 fi
- 
 
 
 
-#export JAVA_HOME=/usr/share/wazuh-indexer/jdk/ &&  bash /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ -nhnv -cacert /etc/wazuh-indexer/certs/root-ca.pem -cert /etc/wazuh-indexer/certs/admin.pem -key /etc/wazuh-indexer/certs/admin-key.pem -p 9800 -icl
+sed -i '/path.logs:/d' /etc/wazuh-indexer/opensearch.yml
 
-tail -f /var/log/wazuh-indexer/wazuh-cluster.log
+service wazuh-indexer stop
+service wazuh-indexer start
+#CLK_TK=`getconf CLK_TCK` runuser ${USER} --shell="/bin/bash" --command="${INSTALLATION_DIR}/bin/opensearch"
+
+if [ -f /var/log/wazuh-indexer/wazuh-cluster.log ] 
+  then
+    tail -f /var/log/wazuh-indexer/wazuh-cluster.log
+  else
+    while true; do sleep 1000; done
+fi
+    

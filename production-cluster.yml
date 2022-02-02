@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh-master:
-    image: wazuh/wazuh-odfe:4.2.5
+    image: wazuh/wazuh-odfe:4.3.0
     hostname: wazuh-master
     restart: always
     ports:
@@ -38,7 +38,7 @@ services:
       - ./production_cluster/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh-worker:
-    image: wazuh/wazuh-odfe:4.2.5
+    image: wazuh/wazuh-odfe:4.3.0
     hostname: wazuh-worker
     restart: always
     environment:
@@ -88,8 +88,8 @@ services:
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer.key:/etc/wazuh-indexer/certs/wazuh-indexer.key
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer.pem:/etc/wazuh-indexer/certs/wazuh-indexer.pem
       - ./production_cluster/wazuh_indexer_ssl_certs/admin.pem:/etc/wazuh-indexer/certs/admin.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/admin.key:/etc/wazuh-indexer/certs/admin.key
-      - ./production_cluster/wazuh-indexer/opnesearch-node1.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/admin.key:/etc/wazuh-indexer/certs/admin-key.pem
+      - ./production_cluster/wazuh-indexer/opensearch-node1.yml:/etc/wazuh-indexer/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   wazuh-indexer-2:
@@ -111,7 +111,7 @@ services:
       - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer-2.key:/etc/wazuh-indexer/certs/wazuh-indexer-2.key
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer-2.pem:/etc/wazuh-indexer/certs/wazuh-indexer-2.pem
-      - ./production_cluster/wazuh-indexer/opnesearch-node2.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh-indexer/opensearch-node2.yml:/etc/wazuh-indexer/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
   
   wazuh-indexer-3:
@@ -133,7 +133,7 @@ services:
       - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer-3.key:/etc/wazuh-indexer/certs/wazuh-indexer-3.key
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh-indexer-3.pem:/etc/wazuh-indexer/certs/wazuh-indexer-3.pem
-      - ./production_cluster/wazuh-indexer/opnesearch-node3.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh-indexer/opensearch-node3.yml:/etc/wazuh-indexer/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
  
   kibana:
