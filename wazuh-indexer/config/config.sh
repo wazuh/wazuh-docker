@@ -26,44 +26,46 @@ if ! id $USER &> /dev/null; then
 fi
 
 # Create directories
-mkdir -p ${RPM_BUILD_ROOT}${INSTALL_DIR}
-mkdir -p ${RPM_BUILD_ROOT}/etc
-mkdir -p ${RPM_BUILD_ROOT}${LOG_DIR}
-mkdir -p ${RPM_BUILD_ROOT}${LIB_DIR}
-mkdir -p ${RPM_BUILD_ROOT}${SYS_DIR}
+mkdir -p ${INSTALL_DIR}
+mkdir -p /etc
+mkdir -p ${LOG_DIR}
+mkdir -p ${LIB_DIR}
+mkdir -p ${SYS_DIR}
 
 # Download required sources
 curl -kOL https://s3.amazonaws.com/warehouse.wazuh.com/stack/indexer/wazuh-indexer-base-linux-x64.tar.gz
 tar -xzf wazuh-indexer-*.tar.gz && rm -f wazuh-indexer-*.tar.gz
 chown -R ${USER}:${GROUP} wazuh-indexer-*/*
 
-# Copy base files into RPM_BUILD_ROOT directory
-mv wazuh-indexer-*/etc/ ${RPM_BUILD_ROOT}/etc/
-cp -r wazuh-indexer-*${SYS_DIR}/* ${RPM_BUILD_ROOT}${SYS_DIR}/
-rm -rf wazuh-indexer-*/etc
-rm -rf wazuh-indexer-*/usr
-cp -pr wazuh-indexer-*/* ${RPM_BUILD_ROOT}${INSTALL_DIR}/
+# Copy base files into directories
+cp -rf wazuh-indexer-*/etc/wazuh.indexer /etc/
+cp -rf wazuh-indexer-*/etc/init.d/* /etc/init.d/
+cp -rf wazuh-indexer-*/etc/sysconfig/* /etc/sysconfig/
+cp -rf wazuh-indexer-*${SYS_DIR}/* ${SYS_DIR}/
+#rm -rf wazuh-indexer-*/etc
+#rm -rf wazuh-indexer-*/usr
+cp -pr wazuh-indexer-*/* ${INSTALL_DIR}/
 
 # Download demo certificates
 curl -kOL https://s3.amazonaws.com/warehouse.wazuh.com/stack/demo-certs.tar.gz
 tar xzf demo-certs.tar.gz && rm -f demo-certs.tar.gz
 chown -R ${USER}:${GROUP} certs
-mkdir -p ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
-cp certs/admin.pem ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
-cp certs/admin-key.pem ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
-cp certs/demo-indexer.pem ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
-cp certs/demo-indexer-key.pem ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
-cp certs/root-ca.pem ${RPM_BUILD_ROOT}${CONFIG_DIR}/certs/
+mkdir -p ${CONFIG_DIR}/certs/
+cp certs/admin.pem ${CONFIG_DIR}/certs/
+cp certs/admin-key.pem ${CONFIG_DIR}/certs/
+cp certs/demo-indexer.pem ${CONFIG_DIR}/certs/
+cp certs/demo-indexer-key.pem ${CONFIG_DIR}/certs/
+cp certs/root-ca.pem ${CONFIG_DIR}/certs/
 
-#cp ${REPO_DIR}/install_functions/wazuh-cert-tool.sh ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/tools/
-#cp ${REPO_DIR}/install_functions/wazuh-passwords-tool.sh ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/tools/
-#cp ${REPO_DIR}/config/opensearch/certificate/config_aio.yml ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/tools/config.yml
+#cp ${REPO_DIR}/install_functions/wazuh-cert-tool.sh ${INSTALL_DIR}/plugins/opensearch-security/tools/
+#cp ${REPO_DIR}/install_functions/wazuh-passwords-tool.sh ${INSTALL_DIR}/plugins/opensearch-security/tools/
+#cp ${REPO_DIR}/config/opensearch/certificate/config_aio.yml ${INSTALL_DIR}/plugins/opensearch-security/tools/config.yml
 
-#cp ${REPO_DIR}/config/opensearch/roles/internal_users.yml ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
-#cp ${REPO_DIR}/config/opensearch/roles/roles.yml ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
-#cp ${REPO_DIR}/config/opensearch/roles/roles_mapping.yml ${RPM_BUILD_ROOT}${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
+#cp ${REPO_DIR}/config/opensearch/roles/internal_users.yml ${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
+#cp ${REPO_DIR}/config/opensearch/roles/roles.yml ${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
+#cp ${REPO_DIR}/config/opensearch/roles/roles_mapping.yml ${INSTALL_DIR}/plugins/opensearch-security/securityconfig/
 
-#chmod 0660 "/etc/sysconfig/${NAME}" && chown root:${GROUP} "/etc/sysconfig/${NAME}"
+chmod 0660 "/etc/sysconfig/${NAME}" && chown root:${GROUP} "/etc/sysconfig/${NAME}"
 chmod 400 ${CONFIG_DIR}/certs/admin.pem && chown ${USER}:${GROUP} ${CONFIG_DIR}/certs/admin.pem
 chmod 400 ${CONFIG_DIR}/certs/admin-key.pem && chown ${USER}:${GROUP} ${CONFIG_DIR}/certs/admin-key.pem
 chmod 400 ${CONFIG_DIR}/certs/demo-indexer.pem && chown ${USER}:${GROUP} ${CONFIG_DIR}/certs/demo-indexer.pem
