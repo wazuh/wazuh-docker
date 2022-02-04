@@ -5,7 +5,7 @@
 # Start Wazuh dashboard
 ##############################################################################
 
-sed -i 's/<wazuh-indexer-ip>:9700/wazuh-indexer:9700/' /etc/wazuh-dashboard/dashboard.yml
+sed -i 's/localhost:9700/wazuh-indexer:9700/' /etc/wazuh-dashboard/dashboard.yml
 sed -i 's/<wazuh-dashboard-ip>/0.0.0.0/' /etc/wazuh-dashboard/dashboard.yml
 sed -i '/logging.dest:/d' /etc/wazuh-dashboard/dashboard.yml
 

@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh:
-    image: wazuh/wazuh-odfe:4.2.5
+    image: wazuh/wazuh-odfe:4.3.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -30,7 +30,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   wazuh-indexer:
-    image: wazuh-indexer
+    image: test-indexer
     hostname: node1
     restart: always
     ports:
@@ -39,7 +39,8 @@ services:
       - discovery.type=single-node
       - cluster.name=wazuh-cluster
       - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - plugins.security.allow_default_init_securityindex=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
       - bootstrap.memory_lock=true
     ulimits:
       memlock:
