@@ -1,35 +1,24 @@
-ca:
-   root:
-      dn: CN=admin,OU=Docu,O=Wazuh,L=California,C=US
-      pkPassword: none
-      keysize: 2048
-      file: root-ca.pem 
-   intermediate:
-      dn: CN=admin,OU=Docu,O=Wazuh,L=California,C=US
-      keysize: 2048
-      validityDays: 3650  
-      pkPassword: intermediate-ca-password
-      file: intermediate-ca.pem
-
 nodes:
-  - name: wazuh-indexer
-    dn: CN=wazuh-indexer,OU=Docu,O=Wazuh,L=California,C=US
-    dns: 
-      - wazuh-indexer
-  - name: wazuh-indexer-2
-    dn: CN=wazuh-indexer-2,OU=Docu,O=Wazuh,L=California,C=US
-    dns: 
-      - wazuh-indexer-2
-  - name: wazuh-indexer-3
-    dn: CN=wazuh-indexer-3,OU=Docu,O=Wazuh,L=California,C=US
-    dns: 
-      - wazuh-indexer-3
-  - name: filebeat
-    dn: CN=filebeat,OU=Docu,O=Wazuh,L=California,C=US
-    dns: 
-      - wazuh
+  # Wazuh indexer server nodes
+  elasticsearch:
+    name: wazuh1.indexer
+    ip: wazuh1.indexer
+    name: wazuh2.indexer
+    ip: wazuh2.indexer
+    name: wazuh3.indexer
+    ip: wazuh3.indexer
 
-clients:
-  - name: admin
-    dn: CN=admin,OU=Docu,O=Wazuh,L=California,C=US
-    admin: true
+  # Wazuh server nodes
+  # Use node_type only with more than one Wazuh manager
+  wazuh_servers:
+    name: wazuh.master
+    ip: wazuh.master
+    node_type: master
+    name: wazuh.worker
+    ip: wazuh.worker
+    node_type: worker
+
+  # Kibana node
+  kibana:
+    name: wazuh.dashboard
+    ip: wazuh.dashboard

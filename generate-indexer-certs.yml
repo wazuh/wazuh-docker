@@ -3,8 +3,8 @@ version: '3'
 
 services:
   generator:
-    image: wazuh/opendistro-certs-generator:0.1
-    hostname: opendistro-certs-generator
+    image: wazuh/wazuh-certs-generator:0.0.1
+    hostname: wazuh-certs-generator
     volumes:
-      - ./production_cluster/wazuh_indexer_ssl_certs/certs.yml:/usr/src/config/myconf.yml
-      - ./production_cluster/wazuh_indexer_ssl_certs/:/usr/src/certs/out/ 
+      - ./production_cluster/wazuh_indexer_ssl_certs/certs.yml:/unattended_installer/install_functions/config.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/:/unattended_installer/install_functions/certificates/
