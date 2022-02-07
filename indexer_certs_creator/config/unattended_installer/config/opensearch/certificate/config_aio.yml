@@ -1,0 +1,10 @@
+nodes:
+  elasticsearch:
+    name: elasticsearch
+    ip: 127.0.0.1
+  wazuh_servers:
+    name: filebeat
+    ip: 127.0.0.1
+  kibana:
+    name: kibana
+    ip: 127.0.0.1

@@ -20,9 +20,9 @@ RUN sha256sum -c ${tini_bin}.sha256sum && \
 #COPY config/opensearch.yml config/log4j2.properties config/
 #RUN chmod 0660 config/opensearch.yml config/log4j2.properties
 COPY config/unattended_installer.tar.gz /
-COPY config/config2.sh .
+COPY config/config.sh .
 RUN tar -xzvf /unattended_installer.tar.gz
-RUN bash config2.sh
+RUN bash config.sh
 
 ################################################################################
 # Build stage 1 (the actual OpenSearch image):
@@ -50,9 +50,9 @@ RUN useradd --system \
 
 WORKDIR $INSTALL_DIR
 
-COPY config/entrypoint_OS.sh /
+COPY config/entrypoint.sh /
 
-RUN chmod 700 /entrypoint_OS.sh
+RUN chmod 700 /entrypoint.sh
 
 COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/usr/share/wazuh-indexer /usr/share/wazuh-indexer
 COPY --from=builder --chown=0:0 /tini /tini
@@ -72,6 +72,6 @@ EXPOSE 9700
 
 #ENTRYPOINT [ "/entrypoint.sh" ]
 
-ENTRYPOINT ["/tini", "--", "/entrypoint_OS.sh"]
+ENTRYPOINT ["/tini", "--", "/entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
 CMD ["opensearchwrapper"]
