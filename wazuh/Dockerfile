@@ -4,13 +4,13 @@ FROM waystonesystems/baseimage-centos:0.2.0
 # Arguments
 ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_VERSION=4.2.5-1
+ARG FILEBEAT_CHANNEL=filebeat-oss
 
 # Environment variables
 ENV API_USER="foo" \
    API_PASS="bar"
 
 ARG TEMPLATE_VERSION="4.0"
-ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
@@ -22,7 +22,6 @@ name=Wazuh repository\n\
 baseurl=https://packages.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
-
 
 # Install packages
 RUN set -x && \
@@ -42,8 +41,8 @@ RUN set -x && \
     rm -f /var/ossec/logs/api/*/*/* && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
     rm -f /var/ossec/logs/wazuh/*/*/* && \
-    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
-    rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
+    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/FILEBEAT_CHANNEL-${FILEBEAT_VERSION}-x86_64.rpm && \
+    rpm -vi FILEBEAT_CHANNEL-${FILEBEAT_VERSION}-x86_64.rpm && rm -f FILEBEAT_CHANNEL-${FILEBEAT_VERSION}-x86_64.rpm && \
     sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
 
 # Services
@@ -60,8 +59,7 @@ RUN chmod +x /etc/service/wazuh/run && \
    chmod +x /etc/service/filebeat/run 
 
 # Copy configuration files from repository
-COPY config/filebeat_to_elasticsearch.yml ./
-COPY config/filebeat_to_logstash.yml ./
+COPY config/filebeat.yml ./
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
@@ -100,8 +98,7 @@ COPY config/entrypoint.sh /entrypoint.sh
 COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
-COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
-COPY config/03-config_filebeat.sh /entrypoint-scripts/03-config_filebeat.sh
+COPY config/02-set_config_filebeat.sh /entrypoint-scripts/02-set_config_filebeat.sh
 COPY config/20-ossec-configuration.sh /entrypoint-scripts/20-ossec-configuration.sh
 COPY config/25-backups.sh /entrypoint-scripts/25-backups.sh
 COPY config/35-remove_credentials_file.sh /entrypoint-scripts/35-remove_credentials_file.sh
@@ -109,8 +106,7 @@ COPY config/85-save_wazuh_version.sh /entrypoint-scripts/85-save_wazuh_version.s
 RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/00-decrypt_credentials.sh && \
     chmod 755 /entrypoint-scripts/01-wazuh.sh && \
-    chmod 755 /entrypoint-scripts/02-set_filebeat_destination.sh && \
-    chmod 755 /entrypoint-scripts/03-config_filebeat.sh && \
+    chmod 755 /entrypoint-scripts/02-set_config_filebeat.sh && \
     chmod 755 /entrypoint-scripts/20-ossec-configuration.sh && \
     chmod 755 /entrypoint-scripts/25-backups.sh && \
     chmod 755 /entrypoint-scripts/35-remove_credentials_file.sh && \
@@ -119,6 +115,10 @@ RUN chmod 755 /entrypoint.sh && \
 # Load wazuh alerts template.
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
+
+# Create filebeat directories
+RUN mkdir -p /usr/share/filebeat/module/
+RUN mkdir /usr/share/filebeat/config
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
