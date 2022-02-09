@@ -13,6 +13,7 @@ SPECIAL_CHARS = "@$!%*?&-_"
 
 
 try:
+    from wazuh.rbac.orm import create_rbac_db
     from wazuh.security import (
         create_user,
         get_users,
@@ -66,6 +67,10 @@ if __name__ == "__main__":
         # abort if no user file detected
         sys.exit(0)
     username, password = read_user_file()
+
+    # create RBAC database
+    create_rbac_db()
+
     initial_users = db_users()
     if username not in initial_users:
         # create a new user
