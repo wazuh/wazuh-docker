@@ -5,8 +5,6 @@
 # Start Wazuh dashboard
 ##############################################################################
 
-sed -i 's/localhost:9700/wazuh-indexer:9700/' /etc/wazuh-dashboard/dashboard.yml
-sed -i 's/<wazuh-dashboard-ip>/0.0.0.0/' /etc/wazuh-dashboard/dashboard.yml
-sed -i '/logging.dest:/d' /etc/wazuh-dashboard/dashboard.yml
+#/wazuh_app_config.sh
 
 runuser wazuh-dashboard --shell="/bin/bash" --command="/usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /etc/wazuh-dashboard/dashboard.yml"

@@ -3,12 +3,12 @@ FROM centos:7
 
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.2.5-1
+ARG WAZUH_VERSION=4.3.0-1
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 # Set repositories.
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+RUN rpm --import https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH
 
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
