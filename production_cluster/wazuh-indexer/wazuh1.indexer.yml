@@ -1,14 +1,14 @@
-network.host: wazuh1-indexer
-node.name: wazuh1-indexer
+network.host: wazuh1.indexer
+node.name: wazuh1.indexer
 cluster.initial_master_nodes:
-        - wazuh1-indexer
-        - wazuh2-indexer
-        - wazuh3-indexer
+        - wazuh1.indexer
+        - wazuh2.indexer
+        - wazuh3.indexer
 cluster.name: "wazuh-cluster"
 discovery.seed_hosts:
-        - wazuh1-indexer
-        - wazuh2-indexer
-        - wazuh3-indexer
+        - wazuh1.indexer
+        - wazuh2.indexer
+        - wazuh3.indexer
 http.port: 9700-9799
 transport.tcp.port: 9800-9899
 node.max_local_storage_nodes: "3"
@@ -20,11 +20,11 @@ path.logs: /var/log/wazuh-indexer
 #                  Please change on production cluster!                       #
 #                                                                             #
 ###############################################################################
-plugins.security.ssl.http.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh1-indexer.pem
-plugins.security.ssl.http.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh1-indexer.key
+plugins.security.ssl.http.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh1.indexer.pem
+plugins.security.ssl.http.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh1.indexer.key
 plugins.security.ssl.http.pemtrustedcas_filepath: /etc/wazuh-indexer/certs/root-ca.pem
-plugins.security.ssl.transport.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh1-indexer.pem
-plugins.security.ssl.transport.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh1-indexer.key
+plugins.security.ssl.transport.pemcert_filepath: /etc/wazuh-indexer/certs/wazuh1.indexer.pem
+plugins.security.ssl.transport.pemkey_filepath: /etc/wazuh-indexer/certs/wazuh1.indexer.key
 plugins.security.ssl.transport.pemtrustedcas_filepath: /etc/wazuh-indexer/certs/root-ca.pem
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
@@ -35,9 +35,9 @@ plugins.security.authcz.admin_dn:
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.nodes_dn:
-- "CN=wazuh1-indexer,OU=Docu,O=Wazuh,L=California,C=US"
-- "CN=wazuh2-indexer,OU=Docu,O=Wazuh,L=California,C=US"
-- "CN=wazuh3-indexer,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=wazuh1.indexer,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=wazuh2.indexer,OU=Docu,O=Wazuh,L=California,C=US"
+- "CN=wazuh3.indexer,OU=Docu,O=Wazuh,L=California,C=US"
 - "CN=filebeat,OU=Docu,O=Wazuh,L=California,C=US"
 plugins.security.restapi.roles_enabled:
 - "all_access"
@@ -46,3 +46,4 @@ plugins.security.allow_default_init_securityindex: true
 cluster.routing.allocation.disk.threshold_enabled: false
 opendistro_security.audit.config.disabled_rest_categories: NONE
 opendistro_security.audit.config.disabled_transport_categories: NONE
+compatibility.override_main_response_version: true

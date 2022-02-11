@@ -8,7 +8,10 @@ export USER=wazuh-indexer
 export INSTALLATION_DIR=/usr/share/wazuh-indexer
 export OPENSEARCH_PATH_CONF=/etc/wazuh-indexer
 export JAVA_HOME=${INSTALLATION_DIR}/jdk
-export FILE=${INSTALLATION_DIR}/start
+export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" /etc/wazuh-indexer/opensearch.yml)
+export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" /etc/wazuh-indexer/opensearch.yml)
+export CERT="/etc/wazuh-indexer/certs/admin.pem"
+export KEY="/etc/wazuh-indexer/certs/admin-key.pem"
 
 run_as_other_user_if_needed() {
   if [[ "$(id -u)" == "0" ]]; then
@@ -26,8 +29,6 @@ run_as_other_user_if_needed() {
 # or simply to run /bin/bash to check the image
 if [[ "$1" != "opensearchwrapper" ]]; then
   if [[ "$(id -u)" == "0" && $(basename "$1") == "opensearch" ]]; then
-    # centos:7 chroot doesn't have the `--skip-chdir` option and
-    # changes our CWD.
     # Rewrite CMD args to replace $1 with `opensearch` explicitly,
     # so that we are backwards compatible with the docs
     # from the previous Elasticsearch versions<6
@@ -84,6 +85,11 @@ if [[ "$(id -u)" == "0" ]]; then
   if [[ -n "$TAKE_FILE_OWNERSHIP" ]]; then
     chown -R 1000:0 /usr/share/wazuh-indexer/{data,logs}
   fi
+fi
+
+if [[ "$DISCOVERY" == "single-node" ]]; then
+  # run securityadmin.sh for single node
+  nohup /securityadmin.sh &
 fi
 
 run_as_other_user_if_needed /usr/share/wazuh-indexer/bin/opensearch <<<"$KEYSTORE_PASSWORD"

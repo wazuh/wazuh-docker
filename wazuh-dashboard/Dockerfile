@@ -13,7 +13,15 @@ RUN curl https://s3.us-west-1.amazonaws.com/packages-dev.wazuh.com/pre-release/a
 
 COPY config/entrypoint.sh /
 
+COPY config/wazuh_app_config.sh /
+
+COPY config/dashboard.yml /etc/wazuh-dashboard/
+
 RUN chmod 700 /entrypoint.sh
+
+RUN chmod 700 /wazuh_app_config.sh
+
+RUN chown 101:101 /etc/wazuh-dashboard/dashboard.yml && chmod 664 /etc/wazuh-dashboard/dashboard.yml
 
 # Services ports
 EXPOSE 5601

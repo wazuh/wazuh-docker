@@ -1,0 +1,8 @@
+hosts:
+  - default:
+     url: https://wazuh.master
+     port: 55000
+     username: acme-user
+     password: MyS3cr37P450r.*-
+     run_as: false
+
