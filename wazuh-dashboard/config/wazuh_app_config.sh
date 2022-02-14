@@ -8,7 +8,7 @@ api_password="${API_PASSWORD:-wazuh-wui}"
 
 kibana_config_file="/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml"
 
-cat << EOF >> $kibana_config_file
+cat << EOF > $kibana_config_file
 hosts:
   - 1513629884013:
       url: $wazuh_url
@@ -16,3 +16,5 @@ hosts:
       username: $api_username
       password: $api_password
 EOF
+
+
