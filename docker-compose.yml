@@ -2,9 +2,9 @@
 version: '3.7'
 
 services:
-  wazuh:
+  wazuh.manager:
     image: wazuh/wazuh-odfe:4.3.0
-    hostname: wazuh-manager
+    hostname: wazuh.manager
     restart: always
     ports:
       - "1514:1514"

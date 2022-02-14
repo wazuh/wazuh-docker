@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 set -e
 
 # Files created by Elasticsearch should always be group writable too
@@ -88,7 +89,7 @@ if [[ "$(id -u)" == "0" ]]; then
 fi
 
 if [[ "$DISCOVERY" == "single-node" ]]; then
-  # run securityadmin.sh for single node
+  # run securityadmin.sh for single node with CACERT, CERT and KEY parameter
   nohup /securityadmin.sh &
 fi
 

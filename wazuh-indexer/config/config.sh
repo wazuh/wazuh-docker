@@ -1,3 +1,4 @@
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 

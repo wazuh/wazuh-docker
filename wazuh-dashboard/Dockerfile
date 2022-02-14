@@ -17,11 +17,15 @@ COPY config/wazuh_app_config.sh /
 
 COPY config/dashboard.yml /etc/wazuh-dashboard/
 
+COPY config/wazuh.yml /usr/share/wazuh-dashboard/data/wazuh/config/
+
 RUN chmod 700 /entrypoint.sh
 
 RUN chmod 700 /wazuh_app_config.sh
 
 RUN chown 101:101 /etc/wazuh-dashboard/dashboard.yml && chmod 664 /etc/wazuh-dashboard/dashboard.yml
+
+RUN chown -R 101:101 /usr/share/wazuh-dashboard/data/wazuh && chmod -R 775 /usr/share/wazuh-dashboard/data/wazuh
 
 # Services ports
 EXPOSE 5601
