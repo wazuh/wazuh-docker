@@ -9,4 +9,4 @@
 echo "Moving created certificates to destination directory"
 cp /unattended_installer/install_functions/certs/* /certificates/
 echo "changing certificate permissions"
-chmod -R 664 /certificates/*
+chmod -R 666 /certificates/*
