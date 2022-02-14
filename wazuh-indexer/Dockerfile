@@ -1,3 +1,4 @@
+# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal AS builder
 
 ENV tini_bin="tini-amd64"
