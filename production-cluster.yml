@@ -152,7 +152,7 @@ services:
       - ./production_cluster/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/etc/wazuh-dashboard/certs/wazuh-dashboard-key.pem
       - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-dashboard/certs/root-ca.pem
       - ./production_cluster/wazuh_dashboard/dashboard.yml:/etc/wazuh-dashboard/dashboard.yml
-      - ./production_cluster/wazuh_dashboard/wazuh:/usr/share/wazuh-dashboard/data/wazuh
+      #- ./production_cluster/wazuh_dashboard/wazuh:/usr/share/wazuh-dashboard/data/wazuh
     depends_on:
       - wazuh1.indexer
     links:

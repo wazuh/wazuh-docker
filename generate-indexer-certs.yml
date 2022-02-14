@@ -7,4 +7,4 @@ services:
     hostname: wazuh-certs-generator
     volumes:
       - ./production_cluster/wazuh_indexer_ssl_certs/certs.yml:/unattended_installer/install_functions/config.yml
-      - ./production_cluster/wazuh_indexer_ssl_certs/:/unattended_installer/install_functions/certificates/
+      - ./production_cluster/wazuh_indexer_ssl_certs/:/certificates/

@@ -25,7 +25,9 @@ RUN chmod 700 /wazuh_app_config.sh
 
 RUN chown 101:101 /etc/wazuh-dashboard/dashboard.yml && chmod 664 /etc/wazuh-dashboard/dashboard.yml
 
-RUN chown -R 101:101 /usr/share/wazuh-dashboard/data/wazuh && chmod -R 775 /usr/share/wazuh-dashboard/data/wazuh
+RUN mkdir -p /usr/share/wazuh-dashboard/data/wazuh/config && chown -R 101:101 /usr/share/wazuh-dashboard/data/wazuh/config && chmod -R 775 /usr/share/wazuh-dashboard/data/wazuh/config
+
+RUN mkdir -p /usr/share/wazuh-dashboard/data/wazuh/logs && chown -R 101:101 /usr/share/wazuh-dashboard/data/wazuh/logs && chmod -R 775 /usr/share/wazuh-dashboard/data/wazuh/logs
 
 # Services ports
 EXPOSE 5601

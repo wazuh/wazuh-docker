@@ -46,7 +46,7 @@ services:
         hard: 65536
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.3.0
+    image: wazuh/wazuh-dashboard-test:4.3.0
     hostname: wazuh.dashboard
     restart: always
     ports:
@@ -56,6 +56,7 @@ services:
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=admin
       - SERVER_SSL_ENABLED=false
+      - WAZUH_API_URL=https://wazuh.manager
     #volumes:
     #  - ./production_cluster/wazuh_dashboard/dashboard.yml:/etc/wazuh-dashboard/dashboard.yml
 
