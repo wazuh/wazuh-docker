@@ -46,7 +46,7 @@ services:
         hard: 65536
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard-test:4.3.0
+    image: wazuh/wazuh-dashboard:4.3.0
     hostname: wazuh.dashboard
     restart: always
     ports:
