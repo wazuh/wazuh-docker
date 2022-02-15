@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.master:
-    image: wazuh/wazuh-odfe:4.3.0
+    image: wazuh/wazuh-manager:4.3.0
     hostname: wazuh.master
     restart: always
     ports:
@@ -38,7 +38,7 @@ services:
       - ./production_cluster/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh.worker:
-    image: wazuh/wazuh-odfe:4.3.0
+    image: wazuh/wazuh-manager:4.3.0
     hostname: wazuh.worker
     restart: always
     environment:
@@ -175,8 +175,8 @@ services:
       - wazuh.worker:wazuh.worker
       - wazuh.dashboard:wazuh.dashboard
     volumes:
-      - ./production_cluster/nginx_wazuh/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./production_cluster/nginx_wazuh/ssl:/etc/nginx/ssl:ro
+      - ./production_cluster/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./production_cluster/nginx/ssl:/etc/nginx/ssl:ro
 
 volumes:
   ossec-api-configuration:
