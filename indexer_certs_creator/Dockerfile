@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
-FROM wazuh/wazuh-indexer:4.3.0
+FROM ubuntu:focal
 
 RUN apt-get update && apt-get install openssl -y
 
