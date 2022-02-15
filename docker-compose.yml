@@ -57,6 +57,11 @@ services:
       - ELASTICSEARCH_PASSWORD=admin
       - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
+    depends_on:
+      - wazuh1.indexer
+    links:
+      - wazuh1.indexer:wazuh1.indexer
+      - wazuh.manager:wazuh.manager
 
 volumes:
   ossec_api_configuration:
