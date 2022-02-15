@@ -57,8 +57,6 @@ services:
       - ELASTICSEARCH_PASSWORD=admin
       - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
-    #volumes:
-    #  - ./production_cluster/wazuh_dashboard/dashboard.yml:/etc/wazuh-dashboard/dashboard.yml
 
 volumes:
   ossec_api_configuration:
