@@ -8,7 +8,7 @@ ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 # Set repositories.
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+RUN rpm --import https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH
 
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
