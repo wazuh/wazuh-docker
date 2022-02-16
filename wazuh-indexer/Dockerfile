@@ -3,7 +3,7 @@ FROM ubuntu:focal AS builder
 
 ENV tini_bin="tini-amd64"
 
-RUN apt-get update -y && apt-get install curl -y
+RUN apt-get update -y && apt-get install curl openssl xz-utils -y
 
 RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}
 RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}.sha256sum
@@ -17,7 +17,13 @@ COPY config/unattended_installer.tar.gz /
 
 COPY config/config.sh .
 
+COPY config/config.yml /
+
 RUN tar -xzvf /unattended_installer.tar.gz
+
+RUN mv /config.yml /unattended_installer/install_functions/
+
+RUN chmod 755 /unattended_installer/install_functions/wazuh-cert-tool.sh && bash /unattended_installer/install_functions/wazuh-cert-tool.sh
 
 RUN bash config.sh
 

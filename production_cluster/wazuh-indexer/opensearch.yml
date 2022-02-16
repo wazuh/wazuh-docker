@@ -6,12 +6,6 @@ path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
 discovery.type: single-node
 compatibility.override_main_response_version: true
-###############################################################################
-#                                                                             #
-#         WARNING: Insecure demo certificates set up in this file.            #
-#                  Please change on production cluster!                       #
-#                                                                             #
-###############################################################################
 plugins.security.ssl.http.pemcert_filepath: /etc/wazuh-indexer/certs/admin.pem
 plugins.security.ssl.http.pemkey_filepath: /etc/wazuh-indexer/certs/admin-key.pem
 plugins.security.ssl.http.pemtrustedcas_filepath: /etc/wazuh-indexer/certs/root-ca.pem

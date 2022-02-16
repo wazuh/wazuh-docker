@@ -6,9 +6,9 @@ wazuh_port="${API_PORT:-55000}"
 api_username="${API_USERNAME:-wazuh-wui}"
 api_password="${API_PASSWORD:-wazuh-wui}"
 
-kibana_config_file="/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml"
+dashboard_config_file="/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml"
 
-cat << EOF > $kibana_config_file
+cat << EOF > $dashboard_config_file
 hosts:
   - 1513629884013:
       url: $wazuh_url
