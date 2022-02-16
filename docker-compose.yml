@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.manager:
-    image: wazuh/wazuh-odfe:4.3.0
+    image: wazuh/wazuh-manager:4.3.0
     hostname: wazuh.manager
     restart: always
     ports:

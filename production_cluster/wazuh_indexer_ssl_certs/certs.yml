@@ -1,6 +1,6 @@
 nodes:
   # Wazuh indexer server nodes
-  elasticsearch:
+  indexer:
     name: wazuh1.indexer
     ip: wazuh1.indexer
     name: wazuh2.indexer
@@ -18,7 +18,7 @@ nodes:
     ip: wazuh.worker
     node_type: worker
 
-  # Kibana node
-  kibana:
+  # Wazuh dashboard node
+  dashboard:
     name: wazuh.dashboard
     ip: wazuh.dashboard
