@@ -1,17 +1,7 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal AS builder
 
-ENV tini_bin="tini-amd64"
-
 RUN apt-get update -y && apt-get install curl openssl xz-utils -y
-
-RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}
-RUN curl --retry 8 -S -L -O https://github.com/krallin/tini/releases/download/v0.19.0/${tini_bin}.sha256sum
-RUN sha256sum -c ${tini_bin}.sha256sum && \
-    echo ${tini_bin} \
-    rm ${tini_bin}.sha256sum && \
-    mv ${tini_bin} /tini && \
-    chmod +x /tini
 
 COPY config/unattended_installer.tar.gz /
 
@@ -60,7 +50,6 @@ COPY config/securityadmin.sh /
 RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
 COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/usr/share/wazuh-indexer /usr/share/wazuh-indexer
-COPY --from=builder --chown=0:0 /tini /tini
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/etc/init.d/wazuh-indexer /etc/init.d/wazuh-indexer
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/systemd /usr/lib/systemd
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/sysctl.d /usr/lib/sysctl.d
@@ -78,6 +67,6 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
 EXPOSE 9700
 
 
-ENTRYPOINT ["/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
 CMD ["opensearchwrapper"]
