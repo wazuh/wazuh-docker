@@ -2,8 +2,6 @@ server.host: 0.0.0.0
 server.port: 5601
 opensearch.hosts: https://wazuh1.indexer:9700
 opensearch.ssl.verificationMode: none
-opensearch.username: "kibanaserver"
-opensearch.password: "kibanaserver"
 opensearch.requestHeadersWhitelist: [ authorization,securitytenant ]
 opensearch_security.multitenancy.enabled: true
 opensearch_security.multitenancy.tenants.preferred: ["Private", "Global"]
