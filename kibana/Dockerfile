@@ -6,7 +6,7 @@ ARG WAZUH_VERSION=4.3.0
 ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
 
 WORKDIR /usr/share/kibana
-RUN ./bin/kibana-plugin install https://packages.wazuh.com/4.x/ui/kibana/wazuh_kibana-${WAZUH_APP_VERSION}-1.zip
+RUN ./bin/kibana-plugin install https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuh_kibana-${WAZUH_APP_VERSION}-1.zip
 
 ENV PATTERN="" \
     CHECKS_PATTERN="" \

@@ -8,7 +8,7 @@ ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 # Set repositories.
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+RUN rpm --import https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH
 
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
@@ -21,7 +21,7 @@ RUN yum --enablerepo=updates clean metadata && \
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm
 
-RUN curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
+RUN curl -s https://packages-dev.wazuh.com/pre-release/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
 RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
 
