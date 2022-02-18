@@ -55,7 +55,6 @@ services:
     environment:
       - ELASTICSEARCH_USERNAME=admin
       - ELASTICSEARCH_PASSWORD=admin
-      - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
     depends_on:
       - wazuh1.indexer

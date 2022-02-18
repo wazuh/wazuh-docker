@@ -7,9 +7,9 @@
 
 In this repository you will find the containers to run:
 
-* wazuh-opendistro: It runs the Wazuh manager, Wazuh API and Filebeat OSS (for integration with ODFE)
-* wazuh-kibana-opendistro: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
-* opendistro-for-elasticsearch: An Elasticsearch (ODFE) container (working as a single-node cluster) using ODFE Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
+* wazuh manager: It runs the Wazuh manager, Wazuh API and Filebeat OSS
+* Wazuh dashboard: Provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
+* Wazuh indexer: An Elasticsearch container (working as a single-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
 In addition, a docker-compose file is provided to launch the containers mentioned above.
 
@@ -88,61 +88,67 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 ## Directory structure
 
-    ├── CHANGELOG.md
-    ├── docker-compose.yml
-    ├── generate-opendistro-certs.yml
-    ├── kibana-odfe
-    │   ├── config
-    │   │   ├── custom_welcome
-    │   │   │   ├── light_theme.style.css
-    │   │   │   ├── template.js.hbs
-    │   │   │   ├── wazuh_logo_circle.svg
-    │   │   │   └── wazuh_wazuh_bg.svg
-    │   │   ├── entrypoint.sh
-    │   │   ├── kibana_settings.sh
-    │   │   ├── wazuh_app_config.sh
-    │   │   ├── wazuh.yml
-    │   │   └── welcome_wazuh.sh
-    │   └── Dockerfile
-    ├── LICENSE
-    ├── production_cluster
-    │   ├── elastic_opendistro
-    │   │   ├── elasticsearch-node1.yml
-    │   │   ├── elasticsearch-node2.yml
-    │   │   ├── elasticsearch-node3.yml
-    │   │   └── internal_users.yml
-    │   ├── kibana_ssl
-    │   │   └── generate-self-signed-cert.sh
-    │   ├── nginx
-    │   │   ├── nginx.conf
-    │   │   └── ssl
-    │   │       └── generate-self-signed-cert.sh
-    │   ├── ssl_certs
-    │   │   └── certs.yml
-    │   └── wazuh_cluster
-    │       ├── wazuh_manager.conf
-    │       └── wazuh_worker.conf
-    ├── production-cluster.yml
-    ├── README.md
-    ├── VERSION
-    └── wazuh-odfe
-        ├── config
-        │   ├── create_user.py
-        │   ├── etc
-        │   │   ├── cont-init.d
-        │   │   │   ├── 0-wazuh-init
-        │   │   │   ├── 1-config-filebeat
-        │   │   │   └── 2-manager
-        │   │   └── services.d
-        │   │       └── filebeat
-        │   │           ├── finish
-        │   │           └── run
-        │   ├── filebeat.yml
-        │   ├── permanent_data.env
-        │   ├── permanent_data.sh
-        │   └── wazuh.repo
-        └── Dockerfile
-
+├── build-wazuh-images.yml
+├── CHANGELOG.md
+├── docker-compose.yml
+├── generate-indexer-certs.yml
+├── LICENSE
+├── production_cluster
+│   ├── nginx
+│   │   ├── nginx.conf
+│   │   └── ssl
+│   │       └── generate-self-signed-cert.sh
+│   ├── wazuh_cluster
+│   │   ├── wazuh_manager.conf
+│   │   └── wazuh_worker.conf
+│   ├── wazuh_dashboard
+│   │   └── dashboard.yml
+│   ├── wazuh-indexer
+│   │   ├── internal_users.yml
+│   │   ├── opensearch.yml
+│   │   ├── wazuh1.indexer.yml
+│   │   ├── wazuh2.indexer.yml
+│   │   └── wazuh3.indexer.yml
+│   └── wazuh_indexer_ssl_certs
+│       └── certs.yml
+├── production-cluster.yml
+├── README.md
+├── VERSION
+├── wazuh-dashboard
+│   ├── config
+│   │   ├── dashboard.yml
+│   │   ├── entrypoint.sh
+│   │   ├── wazuh_app_config.sh
+│   │   └── wazuh.yml
+│   └── Dockerfile
+├── wazuh-indexer
+│   ├── config
+│   │   ├── config.sh
+│   │   ├── config.yml
+│   │   ├── entrypoint.sh
+│   │   ├── opensearch.yml
+│   │   ├── securityadmin.sh
+│   │   └── unattended_installer.tar.gz
+│   └── Dockerfile
+└── wazuh-manager
+    ├── config
+    │   ├── create_user.py
+    │   ├── etc
+    │   │   ├── cont-init.d
+    │   │   │   ├── 0-wazuh-init
+    │   │   │   ├── 1-config-filebeat
+    │   │   │   └── 2-manager
+    │   │   └── services.d
+    │   │       ├── filebeat
+    │   │       │   ├── finish
+    │   │       │   └── run
+    │   │       └── ossec-logs
+    │   │           └── run
+    │   ├── filebeat.yml
+    │   ├── permanent_data.env
+    │   ├── permanent_data.sh
+    │   └── wazuh.repo
+    └── Dockerfile
 
 
 ## Branches
@@ -154,7 +160,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
-| v4.3.0        | 1.13.2  | 7.11.2 |
+| v4.3.0        |         | 7.11.2 |
 | v4.2.5        | 1.13.2  | 7.11.2 |
 | v4.2.4        | 1.13.2  | 7.11.2 |
 | v4.2.3        | 1.13.2  | 7.11.2 |

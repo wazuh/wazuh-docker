@@ -48,7 +48,6 @@ cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
 # Copy the security tools
 cp ${REPO_DIR}/install_functions/wazuh-cert-tool.sh ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 cp ${REPO_DIR}/install_functions/wazuh-passwords-tool.sh ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
-#cp ${REPO_DIR}/config/indexer/certificate/config_aio.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/config.yml
 # Copy Wazuh's config files for the security plugin
 cp -pr ${REPO_DIR}/config/indexer/roles/roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr ${REPO_DIR}/config/indexer/roles/roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
