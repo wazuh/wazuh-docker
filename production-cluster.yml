@@ -11,9 +11,9 @@ services:
       - "514:514/udp"
       - "55000:55000"
     environment:
-      - ELASTICSEARCH_URL=https://wazuh1.indexer:9700
-      - ELASTIC_USERNAME=admin
-      - ELASTIC_PASSWORD=SecretPassword
+      - INDEXER_URL=https://wazuh1.indexer:9700
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=full
       - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
       - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
@@ -42,9 +42,9 @@ services:
     hostname: wazuh.worker
     restart: always
     environment:
-      - ELASTICSEARCH_URL=https://wazuh1.indexer:9700
-      - ELASTIC_USERNAME=admin
-      - ELASTIC_PASSWORD=SecretPassword
+      - INDEXER_URL=https://wazuh1.indexer:9700
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=full
       - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
       - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
@@ -140,8 +140,6 @@ services:
     image: wazuh/wazuh-dashboard:4.3.0
     hostname: wazuh.dashboard
     restart: always
-    ports:
-      - 5601:5601
     environment:
       - OPENSEARCH_HOSTS="https://wazuh1.indexer:9700"
       - WAZUH_API_URL="https://wazuh.master"

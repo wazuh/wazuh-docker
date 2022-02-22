@@ -3,21 +3,21 @@
 
 set -e
 
-if [ "$ELASTICSEARCH_URL" != "" ]; then
+if [ "$INDEXER_URL" != "" ]; then
   >&2 echo "Customize Elasticsearch ouput IP"
-  sed -i "s|hosts:.*|hosts: ['$ELASTICSEARCH_URL']|g" /etc/filebeat/filebeat.yml
+  sed -i "s|hosts:.*|hosts: ['$INDEXER_URL']|g" /etc/filebeat/filebeat.yml
 fi
 
 # Configure filebeat.yml security settings
 
-if [ "$ELASTIC_USERNAME" != "" ]; then
+if [ "$INDEXER_USERNAME" != "" ]; then
   >&2 echo "Configuring username."
-  sed -i "s|#username:.*|username: '$ELASTIC_USERNAME'|g" /etc/filebeat/filebeat.yml
+  sed -i "s|#username:.*|username: '$INDEXER_USERNAME'|g" /etc/filebeat/filebeat.yml
 fi
 
-if [ "$ELASTIC_PASSWORD" != "" ]; then
+if [ "$INDEXER_PASSWORD" != "" ]; then
   >&2 echo "Configuring password."
-  sed -i "s|#password:.*|password: '$ELASTIC_PASSWORD'|g" /etc/filebeat/filebeat.yml
+  sed -i "s|#password:.*|password: '$INDEXER_PASSWORD'|g" /etc/filebeat/filebeat.yml
 fi
 
 if [ "$FILEBEAT_SSL_VERIFICATION_MODE" != "" ]; then
