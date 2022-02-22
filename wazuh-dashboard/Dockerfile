@@ -30,6 +30,6 @@ RUN mkdir -p /usr/share/wazuh-dashboard/data/wazuh/config && chown -R 101:101 /u
 RUN mkdir -p /usr/share/wazuh-dashboard/data/wazuh/logs && chown -R 101:101 /usr/share/wazuh-dashboard/data/wazuh/logs && chmod -R 775 /usr/share/wazuh-dashboard/data/wazuh/logs
 
 # Services ports
-EXPOSE 5601
+EXPOSE 443
 
 ENTRYPOINT [ "/entrypoint.sh" ]
