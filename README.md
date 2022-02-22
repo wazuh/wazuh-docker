@@ -9,11 +9,11 @@ In this repository you will find the containers to run:
 
 * wazuh manager: It runs the Wazuh manager, Wazuh API and Filebeat OSS
 * Wazuh dashboard: Provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
-* Wazuh indexer: An Elasticsearch container (working as a single-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
+* Wazuh indexer: An Wazuh indexer container (working as a single-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
 In addition, a docker-compose file is provided to launch the containers mentioned above.
 
-* Elasticsearch cluster. In the Elasticsearch Dockerfile we can visualize variables to configure an Elasticsearch Cluster. These variables are used in the file *config_cluster.sh* to set them in the *elasticsearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
+* Wazuh indexer cluster. In the Wazuh indexer Dockerfile we can visualize variables to configure an Wazuh indexer Cluster. These variables are used in the file *config_cluster.sh* to set them in the *opensearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
 
 ## Documentation
 
@@ -39,9 +39,9 @@ API_USERNAME="wazuh"                                # Wazuh API username
 API_PASSWORD="wazuh"                                # Wazuh API password - Must comply with requirements
                                                     # (8+ length, uppercase, lowercase, specials chars)
 
-ELASTICSEARCH_URL=https://elasticsearch:9200        # Elasticsearch URL
-ELASTIC_USERNAME=admin                              # Elasticsearch Username
-ELASTIC_PASSWORD=admin                              # Elasticsearch Password
+INDEXER_URL=https://elasticsearch:9200              # Wazuh indexer URL
+INDEXER_USERNAME=admin                              # Wazuh indexer Username
+INDEXER_PASSWORD=admin                              # Wazuh indexer Password
 FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
 SSL_CERTIFICATE_AUTHORITIES=""                      # Path of Filebeat SSL CA
 SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certificate
