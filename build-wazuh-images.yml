@@ -55,8 +55,8 @@ services:
     ports:
       - 443:443
     environment:
-      - ELASTICSEARCH_USERNAME=admin
-      - ELASTICSEARCH_PASSWORD=admin
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=admin
       - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
     depends_on:
