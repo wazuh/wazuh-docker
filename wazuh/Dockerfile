@@ -97,7 +97,7 @@ VOLUME ["/var/lib/filebeat"]
 RUN mkdir /entrypoint-scripts
 
 COPY config/entrypoint.sh /entrypoint.sh
-COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
+COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
 COPY config/00-decrypt_credentials.sh /entrypoint-scripts/00-decrypt_credentials.sh
 COPY config/01-wazuh.sh /entrypoint-scripts/01-wazuh.sh
 COPY config/02-set_filebeat_destination.sh /entrypoint-scripts/02-set_filebeat_destination.sh
