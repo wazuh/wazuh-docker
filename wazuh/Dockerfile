@@ -19,7 +19,7 @@ gpgcheck=1\n\
 gpgkey=https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH\n\
 enabled=1\n\
 name=Wazuh repository\n\
-baseurl=https://packages-dev.wazuh.com/4.x/yum/\n\
+baseurl=https://packages-dev.wazuh.com/pre-release/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
