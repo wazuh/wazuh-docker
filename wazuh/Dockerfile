@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.2.5-1
+ARG WAZUH_VERSION=4.3.0-1
 
 # Environment variables
 ENV API_USER="foo" \
@@ -14,12 +14,12 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 
 RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 
-RUN echo $'[wazuh] \n\
+RUN echo $'[wazuh_repo] \n\
 gpgcheck=1\n\
-gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
+gpgkey=https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH\n\
 enabled=1\n\
 name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/4.x/yum/\n\
+baseurl=https://packages-dev.wazuh.com/4.x/yum/\n\
 protect=1\n'\
 >> /etc/yum.repos.d/wazuh.repo
 
