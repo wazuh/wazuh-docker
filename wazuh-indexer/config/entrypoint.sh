@@ -30,10 +30,6 @@ run_as_other_user_if_needed() {
 if [[ "$1" != "opensearchwrapper" ]]; then
   if [[ "$(id -u)" == "0" && $(basename "$1") == "opensearch" ]]; then
     # Rewrite CMD args to replace $1 with `opensearch` explicitly,
-    # so that we are backwards compatible with the docs
-    # from the previous Elasticsearch versions<6
-    # and configuration option D:
-    # https://www.elastic.co/guide/en/elasticsearch/reference/5.6/docker.html#_d_override_the_image_8217_s_default_ulink_url_https_docs_docker_com_engine_reference_run_cmd_default_command_or_options_cmd_ulink
     # Without this, user could specify `opensearch -E x.y=z` but
     # `bin/opensearch -E x.y=z` would not work.
     set -- "opensearch" "${@:2}"
