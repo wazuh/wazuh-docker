@@ -27,8 +27,8 @@ protect=1\n'\
 # Install packages
 RUN set -x && \
     curl -sL https://rpm.nodesource.com/setup_8.x | bash - && \
-    groupadd -g 1000 ossec && \
-    useradd -u 1000 -g 1000 -d /var/ossec ossec && \
+    groupadd -g 1000 wazuh && \
+    useradd -u 1000 -g 1000 -d /var/ossec wazuh && \
     yum update -y && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography && \
