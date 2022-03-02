@@ -39,7 +39,7 @@ API_USERNAME="wazuh"                                # Wazuh API username
 API_PASSWORD="wazuh"                                # Wazuh API password - Must comply with requirements
                                                     # (8+ length, uppercase, lowercase, specials chars)
 
-INDEXER_URL=https://wazuh1.indexer:9700             # Wazuh indexer URL
+INDEXER_URL=https://wazuh1.indexer:9200             # Wazuh indexer URL
 INDEXER_USERNAME=admin                              # Wazuh indexer Username
 INDEXER_PASSWORD=admin                              # Wazuh indexer Password
 FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
@@ -102,7 +102,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 │   │   ├── wazuh_manager.conf
 │   │   └── wazuh_worker.conf
 │   ├── wazuh_dashboard
-│   │   └── dashboard.yml
+│   │   └── opensearch_dashboard.yml
 │   ├── wazuh-indexer
 │   │   ├── internal_users.yml
 │   │   ├── opensearch.yml
@@ -116,7 +116,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 ├── VERSION
 ├── wazuh-dashboard
 │   ├── config
-│   │   ├── dashboard.yml
+│   │   ├── opensearch_dashboard.yml
 │   │   ├── entrypoint.sh
 │   │   ├── wazuh_app_config.sh
 │   │   └── wazuh.yml
