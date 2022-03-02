@@ -64,7 +64,7 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
     mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer
 
 # Services ports
-EXPOSE 9700
+EXPOSE 9200
 
 
 ENTRYPOINT ["/entrypoint.sh"]

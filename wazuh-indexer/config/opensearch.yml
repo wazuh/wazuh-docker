@@ -1,7 +1,5 @@
 network.host: "0.0.0.0"
 node.name: "wazuh1.indexer"
-http.port: 9700-9799
-transport.tcp.port: 9800-9899
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
 discovery.type: single-node

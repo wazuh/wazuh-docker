@@ -1,6 +1,6 @@
 server.host: 0.0.0.0
 server.port: 443
-opensearch.hosts: https://wazuh1.indexer:9700
+opensearch.hosts: https://wazuh1.indexer:9200
 opensearch.ssl.verificationMode: none
 opensearch.requestHeadersWhitelist: [ authorization,securitytenant ]
 opensearch_security.multitenancy.enabled: true

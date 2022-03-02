@@ -7,4 +7,4 @@
 
 /wazuh_app_config.sh
 
-runuser wazuh-dashboard --shell="/bin/bash" --command="/usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /etc/wazuh-dashboard/dashboard.yml"
+runuser wazuh-dashboard --shell="/bin/bash" --command="/usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /etc/wazuh-dashboard/opensearch_dashboard.yml"
