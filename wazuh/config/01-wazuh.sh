@@ -53,35 +53,20 @@ check_update() {
       return 0
     else
       echo "Different Wazuh version: Update"
-      if [ $previous_version == "v4.1.5" ]
+      if [ $previous_version == "v4.2.5" ]
       then
-        echo "Remove simbolic link from ossec-init.conf"
-        unlink /var/ossec/etc/ossec-init.conf
-        echo "Change /var/ossec/queue/ossec path to /var/ossec/queue/sockets"
-        mkdir /var/ossec/queue/sockets
-        chown ossec:ossec /var/ossec/queue/sockets
-        chmod 770 /var/ossec/queue/sockets
-        exec_cmd "cp -ra /var/ossec/queue/ossec/. /var/ossec/queue/sockets/"
-        rm -rf /var/ossec/queue/ossec
+        echo "Change ossec user to wazuh user"
+        ossec_group_files=$(find /var/ossec -group ossec)
+        ossec_user_files=$(find /var/ossec -user ossec)
 
-        echo "Change /var/ossec/logs/ossec path to /var/ossec/logs/wazuh"
-        mkdir /var/ossec/logs/wazuh
-        chown ossec:ossec /var/ossec/logs/wazuh
-        chmod 750 /var/ossec/logs/wazuh
-        exec_cmd "cp -ra /var/ossec/logs/ossec/. /var/ossec/logs/wazuh/"
-        rm -rf /var/ossec/logs/ossec
+        while IFS= read -r group; do
+          chgrp wazuh $group
+        done <<< "$ossec_group_files"
 
-        echo "Restore logcollector queue dir"
-        mkdir /var/ossec/queue/logcollector
-        chown ossec:ossec /var/ossec/queue/logcollector
-        chmod 750 /var/ossec/queue/logcollector
-        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/logcollector/. /var/ossec/queue/logcollector"
+        while IFS= read -r user; do
+          chown wazuh $user
+        done <<< "$ossec_user_files"
 
-        echo "Restore syscollector queue dir"
-        mkdir /var/ossec/queue/syscollector
-        chown ossec:ossec /var/ossec/queue/syscollector
-        chmod 750 /var/ossec/queue/syscollector
-        exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent/var/ossec/queue/syscollector/. /var/ossec/queue/syscollector"
       fi
       return 1
     fi
