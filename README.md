@@ -102,7 +102,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 │   │   ├── wazuh_manager.conf
 │   │   └── wazuh_worker.conf
 │   ├── wazuh_dashboard
-│   │   └── opensearch_dashboard.yml
+│   │   └── opensearch_dashboards.yml
 │   ├── wazuh-indexer
 │   │   ├── internal_users.yml
 │   │   ├── opensearch.yml
@@ -116,7 +116,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 ├── VERSION
 ├── wazuh-dashboard
 │   ├── config
-│   │   ├── opensearch_dashboard.yml
+│   │   ├── opensearch_dashboards.yml
 │   │   ├── entrypoint.sh
 │   │   ├── wazuh_app_config.sh
 │   │   └── wazuh.yml
