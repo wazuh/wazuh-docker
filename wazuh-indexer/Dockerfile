@@ -3,17 +3,17 @@ FROM ubuntu:focal AS builder
 
 RUN apt-get update -y && apt-get install curl openssl xz-utils -y
 
-COPY config/unattended_installer.tar.gz /
+COPY config/opensearch.yml /
 
 COPY config/config.sh .
 
 COPY config/config.yml /
 
-RUN tar -xzvf /unattended_installer.tar.gz
+COPY config/internal_users.yml /
 
-RUN mv /config.yml /unattended_installer/install_functions/
+COPY config/roles_mapping.yml /
 
-RUN chmod 755 /unattended_installer/install_functions/wazuh-cert-tool.sh && bash /unattended_installer/install_functions/wazuh-cert-tool.sh
+COPY config/roles.yml /
 
 RUN bash config.sh
 
@@ -50,13 +50,12 @@ COPY config/securityadmin.sh /
 RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
 COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/usr/share/wazuh-indexer /usr/share/wazuh-indexer
-COPY --from=builder --chown=0:0 /debian/wazuh-indexer/etc/init.d/wazuh-indexer /etc/init.d/wazuh-indexer
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/systemd /usr/lib/systemd
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/sysctl.d /usr/lib/sysctl.d
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/tmpfiles.d /usr/lib/tmpfiles.d
-COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/etc/wazuh-indexer /etc/wazuh-indexer
-COPY config/opensearch.yml /etc/wazuh-indexer/
-RUN chmod 660 /etc/wazuh-indexer/opensearch.yml && chown 1000:1000 /etc/wazuh-indexer/opensearch.yml
+#COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/etc/wazuh-indexer /etc/wazuh-indexer
+#COPY config/opensearch.yml /etc/wazuh-indexer/
+#RUN chmod 660 /etc/wazuh-indexer/opensearch.yml && chown 1000:1000 /etc/wazuh-indexer/opensearch.yml
 
 RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer && \
     mkdir -p /usr/share/wazuh-indexer/logs && chown 1000:1000 /usr/share/wazuh-indexer/logs && \
@@ -65,7 +64,6 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
 
 # Services ports
 EXPOSE 9200
-
 
 ENTRYPOINT ["/entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint

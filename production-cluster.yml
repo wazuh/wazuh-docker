@@ -84,12 +84,12 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-1:/var/lib/wazuh-indexer
-      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh1.indexer-key.pem:/etc/wazuh-indexer/certs/wazuh1.indexer.key
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh1.indexer.pem:/etc/wazuh-indexer/certs/wazuh1.indexer.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/admin.pem:/etc/wazuh-indexer/certs/admin.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/admin-key.pem:/etc/wazuh-indexer/certs/admin-key.pem
-      - ./production_cluster/wazuh-indexer/wazuh1.indexer.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/config/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/config/wazuh1.indexer.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/config/wazuh1.indexer.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/config/admin.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/config/admin-key.pem
+      - ./production_cluster/wazuh-indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   wazuh2.indexer:
@@ -108,10 +108,10 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-2:/var/lib/wazuh-indexer
-      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh2.indexer-key.pem:/etc/wazuh-indexer/certs/wazuh2.indexer.key
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh2.indexer.pem:/etc/wazuh-indexer/certs/wazuh2.indexer.pem
-      - ./production_cluster/wazuh-indexer/wazuh2.indexer.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/config/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/config/wazuh2.indexer.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/wazuh2.indexer.pem
+      - ./production_cluster/wazuh-indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   wazuh3.indexer:
@@ -130,10 +130,10 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-3:/var/lib/wazuh-indexer
-      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-indexer/certs/root-ca.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh3.indexer-key.pem:/etc/wazuh-indexer/certs/wazuh3.indexer.key
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh3.indexer.pem:/etc/wazuh-indexer/certs/wazuh3.indexer.pem
-      - ./production_cluster/wazuh-indexer/wazuh3.indexer.yml:/etc/wazuh-indexer/opensearch.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/config/root-ca.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/config/wazuh3.indexer.key
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/wazuh3.indexer.pem
+      - ./production_cluster/wazuh-indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
       - ./production_cluster/wazuh-indexer/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   wazuh.dashboard:

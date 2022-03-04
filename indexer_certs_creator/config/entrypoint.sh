@@ -5,8 +5,8 @@
 # Creating Cluster certificates
 ##############################################################################
 
-/unattended_installer/install_functions/wazuh-cert-tool.sh
+/wazuh-cert-tool.sh
 echo "Moving created certificates to destination directory"
-cp /unattended_installer/install_functions/certs/* /certificates/
+cp /certs/* /certificates/
 echo "changing certificate permissions"
 chmod -R 666 /certificates/*
