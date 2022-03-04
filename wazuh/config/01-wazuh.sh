@@ -44,20 +44,20 @@ check_update() {
   if [ -e /var/ossec/etc/VERSION ]
   then
     previous_version=$(cat /var/ossec/etc/VERSION | grep -i version | cut -d'"' -f2)
-    echo "Previous version: $previous_version"
+    echo "CHECK UPDATE - Previous version: $previous_version"
     current_version=$(/var/ossec/bin/wazuh-control -j info | jq .data[0].WAZUH_VERSION | cut -d'"' -f2)
-    echo "Current version: $current_version"
+    echo "CHECK UPDATE - Current version: $current_version"
     if [ $previous_version == $current_version ]
     then
-      echo "Same Wazuh version in the EBS and image"
+      echo "CHECK UPDATE - Same Wazuh version in the EBS and image"
       return 0
     else
-      echo "Different Wazuh version: Update"
+      echo "CHECK UPDATE - Different Wazuh version: Update"
       if [ $previous_version == "v4.2.5" ]
       then
-        echo "Change ossecr user to wazuhr user"
-        ossec_group_files=$(find /var/ossec -group 998)
-        ossec_user_files=$(find /var/ossec -user 998)
+        echo "CHECK UPDATE - Change ossec user to wazuh user"
+        ossec_group_files=$(find /var/ossec -group 1000)
+        ossec_user_files=$(find /var/ossec -user 1000)
 
         while IFS= read -r group; do
           chgrp wazuh $group
@@ -67,11 +67,35 @@ check_update() {
           chown wazuh $user
         done <<< "$ossec_user_files"
 
+        echo "CHECK UPDATE - Change ossecr user to wazuh user"
+        ossecr_group_files=$(find /var/ossec -group 998)
+        ossecr_user_files=$(find /var/ossec -user 998)
+
+        while IFS= read -r group; do
+          chgrp wazuh $group
+        done <<< "$ossecr_group_files"
+
+        while IFS= read -r user; do
+          chown wazuh $user
+        done <<< "$ossecr_user_files"
+
+        echo "CHECK UPDATE - Change ossecm user to wazuh user"
+        ossecm_group_files=$(find /var/ossec -group 997)
+        ossecm_user_files=$(find /var/ossec -user 997)
+
+        while IFS= read -r group; do
+          chgrp wazuh $group
+        done <<< "$ossecm_group_files"
+
+        while IFS= read -r user; do
+          chown wazuh $user
+        done <<< "$ossecm_user_files"
+
       fi
       return 1
     fi
   else
-    echo "First time mounting EBS"
+    echo "CHECK UPDATE - First time mounting EBS"
     return 0
   fi
 }
