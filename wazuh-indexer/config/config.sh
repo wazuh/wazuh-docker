@@ -24,7 +24,7 @@ rm -rf ${INSTALLATION_DIR}/
 curl -o ${INDEXER_FILE} https://packages-dev.wazuh.com/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
-# copy to target
+# Copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}
 mkdir -p ${TARGET_DIR}${LIB_DIR}
