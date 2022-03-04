@@ -55,9 +55,9 @@ check_update() {
       echo "Different Wazuh version: Update"
       if [ $previous_version == "v4.2.5" ]
       then
-        echo "Change ossec user to wazuh user"
-        ossec_group_files=$(find /var/ossec -group ossec)
-        ossec_user_files=$(find /var/ossec -user ossec)
+        echo "Change ossecr user to wazuhr user"
+        ossec_group_files=$(find /var/ossec -group 998)
+        ossec_user_files=$(find /var/ossec -user 998)
 
         while IFS= read -r group; do
           chgrp wazuh $group
