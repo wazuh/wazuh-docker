@@ -6,12 +6,12 @@ umask 0002
 
 export USER=wazuh-indexer
 export INSTALLATION_DIR=/usr/share/wazuh-indexer
-export OPENSEARCH_PATH_CONF=/etc/wazuh-indexer
+export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}/config
 export JAVA_HOME=${INSTALLATION_DIR}/jdk
-export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" /etc/wazuh-indexer/opensearch.yml)
-export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" /etc/wazuh-indexer/opensearch.yml)
-export CERT="/etc/wazuh-indexer/certs/admin.pem"
-export KEY="/etc/wazuh-indexer/certs/admin-key.pem"
+export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
+export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
+export CERT="${OPENSEARCH_PATH_CONF}/admin.pem"
+export KEY="${OPENSEARCH_PATH_CONF}/admin-key.pem"
 
 run_as_other_user_if_needed() {
   if [[ "$(id -u)" == "0" ]]; then
@@ -82,6 +82,7 @@ if [[ "$(id -u)" == "0" ]]; then
     chown -R 1000:0 /usr/share/wazuh-indexer/{data,logs}
   fi
 fi
+
 
 if [[ "$DISCOVERY" == "single-node" ]]; then
   # run securityadmin.sh for single node with CACERT, CERT and KEY parameter
