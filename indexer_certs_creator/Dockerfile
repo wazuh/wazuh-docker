@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install openssl curl -y
 
 WORKDIR /
 
-RUN curl -o wazuh-cert-tool.sh https://s3.us-west-1.amazonaws.com/packages.wazuh.com/4.x/wazuh-cert-tool.sh
+#RUN curl -o wazuh-cert-tool.sh https://s3.us-west-1.amazonaws.com/packages.wazuh.com/4.x/wazuh-cert-tool.sh
 
 COPY config/entrypoint.sh /
 

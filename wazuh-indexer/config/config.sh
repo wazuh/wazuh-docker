@@ -25,8 +25,8 @@ rm -rf ${INSTALLATION_DIR}/
 curl -o ${INDEXER_FILE} https://packages.wazuh.com/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
-curl -o wazuh-cert-tool.sh https://s3.us-west-1.amazonaws.com/packages.wazuh.com/4.x/wazuh-cert-tool.sh
-curl -o wazuh-password-tool.sh https://s3.us-west-1.amazonaws.com/packages.wazuh.com/4.x/wazuh-passwords-tool.sh
+curl -o wazuh-cert-tool.sh https://packages.wazuh.com/4.x/wazuh-cert-tool.sh
+curl -o wazuh-password-tool.sh https://packages.wazuh.com/4.x/wazuh-passwords-tool.sh
 
 chmod 755 wazuh-cert-tool.sh && bash /wazuh-cert-tool.sh
 
