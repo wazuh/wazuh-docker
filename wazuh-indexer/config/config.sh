@@ -25,10 +25,48 @@ rm -rf ${INSTALLATION_DIR}/
 curl -o ${INDEXER_FILE} https://packages.wazuh.com/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
-curl -o wazuh-cert-tool.sh https://packages.wazuh.com/4.x/wazuh-cert-tool.sh
-curl -o wazuh-password-tool.sh https://packages.wazuh.com/4.x/wazuh-passwords-tool.sh
+## TOOLS
 
-chmod 755 wazuh-cert-tool.sh && bash /wazuh-cert-tool.sh
+## Variables
+CERT_TOOL=wazuh-certs-tool.sh
+PASSWORD_TOOL=wazuh-passwords-tool.sh
+PACKAGES_URL=https://packages.wazuh.com/resources/4.3/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/resources/4.3/
+
+## Check if the cert tool exists in S3 buckets
+CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+CERT_TOOL_PACKAGES_DEV=$(curl --silent -I $PACKAGES_DEV_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+
+## If cert tool exists in some bucket, download it, if not exit 1
+if [ "$CERT_TOOL_PACKAGES" = "200" ]; then
+  curl -o $CERT_TOOL $PACKAGES_URL$CERT_TOOL
+  echo "Cert tool exists in Packages bucket"
+elif [ "$CERT_TOOL_PACKAGES_DEV" = "200" ]; then
+  curl -o $CERT_TOOL $PACKAGES_DEV_URL$CERT_TOOL
+  echo "Cert tool exists in Packages-dev bucket"
+else
+  echo "Cert tool does not exist in any bucket"
+  exit 1
+fi
+
+
+## Check if the password tool exists in S3 buckets
+PASSWORD_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$PASSWORD_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+PASSWORD_TOOL_PACKAGES_DEV=$(curl --silent -I $PACKAGES_DEV_URL$PASSWORD_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+
+## If password tool exists in some bucket, download it, if not exit 1
+if [ "$PASSWORD_TOOL_PACKAGES" = "200" ]; then
+  curl -o $PASSWORD_TOOL $PACKAGES_URL$PASSWORD_TOOL
+  echo "Password tool exists in Packages bucket"
+elif [ "$PASSWORD_TOOL_PACKAGES_DEV" = "200" ]; then
+  curl -o $PASSWORD_TOOL $PACKAGES_DEV_URL$PASSWORD_TOOL
+  echo "Password tool exists in Packages-dev bucket"
+else
+  echo "Password tool does not exist in any bucket"
+  exit 1
+fi
+
+chmod 755 $CERT_TOOL && bash /$CERT_TOOL
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
@@ -52,8 +90,8 @@ rm -rf ${BASE_DIR}/usr
 # Copy installation files to final location
 cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
 # Copy the security tools
-cp /wazuh-cert-tool.sh ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
-cp /wazuh-password-tool.sh ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
+cp /$CERT_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
+cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 # Copy Wazuh's config files for the security plugin
 cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
