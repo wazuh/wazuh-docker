@@ -58,9 +58,11 @@ RUN chmod 700 /entrypoint.sh
 RUN chmod 700 /wazuh_app_config.sh
 
 COPY --from=builder --chown=1000:1000 /usr/share/wazuh-dashboard /usr/share/wazuh-dashboard
-COPY --from=builder --chown=1000:1000 /var/log/wazuh-dashboard /var/log/wazuh-dashboard
 COPY --from=builder --chown=1000:1000 /run/wazuh-dashboard /run/wazuh-dashboard
 COPY --from=builder --chown=1000:1000 /etc/wazuh-dashboard /etc/wazuh-dashboard
+
+WORKDIR /usr/share/wazuh-dashboard/
+USER wazuh-dashboard
 
 # Services ports
 EXPOSE 443

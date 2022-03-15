@@ -62,6 +62,8 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
     mkdir -p /run/wazuh-indexer && chown 1000:1000 /run/wazuh-indexer && \
     mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer
 
+USER wazuh-indexer
+
 # Services ports
 EXPOSE 9200
 
