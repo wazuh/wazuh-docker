@@ -7,7 +7,7 @@ ARG WAZUH_VERSION=4.3.0-1
 RUN apt-get update && apt install curl libcap2-bin -y
 
 #Download and install Wazuh Dashboard
-RUN curl https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-dashboard/wazuh-dashboard_${WAZUH_VERSION}_amd64.deb --output wazuh-dashboard_${WAZUH_VERSION}_amd64.deb && \
+RUN curl https://packages-dev.wazuh.com/pre-release/apt/pool/main/w/wazuh-dashboard/wazuh-dashboard_${WAZUH_VERSION}_amd64.deb --output wazuh-dashboard_${WAZUH_VERSION}_amd64.deb && \
     dpkg -i wazuh-dashboard_${WAZUH_VERSION}_amd64.deb && \
     apt-get clean -y && rm -rf wazuh-dashboard_${WAZUH_VERSION}_amd64.deb
 
@@ -56,6 +56,8 @@ COPY config/wazuh_app_config.sh /
 RUN chmod 700 /entrypoint.sh
 
 RUN chmod 700 /wazuh_app_config.sh
+
+RUN chown 1000:1000 /*.sh
 
 COPY --from=builder --chown=1000:1000 /usr/share/wazuh-dashboard /usr/share/wazuh-dashboard
 COPY --from=builder --chown=1000:1000 /run/wazuh-dashboard /run/wazuh-dashboard

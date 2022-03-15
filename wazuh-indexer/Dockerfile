@@ -49,6 +49,8 @@ COPY config/securityadmin.sh /
 
 RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
+RUN chown 1000:1000 /*.sh
+
 COPY --from=builder --chown=1000:1000 /debian/wazuh-indexer/usr/share/wazuh-indexer /usr/share/wazuh-indexer
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/systemd /usr/lib/systemd
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/sysctl.d /usr/lib/sysctl.d
