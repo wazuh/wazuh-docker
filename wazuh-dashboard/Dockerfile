@@ -15,7 +15,7 @@ RUN curl -o wazuh-dashboard-base.tar.xz https://packages-dev.wazuh.com/stack/das
     tar -xf wazuh-dashboard-base.tar.xz --directory  $INSTALL_DIR --strip-components=1
 
 # Download and extract demo certificates
-RUN curl -O https://packages.wazuh.com/stack/demo-certs.tar.gz && \
+RUN curl -O https://packages-dev.wazuh.com/stack/demo-certs.tar.gz && \
     tar -xf demo-certs.tar.gz && rm -f demo-certs.tar.gz
 
 # Create certs dir
