@@ -11,7 +11,7 @@ RUN apt-get update && apt install curl libcap2-bin xz-utils -y
 RUN mkdir -p $INSTALL_DIR
 
 # Download and extract Wazuh dashboard base
-RUN curl -o wazuh-dashboard-base.tar.xz https://packages.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-$WAZUH_VERSION-linux-x64.tar.xz && \
+RUN curl -o wazuh-dashboard-base.tar.xz https://packages-dev.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-$WAZUH_VERSION-linux-x64.tar.xz && \
     tar -xf wazuh-dashboard-base.tar.xz --directory  $INSTALL_DIR --strip-components=1
 
 # Download and extract demo certificates
