@@ -9,7 +9,7 @@
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
 PACKAGES_URL=https://packages.wazuh.com/resources/4.3/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/resources/4.3/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
