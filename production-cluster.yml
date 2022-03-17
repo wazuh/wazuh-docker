@@ -146,10 +146,10 @@ services:
       - API_USERNAME=acme-user
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/etc/wazuh-dashboard/certs/wazuh-dashboard.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/etc/wazuh-dashboard/certs/wazuh-dashboard-key.pem
-      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/etc/wazuh-dashboard/certs/root-ca.pem
-      - ./production_cluster/wazuh_dashboard/opensearch_dashboards.yml:/etc/wazuh-dashboard/opensearch_dashboards.yml
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
+      - ./production_cluster/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
+      - ./production_cluster/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/opensearch_dashboards.yml
       - ./production_cluster/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
     depends_on:
       - wazuh1.indexer
