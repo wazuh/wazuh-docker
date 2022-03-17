@@ -3,6 +3,7 @@ version: '3.7'
 
 services:
   wazuh.manager:
+    build:  wazuh-manager/
     image: wazuh/wazuh-manager:4.3.0
     hostname: wazuh.manager
     restart: always
@@ -30,6 +31,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   wazuh1.indexer:
+    build: wazuh-indexer/
     image: wazuh/wazuh-indexer:4.3.0
     hostname: wazuh1.indexer
     restart: always
@@ -46,6 +48,7 @@ services:
         hard: 65536
 
   wazuh.dashboard:
+    build: wazuh-dashboard/
     image: wazuh/wazuh-dashboard:4.3.0
     hostname: wazuh.dashboard
     restart: always
@@ -54,6 +57,7 @@ services:
     environment:
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
+      - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
     depends_on:
       - wazuh1.indexer
