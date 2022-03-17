@@ -22,7 +22,7 @@ export REPO_DIR=/unattended_installer
 
 rm -rf ${INSTALLATION_DIR}/
 
-curl -o ${INDEXER_FILE} https://packages.wazuh.com/stack/indexer/base/${BASE_FILE}
+curl -o ${INDEXER_FILE} https://packages-dev.wazuh.com/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
 ## TOOLS
