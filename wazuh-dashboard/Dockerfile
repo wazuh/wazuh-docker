@@ -60,6 +60,42 @@ ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
     INSTALL_DIR="/usr/share/wazuh-dashboard"
+    
+# Set Wazuh app variables
+ENV PATTERN="" \
+    CHECKS_PATTERN="" \
+    CHECKS_TEMPLATE="" \
+    CHECKS_API="" \
+    CHECKS_SETUP="" \
+    EXTENSIONS_PCI="" \
+    EXTENSIONS_GDPR="" \
+    EXTENSIONS_HIPAA="" \
+    EXTENSIONS_NIST="" \
+    EXTENSIONS_TSC="" \
+    EXTENSIONS_AUDIT="" \
+    EXTENSIONS_OSCAP="" \
+    EXTENSIONS_CISCAT="" \
+    EXTENSIONS_AWS="" \
+    EXTENSIONS_GCP="" \
+    EXTENSIONS_VIRUSTOTAL="" \
+    EXTENSIONS_OSQUERY="" \
+    EXTENSIONS_DOCKER="" \
+    APP_TIMEOUT="" \
+    API_SELECTOR="" \
+    IP_SELECTOR="" \
+    IP_IGNORE="" \
+    WAZUH_MONITORING_ENABLED="" \
+    WAZUH_MONITORING_FREQUENCY="" \
+    WAZUH_MONITORING_SHARDS="" \
+    WAZUH_MONITORING_REPLICAS="" \
+    ADMIN_PRIVILEGES="" \
+    XPACK_CANVAS="true" \
+    XPACK_LOGS="true"   \
+    XPACK_INFRA="true"  \
+    XPACK_ML="true" \
+    XPACK_DEVTOOLS="true"   \
+    XPACK_MONITORING="true" \
+    XPACK_APM="true"
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
