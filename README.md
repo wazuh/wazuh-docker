@@ -48,6 +48,43 @@ SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certi
 SSL_KEY=""                                          # Path of Filebeat SSL Key
 ```
 
+### Dashboard
+```
+PATTERN="wazuh-alerts-*"        # Default index pattern to use
+
+CHECKS_PATTERN=true             # Defines which checks must to be consider by the healthcheck
+CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must to be true or false
+CHECKS_API=true
+CHECKS_SETUP=true
+
+EXTENSIONS_PCI=true             # Enable PCI Extension
+EXTENSIONS_GDPR=true            # Enable GDPR Extension
+EXTENSIONS_HIPAA=true           # Enable HIPAA Extension
+EXTENSIONS_NIST=true            # Enable NIST Extension
+EXTENSIONS_TSC=true             # Enable TSC Extension
+EXTENSIONS_AUDIT=true           # Enable Audit Extension
+EXTENSIONS_OSCAP=false          # Enable OpenSCAP Extension
+EXTENSIONS_CISCAT=false         # Enable CISCAT Extension
+EXTENSIONS_AWS=false            # Enable AWS Extension
+EXTENSIONS_GCP=false            # Enable GCP Extension
+EXTENSIONS_VIRUSTOTAL=false     # Enable Virustotal Extension
+EXTENSIONS_OSQUERY=false        # Enable OSQuery Extension
+EXTENSIONS_DOCKER=false         # Enable Docker Extension
+
+APP_TIMEOUT=20000               # Defines maximum timeout to be used on the Wazuh app requests
+
+API_SELECTOR=true               Defines if the user is allowed to change the selected API directly from the Wazuh app top menu
+IP_SELECTOR=true                # Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
+IP_IGNORE="[]"                  # List of index patterns to be ignored
+
+WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-monitoring indices
+WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
+WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
+WAZUH_MONITORING_REPLICAS=0         #
+
+ADMIN_PRIVILEGES=true               # App privileges
+```
+
 ## Directory structure
 
     ├── build-wazuh-images.yml
