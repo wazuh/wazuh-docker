@@ -13,7 +13,7 @@ In this repository you will find the containers to run:
 
 In addition, a docker-compose file is provided to launch the containers mentioned above.
 
-* Wazuh indexer cluster. In the Wazuh indexer Dockerfile we can visualize variables to configure an Wazuh indexer Cluster. These variables are used in the file *config_cluster.sh* to set them in the *opensearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
+* Wazuh indexer cluster. In the Wazuh indexer Dockerfile we can visualize variables to configure an Wazuh indexer Cluster. These variables are used in the file *config_cluster.sh* to set them in the *opensearch.yml* configuration file. You can see the meaning of the node variables and other cluster settings [here](https://opensearch.org/docs/latest/opensearch/cluster/).
 
 ## Documentation
 
@@ -48,107 +48,75 @@ SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certi
 SSL_KEY=""                                          # Path of Filebeat SSL Key
 ```
 
-### Kibana
-```
-PATTERN="wazuh-alerts-*"        # Default index pattern to use
-
-CHECKS_PATTERN=true             # Defines which checks must to be consider by the healthcheck
-CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must to be true or false
-CHECKS_API=true
-CHECKS_SETUP=true
-
-EXTENSIONS_PCI=true             # Enable PCI Extension
-EXTENSIONS_GDPR=true            # Enable GDPR Extension
-EXTENSIONS_HIPAA=true           # Enable HIPAA Extension
-EXTENSIONS_NIST=true            # Enable NIST Extension
-EXTENSIONS_TSC=true             # Enable TSC Extension
-EXTENSIONS_AUDIT=true           # Enable Audit Extension
-EXTENSIONS_OSCAP=false          # Enable OpenSCAP Extension
-EXTENSIONS_CISCAT=false         # Enable CISCAT Extension
-EXTENSIONS_AWS=false            # Enable AWS Extension
-EXTENSIONS_GCP=false            # Enable GCP Extension
-EXTENSIONS_VIRUSTOTAL=false     # Enable Virustotal Extension
-EXTENSIONS_OSQUERY=false        # Enable OSQuery Extension
-EXTENSIONS_DOCKER=false         # Enable Docker Extension
-
-APP_TIMEOUT=20000               # Defines maximum timeout to be used on the Wazuh app requests
-
-API_SELECTOR=true               Defines if the user is allowed to change the selected API directly from the Wazuh app top menu
-IP_SELECTOR=true                # Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
-IP_IGNORE="[]"                  # List of index patterns to be ignored
-
-WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-monitoring indices
-WAZUH_MONITORING_CREATION=d         # Custom setting to set the wazuh-monitoring-* indices creation interval
-WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
-WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
-WAZUH_MONITORING_REPLICAS=0         #
-
-ADMIN_PRIVILEGES=true               # App privileges
-```
-
 ## Directory structure
 
 ├── build-wazuh-images.yml
 ├── CHANGELOG.md
 ├── docker-compose.yml
 ├── generate-indexer-certs.yml
+├── indexer_certs_creator
+│   ├── config
+│   │   └── entrypoint.sh
+│   └── Dockerfile
 ├── LICENSE
 ├── production_cluster
-│   ├── nginx
-│   │   ├── nginx.conf
-│   │   └── ssl
-│   │       └── generate-self-signed-cert.sh
-│   ├── wazuh_cluster
-│   │   ├── wazuh_manager.conf
-│   │   └── wazuh_worker.conf
-│   ├── wazuh_dashboard
-│   │   └── opensearch_dashboards.yml
-│   ├── wazuh-indexer
-│   │   ├── internal_users.yml
-│   │   ├── opensearch.yml
-│   │   ├── wazuh1.indexer.yml
-│   │   ├── wazuh2.indexer.yml
-│   │   └── wazuh3.indexer.yml
-│   └── wazuh_indexer_ssl_certs
-│       └── certs.yml
+│   ├── nginx
+│   │   ├── nginx.conf
+│   │   └── ssl
+│   │       └── generate-self-signed-cert.sh
+│   ├── wazuh_cluster
+│   │   ├── wazuh_manager.conf
+│   │   └── wazuh_worker.conf
+│   ├── wazuh_dashboard
+│   │   ├── opensearch_dashboards.yml
+│   │   └── wazuh.yml
+│   ├── wazuh-indexer
+│   │   ├── internal_users.yml
+│   │   ├── wazuh1.indexer.yml
+│   │   ├── wazuh2.indexer.yml
+│   │   └── wazuh3.indexer.yml
+│   └── wazuh_indexer_ssl_certs
+│       └── certs.yml
 ├── production-cluster.yml
 ├── README.md
 ├── VERSION
 ├── wazuh-dashboard
-│   ├── config
-│   │   ├── opensearch_dashboards.yml
-│   │   ├── entrypoint.sh
-│   │   ├── wazuh_app_config.sh
-│   │   └── wazuh.yml
-│   └── Dockerfile
+│   ├── config
+│   │   ├── entrypoint.sh
+│   │   ├── opensearch_dashboards.yml
+│   │   ├── wazuh_app_config.sh
+│   │   └── wazuh.yml
+│   └── Dockerfile
 ├── wazuh-indexer
-│   ├── config
-│   │   ├── config.sh
-│   │   ├── config.yml
-│   │   ├── entrypoint.sh
-│   │   ├── opensearch.yml
-│   │   ├── securityadmin.sh
-│   │   └── unattended_installer.tar.gz
-│   └── Dockerfile
+│   ├── config
+│   │   ├── config.sh
+│   │   ├── config.yml
+│   │   ├── entrypoint.sh
+│   │   ├── internal_users.yml
+│   │   ├── opensearch.yml
+│   │   ├── roles_mapping.yml
+│   │   ├── roles.yml
+│   │   └── securityadmin.sh
+│   └── Dockerfile
 └── wazuh-manager
-    ├── config
-    │   ├── create_user.py
-    │   ├── etc
-    │   │   ├── cont-init.d
-    │   │   │   ├── 0-wazuh-init
-    │   │   │   ├── 1-config-filebeat
-    │   │   │   └── 2-manager
-    │   │   └── services.d
-    │   │       ├── filebeat
-    │   │       │   ├── finish
-    │   │       │   └── run
-    │   │       └── ossec-logs
-    │   │           └── run
-    │   ├── filebeat.yml
-    │   ├── permanent_data.env
-    │   ├── permanent_data.sh
-    │   └── wazuh.repo
-    └── Dockerfile
+    ├── config
+    │   ├── create_user.py
+    │   ├── etc
+    │   │   ├── cont-init.d
+    │   │   │   ├── 0-wazuh-init
+    │   │   │   ├── 1-config-filebeat
+    │   │   │   └── 2-manager
+    │   │   └── services.d
+    │   │       ├── filebeat
+    │   │       │   ├── finish
+    │   │       │   └── run
+    │   │       └── ossec-logs
+    │   │           └── run
+    │   ├── filebeat.yml
+    │   ├── permanent_data.env
+    │   ├── permanent_data.sh
+    │   └── wazuh.repo
+    └── Dockerfile
 
 
 ## Branches
