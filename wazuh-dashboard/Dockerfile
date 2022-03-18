@@ -60,7 +60,7 @@ ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
     INSTALL_DIR="/usr/share/wazuh-dashboard"
-    
+
 # Set Wazuh app variables
 ENV PATTERN="" \
     CHECKS_PATTERN="" \
