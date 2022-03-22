@@ -165,6 +165,15 @@ set_custom_cluster_key() {
 }
 
 ##############################################################################
+# Modify /var/ossec/queue/rids directory owner on
+# container start.
+##############################################################################
+
+set_rids_owner() {
+  chown -R wazuh:wazuh /var/ossec/queue/rids
+}
+
+##############################################################################
 # Main function
 ##############################################################################
 
@@ -202,6 +211,8 @@ main() {
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
+  # Set rids directory owner
+  set_rids_owner
 }
 
 main
