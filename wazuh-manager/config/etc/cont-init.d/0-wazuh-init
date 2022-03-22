@@ -211,6 +211,8 @@ main() {
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
+  # Set rids directory owner
+  set_rids_owner
 }
 
 main
