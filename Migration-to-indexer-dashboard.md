@@ -61,8 +61,9 @@ docker container run --rm -it \
 `docker-compose -f production-cluster.yml down`
 
 **7. Start the 4.3 environment.**
-````
+```
 git checkout 4.3
 docker-compose -f production-cluster.yml up -d
 ```
+
 **8. Check the access to Wazuh dashboard**: go to the Wazuh Dashboard WebUI and check if everything is working.
