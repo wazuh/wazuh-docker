@@ -34,7 +34,7 @@ chmod 700 /$CERT_TOOL
 # Creating Cluster certificates
 ##############################################################################
 
-/$CERT_TOOL
+/$CERT_TOOL -A
 echo "Moving created certificates to destination directory"
 cp /certs/* /certificates/
 echo "changing certificate permissions"
