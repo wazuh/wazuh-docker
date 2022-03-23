@@ -66,7 +66,7 @@ else
   exit 1
 fi
 
-chmod 755 $CERT_TOOL && bash /$CERT_TOOL
+chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
