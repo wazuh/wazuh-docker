@@ -66,7 +66,7 @@ else
   exit 1
 fi
 
-chmod 755 $CERT_TOOL && bash /$CERT_TOOL
+chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
@@ -98,6 +98,6 @@ cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/s
 cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's demo certificates
-cp -pr /certs/* ${TARGET_DIR}${CONFIG_DIR}
+cp -pr /wazuh-certificates/* ${TARGET_DIR}${CONFIG_DIR}
 
 

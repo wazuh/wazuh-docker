@@ -34,8 +34,8 @@ chmod 700 /$CERT_TOOL
 # Creating Cluster certificates
 ##############################################################################
 
-/$CERT_TOOL
+/$CERT_TOOL -A
 echo "Moving created certificates to destination directory"
-cp /certs/* /certificates/
+cp /wazuh-certificates/* /certificates/
 echo "changing certificate permissions"
 chmod -R 666 /certificates/*
