@@ -30,7 +30,7 @@ fi
 
 chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
-# Copy Wazuh dashboard's certificates
+# Create certs directory
 mkdir -p ${CONFIG_DIR}/certs
 
 # Copy Wazuh dashboard certs to install config dir
