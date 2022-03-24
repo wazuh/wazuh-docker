@@ -8,7 +8,7 @@ ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 # Set repositories.
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+RUN rpm --import https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH
 
 COPY config/wazuh.repo /etc/yum.repos.d/wazuh.repo
 
@@ -18,7 +18,7 @@ RUN yum --enablerepo=updates clean metadata && \
   sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo && \
   yum clean all && rm -rf /var/cache/yum
 
-RUN curl -L -O https://packages.wazuh.com/4.x/yum/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
+RUN curl -L -O https://packages-dev.wazuh.com/pre-release/yum/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
   rpm -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm
 
 RUN curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
