@@ -97,7 +97,5 @@ cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-se
 cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
-# Copy Wazuh indexer's demo certificates
+# Copy Wazuh indexer's certificates
 cp -pr /wazuh-certificates/* ${TARGET_DIR}${CONFIG_DIR}
-
-

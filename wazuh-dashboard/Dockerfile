@@ -11,30 +11,21 @@ RUN apt-get update && apt install curl libcap2-bin xz-utils -y
 RUN mkdir -p $INSTALL_DIR
 
 # Download and extract Wazuh dashboard base
-RUN curl -o wazuh-dashboard-base.tar.xz https://packages-dev.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-$WAZUH_VERSION-linux-x64.tar.xz && \
+RUN curl -o wazuh-dashboard-base.tar.xz https://packages.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-${WAZUH_VERSION}-linux-x64.tar.xz && \
     tar -xf wazuh-dashboard-base.tar.xz --directory  $INSTALL_DIR --strip-components=1
 
-# Download and extract demo certificates
-RUN curl -O https://packages-dev.wazuh.com/stack/demo-certs.tar.gz && \
-    tar -xf demo-certs.tar.gz && rm -f demo-certs.tar.gz
-
-# Create certs dir
-RUN mkdir -p $INSTALL_DIR/config/certs
-
-# Copy Wazuh dashboard demo certs to install config dir
-RUN cp certs/demo-dashboard.pem $INSTALL_DIR/config/certs/demo-dashboard.pem && \ 
-    cp certs/demo-dashboard-key.pem $INSTALL_DIR/config/certs/demo-dashboard-key.pem && \
-    cp certs/root-ca.pem $INSTALL_DIR/config/certs/root-ca.pem
-
-RUN chmod 640 $INSTALL_DIR/config/certs/*
+# Generate certificates
+COPY config/config.sh .
+COPY config/config.yml /
+RUN bash config.sh
 
 # Create and configure Wazuh dashboard keystore
 RUN $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
     echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
     echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
 
-# Install Wazuh App 
-RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-$WAZUH_VERSION.zip --allow-root
+# Install Wazuh App
+RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}.zip --allow-root
 
 # Copy and set permissions to config files
 COPY config/opensearch_dashboards.yml $INSTALL_DIR/config/
