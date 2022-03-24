@@ -4,11 +4,11 @@ path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
 discovery.type: single-node
 compatibility.override_main_response_version: true
-plugins.security.ssl.http.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/demo.indexer.pem
-plugins.security.ssl.http.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/demo.indexer-key.pem
+plugins.security.ssl.http.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/indexer.pem
+plugins.security.ssl.http.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/indexer-key.pem
 plugins.security.ssl.http.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/root-ca.pem
-plugins.security.ssl.transport.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/demo.indexer.pem
-plugins.security.ssl.transport.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/demo.indexer-key.pem
+plugins.security.ssl.transport.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/indexer.pem
+plugins.security.ssl.transport.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/indexer-key.pem
 plugins.security.ssl.transport.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/root-ca.pem
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
@@ -19,7 +19,7 @@ plugins.security.authcz.admin_dn:
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.nodes_dn:
-- "CN=demo.indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
+- "CN=indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
 plugins.security.restapi.roles_enabled:
 - "all_access"
 - "security_rest_api_access"
