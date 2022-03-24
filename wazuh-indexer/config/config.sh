@@ -16,13 +16,13 @@ export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 export BASE_DIR=${NAME}-*
 export INDEXER_FILE=wazuh-indexer-base.tar.xz
-export BASE_FILE=wazuh-indexer-base-${VERSION}-testing-linux-x64.tar.xz
+export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
 export REPO_DIR=/unattended_installer
 
 
 rm -rf ${INSTALLATION_DIR}/
 
-curl -o ${INDEXER_FILE} https://packages-dev.wazuh.com/stack/indexer/base/${BASE_FILE}
+curl -o ${INDEXER_FILE} https://packages.wazuh.com/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
 ## TOOLS
