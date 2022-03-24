@@ -16,7 +16,7 @@ export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 export BASE_DIR=${NAME}-*
 export INDEXER_FILE=wazuh-indexer-base.tar.xz
-export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
+export BASE_FILE=wazuh-indexer-base-${VERSION}-testing-linux-x64.tar.xz
 export REPO_DIR=/unattended_installer
 
 

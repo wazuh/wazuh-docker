@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.3.0
+    image: wazuh/wazuh-manager:4.3.0-dev
     hostname: wazuh.manager
     restart: always
     ports:
@@ -30,7 +30,7 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:4.3.0
+    image: wazuh/wazuh-indexer:4.3.0-dev-testing
     hostname: wazuh1.indexer
     restart: always
     ports:
@@ -46,7 +46,7 @@ services:
         hard: 65536
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.3.0
+    image: wazuh/wazuh-dashboard:4.3.0-dev-testing
     hostname: wazuh.dashboard
     restart: always
     ports:
