@@ -13,27 +13,27 @@ services:
       - "514:514/udp"
       - "55000:55000"
     environment:
-      - INDEXER_URL=https://wazuh1.indexer:9200
+      - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
     volumes:
-      - ossec_api_configuration:/var/ossec/api/configuration
-      - ossec_etc:/var/ossec/etc
-      - ossec_logs:/var/ossec/logs
-      - ossec_queue:/var/ossec/queue
-      - ossec_var_multigroups:/var/ossec/var/multigroups
-      - ossec_integrations:/var/ossec/integrations
-      - ossec_active_response:/var/ossec/active-response/bin
-      - ossec_agentless:/var/ossec/agentless
-      - ossec_wodles:/var/ossec/wodles
+      - wazuh_api_configuration:/var/ossec/api/configuration
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_queue:/var/ossec/queue
+      - wazuh_var_multigroups:/var/ossec/var/multigroups
+      - wazuh_integrations:/var/ossec/integrations
+      - wazuh_active_response:/var/ossec/active-response/bin
+      - wazuh_agentless:/var/ossec/agentless
+      - wazuh_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
 
-  wazuh1.indexer:
+  wazuh.indexer:
     build: wazuh-indexer/
     image: wazuh/wazuh-indexer:4.3.0
-    hostname: wazuh1.indexer
+    hostname: wazuh.indexer
     restart: always
     ports:
       - "9200:9200"
@@ -60,20 +60,20 @@ services:
       - SERVER_SSL_ENABLED=false
       - WAZUH_API_URL=https://wazuh.manager
     depends_on:
-      - wazuh1.indexer
+      - wazuh.indexer
     links:
-      - wazuh1.indexer:wazuh1.indexer
+      - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
 
 volumes:
-  ossec_api_configuration:
-  ossec_etc:
-  ossec_logs:
-  ossec_queue:
-  ossec_var_multigroups:
-  ossec_integrations:
-  ossec_active_response:
-  ossec_agentless:
-  ossec_wodles:
+  wazuh_api_configuration:
+  wazuh_etc:
+  wazuh_logs:
+  wazuh_queue:
+  wazuh_var_multigroups:
+  wazuh_integrations:
+  wazuh_active_response:
+  wazuh_agentless:
+  wazuh_wodles:
   filebeat_etc:
   filebeat_var:
