@@ -3,7 +3,7 @@ FROM centos:7
 
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.2.6
+ARG WAZUH_VERSION=4.4.0-1
 ARG TEMPLATE_VERSION="master"
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
@@ -40,7 +40,7 @@ ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/e
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 COPY config/etc/ /etc/
-COPY --chown=root:ossec config/create_user.py /var/ossec/framework/scripts/create_user.py
+COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
