@@ -140,6 +140,8 @@ services:
     image: wazuh/wazuh-dashboard:4.3.0
     hostname: wazuh.dashboard
     restart: always
+    ports:
+      - 443:443
     environment:
       - OPENSEARCH_HOSTS="https://wazuh1.indexer:9200"
       - WAZUH_API_URL="https://wazuh.master"
@@ -162,8 +164,6 @@ services:
     hostname: nginx
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
       - "1514:1514"
     depends_on:
       - wazuh.master
