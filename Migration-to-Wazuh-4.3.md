@@ -321,6 +321,7 @@ docker container run --rm -it \
 **7. Start the 4.3 environment.**
 ```
 git checkout 4.3
+docker-compose -f generate-indexer-certs.yml run --rm generator
 docker-compose -f production-cluster.yml up -d
 ```
 
