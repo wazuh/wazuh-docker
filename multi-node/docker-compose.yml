@@ -175,7 +175,6 @@ services:
       - wazuh.dashboard:wazuh.dashboard
     volumes:
       - ./production_cluster/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./production_cluster/nginx/ssl:/etc/nginx/ssl:ro
 
 volumes:
   master-wazuh-api-configuration:
