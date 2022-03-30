@@ -153,23 +153,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 │   │   │   ├── wazuh2.indexer.yml
 │   │   │   └── wazuh3.indexer.yml
 │   │   └── wazuh_indexer_ssl_certs
-│   │       ├── admin-key.pem
-│   │       ├── admin.pem
 │   │       ├── certs.yml
-│   │       ├── root-ca.key
-│   │       ├── root-ca.pem
-│   │       ├── wazuh1.indexer-key.pem
-│   │       ├── wazuh1.indexer.pem
-│   │       ├── wazuh2.indexer-key.pem
-│   │       ├── wazuh2.indexer.pem
-│   │       ├── wazuh3.indexer-key.pem
-│   │       ├── wazuh3.indexer.pem
-│   │       ├── wazuh.dashboard-key.pem
-│   │       ├── wazuh.dashboard.pem
-│   │       ├── wazuh.master-key.pem
-│   │       ├── wazuh.master.pem
-│   │       ├── wazuh.worker-key.pem
-│   │       └── wazuh.worker.pem
 │   └── volume-migrator.sh
 ├── README.md
 ├── single-node
