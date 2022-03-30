@@ -44,6 +44,8 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    volumes:
+      - wazuh-indexer-data:/var/lib/wazuh-indexer
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.3.0
@@ -73,3 +75,4 @@ volumes:
   wazuh_wodles:
   filebeat_etc:
   filebeat_var:
+  wazuh-indexer-data:
