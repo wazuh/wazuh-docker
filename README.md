@@ -153,7 +153,7 @@ ADMIN_PRIVILEGES=true               # App privileges
 │   │   │   ├── wazuh2.indexer.yml
 │   │   │   └── wazuh3.indexer.yml
 │   │   └── wazuh_indexer_ssl_certs
-│   │       ├── certs.yml
+│   │       └── certs.yml
 │   └── volume-migrator.sh
 ├── README.md
 ├── single-node
