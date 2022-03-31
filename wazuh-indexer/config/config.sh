@@ -104,3 +104,6 @@ cp -pr /wazuh-certificates/root-ca.key ${TARGET_DIR}${CONFIG_DIR}/root-ca.key
 cp -pr /wazuh-certificates/root-ca.pem ${TARGET_DIR}${CONFIG_DIR}/root-ca.pem
 cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/admin-key.pem
+
+chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}
+chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/*

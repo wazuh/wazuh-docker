@@ -38,4 +38,5 @@ chmod 700 /$CERT_TOOL
 echo "Moving created certificates to destination directory"
 cp /wazuh-certificates/* /certificates/
 echo "changing certificate permissions"
-chmod -R 666 /certificates/*
+chmod -R 500 /certificates
+chmod -R 400 /certificates/*
