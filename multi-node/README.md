@@ -1,8 +1,6 @@
-# Deploy Wazuh Docker in single node configuration
+# Deploy Wazuh Docker in multi node configuration
 
-This deployment generates a Docker Compose stack with 1 Wazuh Manager container, 1 Wazuh Indexer container and 1 Wazuh Dashboard container.
-
-In case of upgrading from 4.2, the deployment hosted in the multi-node directory should be reviewed
+This deployment generates a Docker Compose stack with 2 Wazuh Manager container, 3 Wazuh Indexer container and 1 Wazuh Dashboard container.
 
 For the next deployment, the following steps must be performed:
 
