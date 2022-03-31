@@ -26,7 +26,7 @@ docker volume create \
            --label com.docker.compose.project=$2 \
            --label com.docker.compose.version=$1 \
            --label com.docker.compose.volume=master_wazuh_etc \
-           wazuh-master_docker_wazuh_etc
+           $2_docker_wazuh_etc
 
 docker volume create \
            --label com.docker.compose.project=$2 \

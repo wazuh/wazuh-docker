@@ -1,4 +1,4 @@
-# Opendistro data migration to Wazuh indexer on docker. 
+# Opendistro data migration to Wazuh indexer on docker.
 This procedure explains how to migrate Opendistro data from Opendistro to Wazuh indexer in docker production deployments.
 The example is migrating from v4.2 to v4.3.
 
@@ -51,7 +51,7 @@ docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
            --label com.docker.compose.volume=master_wazuh_etc \
-           wazuh-master_docker_wazuh_etc
+           multi-node_docker_wazuh_etc
 ```
 ```
 docker volume create \
