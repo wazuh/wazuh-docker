@@ -129,7 +129,7 @@ ADMIN_PRIVILEGES=true               # App privileges
     │       │   └── wazuh.repo
     │       └── Dockerfile
     ├── CHANGELOG.md
-    ├── indexer_certs_creator
+    ├── indexer-certs-creator
     │   ├── config
     │   │   └── entrypoint.sh
     │   └── Dockerfile
