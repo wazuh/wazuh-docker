@@ -135,10 +135,7 @@ ADMIN_PRIVILEGES=true               # App privileges
     │   └── Dockerfile
     ├── LICENSE
     ├── multi-node
-    │   ├── docker-compose.yml
-    │   ├── generate-indexer-certs.yml
-    │   ├── Migration-to-Wazuh-4.3.md
-    │   ├── production_cluster
+    │   ├── config
     │   │   ├── nginx
     │   │   │   └── nginx.conf
     │   │   ├── wazuh_cluster
@@ -147,17 +144,43 @@ ADMIN_PRIVILEGES=true               # App privileges
     │   │   ├── wazuh_dashboard
     │   │   │   ├── opensearch_dashboards.yml
     │   │   │   └── wazuh.yml
-    │   │   ├── wazuh-indexer
+    │   │   ├── wazuh_indexer
     │   │   │   ├── internal_users.yml
     │   │   │   ├── wazuh1.indexer.yml
     │   │   │   ├── wazuh2.indexer.yml
     │   │   │   └── wazuh3.indexer.yml
     │   │   └── wazuh_indexer_ssl_certs
     │   │       └── certs.yml
+    │   ├── docker-compose.yml
+    │   ├── generate-indexer-certs.yml
+    │   ├── Migration-to-Wazuh-4.3.md
     │   └── volume-migrator.sh
     ├── README.md
     ├── single-node
-    │   └── docker-compose.yml
+    │   ├── config
+    │   │   ├── wazuh_cluster
+    │   │   │   └── wazuh_manager.conf
+    │   │   ├── wazuh_dashboard
+    │   │   │   ├── opensearch_dashboards.yml
+    │   │   │   └── wazuh.yml
+    │   │   ├── wazuh_indexer
+    │   │   │   ├── internal_users.yml
+    │   │   │   └── wazuh.indexer.yml
+    │   │   └── wazuh_indexer_ssl_certs
+    │   │       ├── admin-key.pem
+    │   │       ├── admin.pem
+    │   │       ├── certs.yml
+    │   │       ├── root-ca.key
+    │   │       ├── root-ca.pem
+    │   │       ├── wazuh.dashboard-key.pem
+    │   │       ├── wazuh.dashboard.pem
+    │   │       ├── wazuh.indexer-key.pem
+    │   │       ├── wazuh.indexer.pem
+    │   │       ├── wazuh.manager-key.pem
+    │   │       └── wazuh.manager.pem
+    │   ├── docker-compose.yml
+    │   ├── generate-indexer-certs.yml
+    │   └── README.md
     └── VERSION
 
 
