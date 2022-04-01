@@ -28,4 +28,4 @@ jobs:
       run: dgoss run wazuh/wazuh-manager:4.3.0
       env:
         GOSS_SLEEP: 30
-        GOSS_FILE: .goss.yaml
+        GOSS_FILE: .github/.goss.yaml
