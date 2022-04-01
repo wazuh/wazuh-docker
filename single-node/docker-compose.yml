@@ -71,7 +71,7 @@ services:
       - 443:443
     environment:
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_PASSWORD=SecretPassword
       - WAZUH_API_URL=https://wazuh.manager
       - API_USERNAME=acme-user
       - API_PASSWORD=MyS3cr37P450r.*-
