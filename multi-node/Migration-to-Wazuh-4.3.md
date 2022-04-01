@@ -8,16 +8,16 @@ Assuming that you have a v4.2 production deployment, perform the following steps
 **1. Stop 4.2 environment**
 `docker-compose -f production-cluster.yml stop`
 
-**2. List Elastic volumesStop 4.2 environment**
+**2. List elasticsearch volumes**
 `docker volume ls --filter name='wazuh-docker_elastic-data'`
 
-**3. Inspect Elastic volume**
+**3. Inspect elasticsearch volume**
 `docker volume inspect wazuh-docker_elastic-data-1`
 
-**4. down the 4.2 environment.**
+**4. Spin down the 4.2 environment.**
 `docker-compose -f production-cluster.yml down`
 
-**5. Run the volume create command:** create new Indexer and Wazuh Manager volumes using the `com.docker.compose.version` label value from the previous command.
+**5. Run the volume create command:** create new indexer and Wazuh manager volumes using the `com.docker.compose.version` label value from the previous command.
 ```
 docker volume create \
            --label com.docker.compose.project=multi-node \
@@ -193,7 +193,7 @@ docker volume create \
            --label com.docker.compose.volume=worker-filebeat-var \
            multi-node_worker-filebeat-var
 ```
-**6. Copy the volume content from Elastic to Wazuh indexer volumes and old Wazuh Manager content to new volumes.**
+**6. Copy the volume content from elasticsearch to Wazuh indexer volumes and old Wazuh manager content to new volumes.**
 ```
 docker container run --rm -it \
            -v wazuh-docker_elastic-data-1:/from \
@@ -345,7 +345,7 @@ docker container run --rm -it \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 
-**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker Version and project name as parameters.**
+**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker version and project name as parameters.**
 
 Ex: $ multi-node/volume-migrator.sh 1.25.0 multi-node
 
@@ -357,4 +357,4 @@ docker-compose -f generate-indexer-certs.yml run --rm generator
 docker-compose up -d
 ```
 
-**8. Check the access to Wazuh dashboard**: go to the Wazuh Dashboard WebUI and check if everything is working.
+**8. Check the access to Wazuh dashboard**: go to the Wazuh dashboard using the web browser and check the data.
