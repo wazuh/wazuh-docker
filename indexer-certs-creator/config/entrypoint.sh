@@ -31,6 +31,31 @@ fi
 chmod 700 /$CERT_TOOL
 
 ##############################################################################
+# Functions
+##############################################################################
+
+function cert_parseYaml() {
+
+    local prefix=${2}
+    local s='[[:space:]]*'
+    local w='[a-zA-Z0-9_]*'
+    local fs=$(echo @|tr @ '\034')
+    sed -ne "s|^\($s\):|\1|" \
+            -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+            -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  ${1} |
+    awk -F$fs '{
+        indent = length($1)/2;
+        vname[indent] = $2;
+        for (i in vname) {if (i > indent) {delete vname[i]}}
+        if (length($3) > 0) {
+            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+            printf("%s%s%s=%s\n", "'$prefix'",vn, $2, $3);
+        }
+    }'
+
+}
+
+##############################################################################
 # Creating Cluster certificates
 ##############################################################################
 
@@ -40,3 +65,20 @@ cp /wazuh-certificates/* /certificates/
 echo "changing certificate permissions"
 chmod -R 500 /certificates
 chmod -R 400 /certificates/*
+echo "Setting UID indexer and dashboard"
+chown 1000 /certificates/*
+echo "Setting UID for wazuh manager and worker"
+cp /certificates/root-ca.pem /certificates/root-ca-manager.pem
+cp /certificates/root-ca.key /certificates/root-ca-manager.key
+chown 999:997 /certificates/root-ca-manager.pem
+chown 999:997 /certificates/root-ca-manager.key
+
+## Parsin cert.yml yo set UID permissions
+nodes_server=$( cert_parseYaml /certificates/certs.yml | grep nodes_server_name | sed 's/nodes_server_name=//' )
+arr=($nodes_server)
+
+for i in ${arr[@]}; 
+do 
+  chown 999:997 "/certificates/${i}.pem"
+  chown 999:997 "/certificates/${i}-key.pem"
+done
