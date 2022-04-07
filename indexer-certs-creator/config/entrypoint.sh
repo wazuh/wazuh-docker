@@ -28,13 +28,19 @@ else
   exit 1
 fi
 
+cp /certificates/certs.yml /config.yml
+
 chmod 700 /$CERT_TOOL
 
 ##############################################################################
 # Creating Cluster certificates
 ##############################################################################
 
-/$CERT_TOOL -A
+## Execute cert tool and parsin cert.yml to set UID permissions
+source /$CERT_TOOL -A
+nodes_server=$( cert_parseYaml /config.yml | grep nodes_server_name | sed 's/nodes_server_name=//' )
+arr=($nodes_server)
+
 echo "Moving created certificates to destination directory"
 cp /wazuh-certificates/* /certificates/
 echo "changing certificate permissions"
@@ -47,11 +53,6 @@ cp /certificates/root-ca.pem /certificates/root-ca-manager.pem
 cp /certificates/root-ca.key /certificates/root-ca-manager.key
 chown 999:997 /certificates/root-ca-manager.pem
 chown 999:997 /certificates/root-ca-manager.key
-
-## Parsin cert.yml to set UID permissions
-source /$CERT_TOOL
-nodes_server=$( cert_parseYaml /certificates/certs.yml | grep nodes_server_name | sed 's/nodes_server_name=//' )
-arr=($nodes_server)
 
 for i in ${arr[@]}; 
 do 
