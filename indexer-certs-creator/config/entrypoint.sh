@@ -39,7 +39,7 @@ chmod 700 /$CERT_TOOL
 ## Execute cert tool and parsin cert.yml to set UID permissions
 source /$CERT_TOOL -A
 nodes_server=$( cert_parseYaml /config.yml | grep nodes_server_name | sed 's/nodes_server_name=//' )
-arr=($nodes_server)
+node_name=($nodes_server)
 
 echo "Moving created certificates to destination directory"
 cp /wazuh-certificates/* /certificates/
@@ -54,7 +54,7 @@ cp /certificates/root-ca.key /certificates/root-ca-manager.key
 chown 999:997 /certificates/root-ca-manager.pem
 chown 999:997 /certificates/root-ca-manager.key
 
-for i in ${arr[@]}; 
+for i in ${node_name[@]}; 
 do 
   chown 999:997 "/certificates/${i}.pem"
   chown 999:997 "/certificates/${i}-key.pem"
