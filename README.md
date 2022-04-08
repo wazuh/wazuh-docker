@@ -11,9 +11,9 @@ In this repository you will find the containers to run:
 * Wazuh dashboard: provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
 * Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
-The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets. 
-The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets. 
-The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard. 
+The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets.
+The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets.
+The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard.
 The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexer, and one Wazuh dashboard.
 
 ## Documentation
@@ -82,8 +82,6 @@ WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-mo
 WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
 WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
 WAZUH_MONITORING_REPLICAS=0         #
-
-ADMIN_PRIVILEGES=true               # App privileges
 ```
 
 ## Directory structure

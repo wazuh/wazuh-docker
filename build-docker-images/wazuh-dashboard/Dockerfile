@@ -78,8 +78,7 @@ ENV PATTERN="" \
     WAZUH_MONITORING_ENABLED="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
-    WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES=""
+    WAZUH_MONITORING_REPLICAS=""
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
