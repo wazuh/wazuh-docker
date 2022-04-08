@@ -78,6 +78,7 @@ mkdir -p ${TARGET_DIR}/etc/default
 mkdir -p ${TARGET_DIR}/usr/lib/tmpfiles.d
 mkdir -p ${TARGET_DIR}/usr/lib/sysctl.d
 mkdir -p ${TARGET_DIR}/usr/lib/systemd/system
+mkdir -p ${TARGET_DIR}${CONFIG_DIR}/certs
 # Move configuration files for wazuh-indexer
 mv -f ${BASE_DIR}/etc/init.d/${NAME} ${TARGET_DIR}/etc/init.d/${NAME}
 mv -f ${BASE_DIR}/etc/wazuh-indexer/* ${TARGET_DIR}${CONFIG_DIR}
@@ -98,9 +99,12 @@ cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/s
 cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
-cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/indexer.pem
-cp -pr /wazuh-certificates/demo.indexer-key.pem ${TARGET_DIR}${CONFIG_DIR}/indexer-key.pem
-cp -pr /wazuh-certificates/root-ca.key ${TARGET_DIR}${CONFIG_DIR}/root-ca.key
-cp -pr /wazuh-certificates/root-ca.pem ${TARGET_DIR}${CONFIG_DIR}/root-ca.pem
-cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/admin.pem
-cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/admin-key.pem
+cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer.pem
+cp -pr /wazuh-certificates/demo.indexer-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer-key.pem
+cp -pr /wazuh-certificates/root-ca.key ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.key
+cp -pr /wazuh-certificates/root-ca.pem ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.pem
+cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin.pem
+cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-key.pem
+
+chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
+chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*

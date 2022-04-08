@@ -38,4 +38,5 @@ cp /wazuh-certificates/demo.dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
 cp /wazuh-certificates/demo.dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
 cp /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
 
-chmod 640 ${CONFIG_DIR}/certs/*
+chmod -R 500 ${CONFIG_DIR}/certs
+chmod -R 400 ${CONFIG_DIR}/certs/*

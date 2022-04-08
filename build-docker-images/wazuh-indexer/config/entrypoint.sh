@@ -10,8 +10,8 @@ export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}/config
 export JAVA_HOME=${INSTALLATION_DIR}/jdk
 export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
 export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
-export CERT="${OPENSEARCH_PATH_CONF}/admin.pem"
-export KEY="${OPENSEARCH_PATH_CONF}/admin-key.pem"
+export CERT="${OPENSEARCH_PATH_CONF}/certs/admin.pem"
+export KEY="${OPENSEARCH_PATH_CONF}/certs/admin-key.pem"
 
 run_as_other_user_if_needed() {
   if [[ "$(id -u)" == "0" ]]; then
