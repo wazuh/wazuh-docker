@@ -9,11 +9,12 @@ In this repository you will find the containers to run:
 
 * Wazuh manager: it runs the Wazuh manager, Wazuh API and Filebeat OSS
 * Wazuh dashboard: provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
-* Wazuh indexer: Wazuh indexer container (working as a single-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
+* Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
-In addition, a docker-compose file is provided to launch the containers mentioned above.
-
-* Wazuh indexer cluster. In the Wazuh indexer Dockerfile we can visualize variables to configure an Wazuh indexer Cluster. These variables are used in the file *config_cluster.sh* to set them in the *opensearch.yml* configuration file. You can see the meaning of the node variables and other cluster settings [here](https://opensearch.org/docs/latest/opensearch/cluster/).
+The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets. 
+The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets. 
+The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard. 
+The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexer, and one Wazuh dashboard.
 
 ## Documentation
 
