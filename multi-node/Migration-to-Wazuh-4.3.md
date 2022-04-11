@@ -17,7 +17,12 @@ Assuming that you have a v4.2 production deployment, perform the following steps
 **4. Spin down the 4.2 environment.**
 `docker-compose -f production-cluster.yml down`
 
+**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker version and project name as parameters.**
+
+Ex: $ multi-node/volume-migrator.sh 1.25.0 multi-node
+
 **5. Run the volume create command:** create new indexer and Wazuh manager volumes using the `com.docker.compose.version` label value from the previous command.
+
 ```
 docker volume create \
            --label com.docker.compose.project=multi-node \
@@ -344,10 +349,6 @@ docker container run --rm -it \
            -v multi-node_worker-filebeat-var:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
-
-**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker version and project name as parameters.**
-
-Ex: $ multi-node/volume-migrator.sh 1.25.0 multi-node
 
 **7. Start the 4.3 environment.**
 ```

@@ -78,15 +78,7 @@ ENV PATTERN="" \
     WAZUH_MONITORING_ENABLED="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
-    WAZUH_MONITORING_REPLICAS="" \
-    ADMIN_PRIVILEGES="" \
-    XPACK_CANVAS="true" \
-    XPACK_LOGS="true"   \
-    XPACK_INFRA="true"  \
-    XPACK_ML="true" \
-    XPACK_DEVTOOLS="true"   \
-    XPACK_MONITORING="true" \
-    XPACK_APM="true"
+    WAZUH_MONITORING_REPLICAS=""
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP

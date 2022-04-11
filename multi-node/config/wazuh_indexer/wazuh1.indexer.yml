@@ -36,6 +36,4 @@ plugins.security.restapi.roles_enabled:
 - "security_rest_api_access"
 plugins.security.allow_default_init_securityindex: true
 cluster.routing.allocation.disk.threshold_enabled: false
-opendistro_security.audit.config.disabled_rest_categories: NONE
-opendistro_security.audit.config.disabled_transport_categories: NONE
 compatibility.override_main_response_version: true

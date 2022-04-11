@@ -77,12 +77,6 @@
 # List of index patterns to be ignored
 #ip.ignore: []
 #
-# -------------------------------- X-Pack RBAC ---------------------------------
-#
-# Custom setting to enable/disable built-in X-Pack RBAC security capabilities.
-# Default: enabled
-#xpack.rbac.enabled: true
-#
 # ------------------------------ wazuh-monitoring ------------------------------
 #
 # Custom setting to enable/disable wazuh-monitoring indices.
