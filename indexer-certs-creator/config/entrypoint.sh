@@ -38,7 +38,7 @@ chmod 700 /$CERT_TOOL
 
 ## Execute cert tool and parsin cert.yml to set UID permissions
 source /$CERT_TOOL -A
-nodes_server=$( cert_parseYaml /config.yml | grep nodes_server_name | sed 's/nodes_server_name=//' )
+nodes_server=$( cert_parseYaml /config.yml | grep nodes_server__name | sed 's/nodes_server__name=//' )
 node_names=($nodes_server)
 
 echo "Moving created certificates to destination directory"
