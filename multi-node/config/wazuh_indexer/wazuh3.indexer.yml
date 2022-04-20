@@ -21,7 +21,6 @@ plugins.security.ssl.transport.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/c
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.ssl.transport.resolve_hostname: false
-plugins.security.audit.type: internal_opensearch
 plugins.security.authcz.admin_dn:
 - "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
 plugins.security.check_snapshot_restore_write_privileges: true
