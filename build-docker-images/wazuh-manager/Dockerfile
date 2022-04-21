@@ -9,7 +9,7 @@ ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
-RUN apt-key adv --fetch-keys https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH && \
+RUN apt-key adv --fetch-keys https://packages.wazuh.com/key/GPG-KEY-WAZUH && \
     echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list && \
     apt-get update && \
     apt-get install wazuh-manager=${WAZUH_VERSION}-1
