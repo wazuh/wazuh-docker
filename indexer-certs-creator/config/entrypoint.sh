@@ -28,7 +28,7 @@ else
   exit 1
 fi
 
-cp /certificates/certs.yml /config.yml
+cp /config/certs.yml /config.yml
 
 chmod 700 /$CERT_TOOL
 
