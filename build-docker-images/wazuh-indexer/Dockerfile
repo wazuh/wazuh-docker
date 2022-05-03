@@ -1,6 +1,8 @@
 # Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal AS builder
 
+ARG WAZUH_VERSION
+
 RUN apt-get update -y && apt-get install curl openssl xz-utils -y
 
 COPY config/opensearch.yml /
