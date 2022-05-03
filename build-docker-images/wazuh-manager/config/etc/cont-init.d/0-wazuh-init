@@ -41,12 +41,18 @@ exec_cmd_stdout() {
 
 mount_permanent_data() {
   for permanent_dir in "${PERMANENT_DATA[@]}"; do
+    data_tmp="${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/"
+    print ${data_tmp}
     # Check if the path is not empty
     if find ${permanent_dir} -mindepth 1 | read; then
       print "The path ${permanent_dir} is already mounted"
     else
-      print "Installing ${permanent_dir}"
-      exec_cmd "cp -a ${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/. ${permanent_dir}"
+      if find ${data_tmp} -mindepth 1 | read; then
+        print "Installing ${permanent_dir}"
+        exec_cmd "cp -a ${data_tmp}. ${permanent_dir}"
+      else
+        print "The path ${permanent_dir} is empty, skiped"
+      fi
     fi
   done
 }
