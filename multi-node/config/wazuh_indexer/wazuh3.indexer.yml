@@ -21,7 +21,6 @@ plugins.security.ssl.transport.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/c
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.ssl.transport.resolve_hostname: false
-plugins.security.audit.type: internal_opensearch
 plugins.security.authcz.admin_dn:
 - "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
 plugins.security.check_snapshot_restore_write_privileges: true
@@ -36,6 +35,4 @@ plugins.security.restapi.roles_enabled:
 - "security_rest_api_access"
 plugins.security.allow_default_init_securityindex: true
 cluster.routing.allocation.disk.threshold_enabled: false
-opendistro_security.audit.config.disabled_rest_categories: NONE
-opendistro_security.audit.config.disabled_transport_categories: NONE
 compatibility.override_main_response_version: true

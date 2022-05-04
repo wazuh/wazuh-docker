@@ -7,4 +7,8 @@ services:
     hostname: wazuh-certs-generator
     volumes:
       - ./config/wazuh_indexer_ssl_certs/:/certificates/
+<<<<<<< HEAD
       - ./config/certs.yml:/certs.yml
+=======
+      - ./config/certs.yml:/config/certs.yml
+>>>>>>> 33c9758fd854ef6a7f138e8e2c30a4744dc61a2a
