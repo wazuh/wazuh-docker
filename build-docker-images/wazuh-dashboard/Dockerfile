@@ -80,7 +80,7 @@ ENV PATTERN="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
 
-#Install dependencies
+# Install dependencies
 RUN apt update && apt install -y libnss3-dev fonts-liberation libfontconfig1
 
 # Create wazuh-dashboard user and group
