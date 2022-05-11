@@ -18,7 +18,7 @@ services:
       - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
       - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
       - SSL_KEY=/etc/ssl/filebeat.key
-      - API_USERNAME=acme-user
+      - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - master-wazuh-api-configuration:/var/ossec/api/configuration
@@ -145,7 +145,7 @@ services:
     environment:
       - OPENSEARCH_HOSTS="https://wazuh1.indexer:9200"
       - WAZUH_API_URL="https://wazuh.master"
-      - API_USERNAME=acme-user
+      - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
