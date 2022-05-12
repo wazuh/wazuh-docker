@@ -141,7 +141,7 @@ services:
     hostname: wazuh.dashboard
     restart: always
     ports:
-      - 443:443
+      - 443:5601
     environment:
       - OPENSEARCH_HOSTS="https://wazuh1.indexer:9200"
       - WAZUH_API_URL="https://wazuh.master"
