@@ -21,6 +21,12 @@ In addition, a docker-compose file is provided to launch the containers mentione
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker hub](https://hub.docker.com/u/wazuh)
 
+To start, just copy the `production_cluster.tpl` template directory: 
+``` 
+cp -r production_cluster.tpl production_cluster  
+```  
+and follow the documentation to run the Wazuh stack.
+
 
 ### Setup SSL certificate
 
