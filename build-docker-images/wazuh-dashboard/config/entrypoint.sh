@@ -8,7 +8,6 @@ DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
 # Create and configure Wazuh dashboard keystore
 
 $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
-sleep 10 && \
 echo $DASHBOARD_USERNAME | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
 echo $DASHBOARD_PASSWORD | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
 
