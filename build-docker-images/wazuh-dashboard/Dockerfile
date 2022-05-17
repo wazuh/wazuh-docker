@@ -19,11 +19,6 @@ COPY config/config.sh .
 COPY config/config.yml /
 RUN bash config.sh
 
-# Create and configure Wazuh dashboard keystore
-RUN $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
-    echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
-    echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
-
 # Install Wazuh App
 RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}.zip --allow-root
 
