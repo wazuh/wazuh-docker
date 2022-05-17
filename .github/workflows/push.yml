@@ -16,9 +16,6 @@ jobs:
     - name: Check running containers
       run: docker ps -a
 
-    - name: Shutdown the stack
-      run: docker-compose -f build-wazuh-images.yml kill
-
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
       with:
