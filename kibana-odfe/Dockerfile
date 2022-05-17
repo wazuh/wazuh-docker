@@ -2,8 +2,8 @@
 FROM amazon/opendistro-for-elasticsearch-kibana:1.13.2
 USER kibana
 ARG ELASTIC_VERSION=7.10.2
-ARG WAZUH_VERSION=4.4.0
-ARG WAZUH_APP_VERSION="${WAZUH_VERSION}_${ELASTIC_VERSION}"
+ARG WAZUH_KIBANA_VERSION
+ARG WAZUH_APP_VERSION="${WAZUH_KIBANA_VERSION}_${ELASTIC_VERSION}"
 
 WORKDIR /usr/share/kibana
 RUN ./bin/kibana-plugin install https://packages.wazuh.com/4.x/ui/kibana/wazuh_kibana-${WAZUH_APP_VERSION}-1.zip
