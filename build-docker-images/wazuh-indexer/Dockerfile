@@ -62,7 +62,10 @@ COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/tmpfiles.d /usr/li
 RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer && \
     mkdir -p /usr/share/wazuh-indexer/logs && chown 1000:1000 /usr/share/wazuh-indexer/logs && \
     mkdir -p /run/wazuh-indexer && chown 1000:1000 /run/wazuh-indexer && \
-    mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer
+    mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer && \
+    chmod 700 /usr/share/wazuh-indexer/config && \
+    chmod 600 /usr/share/wazuh-indexer/config/jvm.options && \
+    chmod 600 /usr/share/wazuh-indexer/config/opensearch.yml
 
 USER wazuh-indexer
 

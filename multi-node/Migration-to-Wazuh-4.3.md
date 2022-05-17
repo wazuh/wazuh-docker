@@ -17,7 +17,7 @@ Assuming that you have a v4.2 production deployment, perform the following steps
 **4. Spin down the 4.2 environment.**
 `docker-compose -f production-cluster.yml down`
 
-**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker version and project name as parameters.**
+**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker compose version and project name as parameters.**
 
 Ex: $ multi-node/volume-migrator.sh 1.25.0 multi-node
 

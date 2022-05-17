@@ -11,7 +11,7 @@ RUN apt-get update && apt install curl libcap2-bin xz-utils -y
 RUN mkdir -p $INSTALL_DIR
 
 # Download and extract Wazuh dashboard base
-RUN curl -o wazuh-dashboard-base.tar.xz https://packages-dev.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-${WAZUH_VERSION}-linux-x64.tar.xz && \
+RUN curl -o wazuh-dashboard-base.tar.xz https://packages.wazuh.com/stack/dashboard/base/wazuh-dashboard-base-${WAZUH_VERSION}-linux-x64.tar.xz && \
     tar -xf wazuh-dashboard-base.tar.xz --directory  $INSTALL_DIR --strip-components=1
 
 # Generate certificates
@@ -80,6 +80,9 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
+
+# Install dependencies
+RUN apt update && apt install -y libnss3-dev fonts-liberation libfontconfig1
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
