@@ -9,7 +9,7 @@ else
   IMAGE_VERSION=${WAZUH_IMAGE_VERSION}-dev
 fi
 
-echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > env
-echo WAZUH_IMAGE_VERSION=$IMAGE_VERSION >> env
+echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > build-docker-images/env
+echo WAZUH_IMAGE_VERSION=$IMAGE_VERSION >> build-docker-images/env
 
-docker-compose --env-file env build --no-cache
+docker-compose -f build-docker-images/docker-compose.yml --env-file build-docker-images/env build --no-cache
