@@ -8,7 +8,7 @@ export TARGET_DIR=${CURDIR}/debian/${NAME}
 # Package build options
 export USER=${NAME}
 export GROUP=${NAME}
-export VERSION=4.3.0
+export VERSION=4.3.1
 export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
