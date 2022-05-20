@@ -11,13 +11,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build the docker-compose stack
-      run: docker-compose -f build-from-sources.yml up -d --build
+      run: docker-compose -f build-wazuh-images.yml up -d --build
 
     - name: Check running containers
       run: docker ps -a
 
     - name: Shutdown the stack
-      run: docker-compose -f build-from-sources.yml kill
+      run: docker-compose -f build-wazuh-images.yml kill
 
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
@@ -25,12 +25,7 @@ jobs:
         version: v0.3.16
 
     - name: Execute Goss tests (wazuh-odfe)
-      run: dgoss run wazuh/wazuh-odfe:dev-version
+      run: dgoss run wazuh/wazuh-manager:4.3.1
       env:
         GOSS_SLEEP: 30
-        GOSS_FILE: .goss.yaml
-
-    - name: Execute Goss tests (wazuh-kibana-odfe)
-      run: dgoss run wazuh/wazuh-kibana-odfe:dev-version
-      env:
-        GOSS_FILE: .goss.kibana.yaml
+        GOSS_FILE: .github/.goss.yaml

@@ -7,13 +7,14 @@
 
 In this repository you will find the containers to run:
 
-* wazuh-opendistro: It runs the Wazuh manager, Wazuh API and Filebeat OSS (for integration with ODFE)
-* wazuh-kibana-opendistro: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
-* opendistro-for-elasticsearch: An Elasticsearch (ODFE) container (working as a single-node cluster) using ODFE Docker images. **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
+* Wazuh manager: it runs the Wazuh manager, Wazuh API and Filebeat OSS
+* Wazuh dashboard: provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
+* Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
-In addition, a docker-compose file is provided to launch the containers mentioned above.
-
-* Elasticsearch cluster. In the Elasticsearch Dockerfile we can visualize variables to configure an Elasticsearch Cluster. These variables are used in the file *config_cluster.sh* to set them in the *elasticsearch.yml* configuration file. You can see the meaning of the node variables [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html) and other cluster settings [here](https://github.com/elastic/elasticsearch/blob/master/distribution/src/config/elasticsearch.yml).
+The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets.
+The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets.
+The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard.
+The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexer, and one Wazuh dashboard.
 
 ## Documentation
 
@@ -39,16 +40,16 @@ API_USERNAME="wazuh"                                # Wazuh API username
 API_PASSWORD="wazuh"                                # Wazuh API password - Must comply with requirements
                                                     # (8+ length, uppercase, lowercase, specials chars)
 
-ELASTICSEARCH_URL=https://elasticsearch:9200        # Elasticsearch URL
-ELASTIC_USERNAME=admin                              # Elasticsearch Username
-ELASTIC_PASSWORD=admin                              # Elasticsearch Password
+INDEXER_URL=https://wazuh.indexer:9200              # Wazuh indexer URL
+INDEXER_USERNAME=admin                              # Wazuh indexer Username
+INDEXER_PASSWORD=admin                              # Wazuh indexer Password
 FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
 SSL_CERTIFICATE_AUTHORITIES=""                      # Path of Filebeat SSL CA
 SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certificate
 SSL_KEY=""                                          # Path of Filebeat SSL Key
 ```
 
-### Kibana
+### Dashboard
 ```
 PATTERN="wazuh-alerts-*"        # Default index pattern to use
 
@@ -81,66 +82,105 @@ WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-mo
 WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
 WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
 WAZUH_MONITORING_REPLICAS=0         #
-
-ADMIN_PRIVILEGES=true               # App privileges
 ```
 
 ## Directory structure
 
+    ├── build-docker-images
+    │   ├── docker-compose.yml
+    │   ├── wazuh-dashboard
+    │   │   ├── config
+    │   │   │   ├── config.sh
+    │   │   │   ├── config.yml
+    │   │   │   ├── entrypoint.sh
+    │   │   │   ├── opensearch_dashboards.yml
+    │   │   │   ├── wazuh_app_config.sh
+    │   │   │   └── wazuh.yml
+    │   │   └── Dockerfile
+    │   ├── wazuh-indexer
+    │   │   ├── config
+    │   │   │   ├── config.sh
+    │   │   │   ├── config.yml
+    │   │   │   ├── entrypoint.sh
+    │   │   │   ├── internal_users.yml
+    │   │   │   ├── opensearch.yml
+    │   │   │   ├── roles_mapping.yml
+    │   │   │   ├── roles.yml
+    │   │   │   └── securityadmin.sh
+    │   │   └── Dockerfile
+    │   └── wazuh-manager
+    │       ├── config
+    │       │   ├── create_user.py
+    │       │   ├── etc
+    │       │   │   ├── cont-init.d
+    │       │   │   │   ├── 0-wazuh-init
+    │       │   │   │   ├── 1-config-filebeat
+    │       │   │   │   └── 2-manager
+    │       │   │   └── services.d
+    │       │   │       ├── filebeat
+    │       │   │       │   ├── finish
+    │       │   │       │   └── run
+    │       │   │       └── ossec-logs
+    │       │   │           └── run
+    │       │   ├── filebeat.yml
+    │       │   ├── permanent_data.env
+    │       │   ├── permanent_data.sh
+    │       │   └── wazuh.repo
+    │       └── Dockerfile
     ├── CHANGELOG.md
-    ├── docker-compose.yml
-    ├── generate-opendistro-certs.yml
-    ├── kibana-odfe
+    ├── indexer-certs-creator
     │   ├── config
-    │   │   ├── custom_welcome
-    │   │   │   ├── light_theme.style.css
-    │   │   │   ├── template.js.hbs
-    │   │   │   ├── wazuh_logo_circle.svg
-    │   │   │   └── wazuh_wazuh_bg.svg
-    │   │   ├── entrypoint.sh
-    │   │   ├── kibana_settings.sh
-    │   │   ├── wazuh_app_config.sh
-    │   │   ├── wazuh.yml
-    │   │   └── welcome_wazuh.sh
+    │   │   └── entrypoint.sh
     │   └── Dockerfile
     ├── LICENSE
-    ├── production_cluster
-    │   ├── elastic_opendistro
-    │   │   ├── elasticsearch-node1.yml
-    │   │   ├── elasticsearch-node2.yml
-    │   │   ├── elasticsearch-node3.yml
-    │   │   └── internal_users.yml
-    │   ├── kibana_ssl
-    │   │   └── generate-self-signed-cert.sh
-    │   ├── nginx
-    │   │   ├── nginx.conf
-    │   │   └── ssl
-    │   │       └── generate-self-signed-cert.sh
-    │   ├── ssl_certs
-    │   │   └── certs.yml
-    │   └── wazuh_cluster
-    │       ├── wazuh_manager.conf
-    │       └── wazuh_worker.conf
-    ├── production-cluster.yml
+    ├── multi-node
+    │   ├── config
+    │   │   ├── nginx
+    │   │   │   └── nginx.conf
+    │   │   ├── wazuh_cluster
+    │   │   │   ├── wazuh_manager.conf
+    │   │   │   └── wazuh_worker.conf
+    │   │   ├── wazuh_dashboard
+    │   │   │   ├── opensearch_dashboards.yml
+    │   │   │   └── wazuh.yml
+    │   │   ├── wazuh_indexer
+    │   │   │   ├── internal_users.yml
+    │   │   │   ├── wazuh1.indexer.yml
+    │   │   │   ├── wazuh2.indexer.yml
+    │   │   │   └── wazuh3.indexer.yml
+    │   │   └── wazuh_indexer_ssl_certs
+    │   │       └── certs.yml
+    │   ├── docker-compose.yml
+    │   ├── generate-indexer-certs.yml
+    │   ├── Migration-to-Wazuh-4.3.md
+    │   └── volume-migrator.sh
     ├── README.md
-    ├── VERSION
-    └── wazuh-odfe
-        ├── config
-        │   ├── create_user.py
-        │   ├── etc
-        │   │   ├── cont-init.d
-        │   │   │   ├── 0-wazuh-init
-        │   │   │   ├── 1-config-filebeat
-        │   │   │   └── 2-manager
-        │   │   └── services.d
-        │   │       └── filebeat
-        │   │           ├── finish
-        │   │           └── run
-        │   ├── filebeat.yml
-        │   ├── permanent_data.env
-        │   ├── permanent_data.sh
-        │   └── wazuh.repo
-        └── Dockerfile
+    ├── single-node
+    │   ├── config
+    │   │   ├── wazuh_cluster
+    │   │   │   └── wazuh_manager.conf
+    │   │   ├── wazuh_dashboard
+    │   │   │   ├── opensearch_dashboards.yml
+    │   │   │   └── wazuh.yml
+    │   │   ├── wazuh_indexer
+    │   │   │   ├── internal_users.yml
+    │   │   │   └── wazuh.indexer.yml
+    │   │   └── wazuh_indexer_ssl_certs
+    │   │       ├── admin-key.pem
+    │   │       ├── admin.pem
+    │   │       ├── certs.yml
+    │   │       ├── root-ca.key
+    │   │       ├── root-ca.pem
+    │   │       ├── wazuh.dashboard-key.pem
+    │   │       ├── wazuh.dashboard.pem
+    │   │       ├── wazuh.indexer-key.pem
+    │   │       ├── wazuh.indexer.pem
+    │   │       ├── wazuh.manager-key.pem
+    │   │       └── wazuh.manager.pem
+    │   ├── docker-compose.yml
+    │   ├── generate-indexer-certs.yml
+    │   └── README.md
+    └── VERSION
 
 
 
@@ -149,11 +189,12 @@ ADMIN_PRIVILEGES=true               # App privileges
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch on correspond to the last Wazuh stable version.
 
-
 ## Compatibility Matrix
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.3.1        |         |        |
+| v4.3.0        |         |        |
 | v4.2.6        | 1.13.2  | 7.11.2 |
 | v4.2.5        | 1.13.2  | 7.11.2 |
 | v4.2.4        | 1.13.2  | 7.11.2 |
