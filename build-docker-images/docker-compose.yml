@@ -4,7 +4,7 @@ version: '3.7'
 services:
   wazuh.manager:
     build:  wazuh-manager/
-    image: wazuh/wazuh-manager:4.3.1
+    image: wazuh/wazuh-manager:4.4.0
     hostname: wazuh.manager
     restart: always
     ports:
@@ -32,7 +32,7 @@ services:
 
   wazuh.indexer:
     build: wazuh-indexer/
-    image: wazuh/wazuh-indexer:4.3.1
+    image: wazuh/wazuh-indexer:4.4.0
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -49,7 +49,7 @@ services:
 
   wazuh.dashboard:
     build: wazuh-dashboard/
-    image: wazuh/wazuh-dashboard:4.3.1
+    image: wazuh/wazuh-dashboard:4.4.0
     hostname: wazuh.dashboard
     restart: always
     ports:
