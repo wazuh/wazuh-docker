@@ -14,7 +14,7 @@ jobs:
       run: ./build.sh
 
     - name: Check running containers
-      run: docker ps -a >> $GITHUB_ENV
+      run: docker ps -a
 
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
