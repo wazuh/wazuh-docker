@@ -3,12 +3,8 @@ version: '3.7'
 
 services:
   wazuh.manager:
-    build:
-      context: wazuh-manager/
-      args:
-        WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-    image: wazuh/wazuh-manager:${WAZUH_IMAGE_VERSION}
+    build:  wazuh-manager/
+    image: wazuh/wazuh-manager:4.5.0
     hostname: wazuh.manager
     restart: always
     ports:
@@ -35,12 +31,8 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   wazuh.indexer:
-    build:
-      context: wazuh-indexer/
-      args:
-        WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-    image: wazuh/wazuh-indexer:${WAZUH_IMAGE_VERSION}
+    build: wazuh-indexer/
+    image: wazuh/wazuh-indexer:4.5.0
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -56,12 +48,8 @@ services:
         hard: 65536
 
   wazuh.dashboard:
-    build:
-      context: wazuh-dashboard/
-      args:
-        WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-    image: wazuh/wazuh-dashboard:${WAZUH_IMAGE_VERSION}
+    build: wazuh-dashboard/
+    image: wazuh/wazuh-dashboard:4.5.0
     hostname: wazuh.dashboard
     restart: always
     ports:
