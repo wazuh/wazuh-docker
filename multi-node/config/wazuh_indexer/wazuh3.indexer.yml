@@ -1,0 +1,38 @@
+network.host: wazuh3.indexer
+node.name: wazuh3.indexer
+cluster.initial_master_nodes:
+        - wazuh1.indexer
+        - wazuh2.indexer
+        - wazuh3.indexer
+cluster.name: "wazuh-cluster"
+discovery.seed_hosts:
+        - wazuh1.indexer
+        - wazuh2.indexer
+        - wazuh3.indexer
+node.max_local_storage_nodes: "3"
+path.data: /var/lib/wazuh-indexer
+path.logs: /var/log/wazuh-indexer
+plugins.security.ssl.http.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/certs/wazuh3.indexer.pem
+plugins.security.ssl.http.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/certs/wazuh3.indexer.key
+plugins.security.ssl.http.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/certs/root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: ${OPENSEARCH_PATH_CONF}/certs/wazuh3.indexer.pem
+plugins.security.ssl.transport.pemkey_filepath: ${OPENSEARCH_PATH_CONF}/certs/wazuh3.indexer.key
+plugins.security.ssl.transport.pemtrustedcas_filepath: ${OPENSEARCH_PATH_CONF}/certs/root-ca.pem
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.ssl.transport.resolve_hostname: false
+plugins.security.authcz.admin_dn:
+- "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.nodes_dn:
+- "CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
+- "CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
+- "CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US"
+- "CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US"
+plugins.security.restapi.roles_enabled:
+- "all_access"
+- "security_rest_api_access"
+plugins.security.allow_default_init_securityindex: true
+cluster.routing.allocation.disk.threshold_enabled: false
+compatibility.override_main_response_version: true
