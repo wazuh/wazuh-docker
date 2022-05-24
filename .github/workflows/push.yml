@@ -20,7 +20,7 @@ jobs:
 
     - name: Execute Goss tests (wazuh-manager)
       run: |
-          ./env
+          bash ./env
           dgoss run wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}"
       env:
         GOSS_SLEEP: 30
