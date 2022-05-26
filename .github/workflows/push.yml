@@ -26,3 +26,17 @@ jobs:
       env:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
+
+    - name: Create single node certficates
+      run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
+
+    - name: Start single node stack
+      run: docker-compose -f single-node/docker-compose.yml up -d
+
+    - name: Sleep for 60 seconds
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '60s'
+
+    - name: Check Wazuh indexer start
+      run: curl -XGET curl https://0.0.0.0:9200/_cluster/health -u admin:SecretPassword -k
