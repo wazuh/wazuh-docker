@@ -40,3 +40,8 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: curl -XGET https://0.0.0.0:9200/_cluster/health -u admin:SecretPassword -k
+
+    - name: Check Wazuh indexer start
+      run: |
+       TOKEN=$(curl -u $API_USER:$API_PASSWORD -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+       curl -k -X GET "https://0.0.0.0:55000/agents/outdated?pretty=true" -H "Authorization: Bearer $TOKEN"
