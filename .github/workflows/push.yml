@@ -49,17 +49,17 @@ jobs:
       env:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Stop single node stack
-      run: docker-compose -f single-node/docker-compose.yml down
-
     - name: Check Wazuh dashboard service URL
       uses: jtalk/url-health-check-action@v2
       with:
-        url: https://127.0.0.1:443
+        url: https://0.0.0.0:443
         follow-redirect: true
-        max-attempts: 2
+        max-attempts: 3
         retry-delay: 10s
         retry-all: false
+
+    - name: Stop single node stack
+      run: docker-compose -f single-node/docker-compose.yml down
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
