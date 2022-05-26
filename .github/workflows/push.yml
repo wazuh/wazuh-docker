@@ -41,7 +41,7 @@ jobs:
     - name: Check Wazuh indexer start
       run: |
        curl -XGET "https://0.0.0.0:9200/_cluster/health?wait_for_status=green&timeout=120s" -u admin:SecretPassword -k
-       curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
+       curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k | wc -l
 
     - name: Check Wazuh manager start
       run: |
@@ -50,13 +50,7 @@ jobs:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
-      uses: jtalk/url-health-check-action@v2
-      with:
-        url: https://0.0.0.0:443
-        follow-redirect: true
-        max-attempts: 3
-        retry-delay: 10s
-        retry-all: false
+      run: curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}'
 
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
@@ -75,7 +69,7 @@ jobs:
     - name: Check Wazuh indexer start
       run: |
        curl -XGET "https://0.0.0.0:9200/_cluster/health?wait_for_status=green&timeout=120s" -u admin:SecretPassword -k
-       curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
+       curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k | wc -l
 
     - name: Check Wazuh manager start
       run: |
@@ -85,10 +79,4 @@ jobs:
 
 
     - name: Check Wazuh dashboard service URL
-      uses: jtalk/url-health-check-action@v2
-      with:
-        url: https://127.0.0.1:443
-        follow-redirect: true
-        max-attempts: 3
-        retry-delay: 10s
-        retry-all: false
+      run: curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}'
