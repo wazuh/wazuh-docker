@@ -44,9 +44,9 @@ jobs:
        curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
 
     - name: Check Wazuh manager start
-      run: |
-       TOKEN=$(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-       curl -k -X GET "https://0.0.0.0:55000" -H "Authorization: Bearer $TOKEN"
+      run: curl -k -X GET "https://0.0.0.0:55000" -H "Authorization: Bearer $TOKEN"
+      env:
+        TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
@@ -54,7 +54,7 @@ jobs:
     - name: Check Wazuh dashboard service URL
       uses: jtalk/url-health-check-action@v2
       with:
-        url: https://0.0.0.0:443
+        url: https://127.0.0.1:443
         follow-redirect: true
         max-attempts: 3
         retry-delay: 10s
@@ -77,14 +77,15 @@ jobs:
        curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
 
     - name: Check Wazuh manager start
-      run: |
-       TOKEN=$(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-       curl -k -X GET "https://0.0.0.0:55000" -H "Authorization: Bearer $TOKEN"
+      run: curl -k -X GET "https://0.0.0.0:55000/cluster/status" -H "Authorization: Bearer $TOKEN"
+      env:
+        TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
 
     - name: Check Wazuh dashboard service URL
       uses: jtalk/url-health-check-action@v2
       with:
-        url: https://0.0.0.0:443
+        url: https://127.0.0.1:443
         follow-redirect: true
         max-attempts: 3
         retry-delay: 10s
