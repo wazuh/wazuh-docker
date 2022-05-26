@@ -56,7 +56,7 @@ jobs:
       with:
         url: https://127.0.0.1:443
         follow-redirect: true
-        max-attempts: 3
+        max-attempts: 2
         retry-delay: 10s
         retry-all: false
 
