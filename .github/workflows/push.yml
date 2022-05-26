@@ -44,7 +44,8 @@ jobs:
        curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
 
     - name: Check Wazuh manager start
-      run: curl -k -X GET "https://0.0.0.0:55000" -H "Authorization: Bearer ${{env.TOKEN}}"
+      run: |
+        curl -k -X GET "https://0.0.0.0:55000" -H "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
@@ -77,7 +78,8 @@ jobs:
        curl -XGET "https://0.0.0.0:9200/_cat/nodes?v" -u admin:SecretPassword -k
 
     - name: Check Wazuh manager start
-      run: curl -k -X GET "https://0.0.0.0:55000/cluster/status" -H "Authorization: Bearer ${{env.TOKEN}}"
+      run: |
+        curl -k -X GET "https://0.0.0.0:55000/cluster/status" -H "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
