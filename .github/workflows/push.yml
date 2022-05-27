@@ -35,7 +35,8 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       curl -XGET "https://0.0.0.0:9200/_cluster/health?wait_for_status=green&timeout=120s" -u admin:SecretPassword -k
+       sleep 60
+       curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k
 
     - name: Check Wazuh indexer nodes
       run: |
@@ -61,7 +62,8 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       curl -XGET "https://0.0.0.0:9200/_cluster/health?wait_for_status=green&timeout=120s" -u admin:SecretPassword -k
+       sleep 60
+       curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k
 
     - name: Check Wazuh indexer nodes
       run: |
