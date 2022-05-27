@@ -85,7 +85,7 @@ jobs:
      # uses: sergeysova/jq-action@v2
       run: |
         nodes=$(curl -k -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}" | jq -r ".data.affected_items[].name" | wc -l)
-        if [[ $nodes -eq 2 ]]; then
+        if [[ $nodes -eq 3 ]]; then
          echo "Wazuh manager nodes: ${nodes}"
         else
          echo "Wazuh manager nodes: ${nodes}"
