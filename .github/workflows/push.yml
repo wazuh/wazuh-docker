@@ -82,8 +82,8 @@ jobs:
        fi
 
     - name: Check Wazuh manager start
+     # uses: sergeysova/jq-action@v2
       run: |
-        sudo apt install jq -y
         nodes=curl -k -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer $TOKEN" | jq -r ".data.affected_items[].name" | wc -l
         if [[ $nodes -eq 2 ]]; then
          echo "Wazuh indexer nodes: ${nodes}"
