@@ -41,7 +41,7 @@ jobs:
     - name: Check Wazuh indexer nodes
       run: |
        nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k  | grep -E "indexer" | wc -l`"
-       if [[ $nodes -eq 1 ]]; then
+       if [[ $nodes -eq 2 ]]; then
         echo "Cantidad de nodos: ${nodes}"
        else
         echo "Cantidad de nodos: ${nodes}"
