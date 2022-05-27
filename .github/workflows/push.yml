@@ -21,11 +21,11 @@ jobs:
       with:
         version: v0.3.16
 
-    - name: Execute Goss tests (wazuh-manager)
-      run: dgoss run wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
-      env:
-        GOSS_SLEEP: 30
-        GOSS_FILE: .github/.goss.yaml
+##    - name: Execute Goss tests (wazuh-manager)
+##      run: dgoss run wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
+##      env:
+##        GOSS_SLEEP: 30
+##        GOSS_FILE: .github/.goss.yaml
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
