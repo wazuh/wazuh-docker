@@ -58,6 +58,19 @@ jobs:
         exit 1
        fi
 
+    - name: Check Wazuh templates
+      run: |
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k | grep "wazuh" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k | grep "wazuh"`"
+       if [[ $qty_templates -gt 0 ]]; then
+        echo "wazuh templates:"
+        echo "${templates}"
+       else
+        echo "wazuh templates:"
+        echo "${templates}"
+        exit 1
+       fi
+
     - name: Check Wazuh manager start
       run: |
         curl -k -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}"
@@ -105,6 +118,19 @@ jobs:
         echo "wazuh-alerts index documents: ${docs}"
        else
         echo "wazuh-alerts index documents: ${docs}"
+        exit 1
+       fi
+
+    - name: Check Wazuh templates
+      run: |
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k | grep "wazuh" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k | grep "wazuh"`"
+       if [[ $qty_templates -gt 0 ]]; then
+        echo "wazuh templates:"
+        echo "${templates}"
+       else
+        echo "wazuh templates:"
+        echo "${templates}"
         exit 1
        fi
 
