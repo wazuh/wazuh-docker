@@ -85,7 +85,7 @@ jobs:
      # uses: sergeysova/jq-action@v2
       run: |
         nodes=$(curl -k -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}" | jq -r ".data.affected_items[].name" | wc -l)
-        if [[ $nodes -eq 3 ]]; then
+        if [[ $nodes -eq 2 ]]; then
          echo "Wazuh manager nodes: ${nodes}"
         else
          echo "Wazuh manager nodes: ${nodes}"
@@ -96,4 +96,11 @@ jobs:
 
 
     - name: Check Wazuh dashboard service URL
-      run: curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}'
+      run: |
+       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}')
+       if [[ $status -eq 200 ]]; then
+        echo "Wazuh dashboard status: ${nodes}"
+       else
+        echo "Wazuh dashboard status: ${nodes}"
+        exit 1
+       fi
