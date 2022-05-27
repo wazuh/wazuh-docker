@@ -55,7 +55,14 @@ jobs:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
-      run: curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}'
+      run: |
+       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}')
+       if [[ $status -eq 200 ]]; then
+        echo "Wazuh dashboard status: ${status}"
+       else
+        echo "Wazuh dashboard status: ${status}"
+        exit 1
+       fi
 
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
@@ -99,8 +106,8 @@ jobs:
       run: |
        status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}')
        if [[ $status -eq 200 ]]; then
-        echo "Wazuh dashboard status: ${nodes}"
+        echo "Wazuh dashboard status: ${status}"
        else
-        echo "Wazuh dashboard status: ${nodes}"
+        echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
