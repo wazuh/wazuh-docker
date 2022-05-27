@@ -42,15 +42,15 @@ jobs:
       run: |
        nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k  | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 1 ]]; then
-        echo "Wazuh manager nodes: ${nodes}"
+        echo "Wazuh indexer nodes: ${nodes}"
        else
-        echo "Wazuh manager nodes: ${nodes}"
+        echo "Wazuh indexer nodes: ${nodes}"
         exit 1
        fi
 
     - name: Check Wazuh manager start
       run: |
-        curl -k -X GET "https://0.0.0.0:55000/cluster/info" -H "Authorization: Bearer ${{env.TOKEN}}"
+        curl -k -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
@@ -75,9 +75,9 @@ jobs:
       run: |
        nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k  | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 3 ]]; then
-        echo "Wazuh manager nodes: ${nodes}"
+        echo "Wazuh indexer nodes: ${nodes}"
        else
-        echo "Wazuh manager nodes: ${nodes}"
+        echo "Wazuh indexer nodes: ${nodes}"
         exit 1
        fi
 
