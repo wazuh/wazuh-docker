@@ -65,6 +65,7 @@ services:
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.3.3
+    hostname: wazuh.dashboard
     restart: always
     ports:
       - 443:5601
