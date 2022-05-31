@@ -64,7 +64,7 @@ services:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/internal_users.yml
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.3.23
+    image: wazuh/wazuh-dashboard:4.3.3
     restart: always
     ports:
       - 443:5601
