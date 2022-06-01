@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
 INSTALL_DIR=/usr/share/wazuh-dashboard
 DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"

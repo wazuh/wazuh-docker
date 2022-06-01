@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
@@ -8,7 +8,7 @@ export TARGET_DIR=${CURDIR}/debian/${NAME}
 # Package build options
 export USER=${NAME}
 export GROUP=${NAME}
-export VERSION=4.3.1
+export VERSION=4.3.3
 export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
