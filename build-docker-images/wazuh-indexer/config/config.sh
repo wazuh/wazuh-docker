@@ -8,7 +8,7 @@ export TARGET_DIR=${CURDIR}/debian/${NAME}
 # Package build options
 export USER=${NAME}
 export GROUP=${NAME}
-export VERSION=4.3.3
+export VERSION=4.5.0
 export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
@@ -30,8 +30,8 @@ tar -xf ${INDEXER_FILE}
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.3/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.3/
+PACKAGES_URL=https://packages.wazuh.com/4.5/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.5/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')

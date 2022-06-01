@@ -25,7 +25,11 @@ jobs:
         version: v0.3.16
 
     - name: Execute Goss tests (wazuh-odfe)
+<<<<<<< HEAD
       run: dgoss run wazuh/wazuh-manager:4.3.3
+=======
+      run: dgoss run wazuh/wazuh-manager:4.5.0
+>>>>>>> 90996712980f0190041f52e80a41952ca527d896
       env:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
