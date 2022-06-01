@@ -195,8 +195,11 @@ WAZUH_MONITORING_REPLICAS=0         #
 |---------------|---------|--------|
 | v4.5.0        |         |        |
 | v4.4.0        |         |        |
+| v4.3.3        |         |        |
+| v4.3.2        |         |        |
 | v4.3.1        |         |        |
 | v4.3.0        |         |        |
+| v4.2.7        | 1.13.2  | 7.11.2 |
 | v4.2.6        | 1.13.2  | 7.11.2 |
 | v4.2.5        | 1.13.2  | 7.11.2 |
 | v4.2.4        | 1.13.2  | 7.11.2 |
@@ -227,7 +230,7 @@ We thank you them and everyone else who has contributed to this project.
 
 ## License and copyright
 
-Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
 ## Web references
 
