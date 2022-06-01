@@ -1,11 +1,11 @@
-# Wazuh Docker Copyright (C) 2021 Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal
 
 ARG WAZUH_VERSION=4.4.0
 ARG TEMPLATE_VERSION=4.4
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.1.tar.gz"
+ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
