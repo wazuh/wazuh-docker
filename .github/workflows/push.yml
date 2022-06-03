@@ -1,6 +1,6 @@
 name: Wazuh Docker pipeline
 
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
   build-stack:
@@ -11,7 +11,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Build Wazuh images
-      run: ./build-images.sh
+      run: build-docker-images/build-images.sh
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
