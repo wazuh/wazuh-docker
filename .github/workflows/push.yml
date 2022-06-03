@@ -83,7 +83,7 @@ jobs:
           exit 1
         fi
       env:
-        TOKEN: $(curl -u -s wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -161,7 +161,7 @@ jobs:
          exit 1
         fi
       env:
-        TOKEN: $(curl -u -s wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
