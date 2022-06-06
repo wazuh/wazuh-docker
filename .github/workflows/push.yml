@@ -122,17 +122,16 @@ jobs:
     - name: Check Wazuh indexer start
       run: |
        sleep 120
-       status="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | wc -l`"
-       status-green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
-       if [[ $status-green -eq $status ]]; then
+       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+       if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
        else
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
         exit 1
        fi
-       status-index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
-       status-index-green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep -E "green" | wc -l`"
-       if [[ $status-index-green -eq $status-index ]]; then
+       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep -E "green" | wc -l`"
+       if [[ $status_index_green -eq $status_index ]]; then
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
        else
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
