@@ -110,6 +110,10 @@ jobs:
         exit 1
        fi
 
+    - name: Check Wazuh dashboard service URL
+      run: |
+       docker exec -it single-node_wazuh.manager_1 tail -200 /var/ossec/logs/ossec.log | grep -E "ERR||WARN||CRIT"
+
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
 
