@@ -100,6 +100,17 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
+    - name: Check errors in ossec.log
+      run: |
+       log=$(docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
+       if [[ -z $log ]]; then
+        echo "No errors in ossec.log"
+       else
+        echo "Errors in ossec.log:"
+        echo $log
+        exit 1
+       fi
+
     - name: Check Wazuh dashboard service URL
       run: |
        status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
@@ -109,10 +120,6 @@ jobs:
         echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
-
-    - name: Check Wazuh dashboard service URL
-      run: |
-       docker exec -it single-node_wazuh.manager_1 tail -200 /var/ossec/logs/ossec.log | grep -E "ERR||WARN||CRIT"
 
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
@@ -195,6 +202,25 @@ jobs:
         fi
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log
+      run: |
+       log=$(docker exec multi-node_wazuh.master_1 -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
+       if [[ -z $log ]]; then
+        echo "No errors in master ossec.log"
+       else
+        echo "Errors in ossec.log:"
+        echo $log
+        exit 1
+       fi
+       log2=$(docker exec multi-node_wazuh.worker_1 -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
+       if [[ -z $log2 ]]; then
+        echo "No errors in worker ossec.log"
+       else
+        echo "Errors in ossec.log:"
+        echo $log
+        exit 1
+       fi
 
     - name: Check Wazuh dashboard service URL
       run: |
