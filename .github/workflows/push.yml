@@ -103,11 +103,23 @@ jobs:
     - name: Check errors in ossec.log
       run: |
        log=$(docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
-       if [[ -z $log ]]; then
+       if [[ -z "${log}" ]]; then
         echo "No errors in ossec.log"
        else
         echo "Errors in ossec.log:"
-        echo $log
+        echo "${log}"
+        exit 1
+       fi
+
+    - name: Check filebeat output
+      run: |
+       fbout1=$(docker exec single-node_wazuh.manager_1 sh -c 'filebeat test output')
+       fbstatus=$(echo "${fbout}" | grep OK | wc -l)
+       if [[ fbstatus -eq 7 ]]; then
+        echo "No errors in master filebeat"
+       else
+        echo "Errors in master filebeat"
+        echo "${fbout}"
         exit 1
        fi
 
@@ -205,20 +217,41 @@ jobs:
 
     - name: Check errors in ossec.log
       run: |
-       log=$(docker exec multi-node_wazuh.master_1 -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
-       if [[ -z $log ]]; then
+       log1=$(docker exec multi-node_wazuh.master_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
+       if [[ -z "$log1" ]]; then
         echo "No errors in master ossec.log"
        else
-        echo "Errors in ossec.log:"
-        echo $log
+        echo "Errors in master ossec.log:"
+        echo "${log1}"
         exit 1
        fi
-       log2=$(docker exec multi-node_wazuh.worker_1 -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
-       if [[ -z $log2 ]]; then
+       log2=$(docker exec multi-node_wazuh.worker_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
+       if [[ -z "${log2}" ]]; then
         echo "No errors in worker ossec.log"
        else
-        echo "Errors in ossec.log:"
-        echo $log
+        echo "Errors in worker ossec.log:"
+        echo "${log2}"
+        exit 1
+       fi
+
+    - name: Check filebeat output
+      run: |
+       fbout1=$(docker exec multi-node_wazuh.master_1 sh -c 'filebeat test output')
+       fbstatus1=$(echo "${fbout1}" | grep OK | wc -l)
+       if [[ fbstatus1 -eq 7 ]]; then
+        echo "No errors in master filebeat"
+       else
+        echo "Errors in master filebeat"
+        echo "${fbout1}"
+        exit 1
+       fi
+       fbout2=$(docker exec multi-node_wazuh.worker_1 sh -c 'filebeat test output')
+       fbstatus2=$(echo "${fbout2}" | grep OK | wc -l)
+       if [[ fbstatus2 -eq 7 ]]; then
+        echo "No errors in master filebeat"
+       else
+        echo "Errors in master filebeat"
+        echo "${fbout2}"
         exit 1
        fi
 
