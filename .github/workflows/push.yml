@@ -100,6 +100,9 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
+    - name: check docker ps
+      run: docker ps
+
     - name: Check errors in ossec.log
       run: |
        log=$(docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR|WARN|CRIT"')
@@ -113,7 +116,6 @@ jobs:
 
     - name: Check filebeat output
       run: |
-       docker ps
        fbout1=$(docker exec single-node_wazuh.manager_1 sh -c 'filebeat test output')
        fbstatus=$(echo "${fbout}" | grep OK | wc -l)
        if [[ fbstatus -eq 7 ]]; then
