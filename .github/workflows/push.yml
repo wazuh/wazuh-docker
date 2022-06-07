@@ -10,8 +10,8 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    - name: Build Wazuh images
-      run: build-docker-images/build-images.sh
+   # - name: Build Wazuh images
+   #   run: build-docker-images/build-images.sh
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
@@ -113,6 +113,7 @@ jobs:
 
     - name: Check filebeat output
       run: |
+       docker ps
        fbout1=$(docker exec single-node_wazuh.manager_1 sh -c 'filebeat test output')
        fbstatus=$(echo "${fbout}" | grep OK | wc -l)
        if [[ fbstatus -eq 7 ]]; then
