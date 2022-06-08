@@ -10,9 +10,9 @@ fi
 fbout2=$(docker exec multi-node_wazuh.worker_1 sh -c 'filebeat test output')
 fbstatus2=$(echo "${fbout2}" | grep OK | wc -l)
 if [[ fbstatus2 -eq 7 ]]; then
- echo "No errors in master filebeat"
+ echo "No errors in worker filebeat"
 else
- echo "Errors in master filebeat"
+ echo "Errors in worker filebeat"
  echo "${fbout2}"
  exit 1
 fi
