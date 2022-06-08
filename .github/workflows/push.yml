@@ -102,7 +102,7 @@ jobs:
 
     - name: Check errors in ossec.log
       run: |
-       log=$(docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log' | grep -E "ERR|WARN|CRIT")
+       log="`docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log' | egrep  "ERR|WARN|CRIT"`"
        if [[ -z "$log" ]]; then
         echo "No errors in master ossec.log"
        else
