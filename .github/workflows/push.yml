@@ -101,20 +101,11 @@ jobs:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log
-      run: ./.github/single-node-check.sh
+      run: ./.github/single-node-log-check.sh
 
 
     - name: Check filebeat output
-      run: |
-       fbout1=$(docker exec single-node_wazuh.manager_1 sh -c 'filebeat test output')
-       fbstatus=$(echo "${fbout}" | grep OK | wc -l)
-       if [[ fbstatus -eq 7 ]]; then
-        echo "No errors in master filebeat"
-       else
-        echo "Errors in master filebeat"
-        echo "${fbout}"
-        exit 1
-       fi
+      run: ./.github/single-node-fb-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -209,44 +200,11 @@ jobs:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log
-      run: |
-       log1=$(docker exec multi-node_wazuh.master_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR||WARN||CRIT"')
-       if [[ -z "$log1" ]]; then
-        echo "No errors in master ossec.log"
-       else
-        echo "Errors in master ossec.log:"
-        echo "${log1}"
-        exit 1
-       fi
-       log2=$(docker exec multi-node_wazuh.worker_1 sh -c 'cat /var/ossec/logs/ossec.log | grep -E "ERR||WARN||CRIT"')
-       if [[ -z "${log2}" ]]; then
-        echo "No errors in worker ossec.log"
-       else
-        echo "Errors in worker ossec.log:"
-        echo "${log2}"
-        exit 1
-       fi
+      run: ./.github/multi-node-log-check.sh
+
 
     - name: Check filebeat output
-      run: |
-       fbout1=$(docker exec multi-node_wazuh.master_1 sh -c 'filebeat test output')
-       fbstatus1=$(echo "${fbout1}" | grep OK | wc -l)
-       if [[ fbstatus1 -eq 7 ]]; then
-        echo "No errors in master filebeat"
-       else
-        echo "Errors in master filebeat"
-        echo "${fbout1}"
-        exit 1
-       fi
-       fbout2=$(docker exec multi-node_wazuh.worker_1 sh -c 'filebeat test output')
-       fbstatus2=$(echo "${fbout2}" | grep OK | wc -l)
-       if [[ fbstatus2 -eq 7 ]]; then
-        echo "No errors in master filebeat"
-       else
-        echo "Errors in master filebeat"
-        echo "${fbout2}"
-        exit 1
-       fi
+      run: ./.github/multi-node-fb-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |
