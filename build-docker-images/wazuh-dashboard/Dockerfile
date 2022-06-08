@@ -2,6 +2,7 @@
 FROM ubuntu:focal AS builder
 
 ARG WAZUH_VERSION=4.3.4
+ARG WAZUH_UI_REVISION=1
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 
 # Update and install dependencies
@@ -20,7 +21,7 @@ COPY config/config.yml /
 RUN bash config.sh
 
 # Install Wazuh App
-RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}.zip --allow-root
+RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-{WAZUH_UI_REVISION}.zip --allow-root
 
 # Copy and set permissions to config files
 COPY config/opensearch_dashboards.yml $INSTALL_DIR/config/
