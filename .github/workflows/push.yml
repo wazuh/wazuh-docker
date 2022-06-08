@@ -1,6 +1,6 @@
 name: Wazuh Docker pipeline
 
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
   build-stack:
@@ -10,22 +10,22 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-   # - name: Build Wazuh images
-   #   run: build-docker-images/build-images.sh
+    - name: Build Wazuh images
+      run: build-docker-images/build-images.sh
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
-   # - name: Install Goss
-   #   uses: e1himself/goss-installation-action@v1.0.3
-   #   with:
-   #     version: v0.3.16
+    - name: Install Goss
+      uses: e1himself/goss-installation-action@v1.0.3
+      with:
+        version: v0.3.16
 
-   # - name: Execute Goss tests (wazuh-manager)
-   #   run: dgoss run wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
-   #   env:
-   #     GOSS_SLEEP: 30
-   #     GOSS_FILE: .github/.goss.yaml
+    - name: Execute Goss tests (wazuh-manager)
+      run: dgoss run wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
+      env:
+        GOSS_SLEEP: 30
+        GOSS_FILE: .github/.goss.yaml
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
