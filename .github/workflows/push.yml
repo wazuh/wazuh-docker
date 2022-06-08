@@ -103,7 +103,7 @@ jobs:
     - name: Check errors in ossec.log
       run: |
        log=$(docker exec single-node_wazuh.manager_1 cat /var/ossec/logs/ossec.log)
-       errors=echo $log | grep ERR
+       errors=$(echo ${log} | grep ERR)
 
 
     - name: Check filebeat output
