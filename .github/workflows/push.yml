@@ -101,8 +101,7 @@ jobs:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log
-      run: |
-       docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log | egrep ERR'
+      run: .github/single-node-check.sh
 
 
     - name: Check filebeat output
