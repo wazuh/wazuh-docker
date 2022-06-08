@@ -102,7 +102,7 @@ jobs:
 
     - name: Check errors in ossec.log
       run: |
-       docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log' | grep -P "ERR|WARN|CRIT"
+       docker exec single-node_wazuh.manager_1 sh -c 'cat /var/ossec/logs/ossec.log' | grep ERR
 
 
     - name: Check filebeat output
