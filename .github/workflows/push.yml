@@ -214,6 +214,12 @@ jobs:
 
     - name: Docker load
       run: |
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar/
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar/
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar/
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
