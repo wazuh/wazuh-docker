@@ -32,6 +32,9 @@ jobs:
     needs: build-docker-images
     steps:
 
+    - name: Check out code
+      uses: actions/checkout@v3
+
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
 
@@ -129,6 +132,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-docker-images
     steps:
+
+    - name: Check out code
+      uses: actions/checkout@v3
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
