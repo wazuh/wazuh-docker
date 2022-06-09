@@ -23,21 +23,21 @@ jobs:
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docker-artifact-manager
           path: /wazuh-manager.tar
           retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docker-artifact-indexer
           path: /wazuh-indexer.tar
           retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docker-artifact-dashboard
           path: /wazuh-dashboard.tar
@@ -66,21 +66,21 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh manager Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-manager
           path: /wazuh-manager.tar
           retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-indexer
           path: /wazuh-indexer.tar
           retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-dashboard
           path: /wazuh-dashboard.tar
@@ -197,21 +197,21 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh manager Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-manager
           path: /wazuh-manager.tar
           retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-indexer
           path: /wazuh-indexer.tar
           retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-artifact-dashboard
           path: /wazuh-dashboard.tar
