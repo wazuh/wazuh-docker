@@ -18,29 +18,30 @@ jobs:
 
     - name: Create backup Docker images
       run: |
-        docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-manager.tar
-        docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-indexer.tar
-        docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-dashboard.tar
+        mkdir -p /home/ubuntu/docker-images/
+        docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} > /home/ubuntu/docker-images/wazuh-manager.tar
+        docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} > /home/ubuntu/docker-images/wazuh-indexer.tar
+        docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /home/ubuntu/docker-images/wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
       with:
         name: docker-artifact-manager
-        path: /wazuh-manager.tar
+        path: /home/ubuntu/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
       uses: actions/upload-artifact@v3
       with:
         name: docker-artifact-indexer
-        path: /wazuh-indexer.tar
+        path: /home/ubuntu/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
       uses: actions/upload-artifact@v3
       with:
         name: docker-artifact-dashboard
-        path: /wazuh-dashboard.tar
+        path: /home/ubuntu/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
     - name: Install Goss
@@ -69,28 +70,28 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-manager
-        path: /wazuh-manager.tar
+        path: /home/ubuntu/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-indexer
-        path: /wazuh-indexer.tar
+        path: /home/ubuntu/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-dashboard
-        path: /wazuh-dashboard.tar
+        path: /home/ubuntu/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
     - name: Docker load
       run: |
-        docker load < /wazuh-manager.tar
-        docker load < /wazuh-indexer.tar
-        docker load < /wazuh-dashboard.tar
+        docker load < /home/ubuntu/docker-images/wazuh-manager.tar
+        docker load < /home/ubuntu/docker-images/wazuh-indexer.tar
+        docker load < /home/ubuntu/docker-images/wazuh-dashboard.tar
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
@@ -200,28 +201,28 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-manager
-        path: /wazuh-manager.tar
+        path: /home/ubuntu/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-indexer
-        path: /wazuh-indexer.tar
+        path: /home/ubuntu/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-dashboard
-        path: /wazuh-dashboard.tar
+        path: /home/ubuntu/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
     - name: Docker load
       run: |
-        docker load < /wazuh-manager.tar
-        docker load < /wazuh-indexer.tar
-        docker load < /wazuh-dashboard.tar
+        docker load < /home/ubuntu/docker-images/wazuh-manager.tar
+        docker load < /home/ubuntu/docker-images/wazuh-indexer.tar
+        docker load < /home/ubuntu/docker-images/wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
