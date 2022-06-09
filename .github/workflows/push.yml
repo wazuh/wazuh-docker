@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: prueba
+      run: pwd
+
     - name: Check out code
       uses: actions/checkout@v3
 
