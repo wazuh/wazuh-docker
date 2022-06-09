@@ -23,25 +23,25 @@ jobs:
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-artifact-manager
-          path: /wazuh-manager.tar
-          retention-days: 1
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-artifact-manager
+        path: /wazuh-manager.tar
+        retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-artifact-indexer
-          path: /wazuh-indexer.tar
-          retention-days: 1
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-artifact-indexer
+        path: /wazuh-indexer.tar
+        retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-artifact-dashboard
-          path: /wazuh-dashboard.tar
-          retention-days: 1
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+        path: /wazuh-dashboard.tar
+        retention-days: 1
 
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
@@ -66,31 +66,31 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh manager Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-manager
-          path: /wazuh-manager.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-manager
+        path: /wazuh-manager.tar
+        retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-indexer
-          path: /wazuh-indexer.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-indexer
+        path: /wazuh-indexer.tar
+        retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-dashboard
-          path: /wazuh-dashboard.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+        path: /wazuh-dashboard.tar
+        retention-days: 1
 
     - name: Docker load
-        run: |
-          docker load < /wazuh-manager.tar
-          docker load < /wazuh-indexer.tar
-          docker load < /wazuh-dashboard.tar
+      run: |
+        docker load < /wazuh-manager.tar
+        docker load < /wazuh-indexer.tar
+        docker load < /wazuh-dashboard.tar
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
@@ -197,31 +197,31 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh manager Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-manager
-          path: /wazuh-manager.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-manager
+        path: /wazuh-manager.tar
+        retention-days: 1
 
     - name: Retrieve saved Wazuh indexer Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-indexer
-          path: /wazuh-indexer.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-indexer
+        path: /wazuh-indexer.tar
+        retention-days: 1
 
     - name: Retrieve saved Wazuh dashboard Docker image
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-artifact-dashboard
-          path: /wazuh-dashboard.tar
-          retention-days: 1
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+        path: /wazuh-dashboard.tar
+        retention-days: 1
 
     - name: Docker load
-        run: |
-          docker load < /wazuh-manager.tar
-          docker load < /wazuh-indexer.tar
-          docker load < /wazuh-dashboard.tar
+      run: |
+        docker load < /wazuh-manager.tar
+        docker load < /wazuh-indexer.tar
+        docker load < /wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
