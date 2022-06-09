@@ -32,7 +32,7 @@ jobs:
     needs: build-docker-images
     steps:
 
-      - name: Create single node certficates
+    - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
 
     - name: Start single node stack
