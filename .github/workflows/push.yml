@@ -3,7 +3,7 @@ name: Wazuh Docker pipeline
 on: [pull_request]
 
 jobs:
-  build-stack:
+  build-docker-images:
     runs-on: ubuntu-latest
     steps:
 
@@ -27,7 +27,12 @@ jobs:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
 
-    - name: Create single node certficates
+  check-single-node:
+    runs-on: ubuntu-latest
+    needs: build-docker-images
+    steps:
+
+      - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
 
     - name: Start single node stack
@@ -119,6 +124,11 @@ jobs:
 
     - name: Stop single node stack
       run: docker-compose -f single-node/docker-compose.yml down
+
+  check-multi-node:
+    runs-on: ubuntu-latest
+    needs: build-docker-images
+    steps:
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
