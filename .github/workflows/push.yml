@@ -18,9 +18,9 @@ jobs:
 
     - name: Create backup Docker images
       run: |
-      docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-manager.tar
-      docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-indexer.tar
-      docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-dashboard.tar
+        docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-manager.tar
+        docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-indexer.tar
+        docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
         uses: actions/upload-artifact@v2
