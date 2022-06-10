@@ -28,7 +28,7 @@ jobs:
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         tar -tvf file.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
-    -name: Temporarily save Wazuh manager Docker image
+    - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
       with:
         name: docker-artifact-manager
