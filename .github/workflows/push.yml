@@ -88,8 +88,8 @@ jobs:
     - name: Docker load
       run: |
         docker load --input ./wazuh-indexer.tar
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        docker load --input ./wazuh-dashboard.tar
+        docker load --input ./wazuh-manager.tar
 
 
     - name: Create single node certficates
@@ -200,33 +200,22 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-dashboard
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Retrieve saved Wazuh manager Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-manager
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Retrieve saved Wazuh indexer Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-indexer
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
-
-
 
     - name: Docker load
       run: |
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar/
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar/
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
-        ls -ltr /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar/
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker load --input ./wazuh-manager.tar
+        docker load --input ./wazuh-indexer.tar
+        docker load --input ./wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
