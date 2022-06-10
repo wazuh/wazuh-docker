@@ -87,7 +87,7 @@ jobs:
 
     - name: Docker load
       run: |
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        docker load --input ./wazuh-indexer.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
