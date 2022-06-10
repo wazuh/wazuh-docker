@@ -90,9 +90,10 @@ jobs:
 
     - name: Docker load
       run: |
-        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
