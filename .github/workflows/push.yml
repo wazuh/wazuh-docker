@@ -26,7 +26,6 @@ jobs:
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
-        tar -tvf file.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
@@ -75,23 +74,19 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-indexer
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
 
     - name: Retrieve saved Wazuh manager Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-manager
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-dashboard
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Docker load
       run: |
-        tar -tvf file.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
