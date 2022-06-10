@@ -70,17 +70,17 @@ jobs:
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
-    - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v3
-      with:
-        name: docker-artifact-manager
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
-
     - name: Retrieve saved Wazuh indexer Docker image
       uses: actions/download-artifact@v3
       with:
         name: docker-artifact-indexer
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+
+    - name: Retrieve saved Wazuh manager Docker image
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-manager
+        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
@@ -198,6 +198,12 @@ jobs:
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
+    - name: Retrieve saved Wazuh dashboard Docker image
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+
     - name: Retrieve saved Wazuh manager Docker image
       uses: actions/download-artifact@v3
       with:
@@ -210,11 +216,7 @@ jobs:
         name: docker-artifact-indexer
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
 
-    - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v3
-      with:
-        name: docker-artifact-dashboard
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+
 
     - name: Docker load
       run: |
