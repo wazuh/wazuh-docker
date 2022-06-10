@@ -190,7 +190,7 @@ jobs:
 
   check-multi-node:
     runs-on: ubuntu-latest
-    needs: [build-docker-images,check-single-node]
+    needs: build-docker-images
     steps:
 
     - name: Check out code
