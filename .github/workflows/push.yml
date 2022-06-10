@@ -19,9 +19,13 @@ jobs:
     - name: Create backup Docker images
       run: |
         mkdir -p /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
-        docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} > /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
-        docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} > /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
-        docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} > /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker rmi $(docker images -q)
+        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        docker load --input /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
