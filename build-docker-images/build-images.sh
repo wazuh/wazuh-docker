@@ -6,7 +6,7 @@ WAZUH_ACTUAL_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/re
 if [ "$WAZUH_VERSION" -le "$WAZUH_ACTUAL_VERSION" ]; then
   IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 else
-  IMAGE_VERSION=${WAZUH_IMAGE_VERSION}-dev
+  IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 fi
 
 echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > .env
