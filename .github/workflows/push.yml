@@ -170,7 +170,7 @@ jobs:
 
 
     - name: Check filebeat output
-      run: ./.github/single-node-fb-check.sh
+      run: ./.github/single-node-filebeat-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -301,7 +301,7 @@ jobs:
 
 
     - name: Check filebeat output
-      run: ./.github/multi-node-fb-check.sh
+      run: ./.github/multi-node-filebeat-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |
