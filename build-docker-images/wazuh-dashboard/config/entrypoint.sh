@@ -15,6 +15,6 @@ echo $DASHBOARD_PASSWORD | $INSTALL_DIR/bin/opensearch-dashboards-keystore add o
 # Start Wazuh dashboard
 ##############################################################################
 
-/wazuh_app_config.sh
+/wazuh_app_config.sh $WAZUH_UI_REVISION
 
 /usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml

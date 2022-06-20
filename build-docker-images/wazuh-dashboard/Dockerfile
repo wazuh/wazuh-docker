@@ -1,9 +1,9 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal AS builder
 
-ARG WAZUH_VERSION=4.3.4
-ARG WAZUH_UI_REVISION=1
+ARG WAZUH_VERSION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
+ARG WAZUH_UI_REVISION=1
 
 # Update and install dependencies
 RUN apt-get update && apt install curl libcap2-bin xz-utils -y
@@ -20,8 +20,14 @@ COPY config/config.sh .
 COPY config/config.yml /
 RUN bash config.sh
 
-# Install Wazuh App
-RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip --allow-root
+# Create and configure Wazuh dashboard keystore
+RUN $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
+    echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
+    echo kibanaserver | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
+
+COPY config/install_wazuh_app.sh /
+RUN chmod 775 /install_wazuh_app.sh
+RUN bash /install_wazuh_app.sh
 
 # Copy and set permissions to config files
 COPY config/opensearch_dashboards.yml $INSTALL_DIR/config/
