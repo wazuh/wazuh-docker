@@ -4,6 +4,7 @@ FROM ubuntu:focal
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 ARG WAZUH_VERSION
+ARG WAZUH_TAG_REVISION
 ARG TEMPLATE_VERSION=4.3
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
@@ -17,7 +18,7 @@ RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
 RUN apt-get update && \
-    apt-get install wazuh-manager=${WAZUH_VERSION}-1
+    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
 
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
