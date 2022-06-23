@@ -1,4 +1,4 @@
-WAZUH_IMAGE_VERSION=4.3.4
+WAZUH_IMAGE_VERSION=4.3.5
 WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 
