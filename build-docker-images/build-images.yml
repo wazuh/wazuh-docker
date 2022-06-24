@@ -6,7 +6,8 @@ services:
     build:
       context: wazuh-manager/
       args:
-        - WAZUH_VERSION=${WAZUH_VERSION}
+        WAZUH_VERSION: ${WAZUH_VERSION}
+        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
     image: wazuh/wazuh-manager:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.manager
     restart: always
@@ -37,7 +38,8 @@ services:
     build:
       context: wazuh-indexer/
       args:
-        - WAZUH_VERSION=${WAZUH_VERSION}
+        WAZUH_VERSION: ${WAZUH_VERSION}
+        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
     image: wazuh/wazuh-indexer:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.indexer
     restart: always
@@ -57,7 +59,8 @@ services:
     build:
       context: wazuh-dashboard/
       args:
-        - WAZUH_VERSION=${WAZUH_VERSION}
+        WAZUH_VERSION: ${WAZUH_VERSION}
+        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
     image: wazuh/wazuh-dashboard:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.dashboard
     restart: always

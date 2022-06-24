@@ -2,6 +2,7 @@
 FROM ubuntu:focal AS builder
 
 ARG WAZUH_VERSION
+ARG WAZUH_TAG_REVISION
 
 RUN apt-get update -y && apt-get install curl openssl xz-utils -y
 
