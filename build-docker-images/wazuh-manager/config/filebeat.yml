@@ -20,3 +20,5 @@ output.elasticsearch:
   #ssl.certificate_authorities:
   #ssl.certificate:
   #ssl.key:
+
+logging.metrics.enabled: false
