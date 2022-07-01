@@ -22,10 +22,3 @@ output.elasticsearch:
   #ssl.key:
 
 logging.metrics.enabled: false
-
-seccomp:
-  default_action: allow
-  syscalls:
-  - action: allow
-    names:
-    - rseq
