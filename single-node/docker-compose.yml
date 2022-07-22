@@ -3,11 +3,7 @@ version: '3.7'
 
 services:
   wazuh.manager:
-<<<<<<< HEAD
-    image: wazuh/wazuh-manager:4.3.6
-=======
     image: wazuh/wazuh-manager:4.5.0
->>>>>>> 69d34905aebbf49485fc35ad31c6914da1ae8785
     hostname: wazuh.manager
     restart: always
     ports:
