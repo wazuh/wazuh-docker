@@ -35,12 +35,17 @@ services:
       - filebeat_var:/var/lib/filebeat
 
   wazuh.indexer:
+<<<<<<< HEAD:build-docker-images/build-images.yml
     build:
       context: wazuh-indexer/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
     image: wazuh/wazuh-indexer:${WAZUH_IMAGE_VERSION}
+=======
+    build: wazuh-indexer/
+    image: wazuh/wazuh-indexer:4.5.0
+>>>>>>> 69d34905aebbf49485fc35ad31c6914da1ae8785:build-docker-images/docker-compose.yml
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -56,12 +61,17 @@ services:
         hard: 65536
 
   wazuh.dashboard:
+<<<<<<< HEAD:build-docker-images/build-images.yml
     build:
       context: wazuh-dashboard/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
     image: wazuh/wazuh-dashboard:${WAZUH_IMAGE_VERSION}
+=======
+    build: wazuh-dashboard/
+    image: wazuh/wazuh-dashboard:4.5.0
+>>>>>>> 69d34905aebbf49485fc35ad31c6914da1ae8785:build-docker-images/docker-compose.yml
     hostname: wazuh.dashboard
     restart: always
     ports:
