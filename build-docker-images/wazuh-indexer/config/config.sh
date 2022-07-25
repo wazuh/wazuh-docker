@@ -4,11 +4,13 @@ export DH_OPTIONS
 
 export NAME=wazuh-indexer
 export TARGET_DIR=${CURDIR}/debian/${NAME}
+export WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
+export WAZUH_IMAGE_VERSION=$(echo $WAZUH_VERSION | sed -e 's/\.//g')
 
 # Package build options
 export USER=${NAME}
 export GROUP=${NAME}
-export VERSION=4.5.0
+export VERSION=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
 export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
@@ -19,10 +21,15 @@ export INDEXER_FILE=wazuh-indexer-base.tar.xz
 export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
 export REPO_DIR=/unattended_installer
 
-
 rm -rf ${INSTALLATION_DIR}/
 
-curl -o ${INDEXER_FILE} https://packages.wazuh.com/stack/indexer/base/${BASE_FILE}
+if [ "$WAZUH_IMAGE_VERSION" -le "$WAZUH_CURRENT_VERSION" ]; then
+ REPOSITORY="packages.wazuh.com"
+else
+ REPOSITORY="packages-dev.wazuh.com"
+fi
+
+curl -o ${INDEXER_FILE} https://${REPOSITORY}/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
 ## TOOLS
