@@ -56,7 +56,7 @@ package:
   wazuh-manager:
     installed: true
     versions:
-    - 4.3.3
+    - 4.3.6-1
 port:
   tcp:1514:
     listening: true
@@ -70,28 +70,6 @@ port:
     listening: true
     ip:
     - 0.0.0.0
-user:
-  wazuh:
-    exists: true
-    groups:
-    - wazuh
-    home: /var/ossec
-    shell: /sbin/nologin
-  wazuh:
-    exists: true
-    groups:
-    - wazuh
-    home: /var/ossec
-    shell: /sbin/nologin
-  wazuh:
-    exists: true
-    groups:
-    - wazuh
-    home: /var/ossec
-    shell: /sbin/nologin
-group:
-  wazuh:
-    exists: true
 process:
   filebeat:
     running: true
@@ -113,3 +91,13 @@ process:
     running: true
   wazuh-modulesd:
     running: true
+user:
+  wazuh:
+    exists: true
+    groups:
+    - wazuh
+    home: /var/ossec
+    shell: /sbin/nologin
+group:
+  wazuh:
+    exists: true

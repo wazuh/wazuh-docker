@@ -20,3 +20,12 @@ output.elasticsearch:
   #ssl.certificate_authorities:
   #ssl.certificate:
   #ssl.key:
+
+logging.metrics.enabled: false
+
+seccomp:
+  default_action: allow
+  syscalls:
+  - action: allow
+    names:
+    - rseq

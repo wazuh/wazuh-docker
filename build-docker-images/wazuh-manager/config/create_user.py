@@ -21,7 +21,7 @@ try:
         set_user_role,
         update_user,
     )
-except Exception as e:
+except ModuleNotFoundError as e:
     logging.error("No module 'wazuh' found.")
     sys.exit(1)
 
