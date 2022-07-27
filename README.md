@@ -36,8 +36,8 @@ Default values are included when available.
 
 ### Wazuh
 ```
-API_USERNAME="wazuh"                                # Wazuh API username
-API_PASSWORD="wazuh"                                # Wazuh API password - Must comply with requirements
+API_USERNAME="wazuh-wui"                            # Wazuh API username
+API_PASSWORD="MyS3cr37P450r.*-"                     # Wazuh API password - Must comply with requirements
                                                     # (8+ length, uppercase, lowercase, specials chars)
 
 INDEXER_URL=https://wazuh.indexer:9200              # Wazuh indexer URL
@@ -78,6 +78,8 @@ API_SELECTOR=true               Defines if the user is allowed to change the sel
 IP_SELECTOR=true                # Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
 IP_IGNORE="[]"                  # List of index patterns to be ignored
 
+DASHBOARD_USERNAME=kibanaserver     # Custom user saved in the dashboard keystore
+DASHBOARD_PASSWORD=kibanaserver     # Custom password saved in the dashboard keystore
 WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-monitoring indices
 WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
 WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
