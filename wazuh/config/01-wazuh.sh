@@ -53,7 +53,8 @@ check_update() {
       return 0
     else
       echo "CHECK UPDATE - Different Wazuh version: Update"
-      if [ $previous_version == "v4.2.5" ]
+      wazuh_version_regex='v4.2.[0-9]'
+      if [[ "$previous_version" =~ $wazuh_version_regex ]]
       then
         echo "CHECK UPDATE - Change ossec user to wazuh user"
         ossec_group_files=$(find /var/ossec -group 1000)
