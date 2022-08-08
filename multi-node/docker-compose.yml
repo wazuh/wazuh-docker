@@ -75,6 +75,7 @@ services:
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
       - "bootstrap.memory_lock=true"
+      - "JAVA_HOME=/usr/share/wazuh-indexer/jdk"
     ulimits:
       memlock:
         soft: -1
@@ -99,6 +100,7 @@ services:
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
       - "bootstrap.memory_lock=true"
+      - "JAVA_HOME=/usr/share/wazuh-indexer/jdk"
     ulimits:
       memlock:
         soft: -1
@@ -121,6 +123,7 @@ services:
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
       - "bootstrap.memory_lock=true"
+      - "JAVA_HOME=/usr/share/wazuh-indexer/jdk"
     ulimits:
       memlock:
         soft: -1
