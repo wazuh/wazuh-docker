@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.3.6-1
+ARG WAZUH_VERSION=4.3.6-0.debug
 
 # Environment variables
 ENV API_USER="foo" \
@@ -12,28 +12,16 @@ ENV API_USER="foo" \
 ARG TEMPLATE_VERSION="4.0"
 ENV FILEBEAT_DESTINATION="elasticsearch"
 
-RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
-
-RUN echo $'[wazuh] \n\
-gpgcheck=1\n\
-gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\n\
-enabled=1\n\
-name=Wazuh repository\n\
-baseurl=https://packages.wazuh.com/4.x/yum/\n\
-protect=1\n'\
->> /etc/yum.repos.d/wazuh.repo
-
-
 # Install packages
 RUN set -x && \
-    curl -sL https://rpm.nodesource.com/setup_8.x | bash - && \
     groupadd -g 1000 wazuh && \
     useradd -u 1000 -g 1000 -d /var/ossec wazuh && \
+    curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages.wazuh.com/cloud/4.3.x/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     yum update -y && \
     yum upgrade -y &&\
-    yum install -y openssl vim expect python-boto python-pip python-cryptography && \
-    yum install -y postfix bsd-mailx mailx ca-certificates && \
-    yum install -y wazuh-manager-${WAZUH_VERSION} && \
+    yum install -y openssl vim expect python-boto python-pip python-cryptography postfix bsd-mailx mailx ca-certificates && \
+    yum localinstall -y /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
+    rm -f /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     yum clean all && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
@@ -43,8 +31,7 @@ RUN set -x && \
     rm -f /var/ossec/logs/cluster/*/*/* && \
     rm -f /var/ossec/logs/wazuh/*/*/* && \
     curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
-    rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm && \
-    sed -i "s/^enabled=1/enabled=0/" /etc/yum.repos.d/wazuh.repo
+    rpm -vi filebeat-${FILEBEAT_VERSION}-x86_64.rpm && rm -f filebeat-${FILEBEAT_VERSION}-x86_64.rpm
 
 # Services
 RUN mkdir /etc/service/wazuh && \
@@ -72,9 +59,6 @@ RUN chmod 755 /permanent_data.sh && \
     /permanent_data.sh && \
     sync && \
     rm /permanent_data.sh 
-
-# Expose ports
-EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
 
 # Setting volumes
 # Once we declared a volume in the Dockerfile, changes made to that path will have no effect. In other words, any changes made
@@ -119,6 +103,9 @@ RUN chmod 755 /entrypoint.sh && \
 # Load wazuh alerts template.
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json 
+
+# Expose ports
+EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
 
 # Run all services
 ENTRYPOINT ["/entrypoint.sh"]
