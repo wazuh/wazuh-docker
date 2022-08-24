@@ -83,7 +83,7 @@ DASHBOARD_PASSWORD=kibanaserver     # Custom password saved in the dashboard key
 WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-monitoring indices
 WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
 WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
-WAZUH_MONITORING_REPLICAS=0         #
+WAZUH_MONITORING_REPLICAS=0         ##
 ```
 
 ## Directory structure
