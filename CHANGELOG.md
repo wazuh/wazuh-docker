@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v3.13.6_7.9.2
+
+### Added
+
+- Update to Wazuh version 3.13.6_7.9.2
+
+## Wazuh Docker v3.13.5_7.9.2
+
+### Added
+
+- Update to Wazuh version 3.13.5_7.9.2
+
 ## Wazuh Docker v3.13.4_7.9.2
 
 ### Added
