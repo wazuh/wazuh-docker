@@ -195,6 +195,8 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.5.0        |         |        |
+| v4.4.0        |         |        |
 | v4.3.9        |         |        |
 | v4.3.8        |         |        |
 | v4.3.7        |         |        |

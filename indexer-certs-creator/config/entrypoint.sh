@@ -8,8 +8,8 @@
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.3/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.3/
+PACKAGES_URL=https://packages.wazuh.com/4.5/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.5/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
@@ -54,8 +54,8 @@ cp /certificates/root-ca.key /certificates/root-ca-manager.key
 chown 101:101 /certificates/root-ca-manager.pem
 chown 101:101 /certificates/root-ca-manager.key
 
-for i in ${node_names[@]}; 
-do 
+for i in ${node_names[@]};
+do
   chown 101:101 "/certificates/${i}.pem"
   chown 101:101 "/certificates/${i}-key.pem"
 done
