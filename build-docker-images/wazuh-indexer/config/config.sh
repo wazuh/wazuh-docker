@@ -112,6 +112,7 @@ cp -pr /wazuh-certificates/root-ca.key ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.
 cp -pr /wazuh-certificates/root-ca.pem ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.pem
 cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-key.pem
+
 # Delete xms and xmx parameters in jvm.options
 sed '/-Xms/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
 sed '/-Xmx/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
