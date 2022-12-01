@@ -4,8 +4,6 @@ export DH_OPTIONS
 
 export NAME=wazuh-indexer
 export TARGET_DIR=${CURDIR}/debian/${NAME}
-export WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
-export WAZUH_IMAGE_VERSION=$(echo $WAZUH_VERSION | sed -e 's/\.//g')
 
 # Package build options
 export USER=${NAME}
@@ -23,10 +21,31 @@ export REPO_DIR=/unattended_installer
 
 rm -rf ${INSTALLATION_DIR}/
 
-if [ "$WAZUH_IMAGE_VERSION" -le "$WAZUH_CURRENT_VERSION" ]; then
- REPOSITORY="packages.wazuh.com"
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
+MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
+MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
+MINOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f3)
+MAJOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f1)
+MID_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f2)
+MINOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f3)
+
+## If wazuh manager exists in apt dev repository, change variables, if not exit 1
+if [ "$MAJOR_BUILD" -ge "$MAJOR_CURRENT" ]; then
+  REPOSITORY="packages-dev.wazuh.com"
+elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
+  if [ "$MID_BUILD" -ge "$MID_CURRENT" ]; then
+    REPOSITORY="packages-dev.wazuh.com"
+  elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
+    if [ "$MINOR_BUILD" -ge "$MINOR_CURRENT" ]; then
+      REPOSITORY="packages-dev.wazuh.com"
+    else
+      REPOSITORY="packages.wazuh.com"
+    fi
+  else
+    REPOSITORY="packages.wazuh.com"
+  fi
 else
- REPOSITORY="packages-dev.wazuh.com"
+  REPOSITORY="packages.wazuh.com"
 fi
 
 curl -o ${INDEXER_FILE} https://${REPOSITORY}/stack/indexer/base/${BASE_FILE}
