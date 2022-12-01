@@ -1,6 +1,6 @@
 # Opendistro data migration to Wazuh indexer on docker.
 This procedure explains how to migrate Opendistro data from Opendistro to Wazuh indexer in docker production deployments.
-The example is migrating from v4.2 to v4.3.
+The example is migrating from v4.2 to v4.4.
 
 ## Procedure
 Assuming that you have a v4.2 production deployment, perform the following steps.
@@ -350,9 +350,9 @@ docker container run --rm -it \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 
-**7. Start the 4.3 environment.**
+**7. Start the 4.4 environment.**
 ```
-git checkout 4.3
+git checkout 4.4
 cd multi-node
 docker-compose -f generate-indexer-certs.yml run --rm generator
 docker-compose up -d

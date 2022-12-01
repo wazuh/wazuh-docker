@@ -180,6 +180,15 @@ set_rids_owner() {
 }
 
 ##############################################################################
+# Change any ossec user/group to wazuh user/group 
+##############################################################################
+
+set_correct_permOwner() {
+  find / -group 997 -exec chown :101 {} +;
+  find / -user 999 -exec chown 101 {} +;
+}
+
+##############################################################################
 # Main function
 ##############################################################################
 
@@ -189,6 +198,9 @@ main() {
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
+  
+  # Apply correct permission and ownership
+  set_correct_permOwner
 
   # Rename files stored in permanent data (i.e. queue/ossec)
   move_data_files
