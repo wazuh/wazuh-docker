@@ -13,7 +13,7 @@ export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
 export INSTALLATION_DIR=/usr/share/${NAME}
-export CONFIG_DIR=${INSTALLATION_DIR}/config
+export CONFIG_DIR=${INSTALLATION_DIR}
 export BASE_DIR=${NAME}-*
 export INDEXER_FILE=wazuh-indexer-base.tar.xz
 export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
@@ -21,6 +21,8 @@ export REPO_DIR=/unattended_installer
 
 rm -rf ${INSTALLATION_DIR}/
 
+## variables
+REPOSITORY="packages.wazuh.com"
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
 MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
 MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
@@ -29,24 +31,19 @@ MAJOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f1)
 MID_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f2)
 MINOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f3)
 
-## If wazuh manager exists in apt dev repository, change variables, if not exit 1
-if [ "$MAJOR_BUILD" -ge "$MAJOR_CURRENT" ]; then
+## check version to use the correct repository
+if [ "$MAJOR_BUILD" -gt "$MAJOR_CURRENT" ]; then
   REPOSITORY="packages-dev.wazuh.com"
 elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
-  if [ "$MID_BUILD" -ge "$MID_CURRENT" ]; then
+  if [ "$MID_BUILD" -gt "$MID_CURRENT" ]; then
     REPOSITORY="packages-dev.wazuh.com"
   elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
-    if [ "$MINOR_BUILD" -ge "$MINOR_CURRENT" ]; then
+    if [ "$MINOR_BUILD" -gt "$MINOR_CURRENT" ]; then
       REPOSITORY="packages-dev.wazuh.com"
-    else
-      REPOSITORY="packages.wazuh.com"
     fi
-  else
-    REPOSITORY="packages.wazuh.com"
   fi
-else
-  REPOSITORY="packages.wazuh.com"
 fi
+
 
 curl -o ${INDEXER_FILE} https://${REPOSITORY}/stack/indexer/base/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
@@ -96,6 +93,7 @@ chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
+mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}
 mkdir -p ${TARGET_DIR}${LIB_DIR}
 mkdir -p ${TARGET_DIR}${LOG_DIR}
@@ -120,9 +118,9 @@ cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
 cp /$CERT_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 # Copy Wazuh's config files for the security plugin
-cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
-cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
-cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
+cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
 cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer.pem
