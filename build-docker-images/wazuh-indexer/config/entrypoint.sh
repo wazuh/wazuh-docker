@@ -6,7 +6,7 @@ umask 0002
 
 export USER=wazuh-indexer
 export INSTALLATION_DIR=/usr/share/wazuh-indexer
-export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}/config
+export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}
 export JAVA_HOME=${INSTALLATION_DIR}/jdk
 export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
 export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
@@ -59,7 +59,7 @@ if [[ -f bin/opensearch-users ]]; then
   # enabled, but we have no way of knowing which node we are yet. We'll just
   # honor the variable if it's present.
   if [[ -n "$INDEXER_PASSWORD" ]]; then
-    [[ -f /usr/share/wazuh-indexer/config/opensearch.keystore ]] || (run_as_other_user_if_needed opensearch-keystore create)
+    [[ -f /usr/share/wazuh-indexer/opensearch.keystore ]] || (run_as_other_user_if_needed opensearch-keystore create)
     if ! (run_as_other_user_if_needed opensearch-keystore has-passwd --silent) ; then
       # keystore is unencrypted
       if ! (run_as_other_user_if_needed opensearch-keystore list | grep -q '^bootstrap.password$'); then

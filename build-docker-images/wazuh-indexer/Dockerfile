@@ -4,7 +4,7 @@ FROM ubuntu:focal AS builder
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 
-RUN apt-get update -y && apt-get install curl openssl xz-utils -y
+RUN apt-get update -y && apt-get install curl openssl xz-utils wget -y
 
 COPY config/opensearch.yml /
 
@@ -50,7 +50,7 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 0600 /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh
 
 RUN chown 1000:1000 /*.sh
 
@@ -59,14 +59,15 @@ COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/systemd /usr/lib/s
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/sysctl.d /usr/lib/sysctl.d
 COPY --from=builder --chown=0:0 /debian/wazuh-indexer/usr/lib/tmpfiles.d /usr/lib/tmpfiles.d
 
+RUN chown -R 1000:1000 /usr/share/wazuh-indexer
 
 RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer && \
     mkdir -p /usr/share/wazuh-indexer/logs && chown 1000:1000 /usr/share/wazuh-indexer/logs && \
     mkdir -p /run/wazuh-indexer && chown 1000:1000 /run/wazuh-indexer && \
     mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer && \
-    chmod 700 /usr/share/wazuh-indexer/config && \
-    chmod 600 /usr/share/wazuh-indexer/config/jvm.options && \
-    chmod 600 /usr/share/wazuh-indexer/config/opensearch.yml
+    chmod 700 /usr/share/wazuh-indexer && \
+    chmod 600 /usr/share/wazuh-indexer/jvm.options && \
+    chmod 600 /usr/share/wazuh-indexer/opensearch.yml
 
 USER wazuh-indexer
 

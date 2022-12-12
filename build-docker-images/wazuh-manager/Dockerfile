@@ -18,7 +18,9 @@ RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
 RUN apt-get update && \
-    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
+    apt-get install wget && \
+    wget https://packages-dev.wazuh.com/warehouse/test/4.3/deb/wazuh-manager_4.3.11-1_amd64.deb && \
+    apt-get install ./wazuh-manager_4.3.11-1_amd64.deb
 
 RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
     dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
