@@ -50,7 +50,7 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 0600 /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
 RUN chown 1000:1000 /*.sh
 
@@ -67,7 +67,8 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
     mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer && \
     chmod 700 /usr/share/wazuh-indexer && \
     chmod 600 /usr/share/wazuh-indexer/jvm.options && \
-    chmod 600 /usr/share/wazuh-indexer/opensearch.yml
+    chmod 600 /usr/share/wazuh-indexer/opensearch.yml && \
+    chmod 0600 /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh
 
 USER wazuh-indexer
 
