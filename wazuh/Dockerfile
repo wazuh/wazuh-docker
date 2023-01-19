@@ -16,7 +16,10 @@ ENV FILEBEAT_DESTINATION="elasticsearch"
 RUN set -x && \
     groupadd -g 1000 wazuh && \
     useradd -u 1000 -g 1000 -d /var/ossec wazuh && \
-    curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages-dev.wazuh.com/cloud/4.4.x/rpm/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
+# Retrieve PROD package
+#   curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages-dev.wazuh.com/cloud/4.4.x/rpm/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
+# Retrieve DEV package
+    curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages-dev.wazuh.com/pre-release/yum/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     yum update -y && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography postfix bsd-mailx mailx ca-certificates && \
