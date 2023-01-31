@@ -60,6 +60,7 @@ jobs:
       with:
         image-ref: 'wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}'
         format: 'template'
+        timeout: 20m0s
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results-manager.sarif'
         severity: 'LOW,MEDIUM,CRITICAL,HIGH'
@@ -69,6 +70,7 @@ jobs:
       with:
         image-ref: 'wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}'
         format: 'template'
+        timeout: 20m0s
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results-indexer.sarif'
         severity: 'LOW,MEDIUM,CRITICAL,HIGH'
@@ -78,6 +80,7 @@ jobs:
       with:
         image-ref: 'wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}'
         format: 'template'
+        timeout: 20m0s
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results-dashboard.sarif'
         severity: 'LOW,MEDIUM,CRITICAL,HIGH'
