@@ -70,7 +70,7 @@ jobs:
       with:
         image-ref: 'wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}'
         format: 'template'
-        timeout: 20m0s
+        timeout: 60m0s
         template: '@/contrib/sarif.tpl'
         output: 'trivy-results-indexer.sarif'
         severity: 'LOW,MEDIUM,CRITICAL,HIGH'
