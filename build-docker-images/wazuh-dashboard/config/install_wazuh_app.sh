@@ -1,11 +1,24 @@
-## Variables
-WAZUH_IMAGE_VERSION=$(echo $WAZUH_VERSION | sed -e 's/\.//g')
-WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
-## If wazuh manager exists in apt dev repository, change variables, if not exit 1
-if [ "$WAZUH_IMAGE_VERSION" -le "$WAZUH_CURRENT_VERSION" ]; then
-  WAZUH_APP=https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
-else
+## variables
+WAZUH_APP=https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
+MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
+MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
+MINOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f3)
+MAJOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f1)
+MID_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f2)
+MINOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f3)
+
+## check version to use the correct repository
+if [ "$MAJOR_BUILD" -gt "$MAJOR_CURRENT" ]; then
   WAZUH_APP=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
+  if [ "$MID_BUILD" -gt "$MID_CURRENT" ]; then
+    WAZUH_APP=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+  elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
+    if [ "$MINOR_BUILD" -gt "$MINOR_CURRENT" ]; then
+      WAZUH_APP=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+    fi
+  fi
 fi
 
 # Install Wazuh App

@@ -4,8 +4,6 @@ export DH_OPTIONS
 
 export NAME=wazuh-indexer
 export TARGET_DIR=${CURDIR}/debian/${NAME}
-export WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
-export WAZUH_IMAGE_VERSION=$(echo $WAZUH_VERSION | sed -e 's/\.//g')
 
 # Package build options
 export USER=${NAME}
@@ -15,7 +13,7 @@ export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
 export INSTALLATION_DIR=/usr/share/${NAME}
-export CONFIG_DIR=${INSTALLATION_DIR}/config
+export CONFIG_DIR=${INSTALLATION_DIR}
 export BASE_DIR=${NAME}-*
 export INDEXER_FILE=wazuh-indexer-base.tar.xz
 export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
@@ -23,13 +21,31 @@ export REPO_DIR=/unattended_installer
 
 rm -rf ${INSTALLATION_DIR}/
 
-if [ "$WAZUH_IMAGE_VERSION" -le "$WAZUH_CURRENT_VERSION" ]; then
- REPOSITORY="packages.wazuh.com"
-else
- REPOSITORY="packages-dev.wazuh.com"
+## variables
+REPOSITORY="packages.wazuh.com"
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
+MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
+MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
+MINOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f3)
+MAJOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f1)
+MID_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f2)
+MINOR_CURRENT=$(echo $WAZUH_CURRENT_VERSION | cut -d. -f3)
+
+## check version to use the correct repository
+if [ "$MAJOR_BUILD" -gt "$MAJOR_CURRENT" ]; then
+  REPOSITORY="packages-dev.wazuh.com/pre-release"
+elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
+  if [ "$MID_BUILD" -gt "$MID_CURRENT" ]; then
+    REPOSITORY="packages-dev.wazuh.com/pre-release"
+  elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
+    if [ "$MINOR_BUILD" -gt "$MINOR_CURRENT" ]; then
+      REPOSITORY="packages-dev.wazuh.com/pre-release"
+    fi
+  fi
 fi
 
-curl -o ${INDEXER_FILE} https://${REPOSITORY}/stack/indexer/base/${BASE_FILE}
+
+curl -o ${INDEXER_FILE} https://${REPOSITORY}/stack/indexer/${BASE_FILE}
 tar -xf ${INDEXER_FILE}
 
 ## TOOLS
@@ -77,6 +93,7 @@ chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
+mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}
 mkdir -p ${TARGET_DIR}${LIB_DIR}
 mkdir -p ${TARGET_DIR}${LOG_DIR}
@@ -101,9 +118,9 @@ cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
 cp /$CERT_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 # Copy Wazuh's config files for the security plugin
-cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
-cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
-cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/securityconfig/
+cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
 cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer.pem
@@ -112,6 +129,10 @@ cp -pr /wazuh-certificates/root-ca.key ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.
 cp -pr /wazuh-certificates/root-ca.pem ${TARGET_DIR}${CONFIG_DIR}/certs/root-ca.pem
 cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-key.pem
+
+# Delete xms and xmx parameters in jvm.options
+sed '/-Xms/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
+sed '/-Xmx/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
 
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
 chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*

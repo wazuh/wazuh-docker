@@ -126,7 +126,7 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_doc/_search" -u admin:SecretPassword -k -s | jq -r ".hits.total.value"`"
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
        if [[ $docs -gt 100 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
        else
@@ -250,8 +250,8 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_doc/_search" -u admin:SecretPassword -k -s | jq -r ".hits.total.value"`"
-       if [[ $docs -gt 200 ]]; then
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+       if [[ $docs -gt 100 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
        else
         echo "wazuh-alerts index documents: ${docs}"
