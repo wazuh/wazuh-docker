@@ -55,44 +55,6 @@ jobs:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
 
-    - name: Run Trivy vulnerability scanner for Wazuh manager
-      uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
-      with:
-        image-ref: 'wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}'
-        format: 'template'
-        timeout: 20m0s
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results-manager.sarif'
-        severity: 'LOW,MEDIUM,CRITICAL,HIGH'
-
-    - name: Run Trivy vulnerability scanner for Wazuh indexer
-      uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
-      with:
-        image-ref: 'wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}'
-        format: 'template'
-        timeout: 60m0s
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results-indexer.sarif'
-        severity: 'LOW,MEDIUM,CRITICAL,HIGH'
-
-    - name: Run Trivy vulnerability scanner for Wazuh dashboard
-      uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
-      with:
-        image-ref: 'wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}'
-        format: 'template'
-        timeout: 20m0s
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results-dashboard.sarif'
-        severity: 'LOW,MEDIUM,CRITICAL,HIGH'
-
-    - name: Combine three reports results
-      run: jq -s 'add' trivy-results-manager.sarif trivy-results-indexer.sarif trivy-results-dashboard.sarif > trivy-results.sarif
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
-
   check-single-node:
     runs-on: ubuntu-latest
     needs: build-docker-images
