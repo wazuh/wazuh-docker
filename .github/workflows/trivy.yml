@@ -51,6 +51,7 @@ jobs:
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results-manager.sarif'
+          timeout: 20m0s
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
       - name: Run Trivy vulnerability scanner for Wazuh indexer
@@ -60,6 +61,7 @@ jobs:
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results-indexer.sarif'
+          timeout: 20m0s
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
       - name: Run Trivy vulnerability scanner for Wazuh dashboard
@@ -69,6 +71,7 @@ jobs:
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results-dashboard.sarif'
+          timeout: 20m0s
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
       - name: Combine three reports results
