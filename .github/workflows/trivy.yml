@@ -6,9 +6,17 @@
 name: Trivy scan
 
 on:
-
+  release:
+    types:
+    - published
+  pull_request:
+    branches:
+      - master
+      - stable
+      - 4.*
   schedule:
     - cron: '00 08 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
