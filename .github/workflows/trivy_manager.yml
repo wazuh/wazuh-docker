@@ -63,7 +63,7 @@ jobs:
           SLACK_CHANNEL: cicd-monitoring
           SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
           #SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: 'Check the results: https://github.com/wazuh/wazuh-docker/security/code-scanning?query=is%3Aopen+branch%3A${{GITHUB_REF_NAME}}'
+          SLACK_MESSAGE: 'Check the results: https://github.com/wazuh/wazuh-docker/security/code-scanning?query=is%3Aopen+branch%3A${{ env.GITHUB_REF_NAME }}'
           SLACK_TITLE: Wazuh docker Trivy vulnerability scan finished.
           SLACK_USERNAME: github_actions
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
