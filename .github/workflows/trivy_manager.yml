@@ -43,7 +43,7 @@ jobs:
       - name: Create enviroment variables
         run: |
           cat .env > $GITHUB_ENV
-          echo "GITHUB_REF_NAME="${$GITHUB_REF_NAME%/*} >> $GITHUB_ENV
+          echo "GITHUB_REF_NAME="${GITHUB_REF_NAME%/*} >> $GITHUB_ENV
 
       - name: Run Trivy vulnerability scanner for Wazuh manager
         uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
