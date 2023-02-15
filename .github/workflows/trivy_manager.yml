@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Trivy scan
+name: Trivy scan Wazuh manager
 
 on:
   release:
@@ -37,7 +37,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-
       - name: Build Wazuh images
         run: build-docker-images/build-images.sh
 
@@ -51,32 +50,12 @@ jobs:
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results-manager.sarif'
-          timeout: 60m0s
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
-      - name: Run Trivy vulnerability scanner for Wazuh indexer
-        uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          image-ref: 'wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results-indexer.sarif'
-          timeout: 60m0s
-          severity: 'LOW,MEDIUM,CRITICAL,HIGH'
-
-      - name: Run Trivy vulnerability scanner for Wazuh dashboard
-        uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
-        with:
-          image-ref: 'wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results-dashboard.sarif'
-          timeout: 60m0s
-          severity: 'LOW,MEDIUM,CRITICAL,HIGH'
-
-      - name: Combine three report
-        with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-results-manager.sarif'
 
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2
