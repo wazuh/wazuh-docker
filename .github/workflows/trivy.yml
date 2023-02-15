@@ -74,11 +74,7 @@ jobs:
           timeout: 60m0s
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
-      - name: Combine three reports results
-        run: jq -s 'add' trivy-results-manager.sarif trivy-results-indexer.sarif trivy-results-dashboard.sarif > trivy-results.sarif
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+      - name: Combine three report
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -88,7 +84,7 @@ jobs:
           SLACK_CHANNEL: cicd-monitoring
           SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
           #SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: 'Check the results: https://github.com/wazuh/wazuh-docker/security/code-scanning?query=is%3Aopen+branch%3A4.3-include-trivy'
+          SLACK_MESSAGE: 'Check the results: https://github.com/wazuh/wazuh-docker/security/code-scanning?query=is%3Aopen+branch%3A773-vulnerability-tests'
           SLACK_TITLE: Wazuh docker Trivy vulnerability scan finished.
           SLACK_USERNAME: github_actions
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
