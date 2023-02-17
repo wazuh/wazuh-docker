@@ -14,7 +14,7 @@ on:
       - master
       - stable
   schedule:
-    - cron: '34 2 * * *'
+    - cron: '34 2 * * 1'
   workflow_dispatch:
 
 permissions:
