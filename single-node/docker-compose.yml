@@ -70,8 +70,8 @@ services:
     ports:
       - 443:5601
     environment:
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
+      - DASHBOARD_USERNAME=kibanaserver
+      - DASHBOARD_PASSWORD=kibanaserver
       - WAZUH_API_URL=https://wazuh.manager
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
