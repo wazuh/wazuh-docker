@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Adapt cloud to Wazuh v4.4 - Check Load wazuh alerts template step on Dockerfile ([10771](https://github.com/wazuh/wazuh-saas/issues/10771))
+
 ## Wazuh Docker v3.10.2_7.3.2
 
 ### Added
