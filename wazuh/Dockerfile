@@ -104,8 +104,8 @@ RUN chmod 755 /entrypoint.sh && \
     chmod 755 /entrypoint-scripts/85-save_wazuh_version.sh
 
 # Load wazuh alerts template.
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat/wazuh-template.json
-RUN chmod go-w /etc/filebeat/wazuh-template.json 
+#ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+#RUN chmod go-w /etc/filebeat/wazuh-template.json 
 
 # Expose ports
 EXPOSE 55000/tcp 1514/udp 1515/tcp 514/udp 1516/tcp
