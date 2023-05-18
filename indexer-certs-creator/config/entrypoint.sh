@@ -54,8 +54,8 @@ cp /certificates/root-ca.key /certificates/root-ca-manager.key
 chown 101:101 /certificates/root-ca-manager.pem
 chown 101:101 /certificates/root-ca-manager.key
 
-for i in ${node_names[@]}; 
-do 
+for i in ${node_names[@]};
+do
   chown 101:101 "/certificates/${i}.pem"
   chown 101:101 "/certificates/${i}-key.pem"
 done

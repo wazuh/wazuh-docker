@@ -1,7 +1,8 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal AS builder
 
-ARG WAZUH_VERSION=4.5.0
+ARG WAZUH_VERSION
+ARG WAZUH_TAG_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG WAZUH_UI_REVISION=1
 
