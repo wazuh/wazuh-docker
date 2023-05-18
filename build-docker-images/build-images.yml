@@ -3,8 +3,12 @@ version: '3.7'
 
 services:
   wazuh.manager:
-    build:  wazuh-manager/
-    image: wazuh/wazuh-manager:4.5.0
+    build:
+      context: wazuh-manager/
+      args:
+        WAZUH_VERSION: ${WAZUH_VERSION}
+        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+    image: wazuh/wazuh-manager:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.manager
     restart: always
     ports:

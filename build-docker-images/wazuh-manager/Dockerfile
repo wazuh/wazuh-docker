@@ -1,7 +1,10 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 FROM ubuntu:focal
 
-ARG WAZUH_VERSION=4.5.0
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+ARG WAZUH_VERSION
+ARG WAZUH_TAG_REVISION
 ARG TEMPLATE_VERSION=4.5
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
