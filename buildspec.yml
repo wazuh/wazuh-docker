@@ -10,7 +10,7 @@ phases:
       - git config --global user.email "moloko@barefootcyber.com"
       - git config --global user.name "Moloko"
       - git clone codecommit::eu-west-1://BarefootCyber-Wazuh-Docker
-      - git clone https://github.com/LokoMoloko98/wazuh-docker.git
+      - git clone https://github.com/barefootcyber/wazuh-docker.git
   build:
     commands:
       - rsync -rv --exclude=.git wazuh-docker/. ./BarefootCyber-Wazuh-Docker/
