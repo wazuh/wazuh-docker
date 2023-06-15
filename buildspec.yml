@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - sudo apt-get update
+      - sudo apt-get install python3
+      - sudo apt-get -y install python3-pip
+      - sudo pip3 install git-remote-codecommit
+      - git config --global user.email "moloko@barefootcyber.com"
+      - git config --global user.name "Moloko"
+      - git clone codecommit::eu-west-1://BarefootCyber-Wazuh-Docker
+      - git clone https://github.com/LokoMoloko98/wazuh-docker.git
+  build:
+    commands:
+      - rsync -rv --exclude=.git wazuh-docker/. ./BarefootCyber-Wazuh-Docker/
+      - rm -rf wazuh-docker
+      - cd BarefootCyber-Wazuh-Docker
+      # Commit the changes to CodeCommit
+      - git add .
+      - git commit -m "The transfer worked" 
+      - git push
