@@ -1,9 +1,13 @@
-# Wazuh containers for Docker
+# Wazuh containers for Podman
+
+<!---
 
 [![Slack](https://img.shields.io/badge/slack-join-blue.svg)](https://wazuh.com/community/join-us-on-slack/)
 [![Email](https://img.shields.io/badge/email-join-blue.svg)](https://groups.google.com/forum/#!forum/wazuh)
 [![Documentation](https://img.shields.io/badge/docs-view-green.svg)](https://documentation.wazuh.com)
 [![Documentation](https://img.shields.io/badge/web-view-green.svg)](https://wazuh.com)
+
+-->
 
 In this repository you will find the containers to run:
 
@@ -190,6 +194,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch on correspond to the last Wazuh stable version.
+* `feature-podman` branch contains the latest dev code
 
 ## Compatibility Matrix
 
@@ -238,7 +243,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 ## Credits and Thank you
 
-These Docker containers are based on:
+These Podman containers are based on:
 
 *  "deviantony" dockerfiles which can be found at [https://github.com/deviantony/docker-elk](https://github.com/deviantony/docker-elk)
 *  "xetus-oss" dockerfiles, which can be found at [https://github.com/xetus-oss/docker-ossec-server](https://github.com/xetus-oss/docker-ossec-server)
