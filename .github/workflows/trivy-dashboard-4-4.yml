@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with: { ref: 4.4 }
+        with: { ref: v4.4.5 }
 
       - name: Installing dependencies
         run: |
