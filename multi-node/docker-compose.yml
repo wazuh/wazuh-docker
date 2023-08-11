@@ -6,6 +6,13 @@ services:
     image: wazuh/wazuh-manager:4.6.0
     hostname: wazuh.master
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
     ports:
       - "1515:1515"
       - "514:514/udp"
@@ -41,6 +48,13 @@ services:
     image: wazuh/wazuh-manager:4.6.0
     hostname: wazuh.worker
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
     environment:
       - INDEXER_URL=https://wazuh1.indexer:9200
       - INDEXER_USERNAME=admin
