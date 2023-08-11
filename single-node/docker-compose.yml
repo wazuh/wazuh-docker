@@ -6,6 +6,13 @@ services:
     image: wazuh/wazuh-manager:4.5.1
     hostname: wazuh.manager
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
     ports:
       - "1514:1514"
       - "1515:1515"
