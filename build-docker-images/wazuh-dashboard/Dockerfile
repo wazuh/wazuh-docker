@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal AS builder
+FROM ubuntu:jammy AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -42,7 +42,7 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chown -R 101:101 $INSTALL_DIR/data/
 # Add entrypoint
 # Add wazuh_app_config
 ################################################################################
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \
