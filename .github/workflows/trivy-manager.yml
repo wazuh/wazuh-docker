@@ -40,6 +40,7 @@ jobs:
       - name: Checkout latest tag
         run: |
           latest=$(curl -s "https://api.github.com/repos/wazuh/wazuh-docker/releases/latest" | jq -r '.tag_name')
+          git fetch origin
           git checkout $latest
 
       - name: Build Wazuh images
