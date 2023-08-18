@@ -36,8 +36,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
+
+      - name: Checkout latest tag
           latest=$(curl -s "https://api.github.com/repos/wazuh/wazuh-docker/releases/latest" | jq -r '.tag_name')
           git checkout $latest
+
       - name: Build Wazuh images
         run: build-docker-images/build-images.sh
 
