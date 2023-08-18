@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Trivy scan Wazuh manager
+name: Trivy scan Wazuh dashboard
 
 on:
   release:
@@ -31,12 +31,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with: { ref: v4.4.5 }
 
       - name: Installing dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
+          latest=$(curl -s "https://api.github.com/repos/wazuh/wazuh-docker/releases/latest" | jq -r '.tag_name')
+          git checkout $latest
       - name: Build Wazuh images
         run: build-docker-images/build-images.sh
 
@@ -45,19 +46,19 @@ jobs:
           cat .env > $GITHUB_ENV
           echo "GITHUB_REF_NAME="${GITHUB_REF_NAME%/*} >> $GITHUB_ENV
 
-      - name: Run Trivy vulnerability scanner for Wazuh manager
+      - name: Run Trivy vulnerability scanner for Wazuh dashboard
         uses: aquasecurity/trivy-action@2a2157eb22c08c9a1fac99263430307b8d1bc7a2
         with:
-          image-ref: 'wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}'
+          image-ref: 'wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
-          output: 'trivy-results-manager.sarif'
+          output: 'trivy-results-dashboard.sarif'
           severity: 'LOW,MEDIUM,CRITICAL,HIGH'
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: 'trivy-results-manager.sarif'
+          sarif_file: 'trivy-results-dashboard.sarif'
 
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2
