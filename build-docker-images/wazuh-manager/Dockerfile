@@ -8,31 +8,26 @@ ARG WAZUH_TAG_REVISION=1
 ARG TEMPLATE_VERSION=4.7.0
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-
+ARG ARCH=$(uname -m)
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
-COPY config/check_repository.sh /
+RUN curl -L https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-manager/wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb &&\
+    dpkg -i wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb && rm -f wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb
 
-RUN chmod 775 /check_repository.sh
-RUN source /check_repository.sh
-
-RUN apt-get update && \
-    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
-
-RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
-    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb &&\
+    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb && \
     curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
-RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
+RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-${ARCH} -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
 
 ARG S6_VERSION="v2.2.0.3"
-RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-    -o /tmp/s6-overlay-amd64.tar.gz && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz
+RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${ARCH}.tar.gz \
+    -o /tmp/s6-overlay-${ARCH}.tar.gz && \
+    tar xzf /tmp/s6-overlay-${ARCH}.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay-${ARCH}.tar.gz -C /usr ./bin && \
+    rm  /tmp/s6-overlay-${ARCH}.tar.gz
 
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
