@@ -3,12 +3,12 @@ FROM ubuntu:jammy
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-ARG WAZUH_VERSION=4.7.0
+ARG WAZUH_VERSION=4.5.0
 ARG WAZUH_TAG_REVISION=1
-ARG TEMPLATE_VERSION=4.7.0
+ARG TEMPLATE_VERSION=4.5.0
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG ARCH=$(uname -m)
+ARG ARCH
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
