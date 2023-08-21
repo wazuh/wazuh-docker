@@ -40,7 +40,7 @@ jobs:
         file: ./build-docker-images/wazuh-manager/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        no-cache: true
+        buildkitd-flags: --debug
         outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         tags: |
           wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
@@ -52,7 +52,7 @@ jobs:
         file: ./build-docker-images/wazuh-indexer/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        no-cache: true
+        buildkitd-flags: --debug
         outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         tags: |
           wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}
@@ -64,7 +64,7 @@ jobs:
         file: ./build-docker-images/wazuh-dashboard/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        no-cache: true
+        buildkitd-flags: --debug
         outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         tags: |
           wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}
