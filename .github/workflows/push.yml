@@ -36,8 +36,7 @@ jobs:
     - name: Build Wazuh manager docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./build-docker-images/wazuh-manager
-        file: Dockerfile
+        file: ./build-docker-images/wazuh-manager/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
         buildkitd-flags: --debug
@@ -48,8 +47,7 @@ jobs:
     - name: Build Wazuh index docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./build-docker-images/wazuh-indexer
-        file: Dockerfile
+        file: ./build-docker-images/wazuh-indexer/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
         buildkitd-flags: --debug
@@ -60,8 +58,7 @@ jobs:
     - name: Build Wazuh dashboard docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./build-docker-images/wazuh-dashboard
-        file: Dockerfile
+        file: ./build-docker-images/wazuh-dashboard/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
         buildkitd-flags: --debug
