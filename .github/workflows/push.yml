@@ -26,9 +26,6 @@ jobs:
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
-
-    - name: Create images directory
-      run: mkdir -p /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
       
     - name: Build Wazuh manager docker image
       uses: docker/build-push-action@v4
@@ -37,7 +34,7 @@ jobs:
         file: ./docker-images/wazuh-manager/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/wazuh-manager.tar
         tags: |
           wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
 
@@ -48,7 +45,7 @@ jobs:
         file: ./docker-images/wazuh-indexer/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/wazuh-indexer.tar
         tags: |
           wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}
 
@@ -59,9 +56,16 @@ jobs:
         file: ./docker-images/wazuh-dashboard/Dockerfile
         platforms: ${{ matrix.platform }}
         push: false
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/wazuh-dashboard.tar
         tags: |
           wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}
+
+    - name: Create docker-images and move images inside
+      run: |
+        mkdir -p /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
+        mv /home/runner/work/wazuh-docker/wazuh-docker/wazuh-manager.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
+        mv /home/runner/work/wazuh-docker/wazuh-docker/wazuh-indexer.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
+        mv /home/runner/work/wazuh-docker/wazuh-docker/wazuh-dashboard.tar /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
