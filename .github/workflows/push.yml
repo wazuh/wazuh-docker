@@ -1,6 +1,8 @@
 name: Wazuh Docker pipeline
 
-on: [pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   build-docker-images:
@@ -62,9 +64,7 @@ jobs:
       with:
         context: ./build-docker-images/wazuh-manager
         platforms: ${{ matrix.platform }}
-        # push: ${{ github.event_name != 'pull_request' }}
-        push: true
-        tags: ${{ steps.meta_wazuh_manager.outputs.tags }}
+        push: ${{ github.event_name != 'pull_request' }}
         labels: ${{ steps.meta_wazuh_manager.outputs.labels }}
         outputs: type=image,name=${{ env.WAZUH_MANAGER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
@@ -79,9 +79,7 @@ jobs:
       with:
         context: ./build-docker-images/wazuh-indexer
         platforms: ${{ matrix.platform }}
-        # push: ${{ github.event_name != 'pull_request' }}
-        push: true
-        tags: ${{ steps.meta_wazuh_indexer.outputs.tags }}
+        push: ${{ github.event_name != 'pull_request' }}
         labels: ${{ steps.meta_wazuh_indexer.outputs.labels }}
         outputs: type=image,name=${{ env.WAZUH_INDEXER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
 
@@ -96,9 +94,7 @@ jobs:
       with:
         context: ./build-docker-images/wazuh-dashboard
         platforms: ${{ matrix.platform }}
-        # push: ${{ github.event_name != 'pull_request' }}
-        push: true
-        tags: ${{ steps.meta_wazuh_dashboard.outputs.tags }}
+        push: ${{ github.event_name != 'pull_request' }}
         labels: ${{ steps.meta_wazuh_dashboard.outputs.labels }}
         outputs: type=image,name=${{ env.WAZUH_DASHBOARD_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
