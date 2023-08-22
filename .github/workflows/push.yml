@@ -10,67 +10,107 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm64
-          - linux/arm/v7
-          - linux/ppc64le
-          - linux/s390x
     steps:
 
     - name: Check out code
       uses: actions/checkout@v3
 
+    - name: Docker meta manager
+      id: meta_wazuh_manager
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-manager
+
+    - name: Docker meta indexer
+      id: meta_wazuh_indexer
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-indexer
+
+    - name: Docker meta dashboard
+      id: meta_wazuh_dashboard
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-dashboard
+
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
-# https://docs.docker.com/build/ci/github-actions/multi-platform/
+
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v2
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Create images directory
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Create images and digests directory
       run: |
         mkdir -p /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
-        ls -lah
-        pwd
+        mkdir -p /tmp/digests
       
     - name: Build Wazuh manager docker image
       uses: docker/build-push-action@v4
+      id: build_wazush_manager
       with:
         context: ./build-docker-images/wazuh-manager
         platforms: ${{ matrix.platform }}
-        push: false
-        buildkitd-flags: --debug
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
-        build-args: |
-          ARCH=$(uname -m)
-        tags: |
-          wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}}
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta_wazuh_manager.outputs.tags }}
+        labels: ${{ steps.meta_wazuh_manager.outputs.labels }}
+        outputs: type=image,name=${{ steps.meta.outputs.tags }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
-    - name: Build Wazuh index docker image
+    - name: Export Wazuh manager docker image digest
+      run: |
+        digest="${{ steps.build_wazush_manager.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}
+
+    - name: Build Wazuh indexer docker image
       uses: docker/build-push-action@v4
+      id: build_wazush_indexer
       with:
         context: ./build-docker-images/wazuh-indexer
         platforms: ${{ matrix.platform }}
-        push: false
-        buildkitd-flags: --debug
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
-        build-args: |
-          ARCH=$(uname -m)
-        tags: |
-          wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}}
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta_wazuh_indexer.outputs.tags }}
+        labels: ${{ steps.meta_wazuh_indexer.outputs.labels }}
+        outputs: type=image,name=wazuh/wazuh-indexer,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+
+    - name: Export Wazuh indexer docker image digest
+      run: |
+        digest="${{ steps.build_wazush_indexer.digest }}"
+        touch "/tmp/digests/${digest#sha256:}
 
     - name: Build Wazuh dashboard docker image
       uses: docker/build-push-action@v4
+      id: build_wazush_dashboard
       with:
         context: ./build-docker-images/wazuh-dashboard
         platforms: ${{ matrix.platform }}
-        push: false
-        buildkitd-flags: --debug
-        outputs: type=tar,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
-        build-args: |
-          ARCH=$(uname -m)
-        tags: |
-          wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}}
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta_wazuh_dashboard.outputs.tags }}
+        labels: ${{ steps.meta_wazuh_dashboard.outputs.labels }}
+        outputs: type=image,name=wazuh/wazuh-dashboard,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+
+    - name: Export Wazuh dashboard docker image digest
+      run: |
+        digest="${{ steps.build_wazush_indexer.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}
+    
+    - name: Upload digests
+      uses: actions/upload-artifact@v3
+      with:
+        name: digests
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
@@ -103,6 +143,57 @@ jobs:
       env:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build-docker-images
+    steps:
+
+    - name: Download digests
+      uses: actions/download-artifact@v3
+      with:
+        name: digests
+        path: /tmp/digests
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Docker meta manager
+      id: meta_wazuh_manager
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-manager
+
+    - name: Docker meta indexer
+      id: meta_wazuh_indexer
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-indexer
+
+    - name: Docker meta dashboard
+      id: meta_wazuh_dashboard
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          wazuh/wazuh-dashboard
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Create manifest dashboard list and push
+      working-directory: /tmp/digests
+      run: |
+        docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          $(printf 'wazuh/wazuh-dashboard@sha256:%s ' *)
+
+    - name: Inspect dashboard image
+      run: |
+        docker buildx imagetools inspect wazuh/wazuh-dashboard:${{ steps.meta_wazuh_dashboard.outputs.version }}
 
   check-single-node:
     runs-on: ubuntu-latest

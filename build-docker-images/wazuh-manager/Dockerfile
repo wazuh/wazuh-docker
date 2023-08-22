@@ -8,29 +8,29 @@ ARG WAZUH_TAG_REVISION=1
 ARG TEMPLATE_VERSION=4.5
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG ARCH=amd64
+ARG TARGETARCH
 ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
-RUN curl -L -O https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-manager/wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb &&\
-    dpkg -i wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb && rm -f wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${ARCH}.deb
+RUN curl -L -O https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-manager/wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${TARGETARCH}.deb &&\
+    dpkg -i wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${TARGETARCH}.deb && rm -f wazuh-manager_${WAZUH_VERSION}-${WAZUH_TAG_REVISION}_${TARGETARCH}.deb
 
-RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb &&\
-    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${ARCH}.deb && \
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${TARGETARCH}.deb &&\
+    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${TARGETARCH}.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-${TARGETARCH}.deb && \
     curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
-RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-${ARCH} -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
+RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-${TARGETARCH} -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
 
 ARG S6_VERSION="v2.2.0.3"
-
-# Conditionally set ARCH to 'aarch64' if it's 'arm64' 
-RUN if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi && \
-    curl --fail --silent -L "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${ARCH}.tar.gz" \
-    -o "/tmp/s6-overlay-${ARCH}.tar.gz" && \
-    tar xzf "/tmp/s6-overlay-${ARCH}.tar.gz" -C / --exclude="./bin" && \
-    tar xzf "/tmp/s6-overlay-${ARCH}.tar.gz" -C /usr ./bin && \
-    rm "/tmp/s6-overlay-${ARCH}.tar.gz"
+ARG S6_ARCH
+# Conditionally set TARGETARCH to 'aarch64' if it's 'arm64' 
+RUN if [ "$TARGETARCH" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
+    curl --fail --silent -L "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz" \
+    -o "/tmp/s6-overlay-${S6_ARCH}.tar.gz" && \
+    tar xzf "/tmp/s6-overlay-${S6_ARCH}.tar.gz" -C / --exclude="./bin" && \
+    tar xzf "/tmp/s6-overlay-${S6_ARCH}.tar.gz" -C /usr ./bin && \
+    rm "/tmp/s6-overlay-${S6_ARCH}.tar.gz"
 
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
