@@ -15,29 +15,29 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
+    - name: Create enviroment variables
+      run: cat .env > $GITHUB_ENV
+
     - name: Docker meta manager
       id: meta_wazuh_manager
       uses: docker/metadata-action@v4
       with:
         images: |
-          wazuh/wazuh-manager
+          ${{ env.WAZUH_MANAGER_REGISTRY_IMAGE }}
 
     - name: Docker meta indexer
       id: meta_wazuh_indexer
       uses: docker/metadata-action@v4
       with:
         images: |
-          wazuh/wazuh-indexer
+          ${{ env.WAZUH_INDEXER_REGISTRY_IMAGE }}
 
     - name: Docker meta dashboard
       id: meta_wazuh_dashboard
       uses: docker/metadata-action@v4
       with:
         images: |
-          wazuh/wazuh-dashboard
-
-    - name: Create enviroment variables
-      run: cat .env > $GITHUB_ENV
+          ${{ env.WAZUH_DASHBOARD_REGISTRY_IMAGE }}
 
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v2
@@ -66,7 +66,7 @@ jobs:
         push: true
         tags: ${{ steps.meta_wazuh_manager.outputs.tags }}
         labels: ${{ steps.meta_wazuh_manager.outputs.labels }}
-        outputs: type=image,name=wazuh/wazuh-manager,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        outputs: type=image,name=${{ env.WAZUH_MANAGER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Export Wazuh manager docker image digest
       run: |
@@ -83,7 +83,7 @@ jobs:
         push: true
         tags: ${{ steps.meta_wazuh_indexer.outputs.tags }}
         labels: ${{ steps.meta_wazuh_indexer.outputs.labels }}
-        outputs: type=image,name=wazuh/wazuh-indexer,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
+        outputs: type=image,name=${{ env.WAZUH_INDEXER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
 
     - name: Export Wazuh indexer docker image digest
       run: |
@@ -100,7 +100,7 @@ jobs:
         push: true
         tags: ${{ steps.meta_wazuh_dashboard.outputs.tags }}
         labels: ${{ steps.meta_wazuh_dashboard.outputs.labels }}
-        outputs: type=image,name=wazuh/wazuh-dashboard,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        outputs: type=image,name=${{ env.WAZUH_DASHBOARD_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Export Wazuh dashboard docker image digest
       run: |
@@ -192,11 +192,11 @@ jobs:
       working-directory: /tmp/digests
       run: |
         docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          $(printf 'wazuh/wazuh-dashboard@sha256:%s ' *)
+          $(printf '${{ env.WAZUH_DASHBOARD_REGISTRY_IMAGE }}@sha256:%s ' *)
 
     - name: Inspect dashboard image
       run: |
-        docker buildx imagetools inspect wazuh/wazuh-dashboard:${{ steps.meta_wazuh_dashboard.outputs.version }}
+        docker buildx imagetools inspect ${{ env.WAZUH_DASHBOARD_REGISTRY_IMAGE }}:${{ steps.meta_wazuh_dashboard.outputs.version }}
 
   check-single-node:
     runs-on: ubuntu-latest
