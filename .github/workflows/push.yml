@@ -66,7 +66,7 @@ jobs:
         push: true
         tags: ${{ steps.meta_wazuh_manager.outputs.tags }}
         labels: ${{ steps.meta_wazuh_manager.outputs.labels }}
-        outputs: type=image,name=${{ steps.meta.outputs.tags }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
+        outputs: type=image,name=wazuh/wazuh-manager,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Export Wazuh manager docker image digest
       run: |
