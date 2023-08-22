@@ -23,7 +23,7 @@ RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_
 RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-${TARGETARCH} -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
 
 ARG S6_VERSION="v2.2.0.3"
-ARG S6_ARCH
+ARG S6_ARCH=${TARGETARCH}
 # Conditionally set TARGETARCH to 'aarch64' if it's 'arm64' 
 RUN if [ "$TARGETARCH" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
     curl --fail --silent -L "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz" \
