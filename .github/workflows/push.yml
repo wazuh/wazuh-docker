@@ -58,51 +58,54 @@ jobs:
       
     - name: Build Wazuh manager docker image
       uses: docker/build-push-action@v4
-      id: build_wazush_manager
+      id: build_wazuh_manager
       with:
         context: ./build-docker-images/wazuh-manager
         platforms: ${{ matrix.platform }}
-        push: ${{ github.event_name != 'pull_request' }}
+        # push: ${{ github.event_name != 'pull_request' }}
+        push: true
         tags: ${{ steps.meta_wazuh_manager.outputs.tags }}
         labels: ${{ steps.meta_wazuh_manager.outputs.labels }}
         outputs: type=image,name=${{ steps.meta.outputs.tags }},push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
 
     - name: Export Wazuh manager docker image digest
       run: |
-        digest="${{ steps.build_wazush_manager.outputs.digest }}"
-        touch "/tmp/digests/${digest#sha256:}
+        digest="${{ steps.build_wazuh_manager.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
 
     - name: Build Wazuh indexer docker image
       uses: docker/build-push-action@v4
-      id: build_wazush_indexer
+      id: build_wazuh_indexer
       with:
         context: ./build-docker-images/wazuh-indexer
         platforms: ${{ matrix.platform }}
-        push: ${{ github.event_name != 'pull_request' }}
+        # push: ${{ github.event_name != 'pull_request' }}
+        push: true
         tags: ${{ steps.meta_wazuh_indexer.outputs.tags }}
         labels: ${{ steps.meta_wazuh_indexer.outputs.labels }}
         outputs: type=image,name=wazuh/wazuh-indexer,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
 
     - name: Export Wazuh indexer docker image digest
       run: |
-        digest="${{ steps.build_wazush_indexer.digest }}"
-        touch "/tmp/digests/${digest#sha256:}
+        digest="${{ steps.build_wazuh_indexer.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
 
     - name: Build Wazuh dashboard docker image
       uses: docker/build-push-action@v4
-      id: build_wazush_dashboard
+      id: build_wazuh_dashboard
       with:
         context: ./build-docker-images/wazuh-dashboard
         platforms: ${{ matrix.platform }}
-        push: ${{ github.event_name != 'pull_request' }}
+        # push: ${{ github.event_name != 'pull_request' }}
+        push: true
         tags: ${{ steps.meta_wazuh_dashboard.outputs.tags }}
         labels: ${{ steps.meta_wazuh_dashboard.outputs.labels }}
         outputs: type=image,name=wazuh/wazuh-dashboard,push-by-digest=true,name-canonical=true,dest=/home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Export Wazuh dashboard docker image digest
       run: |
-        digest="${{ steps.build_wazush_indexer.outputs.digest }}"
-        touch "/tmp/digests/${digest#sha256:}
+        digest="${{ steps.build_wazuh_indexer.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
     
     - name: Upload digests
       uses: actions/upload-artifact@v3
