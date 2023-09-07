@@ -168,6 +168,7 @@ services:
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
       - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
     depends_on:
       - wazuh1.indexer
@@ -218,3 +219,4 @@ volumes:
   wazuh-indexer-data-1:
   wazuh-indexer-data-2:
   wazuh-indexer-data-3:
+  wazuh-dashboard-config:
