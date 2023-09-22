@@ -104,6 +104,10 @@ RUN chown 1000:1000 /*.sh
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
 
+# Create custom directory
+RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+
 # Set workdir and user
 WORKDIR $INSTALL_DIR
 USER wazuh-dashboard
