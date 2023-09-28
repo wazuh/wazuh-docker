@@ -133,7 +133,7 @@ cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-
 # Delete xms and xmx parameters in jvm.options
 sed '/-Xms/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
 sed '/-Xmx/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
-sed -i '|-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy|-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy|' ${TARGET_DIR}${CONFIG_DIR}/jvm.options
+sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' ${TARGET_DIR}${CONFIG_DIR}/jvm.options
 
 
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
