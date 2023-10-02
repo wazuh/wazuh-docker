@@ -144,3 +144,13 @@ find ${TARGET_DIR} -type f -perm 644 -exec chmod 640 {} \;
 find ${TARGET_DIR} -type f -perm 664 -exec chmod 660 {} \;
 find ${TARGET_DIR} -type f -perm 755 -exec chmod 750 {} \;
 find ${TARGET_DIR} -type f -perm 744 -exec chmod 740 {} \;
+
+chmod -R 0700 ${TARGET_DIR}/.cache
+chmod 0700 ${TARGET_DIR}/extensions
+chmod 0700 ${TARGET_DIR}/logs
+chmod 0600 ${TARGET_DIR}/opensearch.yml
+find ${TARGET_DIR}/bin -type f -exec chmod 0600 {} \;
+find ${TARGET_DIR}/jdk/bin -type f -exec chmod 0600 {} \;
+chmod 0600 ${TARGET_DIR}/opensearch-security/internal_users.yml
+find ${TARGET_DIR}/performance-analyzer-rca/bin -type f -exec chmod 0600 {} \;
+chmod 0600 ${TARGET_DIR}/plugins/opensearch-security/tools/wazuh-certs-tool.sh
