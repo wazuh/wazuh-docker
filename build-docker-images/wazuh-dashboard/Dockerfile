@@ -4,7 +4,7 @@ FROM ubuntu:focal AS builder
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
-ARG WAZUH_UI_REVISION=1
+ARG WAZUH_UI_REVISION
 
 # Update and install dependencies
 RUN apt-get update && apt install curl libcap2-bin xz-utils -y
