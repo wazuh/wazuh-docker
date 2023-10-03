@@ -144,3 +144,10 @@ find ${TARGET_DIR} -type f -perm 644 -exec chmod 640 {} \;
 find ${TARGET_DIR} -type f -perm 664 -exec chmod 660 {} \;
 find ${TARGET_DIR} -type f -perm 755 -exec chmod 750 {} \;
 find ${TARGET_DIR} -type f -perm 744 -exec chmod 740 {} \;
+
+
+# Fix OpenSearch security plugin permissions
+chown ${USER}:${GROUP} ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/internal_users.yml
+chown ${USER}:${GROUP} ${TARGET_DIR}${CONFIG_DIR}/opensearch.yml
+chmod 0600 ${TARGET_DIR}${CONFIG_DIR}/opensearch.yml
+chmod 0600 ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/internal_users.yml

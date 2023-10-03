@@ -13,20 +13,6 @@ export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filep
 export CERT="${OPENSEARCH_PATH_CONF}/certs/admin.pem"
 export KEY="${OPENSEARCH_PATH_CONF}/certs/admin-key.pem"
 
-
-# Fix OpenSearch security plugin permissions
-
-chmod -R 0700 ${TARGET_DIR}/.cache
-chmod 0700 ${TARGET_DIR}/extensions
-chmod 0700 ${TARGET_DIR}/logs
-chmod 0600 ${TARGET_DIR}/opensearch.yml
-find ${TARGET_DIR}/bin -type f -exec chmod 0600 {} \;
-find ${TARGET_DIR}/jdk/bin -type f -exec chmod 0600 {} \;
-chmod 0600 ${TARGET_DIR}/opensearch-security/internal_users.yml
-find ${TARGET_DIR}/performance-analyzer-rca/bin -type f -exec chmod 0600 {} \;
-chmod 0600 ${TARGET_DIR}/plugins/opensearch-security/tools/wazuh-certs-tool.sh
-
-
 run_as_other_user_if_needed() {
   if [[ "$(id -u)" == "0" ]]; then
     # If running as root, drop to specified UID and run command
