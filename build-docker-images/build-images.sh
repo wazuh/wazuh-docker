@@ -12,7 +12,7 @@ WAZUH_IMAGE_VERSION="4.6.0"
 WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-FILEBEAT_TEMPLATE_BRANCH="v${WAZUH_IMAGE_VERSION}"
+FILEBEAT_TEMPLATE_BRANCH="${WAZUH_IMAGE_VERSION}"
 FILEBEAT_MODULE_VERSION="0.2"
 WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
 WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
@@ -37,8 +37,17 @@ ctrl_c() {
 build() {
 
     if  [ "${WAZUH_DEV_STAGE}" ];then
-        FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
+        FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
+    else
+        if curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
+            FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
+        elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/v${FILEBEAT_TEMPLATE_BRANCH}"; then
+            FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}"
+        else
+            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
+        fi
     fi
+
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > .env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> .env
     echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> .env
