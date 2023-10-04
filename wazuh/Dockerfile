@@ -19,7 +19,7 @@ RUN set -x && \
     # Retrieve DEV package
     #curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages-dev.wazuh.com/pre-release/yum/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     # Retrieve PROD package
-    curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages.wazuh.com/cloud/4.4.x/rpm/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
+    curl -o /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm https://packages.wazuh.com/cloud/4.5.x/rpm/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     yum update -y && \
     yum upgrade -y &&\
     yum install -y openssl vim expect python-boto python-pip python-cryptography postfix bsd-mailx mailx ca-certificates && \
