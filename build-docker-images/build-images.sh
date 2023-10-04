@@ -9,13 +9,9 @@
 # Foundation.
 
 WAZUH_IMAGE_VERSION="4.6.0"
-WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-FILEBEAT_TEMPLATE_BRANCH="${WAZUH_IMAGE_VERSION}"
 FILEBEAT_MODULE_VERSION="0.2"
-WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
-WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
 # -----------------------------------------------------------------------------
 
@@ -35,6 +31,11 @@ ctrl_c() {
 
 
 build() {
+
+    WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
+    FILEBEAT_TEMPLATE_BRANCH="${WAZUH_IMAGE_VERSION}"
+    WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
+    WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     if  [ "${WAZUH_DEV_STAGE}" ];then
         FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
