@@ -44,10 +44,10 @@ build() {
             clean 1
         fi
     else
-        if curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
-            FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
-        elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/v${FILEBEAT_TEMPLATE_BRANCH}"; then
+        if curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/v${FILEBEAT_TEMPLATE_BRANCH}"; then
             FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}"
+        elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
+            FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
         else
             WAZUH_MASTER_VERSION="$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/master/src/VERSION | sed -e 's/v//g')"
             if [ "${FILEBEAT_TEMPLATE_BRANCH}" == "${WAZUH_MASTER_VERSION}" ]; then
