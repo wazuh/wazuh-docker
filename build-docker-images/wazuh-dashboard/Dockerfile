@@ -4,7 +4,7 @@ FROM ubuntu:jammy AS builder
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
-ARG WAZUH_UI_REVISION=1
+ARG WAZUH_UI_REVISION
 
 # Update and install dependencies
 RUN apt-get update && apt install curl libcap2-bin xz-utils -y
@@ -103,6 +103,10 @@ RUN chown 1000:1000 /*.sh
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+
+# Create custom directory
+RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR
