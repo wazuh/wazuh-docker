@@ -8,7 +8,7 @@ ARG WAZUH_TAG_REVISION
 ARG TEMPLATE_VERSION=v4.8.0
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
+ARG WAZUH_FILEBEAT_MODULE
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
@@ -24,8 +24,6 @@ RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_
     dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
     curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
 
-RUN curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss && chmod +rx /usr/local/bin/goss
-
 ARG S6_VERSION="v2.2.0.3"
 RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \
@@ -40,7 +38,7 @@ COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$FILEBEAT_TEMPLATE_BRANCH/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 # Prepare permanent data
