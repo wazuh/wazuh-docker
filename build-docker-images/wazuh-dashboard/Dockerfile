@@ -78,7 +78,9 @@ ENV PATTERN="" \
     WAZUH_MONITORING_ENABLED="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
-    WAZUH_MONITORING_REPLICAS=""
+    WAZUH_MONITORING_REPLICAS="" \
+    ENROLLMENT_DNS="" \
+    ENROLLMENT_PASSWORD=""
 
 # Install dependencies
 RUN apt update && apt install -y libnss3-dev fonts-liberation libfontconfig1
