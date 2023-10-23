@@ -5,10 +5,10 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
-ARG TEMPLATE_VERSION=4.5
+ARG FILEBEAT_TEMPLATE_BRANCH
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.2.tar.gz"
+ARG WAZUH_FILEBEAT_MODULE
 
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
@@ -38,7 +38,7 @@ COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$TEMPLATE_VERSION/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
+ADD https://raw.githubusercontent.com/wazuh/wazuh/$FILEBEAT_TEMPLATE_BRANCH/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 # Prepare permanent data
