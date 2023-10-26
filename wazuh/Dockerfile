@@ -3,7 +3,7 @@ FROM waystonesystems/baseimage-centos:0.2.0
 
 # Arguments
 ARG FILEBEAT_VERSION=7.10.2
-ARG WAZUH_VERSION=4.5.3-0.debug
+ARG WAZUH_VERSION=4.5.4-0.debug
 
 # Environment variables
 ENV API_USER="foo" \
