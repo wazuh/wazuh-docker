@@ -52,7 +52,8 @@ services:
     ports:
       - "9200:9200"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - 'INDEXER_PASSWORD=SecretPassword'
     ulimits:
       memlock:
         soft: -1
