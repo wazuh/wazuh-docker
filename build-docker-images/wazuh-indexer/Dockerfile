@@ -12,6 +12,8 @@ COPY config/config.sh .
 
 COPY config/config.yml /
 
+COPY config/action_groups.yml /
+
 COPY config/internal_users.yml /
 
 COPY config/roles_mapping.yml /
