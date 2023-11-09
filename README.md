@@ -101,6 +101,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   └── Dockerfile
     │   ├── wazuh-indexer
     │   │   ├── config
+    │   │   │   ├── action_groups.yml
     │   │   │   ├── config.sh
     │   │   │   ├── config.yml
     │   │   │   ├── entrypoint.sh
