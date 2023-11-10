@@ -35,6 +35,8 @@ ENV USER="wazuh-indexer" \
     NAME="wazuh-indexer" \
     INSTALL_DIR="/usr/share/wazuh-indexer"
 
+RUN apt-get update -y && apt-get install curl -y
+
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
 
 RUN useradd --system \
@@ -52,7 +54,9 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
+COPY config/ism-check.sh /
+
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 700 /ism-check.sh
 
 RUN chown 1000:1000 /*.sh
 
