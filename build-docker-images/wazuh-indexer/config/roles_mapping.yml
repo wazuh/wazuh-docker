@@ -33,7 +33,7 @@ kibana_user:
   - "kibanauser"
   users:
   - "wazuh_user"
-  - "wazuh_admin"    
+  - "wazuh_admin"
   description: "Maps kibanauser to kibana_user"
 
 readall:
@@ -69,3 +69,10 @@ wazuh_ui_user:
   users:
   - "wazuh_user"
   and_backend_roles: []
+
+# ISM API permissions role mapping
+manage_ism:
+  reserved: true
+  hidden: false
+  users:
+  - "kibanaserver"
