@@ -49,6 +49,18 @@ RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
 
+#Make mount directories for keep permissions
+
+RUN mkdir -p /var/ossec/var/multigroups && \
+    chown root:wazuh /var/ossec/var/multigroups && \
+    chmod 770 /var/ossec/var/multigroups && \
+    mkdir -p /var/ossec/agentless && \
+    chown root:wazuh /var/ossec/agentless && \
+    chmod 770 /var/ossec/agentless && \
+    mkdir -p /var/ossec/active-response/bin && \
+    chown root:wazuh /var/ossec/active-response/bin && \
+    chmod 770 /var/ossec/active-response/bin
+
 # Services ports
 EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
 
