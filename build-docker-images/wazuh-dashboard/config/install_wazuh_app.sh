@@ -1,5 +1,8 @@
 ## variables
 WAZUH_APP=https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+WAZUH_APP=https://packages.wazuh.com/4.x/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+WAZUH_CHECK_UPDATES=https://packages.wazuh.com/4.x/ui/dashboard/wazuhCheckUpdates-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+WAZUH_CORE=https://packages-dev.wazuh.com/staging/ui/dashboard/wazuhCore-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
 MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
 MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
@@ -23,3 +26,5 @@ fi
 
 # Install Wazuh App
 $INSTALL_DIR/bin/opensearch-dashboards-plugin install $WAZUH_APP --allow-root
+$INSTALL_DIR/bin/opensearch-dashboards-plugin install $WAZUH_CHECK_UPDATES --allow-root
+$INSTALL_DIR/bin/opensearch-dashboards-plugin install $WAZUH_CORE --allow-root
