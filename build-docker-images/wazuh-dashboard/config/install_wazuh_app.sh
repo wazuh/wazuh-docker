@@ -18,7 +18,7 @@ if [ "$MAJOR_BUILD" -gt "$MAJOR_CURRENT" ]; then
 elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
   if [ "$MID_BUILD" -gt "$MID_CURRENT" ]; then
     WAZUH_APP=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuh-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
-      WAZUH_CHECK_UPDATES=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuhCheckUpdates-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
+    WAZUH_CHECK_UPDATES=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuhCheckUpdates-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
     WAZUH_CORE=https://packages-dev.wazuh.com/pre-release/ui/dashboard/wazuhCore-${WAZUH_VERSION}-${WAZUH_UI_REVISION}.zip
   elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
     if [ "$MINOR_BUILD" -gt "$MINOR_CURRENT" ]; then
