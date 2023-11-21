@@ -15,7 +15,7 @@ elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
     REPOSITORY="packages-dev.wazuh.com/pre-release"
   elif [ "$MID_BUILD" -eq "$MID_CURRENT" ]; then
     if [ "$MINOR_BUILD" -gt "$MINOR_CURRENT" ]; then
-      REPOSITORY=""packages-dev.wazuh.com/pre-release"
+      REPOSITORY="packages-dev.wazuh.com/pre-release"
     fi
   fi
 fi
