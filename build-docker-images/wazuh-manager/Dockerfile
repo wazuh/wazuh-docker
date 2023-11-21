@@ -13,16 +13,15 @@ ARG WAZUH_FILEBEAT_MODULE
 RUN apt-get update && apt install curl apt-transport-https lsb-release gnupg -y
 
 COPY config/check_repository.sh /
-
 RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
 RUN apt-get update && \
     apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
 
-RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb &&\
-    dpkg -i ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-amd64.deb && \
-    curl -s https://packages.wazuh.com/4.x/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
+COPY config/filebeat_module.sh /
+RUN chmod 775 /filebeat_module.sh
+RUN source /filebeat_module.sh
 
 ARG S6_VERSION="v2.2.0.3"
 RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
