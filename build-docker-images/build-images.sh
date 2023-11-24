@@ -15,7 +15,7 @@ IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_IMAGE_VERSION="4.7.1"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-FILEBEAT_MODULE_VERSION="0.2"
+FILEBEAT_MODULE_VERSION="0.3"
 
 # -----------------------------------------------------------------------------
 
