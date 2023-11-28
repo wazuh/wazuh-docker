@@ -11,7 +11,7 @@ WUI_USER_FILE_PATH = "/var/ossec/api/configuration/wui-user.json"
 WAZUH_USER_FILE_PATH = "/var/ossec/api/configuration/wazuh-user.json"
 
 try:
-    from wazuh.rbac.orm import create_rbac_db
+    from wazuh.rbac.orm import check_database_integrity
     from wazuh.security import (
         create_user,
         get_users,
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     wui_password = read_wui_user_file()
     wazuh_password = read_wazuh_user_file()
-    create_rbac_db()
+    check_database_integrity()
     initial_users = db_users()
 
     # set a random password for all other users (not wazuh-wui)
