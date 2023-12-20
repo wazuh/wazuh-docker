@@ -115,7 +115,7 @@ function_entrypoint_scripts() {
 function_configure_vulnerability_detection() {
 if [ "$INDEXER_PASSWORD" != "" ]; then
   >&2 echo "Configuring password."
-  sed -i "s|<password>VDPass</password>|<password>'$INDEXER_PASSWORD'</password>|g" /var/ossec/etc/ossec.conf
+  sed -i "s|<password>VDPass</password>|<password>$INDEXER_PASSWORD</password>|g" /var/ossec/etc/ossec.conf
 fi
 }
 
