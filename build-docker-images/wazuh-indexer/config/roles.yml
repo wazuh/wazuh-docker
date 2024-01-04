@@ -142,7 +142,7 @@ wazuh_ui_user:
     allowed_actions:
     - "read"
   tenant_permissions: []
-  static: false        
+  static: false
 
 wazuh_ui_admin:
   reserved: true
@@ -160,4 +160,12 @@ wazuh_ui_admin:
     - "manage"
     - "index"
   tenant_permissions: []
-  static: false  
+  static: false
+
+# ISM API permissions role
+manage_ism:
+  reserved: true
+  hidden: false
+  cluster_permissions:
+  - "manage_ism"
+  static: false

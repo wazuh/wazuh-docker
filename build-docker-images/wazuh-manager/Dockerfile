@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 

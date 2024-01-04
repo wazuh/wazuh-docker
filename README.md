@@ -101,6 +101,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   └── Dockerfile
     │   ├── wazuh-indexer
     │   │   ├── config
+    │   │   │   ├── action_groups.yml
     │   │   │   ├── config.sh
     │   │   │   ├── config.yml
     │   │   │   ├── entrypoint.sh
@@ -195,6 +196,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.8.0        |         |        |
 | v4.7.2        |         |        |
 | v4.7.1        |         |        |
 | v4.7.0        |         |        |
