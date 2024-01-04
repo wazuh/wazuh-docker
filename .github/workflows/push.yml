@@ -124,28 +124,9 @@ jobs:
         exit 1
        fi
 
-    - name: Check Wazuh manager start
-      run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
-        if [[ $services -gt 9 ]]; then
-          echo "Wazuh Manager Services: ${services}"
-          echo "OK"
-        else
-          echo "Wazuh indexer nodes: ${nodes}"
-          curl -k -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
-          exit 1
-        fi
-      env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-
-    - name: Check errors in ossec.log
-      run: ./.github/single-node-log-check.sh
-
-    - name: Check filebeat output
-      run: ./.github/single-node-filebeat-check.sh
-
     - name: Check documents into wazuh-alerts index
       run: |
+       sleep 120
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
        if [[ $docs -gt 100 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
@@ -166,6 +147,27 @@ jobs:
         echo "${templates}"
         exit 1
        fi
+
+    - name: Check Wazuh manager start
+      run: |
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        if [[ $services -gt 9 ]]; then
+          echo "Wazuh Manager Services: ${services}"
+          echo "OK"
+        else
+          echo "Wazuh indexer nodes: ${nodes}"
+          curl -k -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          exit 1
+        fi
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log
+      run: ./.github/single-node-log-check.sh
+
+
+    - name: Check filebeat output
+      run: ./.github/single-node-filebeat-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -249,6 +251,7 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
+       sleep 120
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
        if [[ $docs -gt 100 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
