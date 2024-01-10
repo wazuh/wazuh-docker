@@ -53,8 +53,8 @@ tar -xf ${INDEXER_FILE}
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.7/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.7/
+PACKAGES_URL=https://packages.wazuh.com/4.8/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.8/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
@@ -120,6 +120,7 @@ cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/
 # Copy Wazuh's config files for the security plugin
 cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /action_groups.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
@@ -133,6 +134,14 @@ cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-
 # Delete xms and xmx parameters in jvm.options
 sed '/-Xms/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
 sed '/-Xmx/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
+sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' ${TARGET_DIR}${CONFIG_DIR}/jvm.options
+
 
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
 chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*
+
+find ${TARGET_DIR} -type d -exec chmod 750 {} \;
+find ${TARGET_DIR} -type f -perm 644 -exec chmod 640 {} \;
+find ${TARGET_DIR} -type f -perm 664 -exec chmod 660 {} \;
+find ${TARGET_DIR} -type f -perm 755 -exec chmod 750 {} \;
+find ${TARGET_DIR} -type f -perm 744 -exec chmod 740 {} \;

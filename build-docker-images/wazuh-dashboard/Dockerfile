@@ -1,10 +1,10 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal AS builder
+FROM ubuntu:jammy AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
-ARG WAZUH_UI_REVISION=1
+ARG WAZUH_UI_REVISION
 
 # Update and install dependencies
 RUN apt-get update && apt install curl libcap2-bin xz-utils -y
@@ -42,7 +42,7 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chown -R 101:101 $INSTALL_DIR/data/
 # Add entrypoint
 # Add wazuh_app_config
 ################################################################################
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \
@@ -66,6 +66,8 @@ ENV PATTERN="" \
     EXTENSIONS_CISCAT="" \
     EXTENSIONS_AWS="" \
     EXTENSIONS_GCP="" \
+    EXTENSIONS_GITHUB=""\
+    EXTENSIONS_OFFICE=""\
     EXTENSIONS_VIRUSTOTAL="" \
     EXTENSIONS_OSQUERY="" \
     EXTENSIONS_DOCKER="" \
@@ -77,9 +79,6 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
-
-# Install dependencies
-RUN apt update && apt install -y libnss3-dev fonts-liberation libfontconfig1
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
@@ -101,6 +100,10 @@ RUN chown 1000:1000 /*.sh
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+
+# Create custom directory
+RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR

@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal AS builder
+FROM ubuntu:jammy AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -11,6 +11,8 @@ COPY config/opensearch.yml /
 COPY config/config.sh .
 
 COPY config/config.yml /
+
+COPY config/action_groups.yml /
 
 COPY config/internal_users.yml /
 
@@ -26,12 +28,14 @@ RUN bash config.sh
 # Copy wazuh-indexer from stage 0
 # Add entrypoint
 ################################################################################
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 ENV USER="wazuh-indexer" \
     GROUP="wazuh-indexer" \
     NAME="wazuh-indexer" \
     INSTALL_DIR="/usr/share/wazuh-indexer"
+
+RUN apt-get update -y && apt-get install curl -y
 
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
 
@@ -50,7 +54,9 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
+COPY config/ism-check.sh /
+
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 700 /ism-check.sh
 
 RUN chown 1000:1000 /*.sh
 
