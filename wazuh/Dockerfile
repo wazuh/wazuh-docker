@@ -26,7 +26,7 @@ RUN set -x && \
     yum localinstall -y /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     rm -f /tmp/wazuh-manager-$WAZUH_VERSION.x86_64.rpm && \
     yum clean all && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm -rf /var/cache/yum /tmp/* /var/tmp/* && \
     rm -f /var/ossec/logs/alerts/*/*/* && \
     rm -f /var/ossec/logs/archives/*/*/* && \
     rm -f /var/ossec/logs/firewall/*/*/* && \
