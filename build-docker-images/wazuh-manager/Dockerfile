@@ -9,26 +9,31 @@ ARG FILEBEAT_TEMPLATE_BRANCH
 ARG FILEBEAT_CHANNEL=filebeat-oss
 ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_FILEBEAT_MODULE
+ARG S6_VERSION="v2.2.0.3"
 
-RUN apt-get update && apt install curl apt-transport-https lsb-release xz-utils gnupg -y
+RUN apt-get update && apt install curl apt-transport-https lsb-release xz-utils gnupg -y &&\
+    apt autoremove && apt clean
 
 COPY config/check_repository.sh /
+COPY config/filebeat_module.sh /
+COPY config/permanent_data.env config/permanent_data.sh /
+
 RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
 RUN apt-get update && \
-    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION}
-
-COPY config/filebeat_module.sh /
-RUN chmod 775 /filebeat_module.sh
-RUN source /filebeat_module.sh
-
-ARG S6_VERSION="v2.2.0.3"
-RUN curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
+    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION} && \
+    apt autoremove && apt clean && \
+    chmod 775 /filebeat_module.sh && \
+    source /filebeat_module.sh && \
+    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz
+    rm  /tmp/s6-overlay-amd64.tar.gz && \
+    chmod 755 /permanent_data.sh && \
+    sync && /permanent_data.sh && \
+    sync && rm /permanent_data.sh
 
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
@@ -42,11 +47,6 @@ RUN chmod go-w /etc/filebeat/wazuh-template.json
 
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
-
-COPY config/permanent_data.env config/permanent_data.sh /
-RUN chmod 755 /permanent_data.sh && \
-    sync && /permanent_data.sh && \
-    sync && rm /permanent_data.sh
 
 #Make mount directories for keep permissions
 
