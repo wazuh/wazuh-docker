@@ -4,7 +4,7 @@ FROM amazonlinux:2023.3.20240131.0 AS builder
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 
-RUN yum install curl-minimal openssl xz tar shadow-utils -y
+RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y
 
 COPY config/opensearch.yml /
 
