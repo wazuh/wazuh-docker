@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:jammy
+FROM amazonlinux:2023.3.20240131.0
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
@@ -11,8 +11,8 @@ ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_FILEBEAT_MODULE
 ARG S6_VERSION="v2.2.0.3"
 
-RUN apt-get update && apt install curl apt-transport-https lsb-release xz-utils gnupg -y &&\
-    apt autoremove && apt clean
+RUN yum install curl-minimal xz gnupg tar gzip -y &&\
+    yum clean all
 
 COPY config/check_repository.sh /
 COPY config/filebeat_module.sh /
@@ -21,9 +21,8 @@ COPY config/permanent_data.env config/permanent_data.sh /
 RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
-RUN apt-get update && \
-    apt-get install wazuh-manager=${WAZUH_VERSION}-${WAZUH_TAG_REVISION} && \
-    apt autoremove && apt clean && \
+RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
+    yum clean all && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
