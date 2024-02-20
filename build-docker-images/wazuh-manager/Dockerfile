@@ -11,7 +11,7 @@ ARG FILEBEAT_VERSION=7.10.2
 ARG WAZUH_FILEBEAT_MODULE
 ARG S6_VERSION="v2.2.0.3"
 
-RUN yum install curl-minimal xz gnupg tar gzip -y &&\
+RUN yum install curl-minimal xz gnupg tar gzip openssl findutils -y &&\
     yum clean all
 
 COPY config/check_repository.sh /
