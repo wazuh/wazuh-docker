@@ -49,7 +49,7 @@ SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certi
 SSL_KEY=""                                          # Path of Filebeat SSL Key
 
 S3_ACCESS_KEY_ID=""                                 # S3 access key to add to OpenSearch keystore
-S3_SECRET_ACCESS_KEY=""                             # S3 secret ket to add to OpenSearch keystore
+S3_SECRET_ACCESS_KEY=""                             # S3 secret key to add to OpenSearch keystore
 ```
 
 ### Dashboard
