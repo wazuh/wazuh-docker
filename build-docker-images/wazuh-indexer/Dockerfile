@@ -55,9 +55,7 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-COPY config/ism-check.sh /
-
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 700 /ism-check.sh
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
 RUN chown 1000:1000 /*.sh
 
