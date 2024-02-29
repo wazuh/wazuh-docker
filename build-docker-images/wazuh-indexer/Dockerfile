@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM amazonlinux:2023.3.20240131.0 AS builder
+FROM amazonlinux:2023.3.20240219.0 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -29,7 +29,7 @@ RUN bash config.sh
 # Add entrypoint
 
 ################################################################################
-FROM amazonlinux:2023.3.20240131.0
+FROM amazonlinux:2023.3.20240219.0
 
 ENV USER="wazuh-indexer" \
     GROUP="wazuh-indexer" \
