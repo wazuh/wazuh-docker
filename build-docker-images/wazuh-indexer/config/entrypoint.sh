@@ -90,6 +90,4 @@ fi
 #  touch "/var/lib/wazuh-indexer/.flag"
 #fi
 
-nohup /ism-check.sh &
-
 run_as_other_user_if_needed /usr/share/wazuh-indexer/bin/opensearch <<<"$KEYSTORE_PASSWORD"
