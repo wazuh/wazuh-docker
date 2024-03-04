@@ -47,15 +47,5 @@ echo "Changing certificate permissions"
 chmod -R 500 /certificates
 chmod -R 400 /certificates/*
 echo "Setting UID indexer and dashboard"
-chown 1000:1000 /certificates/*
-echo "Setting UID for wazuh manager and worker"
-cp /certificates/root-ca.pem /certificates/root-ca-manager.pem
-cp /certificates/root-ca.key /certificates/root-ca-manager.key
-chown 101:101 /certificates/root-ca-manager.pem
-chown 101:101 /certificates/root-ca-manager.key
+chown 999:999 /certificates/*
 
-for i in ${node_names[@]};
-do
-  chown 101:101 "/certificates/${i}.pem"
-  chown 101:101 "/certificates/${i}-key.pem"
-done
