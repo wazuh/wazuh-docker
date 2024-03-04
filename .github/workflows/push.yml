@@ -18,6 +18,7 @@ jobs:
 
     - name: Create backup Docker images
       run: |
+        pwd
         mkdir -p /home/runner/work/wazuh-docker/wazuh-docker/docker-images/
         docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
