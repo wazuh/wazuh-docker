@@ -24,11 +24,6 @@ run_as_other_user_if_needed() {
   fi
 }
 
-set_correct_permOwner() {
-  find / -group 1000 -exec chown :999 {} +;
-  find / -user 1000 -exec chown 999 {} +;
-}
-
 # Allow user specify custom CMD, maybe bin/opensearch itself
 # for example to directly specify `-E` style parameters for opensearch on k8s
 # or simply to run /bin/bash to check the image
@@ -94,7 +89,5 @@ fi
 #  nohup /securityadmin.sh &
 #  touch "/var/lib/wazuh-indexer/.flag"
 #fi
-
-set_correct_permOwner
 
 run_as_other_user_if_needed /usr/share/wazuh-indexer/bin/opensearch <<<"$KEYSTORE_PASSWORD"
