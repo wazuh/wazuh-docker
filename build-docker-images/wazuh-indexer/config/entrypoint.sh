@@ -34,7 +34,7 @@ if [[ "$1" != "opensearchwrapper" ]]; then
     # `bin/opensearch -E x.y=z` would not work.
     set -- "opensearch" "${@:2}"
     # Use chroot to switch to UID 1000 / GID 0
-    exec chroot --userspec=999:0 / "$@"
+    exec chroot --userspec=1000:0 / "$@"
   else
     # User probably wants to run something else, like /bin/bash, with another uid forced (Openshift?)
     exec "$@"
@@ -79,7 +79,7 @@ fi
 if [[ "$(id -u)" == "0" ]]; then
   # If requested and running as root, mutate the ownership of bind-mounts
   if [[ -n "$TAKE_FILE_OWNERSHIP" ]]; then
-    chown -R 999:0 /usr/share/wazuh-indexer/{data,logs}
+    chown -R 1000:0 /usr/share/wazuh-indexer/{data,logs}
   fi
 fi
 

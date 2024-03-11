@@ -84,9 +84,9 @@ ENV PATTERN="" \
 RUN yum install shadow-utils -y
 
 # Create wazuh-dashboard user and group
-RUN getent group $GROUP || groupadd -r -g 999 $GROUP
+RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
 RUN useradd --system \
-            --uid 999 \
+            --uid 1000 \
             --no-create-home \
             --home-dir $INSTALL_DIR \
             --gid $GROUP \
@@ -99,14 +99,14 @@ COPY config/entrypoint.sh /
 COPY config/wazuh_app_config.sh /
 RUN chmod 700 /entrypoint.sh
 RUN chmod 700 /wazuh_app_config.sh
-RUN chown 999:999 /*.sh
+RUN chown 1000:1000 /*.sh
 
 # Copy Install dir from builder to current image
-COPY --from=builder --chown=999:999 $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
 
 # Create custom directory
 RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
-RUN chown 999:999 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR
