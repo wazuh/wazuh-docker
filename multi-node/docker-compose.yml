@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:4.8.0
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.master
     restart: always
     ulimits:
@@ -45,7 +45,7 @@ services:
       - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf:z
 
   wazuh.worker:
-    image: wazuh/wazuh-manager:4.8.0
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
     restart: always
     ulimits:
@@ -81,7 +81,7 @@ services:
       - ./config/wazuh_cluster/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf:z
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:4.8.0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh1.indexer
     restart: always
     ports:
@@ -107,7 +107,7 @@ services:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:4.8.0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh2.indexer
     restart: always
     environment:
@@ -129,7 +129,7 @@ services:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:4.8.0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh3.indexer
     restart: always
     environment:
@@ -151,7 +151,7 @@ services:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.8.0
+    image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:
@@ -169,6 +169,9 @@ services:
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:z
       - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:z
       - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml:z
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+
     depends_on:
       - wazuh1.indexer
     links:
@@ -218,3 +221,5 @@ volumes:
   wazuh-indexer-data-1:
   wazuh-indexer-data-2:
   wazuh-indexer-data-3:
+  wazuh-dashboard-config:
+  wazuh-dashboard-custom:

@@ -112,12 +112,22 @@ function_entrypoint_scripts() {
   fi
 }
 
+function_configure_vulnerability_detection() {
+if [ "$INDEXER_PASSWORD" != "" ]; then
+  >&2 echo "Configuring password."
+  /var/ossec/bin/wazuh-keystore -f indexer -k username -v $INDEXER_USERNAME
+  /var/ossec/bin/wazuh-keystore -f indexer -k password -v $INDEXER_PASSWORD
+fi
+}
 
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
 
 # create API custom user
 function_create_custom_user
+
+# configure Vulnerabilty detection
+function_configure_vulnerability_detection
 
 # run entrypoint scripts
 function_entrypoint_scripts
