@@ -1,10 +1,45 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v5.0.0
+### Added
+
+- Update Wazuh to version [5.0.0](https://github.com/wazuh/wazuh/blob/v5.0.0/CHANGELOG.md#v500)
+
+## Wazuh Docker v4.9.0
+### Added
+
+- Update Wazuh to version [4.9.0](https://github.com/wazuh/wazuh/blob/v4.9.0/CHANGELOG.md#v490)
+
+## Wazuh Docker v4.8.2
+### Added
+
+- Update Wazuh to version [4.8.2](https://github.com/wazuh/wazuh/blob/v4.8.2/CHANGELOG.md#v482)
+
+## Wazuh Docker v4.8.1
+### Added
+
+- Update Wazuh to version [4.8.1](https://github.com/wazuh/wazuh/blob/v4.8.1/CHANGELOG.md#v481)
+
 ## Wazuh Docker v4.8.0
 ### Added
 
 - Update Wazuh to version [4.8.0](https://github.com/wazuh/wazuh/blob/v4.8.0/CHANGELOG.md#v480)
+
+## Wazuh Docker v4.7.3
+### Added
+
+- Update Wazuh to version [4.7.3](https://github.com/wazuh/wazuh/blob/v4.7.3/CHANGELOG.md#v473)
+
+## Wazuh Docker v4.7.2
+### Added
+
+- Update Wazuh to version [4.7.2](https://github.com/wazuh/wazuh/blob/v4.7.2/CHANGELOG.md#v472)
+
+## Wazuh Docker v4.7.1
+### Added
+
+- Update Wazuh to version [4.7.1](https://github.com/wazuh/wazuh/blob/v4.7.1/CHANGELOG.md#v471)
 
 ## Wazuh Docker v4.7.0
 ### Added
@@ -15,6 +50,16 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Update Wazuh to version [4.6.0](https://github.com/wazuh/wazuh/blob/v4.6.0/CHANGELOG.md#v460)
+
+## Wazuh Docker v4.5.4
+### Added
+
+- Update Wazuh to version [4.5.4](https://github.com/wazuh/wazuh/blob/v4.5.4/CHANGELOG.md#v454)
+
+## Wazuh Docker v4.5.3
+### Added
+
+- Update Wazuh to version [4.5.3](https://github.com/wazuh/wazuh/blob/v4.5.3/CHANGELOG.md#v453)
 
 ## Wazuh Docker v4.5.2
 ### Added

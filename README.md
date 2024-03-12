@@ -8,19 +8,19 @@
 In this repository you will find the containers to run:
 
 * Wazuh manager: it runs the Wazuh manager, Wazuh API and Filebeat OSS
-* Wazuh dashboard: provides a web user interface to browse through alerts data and allows you to visualize agents configuration and status.
+* Wazuh dashboard: provides a web user interface to browse through alert data and allows you to visualize the agents configuration and status.
 * Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 
 The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets.
 The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets.
 The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard.
-The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexer, and one Wazuh dashboard.
+The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexers, and one Wazuh dashboard.
 
 ## Documentation
 
 * [Wazuh full documentation](http://documentation.wazuh.com)
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
-* [Docker hub](https://hub.docker.com/u/wazuh)
+* [Docker Hub](https://hub.docker.com/u/wazuh)
 
 
 ### Setup SSL certificate
@@ -38,7 +38,7 @@ Default values are included when available.
 ```
 API_USERNAME="wazuh-wui"                            # Wazuh API username
 API_PASSWORD="MyS3cr37P450r.*-"                     # Wazuh API password - Must comply with requirements
-                                                    # (8+ length, uppercase, lowercase, specials chars)
+                                                    # (8+ length, uppercase, lowercase, special chars)
 
 INDEXER_URL=https://wazuh.indexer:9200              # Wazuh indexer URL
 INDEXER_USERNAME=admin                              # Wazuh indexer Username
@@ -53,8 +53,8 @@ SSL_KEY=""                                          # Path of Filebeat SSL Key
 ```
 PATTERN="wazuh-alerts-*"        # Default index pattern to use
 
-CHECKS_PATTERN=true             # Defines which checks must to be consider by the healthcheck
-CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must to be true or false
+CHECKS_PATTERN=true             # Defines which checks must be considered by the healthcheck
+CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must be true or false
 CHECKS_API=true
 CHECKS_SETUP=true
 
@@ -101,6 +101,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   └── Dockerfile
     │   ├── wazuh-indexer
     │   │   ├── config
+    │   │   │   ├── action_groups.yml
     │   │   │   ├── config.sh
     │   │   │   ├── config.yml
     │   │   │   ├── entrypoint.sh
@@ -189,15 +190,24 @@ WAZUH_MONITORING_REPLICAS=0         ##
 ## Branches
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `stable` branch on correspond to the last Wazuh stable version.
+* `stable` branch corresponds to the last Wazuh stable version.
 
 ## Compatibility Matrix
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v5.0.0        |         |        |
+| v4.9.0        |         |        |
+| v4.8.2        |         |        |
+| v4.8.1        |         |        |
 | v4.8.0        |         |        |
+| v4.7.3        |         |        |
+| v4.7.2        |         |        |
+| v4.7.1        |         |        |
 | v4.7.0        |         |        |
 | v4.6.0        |         |        |
+| v4.5.4        |         |        |
+| v4.5.3        |         |        |
 | v4.5.2        |         |        |
 | v4.5.1        |         |        |
 | v4.5.0        |         |        |
@@ -246,7 +256,7 @@ These Docker containers are based on:
 *  "deviantony" dockerfiles which can be found at [https://github.com/deviantony/docker-elk](https://github.com/deviantony/docker-elk)
 *  "xetus-oss" dockerfiles, which can be found at [https://github.com/xetus-oss/docker-ossec-server](https://github.com/xetus-oss/docker-ossec-server)
 
-We thank you them and everyone else who has contributed to this project.
+We thank them and everyone else who has contributed to this project.
 
 ## License and copyright
 

@@ -20,6 +20,6 @@ elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
   fi
 fi
 
-
-curl -o wazuh-dashboard-base.tar.xz https://${REPOSITORY}/stack/dashboard/wazuh-dashboard-base-${WAZUH_VERSION}-${WAZUH_TAG_REVISION}-linux-x64.tar.xz
-tar -xf wazuh-dashboard-base.tar.xz --directory  $INSTALL_DIR --strip-components=1
+curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
+yum install -y ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
+curl -s https://${REPOSITORY}/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
