@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM amazonlinux:2023.3.20240219.0 AS builder
+FROM amazonlinux:2023.3.20240304.0 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -42,7 +42,7 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazu
 # Add entrypoint
 # Add wazuh_app_config
 ################################################################################
-FROM amazonlinux:2023.3.20240219.0
+FROM amazonlinux:2023.3.20240304.0
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \
