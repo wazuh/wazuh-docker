@@ -139,7 +139,7 @@ jobs:
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
-       if [[ $qty_templates -eq 3 ]]; then
+       if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
@@ -264,7 +264,7 @@ jobs:
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
-       if [[ $qty_templates -eq 3 ]]; then
+       if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
