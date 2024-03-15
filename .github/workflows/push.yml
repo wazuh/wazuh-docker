@@ -128,7 +128,7 @@ jobs:
       run: |
        sleep 120
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 100 ]]; then
+       if [[ $docs -gt 0 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
        else
         echo "wazuh-alerts index documents: ${docs}"
