@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:jammy AS builder
+FROM amazonlinux:2023.3.20240219.0 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -7,7 +7,7 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG WAZUH_UI_REVISION
 
 # Update and install dependencies
-RUN apt-get update && apt install curl libcap2-bin xz-utils -y
+RUN yum install curl-minimal libcap xz tar openssl -y
 
 # Create Install dir
 RUN mkdir -p $INSTALL_DIR
@@ -42,7 +42,7 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chown -R 101:101 $INSTALL_DIR/data/
 # Add entrypoint
 # Add wazuh_app_config
 ################################################################################
-FROM ubuntu:jammy
+FROM amazonlinux:2023.3.20240219.0
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \
@@ -79,6 +79,9 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
+
+# Update and install dependencies
+RUN yum install shadow-utils -y
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP

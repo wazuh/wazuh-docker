@@ -23,7 +23,7 @@ rm -rf ${INSTALLATION_DIR}/
 
 ## variables
 REPOSITORY="packages.wazuh.com/4.x"
-WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
 MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
 MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
 MINOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f3)

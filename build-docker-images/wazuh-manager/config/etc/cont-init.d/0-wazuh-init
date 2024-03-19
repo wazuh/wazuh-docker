@@ -184,8 +184,9 @@ set_rids_owner() {
 ##############################################################################
 
 set_correct_permOwner() {
-  find / -group 997 -exec chown :101 {} +;
-  find / -user 999 -exec chown 101 {} +;
+  find / -group 997 -exec chown :999 {} +;
+  find / -group 101 -exec chown :999 {} +;
+  find / -user 101 -exec chown 999 {} +;
 }
 
 ##############################################################################

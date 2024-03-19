@@ -1,10 +1,10 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:jammy AS builder
+FROM amazonlinux:2023.3.20240219.0 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 
-RUN apt-get update -y && apt-get install curl openssl xz-utils -y
+RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y
 
 COPY config/opensearch.yml /
 
@@ -27,8 +27,9 @@ RUN bash config.sh
 #
 # Copy wazuh-indexer from stage 0
 # Add entrypoint
+
 ################################################################################
-FROM ubuntu:jammy
+FROM amazonlinux:2023.3.20240219.0
 
 ARG S3_REPOSITORY
 
@@ -38,7 +39,7 @@ ENV USER="wazuh-indexer" \
     INSTALL_DIR="/usr/share/wazuh-indexer" \
     OPENSEARCH_PATH_CONF="/usr/share/wazuh-indexer"
 
-RUN apt-get update -y && apt-get install curl -y
+RUN yum install curl-minimal shadow-utils findutils hostname -y
 
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
 
@@ -57,9 +58,7 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-COPY config/ism-check.sh /
-
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && chmod 700 /ism-check.sh
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
 
 RUN chown 1000:1000 /*.sh
 

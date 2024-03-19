@@ -89,7 +89,6 @@ services:
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
       - "bootstrap.memory_lock=true"
-      - 'INDEXER_PASSWORD=SecretPassword'
     ulimits:
       memlock:
         soft: -1
