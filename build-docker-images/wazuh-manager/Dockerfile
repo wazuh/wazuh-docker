@@ -58,7 +58,9 @@ RUN mkdir -p /var/ossec/var/multigroups && \
     chmod 770 /var/ossec/active-response/bin && \
     chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
-    sync && rm /permanent_data.sh
+    sync && rm /permanent_data.sh && \
+    touch /var/log/sysmon && \
+    touch /var/log/dpkg.log
 
 # Services ports
 EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
