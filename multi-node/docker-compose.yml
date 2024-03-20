@@ -39,10 +39,10 @@ services:
       - master-wazuh-wodles:/var/ossec/wodles
       - master-filebeat-etc:/etc/filebeat
       - master-filebeat-var:/var/lib/filebeat
-      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh.master.pem:/etc/ssl/filebeat.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh.master-key.pem:/etc/ssl/filebeat.key
-      - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
+      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh.master.pem:/etc/ssl/filebeat.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh.master-key.pem:/etc/ssl/filebeat.key:z
+      - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf:z
 
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
@@ -75,10 +75,10 @@ services:
       - worker-wazuh-wodles:/var/ossec/wodles
       - worker-filebeat-etc:/etc/filebeat
       - worker-filebeat-var:/var/lib/filebeat
-      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh.worker.pem:/etc/ssl/filebeat.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh.worker-key.pem:/etc/ssl/filebeat.key
-      - ./config/wazuh_cluster/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf
+      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh.worker.pem:/etc/ssl/filebeat.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh.worker-key.pem:/etc/ssl/filebeat.key:z
+      - ./config/wazuh_cluster/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf:z
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -98,13 +98,13 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-1:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh1.indexer.key
-      - ./config/wazuh_indexer_ssl_certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh1.indexer.pem
-      - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/certs/admin.pem
-      - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/certs/admin-key.pem
-      - ./config/wazuh_indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
-      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh1.indexer.key:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh1.indexer.pem:z
+      - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/certs/admin.pem:z
+      - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/certs/admin-key.pem:z
+      - ./config/wazuh_indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml:z
+      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh2.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -122,11 +122,11 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-2:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.key
-      - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.pem
-      - ./config/wazuh_indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
-      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.key:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.pem:z
+      - ./config/wazuh_indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml:z
+      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh3.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -144,11 +144,11 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data-3:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.key
-      - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.pem
-      - ./config/wazuh_indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
-      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.key:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.pem:z
+      - ./config/wazuh_indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml:z
+      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml:z
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:5.0.0
@@ -164,11 +164,11 @@ services:
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
     volumes:
-      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
-      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
-      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
-      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
-      - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
+      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem:z
+      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem:z
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:z
+      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml:z
+      - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml:z
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
