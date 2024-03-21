@@ -162,10 +162,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
-      run: ./.github/single-node-log-check.sh
-
-
     - name: Check filebeat output
       run: ./.github/single-node-filebeat-check.sh
 
@@ -179,8 +175,8 @@ jobs:
         exit 1
        fi
 
-    - name: Stop single node stack
-      run: docker-compose -f single-node/docker-compose.yml down
+    - name: Check errors in ossec.log
+      run: ./.github/single-node-log-check.sh
 
   check-multi-node:
     runs-on: ubuntu-latest
@@ -294,10 +290,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
-      run: ./.github/multi-node-log-check.sh
-
-
     - name: Check filebeat output
       run: ./.github/multi-node-filebeat-check.sh
 
@@ -310,3 +302,6 @@ jobs:
         echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
+
+    - name: Check errors in ossec.log
+      run: ./.github/multi-node-log-check.sh
