@@ -221,12 +221,14 @@ jobs:
        until [[ `curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`  -eq 1 ]]
        do
          echo 'Waiting for Wazuh indexer start'
+         free -m
          sleep 10
        done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep -E "green" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
+        free -m
        else
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
         exit 1
@@ -244,7 +246,6 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       sleep 120
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
        if [[ $docs -gt 0 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
