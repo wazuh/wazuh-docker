@@ -246,13 +246,12 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 0 ]]; then
-        echo "wazuh-alerts index documents: ${docs}"
-       else
-        echo "wazuh-alerts index documents: ${docs}"
-        exit 1
-       fi
+       until [[ `curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count`  -gt 0 ]]
+       do
+         echo 'Waiting for Wazuh indexer events'
+         free -m
+         sleep 10
+       done
 
     - name: Check Wazuh templates
       run: |
