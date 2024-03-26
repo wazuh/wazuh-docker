@@ -226,7 +226,7 @@ jobs:
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
        else
-        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k
         exit 1
        fi
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
