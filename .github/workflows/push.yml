@@ -217,6 +217,7 @@ jobs:
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
