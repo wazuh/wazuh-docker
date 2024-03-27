@@ -179,7 +179,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-docker-images
     steps:
 
