@@ -179,7 +179,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: build-docker-images
     steps:
 
@@ -218,7 +218,13 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 180
+       until [[ `curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`  -eq 1 ]]
+       do
+         echo 'Waiting for Wazuh indexer start'
+         free -m
+         df -h
+         sleep 10
+       done
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
@@ -247,7 +253,13 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       sleep 120
+       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"``)  -gt 0 ]]
+       do
+         echo 'Waiting for Wazuh indexer events'
+         free -m
+         df -h
+         sleep 10
+       done
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
        if [[ $docs -gt 1 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
