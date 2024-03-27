@@ -189,6 +189,14 @@ jobs:
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
+    - name: free disk space
+      run: |
+        sudo swapoff -a
+        sudo rm -f /swapfile
+        sudo apt clean
+        docker rmi $(docker image ls -aq)
+        df -h
+
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
       with:
