@@ -260,7 +260,7 @@ jobs:
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
-       if [[ $qty_templates -eq 3 ]]; then
+       if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
@@ -290,10 +290,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
-      run: ./.github/multi-node-log-check.sh
-
-
     - name: Check filebeat output
       run: ./.github/multi-node-filebeat-check.sh
 
@@ -306,3 +302,6 @@ jobs:
         echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
+
+    - name: Check errors in ossec.log
+      run: ./.github/multi-node-log-check.sh
