@@ -218,17 +218,18 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       until [[ `curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`  -eq 1 ]]
-       do
-         echo 'Waiting for Wazuh indexer start'
-         free -m
-         sleep 10
-       done
+       sleep 120
+       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
+       if [[ $status_green -eq 1 ]]; then
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
+       else
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
+        exit 1
+       fi
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep -E "green" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
-        free -m
        else
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
         exit 1
@@ -246,18 +247,20 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"``)  -gt 0 ]]
-       do
-         echo 'Waiting for Wazuh indexer events'
-         free -m
-         sleep 10
-       done
+       sleep 120
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+       if [[ $docs -gt 100 ]]; then
+        echo "wazuh-alerts index documents: ${docs}"
+       else
+        echo "wazuh-alerts index documents: ${docs}"
+        exit 1
+       fi
 
     - name: Check Wazuh templates
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
-       if [[ $qty_templates -gt 3 ]]; then
+       if [[ $qty_templates -eq 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
@@ -287,6 +290,10 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
+    - name: Check errors in ossec.log
+      run: ./.github/multi-node-log-check.sh
+
+
     - name: Check filebeat output
       run: ./.github/multi-node-filebeat-check.sh
 
@@ -299,6 +306,3 @@ jobs:
         echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
-
-    - name: Check errors in ossec.log
-      run: ./.github/multi-node-log-check.sh
