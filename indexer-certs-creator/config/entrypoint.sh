@@ -8,8 +8,8 @@
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.8/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.8/
+PACKAGES_URL=https://packages.wazuh.com/4.9/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.9/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
@@ -38,7 +38,7 @@ chmod 700 /$CERT_TOOL
 
 ## Execute cert tool and parsin cert.yml to set UID permissions
 source /$CERT_TOOL -A
-nodes_server=$( cert_parseYaml /config.yml | grep nodes_server__name | sed 's/nodes_server__name=//' )
+nodes_server=$( cert_parseYaml /config.yml | grep -E "nodes[_]+server[_]+[0-9]+=" | sed -e 's/nodes__server__[0-9]=//' | sed 's/"//g' )
 node_names=($nodes_server)
 
 echo "Moving created certificates to the destination directory"
@@ -51,11 +51,12 @@ chown 1000:1000 /certificates/*
 echo "Setting UID for wazuh manager and worker"
 cp /certificates/root-ca.pem /certificates/root-ca-manager.pem
 cp /certificates/root-ca.key /certificates/root-ca-manager.key
-chown 101:101 /certificates/root-ca-manager.pem
-chown 101:101 /certificates/root-ca-manager.key
+chown 999:999 /certificates/root-ca-manager.pem
+chown 999:999 /certificates/root-ca-manager.key
 
 for i in ${node_names[@]};
 do
-  chown 101:101 "/certificates/${i}.pem"
-  chown 101:101 "/certificates/${i}-key.pem"
+  chown 999:999 "/certificates/${i}.pem"
+  chown 999:999 "/certificates/${i}-key.pem"
 done
+
