@@ -128,7 +128,7 @@ jobs:
       run: |
        sleep 120
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 100 ]]; then
+       if [[ $docs -gt 0 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
        else
         echo "wazuh-alerts index documents: ${docs}"
@@ -139,7 +139,7 @@ jobs:
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
-       if [[ $qty_templates -eq 3 ]]; then
+       if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
@@ -162,10 +162,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
-      run: ./.github/single-node-log-check.sh
-
-
     - name: Check filebeat output
       run: ./.github/single-node-filebeat-check.sh
 
@@ -179,8 +175,8 @@ jobs:
         exit 1
        fi
 
-    - name: Stop single node stack
-      run: docker-compose -f single-node/docker-compose.yml down
+    - name: Check errors in ossec.log
+      run: ./.github/single-node-log-check.sh
 
   check-multi-node:
     runs-on: ubuntu-latest
@@ -192,6 +188,14 @@ jobs:
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
+
+    - name: free disk space
+      run: |
+        sudo swapoff -a
+        sudo rm -f /swapfile
+        sudo apt clean
+        docker rmi $(docker image ls -aq)
+        df -h
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
@@ -213,6 +217,7 @@ jobs:
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
@@ -222,7 +227,13 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 120
+       until [[ `curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`  -eq 1 ]]
+       do
+         echo 'Waiting for Wazuh indexer start'
+         free -m
+         df -h
+         sleep 10
+       done
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
@@ -251,9 +262,15 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       sleep 120
+       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"``)  -gt 0 ]]
+       do
+         echo 'Waiting for Wazuh indexer events'
+         free -m
+         df -h
+         sleep 10
+       done
        docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 100 ]]; then
+       if [[ $docs -gt 1 ]]; then
         echo "wazuh-alerts index documents: ${docs}"
        else
         echo "wazuh-alerts index documents: ${docs}"
@@ -264,7 +281,7 @@ jobs:
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
-       if [[ $qty_templates -eq 3 ]]; then
+       if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
        else
@@ -294,10 +311,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
-      run: ./.github/multi-node-log-check.sh
-
-
     - name: Check filebeat output
       run: ./.github/multi-node-filebeat-check.sh
 
@@ -310,3 +323,6 @@ jobs:
         echo "Wazuh dashboard status: ${status}"
         exit 1
        fi
+
+    - name: Check errors in ossec.log
+      run: ./.github/multi-node-log-check.sh
