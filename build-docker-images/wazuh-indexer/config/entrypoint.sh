@@ -84,10 +84,4 @@ if [[ "$(id -u)" == "0" ]]; then
 fi
 
 
-#if [[ "$DISCOVERY" == "single-node" ]] && [[ ! -f "/var/lib/wazuh-indexer/.flag" ]]; then
-  # run securityadmin.sh for single node with CACERT, CERT and KEY parameter
-#  nohup /securityadmin.sh &
-#  touch "/var/lib/wazuh-indexer/.flag"
-#fi
-
 run_as_other_user_if_needed /usr/share/wazuh-indexer/bin/opensearch <<<"$KEYSTORE_PASSWORD"
