@@ -26,9 +26,9 @@ RUN chmod 775 /install_wazuh_app.sh
 RUN bash /install_wazuh_app.sh
 
 # Copy and set permissions to config files
-COPY config/opensearch_dashboards.yml $INSTALL_DIR/config/
+# RUN cp  $INSTALL_DIR/etc/opensearch_dashboards.yml $INSTALL_DIR/config/opensearch_dashboards.yml
 COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
-RUN chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
+# RUN chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -108,6 +108,15 @@ COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
 RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
+# Set $JAVA_HOME
+RUN echo "export JAVA_HOME=$INSTALL_DIR/jdk" >> /etc/profile.d/java_home.sh && \
+    echo "export PATH=\$PATH:\$JAVA_HOME/bin" >> /etc/profile.d/java_home.sh
+ENV JAVA_HOME=$INSTALL_DIR/jdk
+ENV PATH=$PATH:$JAVA_HOME/bin:$INSTALL_DIR/bin
+
+# Add k-NN lib directory to library loading path variable
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$INSTALL_DIR/plugins/opensearch-knn/lib"
+
 # Set workdir and user
 WORKDIR $INSTALL_DIR
 USER wazuh-dashboard
@@ -116,3 +125,7 @@ USER wazuh-dashboard
 EXPOSE 443
 
 ENTRYPOINT [ "/entrypoint.sh" ]
+
+CMD ["opensearch-dashboards"]
+
+

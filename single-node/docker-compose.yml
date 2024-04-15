@@ -84,6 +84,18 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
+      - OPENSEARCH_SSL_VERIFICATIONMODE=certificate
+      - OPENSEARCH_REQUESTHEADERSWHITELIST=["securitytenant","Authorization"]
+      - OPENSEARCH_SECURITY_MULTITENANCY_ENABLED=false
+      - SERVER_SSL_ENABLED=true
+      - OPENSEARCH_SECURITY_READONLY_MODE_ROLES=["kibana_read_only"]
+      - SERVER_SSL_KEY="/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem"
+      - SERVER_SSL_CERTIFICATE="/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem"
+      - SERVER_SSL_CERTIFICATEAUTHORITIES=["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
+      - UISETTINGS_OVERRIDES_DEFAULTROUTE=/app/wz-home
     volumes:
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem

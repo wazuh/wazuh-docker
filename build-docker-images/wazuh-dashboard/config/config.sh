@@ -34,8 +34,8 @@ chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 mkdir -p ${CONFIG_DIR}/certs
 
 # Copy Wazuh dashboard certs to install config dir
-cp /wazuh-certificates/demo.dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
-cp /wazuh-certificates/demo.dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
+cp /wazuh-certificates/dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
+cp /wazuh-certificates/dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
 cp /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
 
 chmod -R 500 ${CONFIG_DIR}/certs

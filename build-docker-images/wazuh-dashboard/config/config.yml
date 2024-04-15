@@ -1,5 +1,5 @@
 nodes:
   # Wazuh dashboard server nodes
   dashboard:
-    - name: demo.dashboard
-      ip: demo.dashboard
+    - name: dashboard
+      ip: wazuh.dashboard

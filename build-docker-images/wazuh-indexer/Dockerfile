@@ -6,19 +6,9 @@ ARG WAZUH_TAG_REVISION
 
 RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y
 
-COPY config/opensearch.yml /
-
 COPY config/config.sh .
 
 COPY config/config.yml /
-
-COPY config/action_groups.yml /
-
-COPY config/internal_users.yml /
-
-COPY config/roles_mapping.yml /
-
-COPY config/roles.yml /
 
 RUN bash config.sh
 
@@ -35,6 +25,16 @@ ENV USER="wazuh-indexer" \
     GROUP="wazuh-indexer" \
     NAME="wazuh-indexer" \
     INSTALL_DIR="/usr/share/wazuh-indexer"
+
+
+# Set $JAVA_HOME
+RUN echo "export JAVA_HOME=$INSTALL_DIR/jdk" >> /etc/profile.d/java_home.sh && \
+    echo "export PATH=\$PATH:\$JAVA_HOME/bin" >> /etc/profile.d/java_home.sh
+ENV JAVA_HOME="$INSTALL_DIR/jdk"
+ENV PATH=$PATH:$JAVA_HOME/bin:$INSTALL_DIR/bin
+
+# Add k-NN lib directory to library loading path variable
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$INSTALL_DIR/plugins/opensearch-knn/lib"
 
 RUN yum install curl-minimal shadow-utils findutils hostname -y
 
