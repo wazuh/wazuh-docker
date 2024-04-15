@@ -2,6 +2,12 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
 INSTALL_DIR=/usr/share/wazuh-dashboard
+WAZUH_CONFIG_MOUNT=/wazuh-config-mount
+
+exec_cmd_stdout() {
+  eval $1 2>&1 || error_and_exit "$1"
+}
+
 DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
 DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
 
@@ -186,15 +192,28 @@ function runOpensearchDashboards {
             value=${!env_var}
             if [[ -n $value ]]; then
                 longopt="--${opensearch_dashboards_var}=${value}"
+                longoptfile="--${opensearch_dashboards_var}: ${value}"
                 longopts+=("${longopt}")
-                echo $longopt | sed 's/--//' >> $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
+                echo $longoptfile | sed 's/--//' >> $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
                 cat $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
             fi
         done
     fi
 
-    /usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml "${longopts[@]}"
+    /usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
 }
+
+mount_files() {
+  if [ -e $WAZUH_CONFIG_MOUNT/* ]
+  then
+    print "Identified Wazuh cdashboard onfiguration files to mount..."
+    exec_cmd_stdout "cp --verbose -r $WAZUH_CONFIG_MOUNT/* $INSTALL_DIR"
+  else
+    print "No Wazuh dashboard configuration files to mount..."
+  fi
+}
+
+mount_files
 
 runOpensearchDashboards
 

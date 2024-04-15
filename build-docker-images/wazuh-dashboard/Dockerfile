@@ -34,6 +34,7 @@ COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
+RUN mkdir /wazuh-config-mount && chmod -R 775 /wazuh-config-mount
 
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
