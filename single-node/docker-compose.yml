@@ -67,7 +67,7 @@ services:
       - ./config/wazuh_indexer_ssl_certs/wazuh.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh.indexer.pem
       - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/certs/admin.pem
       - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/certs/admin-key.pem
-      - ./config/wazuh_indexer/wazuh.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
+       - ./config/wazuh_indexer/wazuh.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
 
   wazuh.dashboard:
@@ -88,19 +88,20 @@ services:
       - SERVER_PORT=5601
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - OPENSEARCH_SSL_VERIFICATIONMODE=certificate
-      - OPENSEARCH_REQUESTHEADERSWHITELIST=["securitytenant","Authorization"]
+      - OPENSEARCH_REQUESTHEADERSALLOWLIST=["securitytenant","Authorization"]
       - OPENSEARCH_SECURITY_MULTITENANCY_ENABLED=false
       - SERVER_SSL_ENABLED=true
       - OPENSEARCH_SECURITY_READONLY_MODE_ROLES=["kibana_read_only"]
       - SERVER_SSL_KEY="/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem"
       - SERVER_SSL_CERTIFICATE="/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem"
-      - SERVER_SSL_CERTIFICATEAUTHORITIES=["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
+      - OPENSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
       - UISETTINGS_OVERRIDES_DEFAULTROUTE=/app/wz-home
     volumes:
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
-      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/wazuh-config-mount/config/opensearch_dashboards.yml
+     #  if you need mount a custom opensearch-dashboards.yml, uncomment the next line and delete the
+     # - ./config/wazuh_dashboard/opensearch_dashboards.yml:/wazuh-config-mount/config/opensearch_dashboards.yml
       - ./config/wazuh_dashboard/wazuh.yml:/wazuh-config-mount/data/wazuh/config/wazuh.yml
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom

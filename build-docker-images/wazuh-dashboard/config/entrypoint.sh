@@ -2,28 +2,8 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
 INSTALL_DIR=/usr/share/wazuh-dashboard
+export OPENSEARCH_DASHBOARDS_HOME=$INSTALL_DIR
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
-
-exec_cmd_stdout() {
-  eval $1 2>&1 || error_and_exit "$1"
-}
-
-DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
-DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
-
-# Create and configure Wazuh dashboard keystore
-
-yes | $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
-echo $DASHBOARD_USERNAME | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
-echo $DASHBOARD_PASSWORD | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
-
-##############################################################################
-# Start Wazuh dashboard
-##############################################################################
-
-/wazuh_app_config.sh $WAZUH_UI_REVISION
-
-export OPENSEARCH_DASHBOARDS_HOME=/usr/share/wazuh-dashboard
 
 opensearch_dashboards_vars=(
     console.enabled
@@ -67,7 +47,6 @@ opensearch_dashboards_vars=(
     opensearch.sniffOnStart
     opensearch.ssl.alwaysPresentCertificate
     opensearch.ssl.certificate
-    opensearch.ssl.certificateAuthorities
     opensearch.ssl.key
     opensearch.ssl.keyPassphrase
     opensearch.ssl.keystore.path
@@ -138,6 +117,7 @@ opensearch_dashboards_vars=(
     server.ssl.certificateAuthorities
     server.ssl.cipherSuites
     server.ssl.clientAuthentication
+    opensearch.ssl.certificateAuthorities
     server.ssl.redirectHttpFromPort
     server.ssl.supportedProtocols
     server.xsrf.disableProtection
@@ -180,27 +160,45 @@ opensearch_dashboards_vars=(
     observability.query_assist.enabled
     uiSettings.overrides.defaultRoute
 )
-function runOpensearchDashboards {
-    longopts=()
-    if [ ! -f $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml ]; then
-        touch $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
-        for opensearch_dashboards_var in ${opensearch_dashboards_vars[*]}; do
-            # 'opensearch.hosts' -> 'OPENSEARCH_URL'
-            env_var=$(echo ${opensearch_dashboards_var^^} | tr . _)
-            # Indirectly lookup env var values via the name of the var.
-            # REF: http://tldp.org/LDP/abs/html/bashver2.html#EX78
-            value=${!env_var}
-            if [[ -n $value ]]; then
-                longopt="--${opensearch_dashboards_var}=${value}"
-                longoptfile="--${opensearch_dashboards_var}: ${value}"
-                longopts+=("${longopt}")
-                echo $longoptfile | sed 's/--//' >> $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
-                cat $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
-            fi
-        done
-    fi
 
-    /usr/share/wazuh-dashboard/bin/opensearch-dashboards -c /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+print() {
+  echo -e $1
+}
+
+error_and_exit() {
+  echo "Error executing command: '$1'."
+  echo 'Exiting.'
+  exit 1
+}
+
+exec_cmd() {
+  eval $1 > /dev/null 2>&1 || error_and_exit "$1"
+}
+
+exec_cmd_stdout() {
+  eval $1 2>&1 || error_and_exit "$1"
+}
+
+function runOpensearchDashboards {
+    touch $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
+      for opensearch_dashboards_var in ${opensearch_dashboards_vars[*]}; do
+        env_var=$(echo ${opensearch_dashboards_var^^} | tr . _)
+        value=${!env_var}
+        if [[ -n $value ]]; then
+          longoptfile="${opensearch_dashboards_var}: ${value}"
+          if grep -q $opensearch_dashboards_var $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml; then
+            sed -i "/${opensearch_dashboards_var}/ s|^.*$|${longoptfile}|" $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
+          else
+            echo $longoptfile >> $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml
+          fi
+        fi
+      done
+
+    umask 0002
+
+    /usr/share/wazuh-dashboard/bin/opensearch-dashboards -c $OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.yml \
+        --cpu.cgroup.path.override=/ \
+        --cpuacct.cgroup.path.override=/
 }
 
 mount_files() {
@@ -213,7 +211,29 @@ mount_files() {
   fi
 }
 
+DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
+DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
+
+# Create and configure Wazuh dashboard keystore
+
+yes | $INSTALL_DIR/bin/opensearch-dashboards-keystore create --allow-root && \
+echo $DASHBOARD_USERNAME | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
+echo $DASHBOARD_PASSWORD | $INSTALL_DIR/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
+
+##############################################################################
+# Start Wazuh dashboard
+##############################################################################
+
+/wazuh_app_config.sh $WAZUH_UI_REVISION
+
 mount_files
 
-runOpensearchDashboards
+if [ $# -eq 0 ] || [ "${1:0:1}" = '-' ]; then
+    set -- opensearch-dashboards "$@"
+fi
 
+if [ "$1" = "opensearch-dashboards" ]; then
+    runOpensearchDashboards "$@"
+else
+    exec "$@"
+fi

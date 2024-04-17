@@ -26,9 +26,9 @@ RUN chmod 775 /install_wazuh_app.sh
 RUN bash /install_wazuh_app.sh
 
 # Copy and set permissions to config files
-# RUN cp  $INSTALL_DIR/etc/opensearch_dashboards.yml $INSTALL_DIR/config/opensearch_dashboards.yml
+RUN cp  $INSTALL_DIR/etc/opensearch_dashboards.yml $INSTALL_DIR/config/opensearch_dashboards.yml
 COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
-# RUN chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
+RUN chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
