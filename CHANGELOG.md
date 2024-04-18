@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Wazuh Docker v4.7.4
+### Added
+
+- Update Wazuh to version [4.7.4](https://github.com/wazuh/wazuh/blob/v4.7.4/CHANGELOG.md#v474)
+
 ## Wazuh Docker v4.7.3
 ### Added
 
