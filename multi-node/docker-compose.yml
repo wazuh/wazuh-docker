@@ -87,8 +87,35 @@ services:
     ports:
       - "9200:9200"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "bootstrap.memory_lock=true"
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+      bootstrap.memory_lock: "true"
+      NETWORK_HOST: wazuh1.indexer
+      NODE_NAME: wazuh1.indexer
+      CLUSTER_INITIAL_MASTER_NODES: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      CLUSTER_NAME: "wazuh-cluster"
+      DISCOVERY_SEED_HOSTS: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      NODE_MAX_LOCAL_STORAGE_NODES: "3"
+      PATH_DATA: /var/lib/wazuh-indexer
+      PATH_LOGS: /var/log/wazuh-indexer
+      PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh1.indexer.pem
+      PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh1.indexer.key
+      PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh1.indexer.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh1.indexer.key
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_HTTP_ENABLED: "true"
+      PLUGINS_SECURITY_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION: "false"
+      PLUGINS_SECURITY_SSL_TRANSPORT_RESOLVE_HOSTNAME: "false"
+      PLUGINS_SECURITY_AUTHCZ_ADMIN_DN: "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+      PLUGINS_SECURITY_CHECK_SNAPSHOT_RESTORE_WRITE_PRIVILEGES: "true"
+      PLUGINS_SECURITY_ENABLE_SNAPSHOT_RESTORE_PRIVILEGE: "true"
+      PLUGINS_SECURITY_NODES_DN: '["CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US"]'
+      PLUGINS_SECURITY_RESTAPI_ROLES_ENABLED: '["all_access", "security_rest_api_access"]'
+      PLUGINS_SECURITY_SYSTEM_INDICES_ENABLED: "true"
+      PLUGINS_SECURITY_SYSTEM_INDICES_INDICES: '[".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opensearch-observability", ".opendistro-asynchronous-search-response*", ".replication-metadata-store"]'
+      PLUGINS_SECURITY_ALLOW_DEFAULT_INIT_SECURITYINDEX: "true"
+      CLUSTER_ROUTING_ALLOCATION_DISK_THRESHOLD_ENABLED: "false"
+      COMPATIBILITY_OVERRIDE_MAIN_RESPONSE_VERSION: "true"
     ulimits:
       memlock:
         soft: -1
@@ -103,7 +130,8 @@ services:
       - ./config/wazuh_indexer_ssl_certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh1.indexer.pem
       - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/certs/admin.pem
       - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/certs/admin-key.pem
-      - ./config/wazuh_indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
+      #  if you need mount a custom opensearch.yml, uncomment the next line and delete the environment variables
+      # - ./config/wazuh_indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
 
   wazuh2.indexer:
@@ -111,8 +139,35 @@ services:
     hostname: wazuh2.indexer
     restart: always
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "bootstrap.memory_lock=true"
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+      bootstrap.memory_lock: "true"
+      NETWORK_HOST: wazuh2.indexer
+      NODE_NAME: wazuh2.indexer
+      CLUSTER_INITIAL_MASTER_NODES: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      CLUSTER_NAME: "wazuh-cluster"
+      DISCOVERY_SEED_HOSTS: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      NODE_MAX_LOCAL_STORAGE_NODES: "3"
+      PATH_DATA: /var/lib/wazuh-indexer
+      PATH_LOGS: /var/log/wazuh-indexer
+      PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh2.indexer.pem
+      PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh2.indexer.key
+      PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh2.indexer.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh2.indexer.key
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_HTTP_ENABLED: "true"
+      PLUGINS_SECURITY_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION: "false"
+      PLUGINS_SECURITY_SSL_TRANSPORT_RESOLVE_HOSTNAME: "false"
+      PLUGINS_SECURITY_AUTHCZ_ADMIN_DN: "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+      PLUGINS_SECURITY_CHECK_SNAPSHOT_RESTORE_WRITE_PRIVILEGES: "true"
+      PLUGINS_SECURITY_ENABLE_SNAPSHOT_RESTORE_PRIVILEGE: "true"
+      PLUGINS_SECURITY_NODES_DN: '["CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US"]'
+      PLUGINS_SECURITY_RESTAPI_ROLES_ENABLED: '["all_access", "security_rest_api_access"]'
+      PLUGINS_SECURITY_SYSTEM_INDICES_ENABLED: "true"
+      PLUGINS_SECURITY_SYSTEM_INDICES_INDICES: '[".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opensearch-observability", ".opendistro-asynchronous-search-response*", ".replication-metadata-store"]'
+      PLUGINS_SECURITY_ALLOW_DEFAULT_INIT_SECURITYINDEX: "true"
+      CLUSTER_ROUTING_ALLOCATION_DISK_THRESHOLD_ENABLED: "false"
+      COMPATIBILITY_OVERRIDE_MAIN_RESPONSE_VERSION: "true"
     ulimits:
       memlock:
         soft: -1
@@ -125,7 +180,8 @@ services:
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.key
       - ./config/wazuh_indexer_ssl_certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh2.indexer.pem
-      - ./config/wazuh_indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
+      #  if you need mount a custom opensearch.yml, uncomment the next line and delete the environment variables
+      # - ./config/wazuh_indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
 
   wazuh3.indexer:
@@ -133,8 +189,35 @@ services:
     hostname: wazuh3.indexer
     restart: always
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "bootstrap.memory_lock=true"
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+      bootstrap.memory_lock: "true"
+      NETWORK_HOST: wazuh3.indexer
+      NODE_NAME: wazuh3.indexer
+      CLUSTER_INITIAL_MASTER_NODES: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      CLUSTER_NAME: "wazuh-cluster"
+      DISCOVERY_SEED_HOSTS: '["wazuh1.indexer", "wazuh2.indexer", "wazuh3.indexer"]'
+      NODE_MAX_LOCAL_STORAGE_NODES: "3"
+      PATH_DATA: /var/lib/wazuh-indexer
+      PATH_LOGS: /var/log/wazuh-indexer
+      PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh3.indexer.pem
+      PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh3.indexer.key
+      PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh3.indexer.pem
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH: /usr/share/wazuh-indexer/certs/wazuh3.indexer.key
+      PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH: /usr/share/wazuh-indexer/certs/root-ca.pem
+      PLUGINS_SECURITY_SSL_HTTP_ENABLED: "true"
+      PLUGINS_SECURITY_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION: "false"
+      PLUGINS_SECURITY_SSL_TRANSPORT_RESOLVE_HOSTNAME: "false"
+      PLUGINS_SECURITY_AUTHCZ_ADMIN_DN: "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+      PLUGINS_SECURITY_CHECK_SNAPSHOT_RESTORE_WRITE_PRIVILEGES: "true"
+      PLUGINS_SECURITY_ENABLE_SNAPSHOT_RESTORE_PRIVILEGE: "true"
+      PLUGINS_SECURITY_NODES_DN: '["CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US", "CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US"]'
+      PLUGINS_SECURITY_RESTAPI_ROLES_ENABLED: '["all_access", "security_rest_api_access"]'
+      PLUGINS_SECURITY_SYSTEM_INDICES_ENABLED: "true"
+      PLUGINS_SECURITY_SYSTEM_INDICES_INDICES: '[".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opensearch-observability", ".opendistro-asynchronous-search-response*", ".replication-metadata-store"]'
+      PLUGINS_SECURITY_ALLOW_DEFAULT_INIT_SECURITYINDEX: "true"
+      CLUSTER_ROUTING_ALLOCATION_DISK_THRESHOLD_ENABLED: "false"
+      COMPATIBILITY_OVERRIDE_MAIN_RESPONSE_VERSION: "true"
     ulimits:
       memlock:
         soft: -1
@@ -147,7 +230,8 @@ services:
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.key
       - ./config/wazuh_indexer_ssl_certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/certs/wazuh3.indexer.pem
-      - ./config/wazuh_indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
+      #  if you need mount a custom opensearch.yml, uncomment the next line and delete the environment variables
+      # - ./config/wazuh_indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/internal_users.yml
 
   wazuh.dashboard:
@@ -163,11 +247,24 @@ services:
       - API_PASSWORD=MyS3cr37P450r.*-
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      - OPENSEARCH_HOSTS=https://wazuh1.indexer:9200
+      - OPENSEARCH_SSL_VERIFICATIONMODE=certificate
+      - OPENSEARCH_REQUESTHEADERSALLOWLIST=["securitytenant","Authorization"]
+      - OPENSEARCH_SECURITY_MULTITENANCY_ENABLED=false
+      - SERVER_SSL_ENABLED=true
+      - OPENSEARCH_SECURITY_READONLY_MODE_ROLES=["kibana_read_only"]
+      - SERVER_SSL_KEY="/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem"
+      - SERVER_SSL_CERTIFICATE="/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem"
+      - OPENSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
+      - UISETTINGS_OVERRIDES_DEFAULTROUTE=/app/wz-home
     volumes:
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
       - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
-      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+      #  if you need mount a custom opensearch-dashboards.yml, uncomment the next line and delete the environment variables
+      # - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
       - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
