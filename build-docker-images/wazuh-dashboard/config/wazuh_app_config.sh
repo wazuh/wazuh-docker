@@ -40,28 +40,26 @@ declare -A CONFIG_MAP=(
   [wazuh.monitoring.replicas]=$WAZUH_MONITORING_REPLICAS
 )
 
+if [[ -f "$dashboard_config_file" ]]
+then
+  echo "Wazuh APP already configured";
+else
+  _config_parameters=(
+    "hosts:"
+    "  - 1513629884013:"
+    "      url: $wazuh_url"
+    "      port: $wazuh_port"
+    "      username: $api_username"
+    "      password: $api_password"
+    "      run_as: $api_run_as"
+  );
+  printf '%s\n' "${_config_parameters[@]}" > "$dashboard_config_file";
+fi;
+
+
 for i in "${!CONFIG_MAP[@]}"
 do
     if [ "${CONFIG_MAP[$i]}" != "" ]; then
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $dashboard_config_file
     fi
 done
-
-
-grep -q 1513629884013 $dashboard_config_file
-_config_exists=$?
-
-if [[ $_config_exists -ne 0 ]]; then
-cat << EOF >> $dashboard_config_file
-hosts:
-  - 1513629884013:
-      url: $wazuh_url
-      port: $wazuh_port
-      username: $api_username
-      password: $api_password
-      run_as: $api_run_as
-EOF
-else
-  echo "Wazuh APP already configured"
-fi
-
