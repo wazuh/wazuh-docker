@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM amazonlinux:2023.3.20240304.0
+FROM amazonlinux:2023
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
