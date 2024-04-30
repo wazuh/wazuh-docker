@@ -23,7 +23,7 @@ rm -rf ${INSTALLATION_DIR}/
 
 ## variables
 REPOSITORY="packages.wazuh.com/4.x"
-WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2-)
 MAJOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f1)
 MID_BUILD=$(echo $WAZUH_VERSION | cut -d. -f2)
 MINOR_BUILD=$(echo $WAZUH_VERSION | cut -d. -f3)
@@ -53,8 +53,8 @@ tar -xf ${INDEXER_FILE}
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.7/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.7/
+PACKAGES_URL=https://packages.wazuh.com/4.8/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.8/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
@@ -120,6 +120,7 @@ cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/
 # Copy Wazuh's config files for the security plugin
 cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /action_groups.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
