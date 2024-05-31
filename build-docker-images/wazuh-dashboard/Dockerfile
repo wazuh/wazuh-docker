@@ -1,5 +1,5 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal AS builder
+FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
@@ -7,7 +7,7 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG WAZUH_UI_REVISION
 
 # Update and install dependencies
-RUN apt-get update && apt install curl libcap2-bin xz-utils -y
+RUN yum install curl-minimal libcap xz tar openssl -y
 
 # Create Install dir
 RUN mkdir -p $INSTALL_DIR
@@ -28,12 +28,12 @@ RUN bash /install_wazuh_app.sh
 # Copy and set permissions to config files
 COPY config/opensearch_dashboards.yml $INSTALL_DIR/config/
 COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
-RUN chown 101:101 $INSTALL_DIR/config/opensearch_dashboards.yml && chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
+RUN chmod 664 $INSTALL_DIR/config/opensearch_dashboards.yml
 
 # Create and set permissions to data directories
-RUN mkdir -p $INSTALL_DIR/data/wazuh && chown -R 101:101 $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
-RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chown -R 101:101 $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
-RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chown -R 101:101 $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
+RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
+RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
+RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
 
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
@@ -42,7 +42,7 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chown -R 101:101 $INSTALL_DIR/data/
 # Add entrypoint
 # Add wazuh_app_config
 ################################################################################
-FROM ubuntu:focal
+FROM amazonlinux:2023
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \
@@ -79,6 +79,9 @@ ENV PATTERN="" \
     WAZUH_MONITORING_FREQUENCY="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
+
+# Update and install dependencies
+RUN yum install shadow-utils -y
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP

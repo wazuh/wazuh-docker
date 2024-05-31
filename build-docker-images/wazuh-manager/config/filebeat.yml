@@ -8,9 +8,9 @@ filebeat.modules:
       enabled: false
 
 setup.template.json.enabled: true
+setup.template.overwrite: true
 setup.template.json.path: '/etc/filebeat/wazuh-template.json'
 setup.template.json.name: 'wazuh'
-setup.template.overwrite: true
 setup.ilm.enabled: false
 output.elasticsearch:
   hosts: ['https://wazuh.indexer:9200']
