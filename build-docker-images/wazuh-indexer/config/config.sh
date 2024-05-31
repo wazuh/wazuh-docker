@@ -53,8 +53,8 @@ tar -xf ${INDEXER_FILE}
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.9/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.9/
+PACKAGES_URL=https://packages.wazuh.com/5.0/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/5.0/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
@@ -117,12 +117,6 @@ cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
 # Copy the security tools
 cp /$CERT_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
-# Copy Wazuh's config files for the security plugin
-cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /action_groups.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
 cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer.pem
 cp -pr /wazuh-certificates/demo.indexer-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer-key.pem
