@@ -3,7 +3,7 @@ version: '3'
 
 services:
   generator:
-    image: wazuh/wazuh-cert-tool:4.7.5
+    image: wazuh/wazuh-cert-tool:5.0.0
     hostname: wazuh-cert-tool
     container_name: wazuh-cert-tool
     volumes:
