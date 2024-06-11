@@ -100,7 +100,7 @@ jobs:
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-cert-tool.tar
-        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-cert-tool.tar
 
 
     - name: Create single node certficates
@@ -238,7 +238,7 @@ jobs:
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-cert-tool.tar
-        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-cert-tool.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-certs.yml run --rm generator
