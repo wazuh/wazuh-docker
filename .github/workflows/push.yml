@@ -92,7 +92,7 @@ jobs:
     - name: Retrieve saved Wazuh Cert Tool Docker image
       uses: actions/download-artifact@v3
       with:
-        name: docker-artifact-dashboard
+        name: docker-artifact-cert-tool
 
     - name: Docker load
       run: |
@@ -230,7 +230,7 @@ jobs:
     - name: Retrieve saved Wazuh Cert Tool Docker image
       uses: actions/download-artifact@v3
       with:
-        name: docker-artifact-dashboard
+        name: docker-artifact-cert-tool
 
     - name: Docker load
       run: |
