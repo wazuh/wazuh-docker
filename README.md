@@ -154,7 +154,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   └── wazuh_indexer_ssl_certs
     │   │       └── certs.yml
     │   ├── docker-compose.yml
-    │   ├── generate-indexer-certs.yml
+    │   ├── generate-certs.yml
     │   ├── Migration-to-Wazuh-4.3.md
     │   └── volume-migrator.sh
     ├── README.md
@@ -181,7 +181,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │       ├── wazuh.manager-key.pem
     │   │       └── wazuh.manager.pem
     │   ├── docker-compose.yml
-    │   ├── generate-indexer-certs.yml
+    │   ├── generate-certs.yml
     │   └── README.md
     └── VERSION
 
