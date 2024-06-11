@@ -22,6 +22,7 @@ jobs:
         docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker save wazuh/wazuh-cert-tool:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-cert-tool.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
@@ -42,6 +43,13 @@ jobs:
       with:
         name: docker-artifact-dashboard
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        retention-days: 1
+
+    - name: Temporarily save Wazuh Cert Tool Docker image
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-artifact-cert-tool
+        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-cert-tool.tar
         retention-days: 1
 
     - name: Install Goss
@@ -81,11 +89,18 @@ jobs:
       with:
         name: docker-artifact-dashboard
 
+    - name: Retrieve saved Wazuh Cert Tool Docker image
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+
     - name: Docker load
       run: |
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
+        docker load --input ./wazuh-cert-tool.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
 
 
     - name: Create single node certficates
@@ -212,11 +227,17 @@ jobs:
       with:
         name: docker-artifact-indexer
 
+    - name: Retrieve saved Wazuh Cert Tool Docker image
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-dashboard
+
     - name: Docker load
       run: |
-        docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
+        docker load --input ./wazuh-manager.tar
+        docker load --input ./wazuh-cert-tool.tar
         rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
 
     - name: Create multi node certficates
