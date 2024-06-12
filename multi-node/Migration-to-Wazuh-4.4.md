@@ -354,7 +354,7 @@ docker container run --rm -it \
 ```
 git checkout 4.4
 cd multi-node
-docker-compose -f generate-indexer-certs.yml run --rm generator
+docker-compose -f generate-certs.yml run --rm generator
 docker-compose up -d
 ```
 
