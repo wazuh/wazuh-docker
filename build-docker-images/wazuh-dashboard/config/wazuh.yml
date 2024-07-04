@@ -35,22 +35,7 @@
 #
 # --------------------------------- Extensions ---------------------------------
 #
-# Defines which extensions should be activated when you add a new API entry.
-# You can change them after Wazuh app starts.
-# Values must to be true or false.
-#extensions.pci       : true
-#extensions.gdpr      : true
-#extensions.hipaa     : true
-#extensions.nist      : true
-#extensions.tsc       : true
-#extensions.audit     : true
-#extensions.oscap     : false
-#extensions.ciscat    : false
-#extensions.aws       : false
-#extensions.gcp       : false
-#extensions.virustotal: false
-#extensions.osquery   : false
-#extensions.docker    : false
+# All extensions are now enabled by default.
 #
 # ---------------------------------- Time out ----------------------------------
 #
