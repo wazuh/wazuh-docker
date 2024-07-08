@@ -122,6 +122,20 @@ create_ossec_key_cert() {
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
 }
 
+#########################
+#GenerateKeystoreCert()
+#########################
+GenerateKeystoreCert()
+{
+  # Regenerate keys if they are not valid.
+  keystore_key=/etc/keystore.key
+  keystore_cert=/etc/keystore.cert
+  echo "Generating RSA keys for Keystore."
+  ${WAZUH_INSTALL_PATH}/bin/wazuh-authd -C 365 -B 2048 -K ${WAZUH_INSTALL_PATH}${keystore_key} -X ${WAZUH_INSTALL_PATH}${keystore_cert} -S "/C=US/ST=California/CN=wazuh/"
+  chmod 600 ${WAZUH_INSTALL_PATH}${keystore_key}
+  chmod 600 ${WAZUH_INSTALL_PATH}${keystore_cert}
+}
+
 ##############################################################################
 # Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
 # destination files permissions
@@ -199,7 +213,7 @@ main() {
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
-  
+
   # Apply correct permission and ownership
   set_correct_permOwner
 
@@ -216,6 +230,23 @@ main() {
     then
       create_ossec_key_cert
     fi
+  fi
+
+  keystore_key=/etc/keystore.key
+  keystore_cert=/etc/keystore.cert
+
+  # If we come from 4.8.0, no certificates will be found.
+  # Since the Keystore tool previously used sslmanager keys for encryption,
+  # We copy them to the new location to be able to recover the information.
+  if [ ! -f "${WAZUH_INSTALL_PATH}${keystore_key}" ] && [ ! -f "${WAZUH_INSTALL_PATH}${keystore_cert}" ]; then
+    cp -p ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert ${WAZUH_INSTALL_PATH}${keystore_cert}
+    cp -p ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ${WAZUH_INSTALL_PATH}${keystore_key}
+  fi
+
+  # Test if the certificates are valid. If don't, re-generate them
+  ${WAZUH_INSTALL_PATH}/bin/wazuh-keystore -f default -k certificate_test -v test
+  if [ $? -eq 1 ]; then
+    GenerateKeystoreCert
   fi
 
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
