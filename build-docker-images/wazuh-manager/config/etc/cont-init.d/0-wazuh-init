@@ -199,7 +199,7 @@ main() {
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
-  
+
   # Apply correct permission and ownership
   set_correct_permOwner
 

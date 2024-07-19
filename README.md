@@ -75,19 +75,23 @@ WAZUH_MONITORING_REPLICAS=0         ##
 ## Directory structure
 
     ├── build-docker-images
-    │   ├── docker-compose.yml
+    │   ├── build-images.sh
+    │   ├── build-images.yml
+    │   ├── README.md
     │   ├── wazuh-dashboard
     │   │   ├── config
     │   │   │   ├── config.sh
     │   │   │   ├── config.yml
+    │   │   │   ├── dl_base.sh
     │   │   │   ├── entrypoint.sh
+    │   │   │   ├── install_wazuh_app.sh
     │   │   │   ├── opensearch_dashboards.yml
     │   │   │   ├── wazuh_app_config.sh
     │   │   │   └── wazuh.yml
     │   │   └── Dockerfile
     │   ├── wazuh-indexer
     │   │   ├── config
-    │   │   │   ├── action_groups.yml
+    │   │   │   ├── action_groups.yml
     │   │   │   ├── config.sh
     │   │   │   ├── config.yml
     │   │   │   ├── entrypoint.sh
@@ -99,6 +103,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   └── Dockerfile
     │   └── wazuh-manager
     │       ├── config
+    │       │   ├── check_repository.sh
     │       │   ├── create_user.py
     │       │   ├── etc
     │       │   │   ├── cont-init.d
@@ -111,19 +116,21 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │       │   │       │   └── run
     │       │   │       └── ossec-logs
     │       │   │           └── run
+    │       │   ├── filebeat_module.sh
     │       │   ├── filebeat.yml
     │       │   ├── permanent_data.env
-    │       │   ├── permanent_data.sh
-    │       │   └── wazuh.repo
+    │       │   └── permanent_data.sh
     │       └── Dockerfile
     ├── CHANGELOG.md
     ├── indexer-certs-creator
     │   ├── config
     │   │   └── entrypoint.sh
-    │   └── Dockerfile
+    │   ├── Dockerfile
+    │   └── README.md
     ├── LICENSE
     ├── multi-node
     │   ├── config
+    │   │   ├── certs.yml
     │   │   ├── nginx
     │   │   │   └── nginx.conf
     │   │   ├── wazuh_cluster
@@ -132,40 +139,29 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   │   ├── wazuh_dashboard
     │   │   │   ├── opensearch_dashboards.yml
     │   │   │   └── wazuh.yml
-    │   │   ├── wazuh_indexer
-    │   │   │   ├── internal_users.yml
-    │   │   │   ├── wazuh1.indexer.yml
-    │   │   │   ├── wazuh2.indexer.yml
-    │   │   │   └── wazuh3.indexer.yml
-    │   │   └── wazuh_indexer_ssl_certs
-    │   │       └── certs.yml
+    │   │   └── wazuh_indexer
+    │   │       ├── internal_users.yml
+    │   │       ├── wazuh1.indexer.yml
+    │   │       ├── wazuh2.indexer.yml
+    │   │       └── wazuh3.indexer.yml
     │   ├── docker-compose.yml
     │   ├── generate-indexer-certs.yml
-    │   ├── Migration-to-Wazuh-4.3.md
+    │   ├── Migration-to-Wazuh-4.4.md
+    │   ├── README.md
     │   └── volume-migrator.sh
     ├── README.md
+    ├── SECURITY.md
     ├── single-node
     │   ├── config
+    │   │   ├── certs.yml
     │   │   ├── wazuh_cluster
     │   │   │   └── wazuh_manager.conf
     │   │   ├── wazuh_dashboard
     │   │   │   ├── opensearch_dashboards.yml
     │   │   │   └── wazuh.yml
-    │   │   ├── wazuh_indexer
-    │   │   │   ├── internal_users.yml
-    │   │   │   └── wazuh.indexer.yml
-    │   │   └── wazuh_indexer_ssl_certs
-    │   │       ├── admin-key.pem
-    │   │       ├── admin.pem
-    │   │       ├── certs.yml
-    │   │       ├── root-ca.key
-    │   │       ├── root-ca.pem
-    │   │       ├── wazuh.dashboard-key.pem
-    │   │       ├── wazuh.dashboard.pem
-    │   │       ├── wazuh.indexer-key.pem
-    │   │       ├── wazuh.indexer.pem
-    │   │       ├── wazuh.manager-key.pem
-    │   │       └── wazuh.manager.pem
+    │   │   └── wazuh_indexer
+    │   │       ├── internal_users.yml
+    │   │       └── wazuh.indexer.yml
     │   ├── docker-compose.yml
     │   ├── generate-indexer-certs.yml
     │   └── README.md
