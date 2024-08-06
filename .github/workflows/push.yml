@@ -247,7 +247,7 @@ jobs:
          echo 'Waiting for Wazuh indexer start'
          free -m
          df -h
-         sleep 10
+         sleep 120
        done
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
