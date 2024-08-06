@@ -10,6 +10,11 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
+    - name: Install docker-compose
+      run: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+
     - name: Build Wazuh images
       run: build-docker-images/build-images.sh
 
@@ -62,6 +67,11 @@ jobs:
 
     - name: Check out code
       uses: actions/checkout@v3
+
+    - name: Install docker-compose
+      run: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
@@ -186,6 +196,11 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
+    - name: Install docker-compose
+      run: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
@@ -232,7 +247,7 @@ jobs:
          echo 'Waiting for Wazuh indexer start'
          free -m
          df -h
-         sleep 10
+         sleep 120
        done
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
