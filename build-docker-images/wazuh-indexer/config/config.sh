@@ -115,10 +115,11 @@ function getArch() {
 }
 
 rm -rf "${TARGET_DIR}${INSTALLATION_DIR}/jdk";
+mkdir -p "${TARGET_DIR}${INSTALLATION_DIR}/jdk";
+
 filename="jdk-22_linux-$(getArch)_bin.tar.gz";
-cd /tmp && wget "https://download.oracle.com/java/22/latest/${filename}";
-tar -xvf "$filename";
-mv "jdk-22.0.1" "${TARGET_DIR}${INSTALLATION_DIR}/jdk";
+wget -P /tmp/ "https://download.oracle.com/java/22/latest/${filename}";
+tar --strip-components=1 -C "${TARGET_DIR}${INSTALLATION_DIR}/jdk" -xvf "/tmp/${filename}";
 
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
 chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*
