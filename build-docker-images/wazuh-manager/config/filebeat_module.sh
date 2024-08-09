@@ -20,6 +20,16 @@ elif [ "$MAJOR_BUILD" -eq "$MAJOR_CURRENT" ]; then
   fi
 fi
 
-curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
-yum install -y ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
+function getArchBasedFilebeat() {
+  case $(arch) in
+    'aarch64' | 'arm64') echo "${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-aarch64.rpm"    ;;
+    'x86_64'  | 'amd64') echo "${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm"     ;;
+    *)
+      echo "Architecture $(arch) not supported" >> /dev/stderr;
+      exit 1;
+    ;;
+  esac
+}
+
+yum install -y "https://artifacts.elastic.co/downloads/beats/filebeat/$(getArchBasedFilebeat)"
 curl -s https://${REPOSITORY}/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module

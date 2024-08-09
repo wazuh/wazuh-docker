@@ -15,6 +15,10 @@ RUN chmod 775 /check_repository.sh && \
 RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all
 
+RUN rm -rf /usr/share/wazuh-dashboard/node
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash
+RUN yum install -y nodejs && mkdir -p /usr/share/wazuh-dashboard/node/bin && ln -s /usr/bin/node /usr/share/wazuh-dashboard/node/bin
+
 # Generate certificates
 COPY config/config.sh .
 COPY config/config.yml /
@@ -28,6 +32,9 @@ RUN bash config.sh
 # Add wazuh_app_config
 ################################################################################
 FROM amazonlinux:2023
+
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash
+RUN yum install -y nodejs
 
 # Set environment variables
 ENV USER="wazuh-dashboard" \

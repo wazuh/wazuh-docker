@@ -103,6 +103,27 @@ sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-perfo
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
 chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*
 
+function getArch() {
+  case $(arch) in
+    'aarch64' | 'arm64') echo "aarch64" ;;
+    'x86_64'  | 'amd64') echo "x64"     ;;
+    *)
+      echo "Architecture $(arch) not supported" >> /dev/stderr;
+      exit 1;
+    ;;
+  esac
+}
+
+rm -rf "${TARGET_DIR}${INSTALLATION_DIR}/jdk";
+mkdir -p "${TARGET_DIR}${INSTALLATION_DIR}/jdk";
+
+filename="jdk-22_linux-$(getArch)_bin.tar.gz";
+wget -P /tmp/ "https://download.oracle.com/java/22/latest/${filename}";
+tar --strip-components=1 -C "${TARGET_DIR}${INSTALLATION_DIR}/jdk" -xvf "/tmp/${filename}";
+
+chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
+chmod -R 400 ${TARGET_DIR}${CONFIG_DIR}/certs/*
+
 find ${TARGET_DIR} -type d -exec chmod 750 {} \;
 find ${TARGET_DIR} -type f -perm 644 -exec chmod 640 {} \;
 find ${TARGET_DIR} -type f -perm 664 -exec chmod 660 {} \;
