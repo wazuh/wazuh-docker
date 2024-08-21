@@ -72,20 +72,6 @@ mkdir -p ${TARGET_DIR}/usr/lib/tmpfiles.d
 mkdir -p ${TARGET_DIR}/usr/lib/sysctl.d
 mkdir -p ${TARGET_DIR}/usr/lib/systemd/system
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}/certs
-# Move configuration files for wazuh-indexer
-mv -f ${BASE_DIR}/etc/init.d/${NAME} ${TARGET_DIR}/etc/init.d/${NAME}
-mv -f ${BASE_DIR}/etc/wazuh-indexer/* ${TARGET_DIR}${CONFIG_DIR}
-mv -f ${BASE_DIR}/etc/sysconfig/${NAME} ${TARGET_DIR}/etc/default/
-mv -f ${BASE_DIR}/usr/lib/tmpfiles.d/* ${TARGET_DIR}/usr/lib/tmpfiles.d/
-mv -f ${BASE_DIR}/usr/lib/sysctl.d/* ${TARGET_DIR}/usr/lib/sysctl.d/
-mv -f ${BASE_DIR}/usr/lib/systemd/system/* ${TARGET_DIR}/usr/lib/systemd/system/
-rm -rf ${BASE_DIR}/etc
-rm -rf ${BASE_DIR}/usr
-# Copy installation files to final location
-cp -pr ${BASE_DIR}/* ${TARGET_DIR}${INSTALLATION_DIR}
-# Copy the security tools
-cp /$CERT_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
-cp /$PASSWORD_TOOL ${TARGET_DIR}${INSTALLATION_DIR}/plugins/opensearch-security/tools/
 # Copy Wazuh's config files for the security plugin
 cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
@@ -101,9 +87,9 @@ cp -pr /wazuh-certificates/admin.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${TARGET_DIR}${CONFIG_DIR}/certs/admin-key.pem
 
 # Delete xms and xmx parameters in jvm.options
-sed '/-Xms/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
-sed '/-Xmx/d' -i ${TARGET_DIR}${CONFIG_DIR}/jvm.options
-sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' ${TARGET_DIR}${CONFIG_DIR}/jvm.options
+sed '/-Xms/d' -i /etc/wazuh-indexer/jvm.options
+sed '/-Xmx/d' -i /etc/wazuh-indexer/jvm.options
+sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' /etc/wazuh-indexer/jvm.options
 
 
 chmod -R 500 ${TARGET_DIR}${CONFIG_DIR}/certs
