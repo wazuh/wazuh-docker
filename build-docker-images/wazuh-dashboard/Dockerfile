@@ -4,6 +4,7 @@ FROM amazonlinux:2023 AS builder
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG WAZUH_UI_REVISION
+ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 
 # Update and install dependencies
 RUN yum install curl-minimal libcap openssl -y
@@ -14,6 +15,12 @@ RUN chmod 775 /check_repository.sh && \
 
 RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all
+
+# Create and set permissions to data directories
+RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
+RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
+RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
+COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
 
 # Generate certificates
 COPY config/config.sh .
