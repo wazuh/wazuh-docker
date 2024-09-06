@@ -62,7 +62,7 @@ services:
       context: wazuh-dashboard/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+        WAZUH_TAG_REVISION: 2
         WAZUH_UI_REVISION: ${WAZUH_UI_REVISION}
     image: wazuh/wazuh-dashboard:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.dashboard
