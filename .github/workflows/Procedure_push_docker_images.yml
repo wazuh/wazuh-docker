@@ -1,0 +1,34 @@
+
+run-name: Launch Push Docker Images - Executed by @${{ github.actor }}
+name: Push Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      JENKINS_REFERENCE:
+        description: 'wazuh-jenkins reference'
+        required: true
+        default: 'master'
+      IMAGE_TAG:
+        description: 'Docker image tag'
+        required: true
+        default: '4.10.0'
+      DOCKER_REFERENCE:
+        description: 'wazuh-docker reference'
+        required: true
+        default: '4.10.0'
+      PRODUCTS:
+        description: 'Comma-separated list of the image names to build and push'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
+        required: true
+      FILEBEAT_MODULE_VERSION:
+        description: 'Filebeat module version'
+        required: true
+      REVISION:
+        description: 'Package revision'
+        required: true
+      PUSH_IMAGES:
+        description: 'Push images'
+        required: true
+        type: boolean
+        default: true
