@@ -42,6 +42,7 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+        S3_REPOSITORY: ${S3_REPOSITORY}
     image: wazuh/wazuh-indexer:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.indexer
     restart: always
