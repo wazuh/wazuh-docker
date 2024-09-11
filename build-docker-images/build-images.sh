@@ -70,7 +70,7 @@ build() {
     echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .env
     echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
 
-    docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache
+    docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache || clean 1
 
     return 0
 }
