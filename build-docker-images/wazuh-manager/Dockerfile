@@ -60,6 +60,8 @@ RUN mkdir -p /var/ossec/var/multigroups && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
 
+RUN rm /etc/yum.repos.d/wazuh.repo
+
 # Services ports
 EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
 
