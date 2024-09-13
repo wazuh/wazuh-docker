@@ -1,22 +1,17 @@
-
 run-name: Launch Push Docker Images - Executed by @${{ github.actor }}
 name: Push Docker Images
 
 on:
   workflow_dispatch:
     inputs:
-      JENKINS_REFERENCE:
-        description: 'wazuh-jenkins reference'
-        required: true
-        default: 'master'
       IMAGE_TAG:
         description: 'Docker image tag'
-        required: true
         default: '4.10.0'
+        required: true
       DOCKER_REFERENCE:
         description: 'wazuh-docker reference'
+        default: 'v4.10.0'
         required: true
-        default: '4.10.0'
       PRODUCTS:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
@@ -26,9 +21,94 @@ on:
         required: true
       REVISION:
         description: 'Package revision'
+        default: '1'
         required: true
       PUSH_IMAGES:
         description: 'Push images'
-        required: true
         type: boolean
         default: true
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Print inputs
+      run: |
+        echo "---------------------------------------------"
+        echo "Running Procedure_push_docker_images workflow"
+        echo "---------------------------------------------"
+        echo "* BRANCH: ${{ github.ref }}"
+        echo "* COMMIT: ${{ github.sha }}"
+        echo "---------------------------------------------"
+        echo "Inputs provided:"
+        echo "---------------------------------------------"
+        echo "* IMAGE_TAG: ${{ inputs.IMAGE_TAG }}"
+        echo "* DOCKER_REFERENCE: ${{ inputs.DOCKER_REFERENCE }}"
+        echo "* PRODUCTS: ${{ inputs.PRODUCTS }}"
+        echo "* FILEBEAT_MODULE_VERSION: ${{ inputs.FILEBEAT_MODULE_VERSION }}"
+        echo "* REVISION: ${{ inputs.REVISION }}"
+        echo "* PUSH_IMAGES: ${{ inputs.PUSH_IMAGES }}"
+        echo "---------------------------------------------"
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.DOCKER_REFERENCE }}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: wazuh
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+        echo "Installed Docker Compose version: $(docker-compose --version)"
+
+    - name: Build Wazuh images
+      run: |
+        IMAGE_TAG=${{ inputs.IMAGE_TAG }}
+        FILEBEAT_MODULE_VERSION=${{ inputs.FILEBEAT_MODULE_VERSION }}
+        REVISION=${{ inputs.REVISION }}
+        PUSH_IMAGES=${{ inputs.PUSH_IMAGES }}
+
+        if [[ "$IMAGE_TAG" == *"-"* ]]; then
+          IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
+          if [ -z "${tokens[1]}" ]; then
+            echo "Invalid image tag: $IMAGE_TAG"
+            exit 1
+          fi
+          DEV_STAGE=${tokens[1]}
+          WAZUH_VER=${tokens[0]}
+          ./build-docker-images/build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION
+        else
+          ./build-docker-images/build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION
+        fi
+
+        ENV_FILE_PATH=".env"
+        # Save .env file contents to $GITHUB_ENV
+        if [ -f $ENV_FILE_PATH ]; then
+          while IFS= read -r line || [ -n "$line" ]; do
+            echo "$line" >> $GITHUB_ENV
+          done < $ENV_FILE_PATH
+        else
+          echo "The environment file $ENV_FILE_PATH does not exist!"
+          exit 1
+        fi
+
+
+    - name: Tag and Push Wazuh images
+      if: ${{ inputs.PUSH_IMAGES }}
+      run: |
+        IMAGE_TAG=${{ inputs.IMAGE_TAG }}
+        IMAGE_NAMES=${{ inputs.PRODUCTS }}
+        IFS=',' read -r -a images <<< "$IMAGE_NAMES"
+        for image in "${images[@]}"; do
+          echo "Tagging and pushing wazuh/$image:${WAZUH_VERSION} to wazuh/$image:$IMAGE_TAG"
+          docker tag wazuh/$image:${WAZUH_VERSION} wazuh/$image:$IMAGE_TAG
+          docker push wazuh/$image:$IMAGE_TAG
+        done
