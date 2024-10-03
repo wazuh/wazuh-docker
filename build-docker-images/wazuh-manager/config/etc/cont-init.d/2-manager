@@ -93,7 +93,6 @@ EOF
     if /var/ossec/framework/python/bin/python3  /var/ossec/framework/scripts/create_user.py; then
       # remove json if exit code is 0
       rm /var/ossec/api/configuration/admin.json
-      rm /var/ossec/framework/scripts/create_user.py
     else
       echored "There was an error configuring the API user"
       # terminate container to avoid unpredictable behavior
