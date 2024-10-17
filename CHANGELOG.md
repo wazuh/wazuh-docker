@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.10.0]
+
+### Added
+
+- Migrate the push docker images procedure to GitHub Actions ([#5651](https://github.com/wazuh/wazuh-qa/issues/5651))
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.9.1]
 
 ### Added
