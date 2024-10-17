@@ -6,13 +6,19 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.10.0'
+        default: '4.10.1'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
+<<<<<<< HEAD
         default: 'v4.10.0'
         required: false
       products:
+=======
+        default: 'v4.10.1'
+        required: true
+      PRODUCTS:
+>>>>>>> 46d6dc8fe58467e679fc57a86a5fe99394628b87
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
         required: true
