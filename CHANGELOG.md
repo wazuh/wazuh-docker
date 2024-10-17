@@ -1,20 +1,97 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Wazuh Docker v5.0.0
+## [5.0.0]
+
 ### Added
 
-- Update Wazuh to version [5.0.0](https://github.com/wazuh/wazuh/blob/v5.0.0/CHANGELOG.md#v500)
+- none
 
-## Wazuh Docker v4.10.0
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.2]
+
 ### Added
 
-- Update Wazuh to version [4.10.0](https://github.com/wazuh/wazuh/blob/v4.10.0/CHANGELOG.md#v4100)
+- none
 
-## Wazuh Docker v4.9.1
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.1]
+
 ### Added
 
-- Update Wazuh to version [4.9.1](https://github.com/wazuh/wazuh/blob/v4.9.1/CHANGELOG.md#v491)
+- none
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.0]
+
+### Added
+
+- Migrate the push docker images procedure to GitHub Actions ([#5651](https://github.com/wazuh/wazuh-qa/issues/5651))
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.9.1]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+
+### Fixed
+
+- Fix typos into Wazuh manager entrypoint ([#1569](https://github.com/wazuh/wazuh-docker/pull/1569))
+
+### Deleted
+
+- None
+
 
 ## Wazuh Docker v4.9.0
 ### Added
