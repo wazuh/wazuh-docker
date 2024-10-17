@@ -51,7 +51,7 @@ mount_permanent_data() {
         print "Installing ${permanent_dir}"
         exec_cmd "cp -a ${data_tmp}. ${permanent_dir}"
       else
-        print "The path ${permanent_dir} is empty, skiped"
+        print "The path ${permanent_dir} is empty, skipped"
       fi
     fi
   done
