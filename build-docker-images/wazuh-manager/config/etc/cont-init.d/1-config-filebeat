@@ -4,7 +4,7 @@
 set -e
 
 if [ "$INDEXER_URL" != "" ]; then
-  >&2 echo "Customize Elasticsearch ouput IP"
+  >&2 echo "Customize Elasticsearch output IP"
   sed -i "s|hosts:.*|hosts: ['$INDEXER_URL']|g" /etc/filebeat/filebeat.yml
 fi
 
