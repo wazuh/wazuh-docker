@@ -6,11 +6,11 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.10.1'
+        default: '4.10.2'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.10.1'
+        default: 'v4.10.2'
         required: true
       PRODUCTS:
         description: 'Comma-separated list of the image names to build and push'
