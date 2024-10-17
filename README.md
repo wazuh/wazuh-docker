@@ -168,7 +168,6 @@ WAZUH_MONITORING_REPLICAS=0         ##
     └── VERSION
 
 
-
 ## Branches
 
 * `master` branch contains the latest code, be aware of possible bugs on this branch.
@@ -178,6 +177,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v5.0.0        |         |        |
 | v4.10.2       |         |        |
 | v4.10.1       |         |        |
 | v4.10.0       |         |        |

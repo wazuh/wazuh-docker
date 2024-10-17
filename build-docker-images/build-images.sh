@@ -1,4 +1,4 @@
-WAZUH_IMAGE_VERSION=4.10.2
+WAZUH_IMAGE_VERSION=5.0.0
 WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
 WAZUH_TAG_REVISION=1
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
@@ -12,7 +12,7 @@ IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_IMAGE_VERSION="4.10.2"
+WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.4"
@@ -70,7 +70,8 @@ build() {
     echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .env
     echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
 
-    docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache || clean 1
+    docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache
+    docker build -t wazuh/wazuh-cert-tool:$WAZUH_IMAGE_VERSION build-docker-images/cert-tool-image/
 
     return 0
 }
