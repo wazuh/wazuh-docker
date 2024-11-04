@@ -58,20 +58,6 @@ CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must be
 CHECKS_API=true
 CHECKS_SETUP=true
 
-EXTENSIONS_PCI=true             # Enable PCI Extension
-EXTENSIONS_GDPR=true            # Enable GDPR Extension
-EXTENSIONS_HIPAA=true           # Enable HIPAA Extension
-EXTENSIONS_NIST=true            # Enable NIST Extension
-EXTENSIONS_TSC=true             # Enable TSC Extension
-EXTENSIONS_AUDIT=true           # Enable Audit Extension
-EXTENSIONS_OSCAP=false          # Enable OpenSCAP Extension
-EXTENSIONS_CISCAT=false         # Enable CISCAT Extension
-EXTENSIONS_AWS=false            # Enable AWS Extension
-EXTENSIONS_GCP=false            # Enable GCP Extension
-EXTENSIONS_VIRUSTOTAL=false     # Enable Virustotal Extension
-EXTENSIONS_OSQUERY=false        # Enable OSQuery Extension
-EXTENSIONS_DOCKER=false         # Enable Docker Extension
-
 APP_TIMEOUT=20000               # Defines maximum timeout to be used on the Wazuh app requests
 
 API_SELECTOR=true               Defines if the user is allowed to change the selected API directly from the Wazuh app top menu
@@ -192,6 +178,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.10.0       |         |        |
 | v4.9.2        |         |        |
 | v4.9.1        |         |        |
 | v4.9.0        |         |        |
