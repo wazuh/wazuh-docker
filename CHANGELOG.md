@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Fix permanent data scripts ([#1603](https://github.com/wazuh/wazuh-docker/pull/1603))
 
 ### Deleted
 

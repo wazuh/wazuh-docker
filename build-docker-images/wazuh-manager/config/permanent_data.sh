@@ -30,11 +30,7 @@ mkdir ${PERMANENT_PATH}
 for permanent_dir in "${PERMANENT_DATA[@]}"; do
   # Create the directory for the permanent file if it does not exist
   DIR=$(dirname "${permanent_dir}")
-  if [ ! -e ${PERMANENT_PATH}${DIR}  ]
-  then
-    mkdir -p ${PERMANENT_PATH}${DIR}
-  fi
-  
-  mv ${permanent_dir} ${PERMANENT_PATH}${permanent_dir}
+  mkdir -p ${PERMANENT_PATH}${DIR}
+  cp -ar ${permanent_dir} ${PERMANENT_PATH}${DIR}
 
 done

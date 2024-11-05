@@ -47,12 +47,8 @@ mount_permanent_data() {
     if find ${permanent_dir} -mindepth 1 | read; then
       print "The path ${permanent_dir} is already mounted"
     else
-      if find ${data_tmp} -mindepth 1 | read; then
         print "Installing ${permanent_dir}"
-        exec_cmd "cp -a ${data_tmp}. ${permanent_dir}"
-      else
-        print "The path ${permanent_dir} is empty, skipped"
-      fi
+        exec_cmd "cp -ar ${data_tmp}. ${permanent_dir}"
     fi
   done
 }
