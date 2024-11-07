@@ -71,7 +71,7 @@ build() {
     echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
 
     docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache
-    docker build -t wazuh/wazuh-cert-tool:$WAZUH_IMAGE_VERSION build-docker-images/cert-tool-image/
+    docker build -t wazuh/wazuh-cert-tool:$WAZUH_IMAGE_VERSION build-docker-images/wazuh-cert-tool/
 
     return 0
 }
