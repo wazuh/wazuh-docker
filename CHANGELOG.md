@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Migrate the push docker images procedure to GitHub Actions ([#5651](https://github.com/wazuh/wazuh-qa/issues/5651))
+- Improve the push docker images workflow ([#1551](https://github.com/wazuh/wazuh-docker/pull/1551))
+- Update the Procedure push docker images workflow file ([#1524](https://github.com/wazuh/wazuh-docker/pull/1524))
+- Add the push_docker_images procedure workflow file ([#1518](https://github.com/wazuh/wazuh-docker/pull/1518))
 
 ### Changed
 
@@ -13,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Removed references to module enabling because they are now enabled by default. ([#1416](https://github.com/wazuh/wazuh-docker/pull/1416))
 
 ### Deleted
 
