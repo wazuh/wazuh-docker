@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Add unset capabilities. ([#1619](https://github.com/wazuh/wazuh-docker/pull/1619))
 - Removed references to module enabling because they are now enabled by default. ([#1416](https://github.com/wazuh/wazuh-docker/pull/1416))
 
 ### Deleted
