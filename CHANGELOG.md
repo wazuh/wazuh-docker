@@ -9,7 +9,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Delete service tag and modifiy docker-compose execution for a new version ([#1632](https://github.com/wazuh/wazuh-docker/pull/1632))
+- Remove deprecated attribute version in docker-compose.yml ([#1595](https://github.com/wazuh/wazuh-docker/pull/1595))
 
 ### Fixed
 
