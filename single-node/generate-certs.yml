@@ -1,6 +1,4 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-version: '3'
-
 services:
   generator:
     image: wazuh/wazuh-cert-tool:5.0.0
