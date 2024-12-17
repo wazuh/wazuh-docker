@@ -1,6 +1,7 @@
 name: "Free Disk Space (Ubuntu)"
 description: "A configurable GitHub Action to free up disk space on an Ubuntu GitHub Actions runner."
 
+# Thanks @jlumbroso for the action code https://github.com/jlumbroso/free-disk-space/
 # See: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 
 inputs:
