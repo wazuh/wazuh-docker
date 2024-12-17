@@ -205,7 +205,7 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: free disk space
-      uses: jlumbroso/free-disk-space@main
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v3
