@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [4.10.2]
+## [4.10.3]
 
 ### Added
 
@@ -14,6 +14,24 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fix permanent data scripts ([#1603](https://github.com/wazuh/wazuh-docker/pull/1603))
+
+### Deleted
+
+- None
+
+## [4.10.2]
+
+### Added
+
+- none
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
 
 ### Deleted
 
