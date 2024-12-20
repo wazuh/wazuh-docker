@@ -27,7 +27,7 @@ jobs:
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
 
     name: Build images and upload Trivy results
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
   build-docker-images:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Check out code
@@ -61,7 +61,7 @@ jobs:
         GOSS_FILE: .github/.goss.yaml
 
   check-single-node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-docker-images
     steps:
 
@@ -189,7 +189,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-docker-images
     steps:
 
