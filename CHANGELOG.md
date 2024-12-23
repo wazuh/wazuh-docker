@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Change the cleaning disk step ([#1663](https://github.com/wazuh/wazuh-docker/pull/1663))
 
 ### Deleted
 
