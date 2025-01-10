@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- none
+- None
 
 ### Changed
 
@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- none
+- None
 
 ### Changed
 

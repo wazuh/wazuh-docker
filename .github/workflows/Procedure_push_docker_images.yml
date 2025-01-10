@@ -12,7 +12,7 @@ on:
         description: 'wazuh-docker reference'
         default: 'v4.11.0'
         required: true
-      PRODUCTS:
+      products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
         required: true
