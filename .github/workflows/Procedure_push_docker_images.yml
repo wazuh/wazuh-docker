@@ -42,12 +42,12 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.11.0'
+        default: '4.12.0'
         required: true
         type: string
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.11.0'
+        default: 'v4.12.0'
         required: false
         type: string
       products:
