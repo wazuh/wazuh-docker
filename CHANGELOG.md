@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- none
+- None
 
 ### Changed
 
@@ -17,13 +17,11 @@ All notable changes to this project will be documented in this file.
 
 ### Deleted
 
-- None
-
-## [4.10.2]
+## [4.11.0]
 
 ### Added
 
-- none
+- None
 
 ### Changed
 
@@ -31,7 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Change the cleaning disk step ([#1663](https://github.com/wazuh/wazuh-docker/pull/1663))
 
 ### Deleted
 
@@ -41,7 +39,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- none
+- None
 
 ### Changed
 
