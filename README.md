@@ -47,6 +47,10 @@ FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification 
 SSL_CERTIFICATE_AUTHORITIES=""                      # Path of Filebeat SSL CA
 SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certificate
 SSL_KEY=""                                          # Path of Filebeat SSL Key
+
+AWS_ACCESS_KEY_ID=""                                # AWS access key for an S3 Compatible Storage
+AWS_SECRET_ACCESS_KEY=""                            # AWS secret key for an S3 Compatible Storage
+AWS_REGION=""                                       # AWS region for an S3 Compatible Storage
 ```
 
 ### Dashboard

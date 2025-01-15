@@ -367,6 +367,36 @@ if [[ -f bin/opensearch-users ]]; then
   fi
 fi
 
+# Allow to use S3 Compatible Storage as a snapshot repository
+#
+# Check if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables
+# are set and OpenSearch plugin 'repository-s3' is installed.
+if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] && \
+    (run_as_other_user_if_needed "${INSTALLATION_DIR}/bin/opensearch-plugin" list | grep -q '^repository-s3$') ; then
+  [[ -f /usr/share/wazuh-indexer/opensearch.keystore ]] || (run_as_other_user_if_needed "${INSTALLATION_DIR}/bin/opensearch-keystore" create)
+  if ! (run_as_other_user_if_needed "${INSTALLATION_DIR}/bin/opensearch-keystore" has-passwd --silent) ; then
+    # keystore is unencrypted
+    if ! (run_as_other_user_if_needed "${INSTALLATION_DIR}/bin/opensearch-keystore" list | grep -q '^s3.client.default.access_key$') ; then
+      (run_as_other_user_if_needed echo "$AWS_ACCESS_KEY_ID" | "${INSTALLATION_DIR}/bin/opensearch-keystore" add -x 's3.client.default.access_key')
+    fi
+    if ! (run_as_other_user_if_needed "${INSTALLATION_DIR}/bin/opensearch-keystore" list | grep -q '^s3.client.default.secret_key$') ; then
+      (run_as_other_user_if_needed echo "$AWS_SECRET_ACCESS_KEY" | "${INSTALLATION_DIR}/bin/opensearch-keystore" add -x 's3.client.default.secret_key')
+    fi
+  else
+    # keystore requires password
+    if ! (run_as_other_user_if_needed echo "$KEYSTORE_PASSWORD" \
+        | "${INSTALLATION_DIR}/bin/opensearch-keystore" list | grep -q '^s3.client.default.access_key$') ; then
+      COMMANDS="$(printf "%s\n%s" "$KEYSTORE_PASSWORD" "$AWS_ACCESS_KEY_ID")"
+      (run_as_other_user_if_needed echo "$COMMANDS" | "${INSTALLATION_DIR}/bin/opensearch-keystore" add -x 's3.client.default.access_key')
+    fi
+    if ! (run_as_other_user_if_needed echo "$KEYSTORE_PASSWORD" \
+        | "${INSTALLATION_DIR}/bin/opensearch-keystore" list | grep -q '^s3.client.default.secret_key$') ; then
+      COMMANDS="$(printf "%s\n%s" "$KEYSTORE_PASSWORD" "$AWS_SECRET_ACCESS_KEY")"
+      (run_as_other_user_if_needed echo "$COMMANDS" | "${INSTALLATION_DIR}/bin/opensearch-keystore" add -x 's3.client.default.secret_key')
+    fi
+  fi
+fi
+
 if [[ "$(id -u)" == "0" ]]; then
   # If requested and running as root, mutate the ownership of bind-mounts
   if [[ -n "$TAKE_FILE_OWNERSHIP" ]]; then

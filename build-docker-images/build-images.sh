@@ -16,6 +16,7 @@ WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.4"
+S3_REPOSITORY="false"
 
 # -----------------------------------------------------------------------------
 
@@ -69,6 +70,7 @@ build() {
     echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> .env
     echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .env
     echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
+    echo S3_REPOSITORY=$S3_REPOSITORY >> .env
 
     docker-compose -f build-docker-images/build-images.yml --env-file .env build --no-cache
     docker build -t wazuh/wazuh-cert-tool:$WAZUH_IMAGE_VERSION build-docker-images/cert-tool-image/
@@ -85,6 +87,7 @@ help() {
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc1 or beta1, not used by default."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
+    echo "    -s, --s3-repository          [Optional] Install 'repository-s3' plugin for OpenSearch. By default ${S3_REPOSITORY}."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
     echo "    -h, --help                   Show this help."
     echo
@@ -115,6 +118,10 @@ main() {
             else
                 help 1
             fi
+            ;;
+        "-s"|"--s3-repository")
+            S3_REPOSITORY="true"
+            shift 1
             ;;
         "-r"|"--revision")
             if [ -n "${2}" ]; then

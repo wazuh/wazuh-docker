@@ -30,10 +30,13 @@ RUN bash config.sh
 ################################################################################
 FROM amazonlinux:2023
 
+ARG S3_REPOSITORY
+
 ENV USER="wazuh-indexer" \
     GROUP="wazuh-indexer" \
     NAME="wazuh-indexer" \
-    INSTALL_DIR="/usr/share/wazuh-indexer"
+    INSTALL_DIR="/usr/share/wazuh-indexer" \
+    OPENSEARCH_PATH_CONF="/usr/share/wazuh-indexer"
 
 # Set $JAVA_HOME
 RUN echo "export JAVA_HOME=$INSTALL_DIR/jdk" >> /etc/profile.d/java_home.sh && \
@@ -84,6 +87,9 @@ RUN mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer &&
     chmod 600 /usr/share/wazuh-indexer/opensearch.yml
 
 USER wazuh-indexer
+
+# Allow to use S3 Compatible Storage as a snapshot repository
+RUN if [ "$S3_REPOSITORY" = "true" ] ; then "${INSTALL_DIR}/bin/opensearch-plugin" install --batch repository-s3 ; fi
 
 # Services ports
 EXPOSE 9200
