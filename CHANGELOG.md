@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.11.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- Change the cleaning disk step ([#1663](https://github.com/wazuh/wazuh-docker/pull/1663))
+
+### Deleted
+
+- None
+
 ## [4.10.2]
 
 ### Added
