@@ -11,7 +11,7 @@ on:
     - published
   pull_request:
     branches:
-      - master
+      - main
       - stable
   schedule:
     - cron: '34 2 * * 1'

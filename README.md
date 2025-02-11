@@ -170,7 +170,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 ## Branches
 
-* `master` branch contains the latest code, be aware of possible bugs on this branch.
+* `main` branch contains the latest code, be aware of possible bugs on this branch.
 * `stable` branch corresponds to the last Wazuh stable version.
 
 ## Compatibility Matrix
