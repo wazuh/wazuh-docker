@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change VERSION file format ([#1728](https://github.com/wazuh/wazuh-docker/pull/1728)) \- (VERSION file)
 
 ### Fixed
 
