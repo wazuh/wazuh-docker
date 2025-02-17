@@ -53,13 +53,8 @@ build() {
         elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
             FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
         else
-            WAZUH_MASTER_VERSION="$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/master/src/VERSION | sed -e 's/v//g')"
-            if [ "${FILEBEAT_TEMPLATE_BRANCH}" == "${WAZUH_MASTER_VERSION}" ]; then
-                FILEBEAT_TEMPLATE_BRANCH="master"
-            else
-                echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
-                clean 1
-            fi
+            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
+            clean 1
         fi
     fi
 
