@@ -1,2 +1,4 @@
-WAZUH-DOCKER_VERSION="4.12.0"
-REVISION="41200"
+{
+    "version": "4.12.0",
+    "stage": "alpha0"
+}
