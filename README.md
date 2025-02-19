@@ -165,7 +165,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   ├── docker-compose.yml
     │   ├── generate-indexer-certs.yml
     │   └── README.md
-    └── VERSION
+    └── VERSION.json
 
 
 ## Branches
