@@ -22,8 +22,8 @@ export REPO_DIR=/unattended_installer
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.10/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.10/
+PACKAGES_URL=https://packages.wazuh.com/4.11/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.11/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
