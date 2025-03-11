@@ -115,8 +115,8 @@ function_entrypoint_scripts() {
 function_configure_vulnerability_detection() {
 if [ "$INDEXER_PASSWORD" != "" ]; then
   >&2 echo "Configuring password."
-  /var/ossec/bin/wazuh-keystore -f indexer -k username -v $INDEXER_USERNAME
-  /var/ossec/bin/wazuh-keystore -f indexer -k password -v $INDEXER_PASSWORD
+    echo '$INDEXER_USERNAME' | /var/ossec/bin/wazuh-keystore -f indexer -k username
+    echo '$INDEXER_PASSWORD' | /var/ossec/bin/wazuh-keystore -f indexer -k password
 fi
 }
 
