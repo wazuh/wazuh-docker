@@ -1,4 +1,4 @@
-WAZUH_IMAGE_VERSION=4.11.1
+WAZUH_IMAGE_VERSION=4.12.0
 WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
 WAZUH_TAG_REVISION=1
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
@@ -12,7 +12,7 @@ IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_IMAGE_VERSION="4.11.1"
+WAZUH_IMAGE_VERSION="4.12.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.4"
@@ -53,13 +53,8 @@ build() {
         elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
             FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
         else
-            WAZUH_MASTER_VERSION="$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/master/src/VERSION | sed -e 's/v//g')"
-            if [ "${FILEBEAT_TEMPLATE_BRANCH}" == "${WAZUH_MASTER_VERSION}" ]; then
-                FILEBEAT_TEMPLATE_BRANCH="master"
-            else
-                echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
-                clean 1
-            fi
+            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
+            clean 1
         fi
     fi
 

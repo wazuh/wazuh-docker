@@ -165,7 +165,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
     │   ├── docker-compose.yml
     │   ├── generate-indexer-certs.yml
     │   └── README.md
-    └── VERSION
+    └── VERSION.json
 
 
 
@@ -178,6 +178,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 | Wazuh version | ODFE    | XPACK  |
 |---------------|---------|--------|
+| v4.12.0       |         |        |
 | v4.11.1       |         |        |
 | v4.11.0       |         |        |
 | v4.10.1       |         |        |
