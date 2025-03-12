@@ -9,7 +9,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
+
 
 ### Fixed
 
