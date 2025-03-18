@@ -11,14 +11,13 @@ All notable changes to this project will be documented in this file.
 
 - Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
 
-
 ### Fixed
 
 - None
 
 ### Deleted
 
-- None
+- Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
 
 ## [4.12.0]
 
