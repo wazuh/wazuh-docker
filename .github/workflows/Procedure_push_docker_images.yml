@@ -10,7 +10,6 @@ on:
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.13.0'
         required: true
       products:
         description: 'Comma-separated list of the image names to build and push'
@@ -47,7 +46,6 @@ on:
         type: string
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.13.0'
         required: false
         type: string
       products:
