@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Deleted
 
+- Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
 - Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
 
 ## [4.12.0]
