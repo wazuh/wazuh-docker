@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.12.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Change VERSION file format ([#1728](https://github.com/wazuh/wazuh-docker/pull/1728)) \- (VERSION file)
+
+### Fixed
+
+- Fix permanent data scripts ([#1603](https://github.com/wazuh/wazuh-docker/pull/1603))
+
+### Deleted
+
+- None
+
 ## [4.11.2]
 
 ### Added
