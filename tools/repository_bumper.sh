@@ -43,7 +43,7 @@ update_version_in_files() {
             sed -i "/^| v${OLD_VERSION}       |         |        |/i | v${VERSION}       |         |        |" "${file}"
             sed -i "/^| v${OLD_VERSION}       |         |        |/!s/${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
         else
-            sed -i "s/${OLD_VERSION}/${VERSION}/g" "${file}"
+            sed -i "s/${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
         fi
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
@@ -63,18 +63,11 @@ update_version_in_files() {
             FILES_EDITED+=("${file}")
         fi
     done
-    mmp_files=( $(grep_command "${OLD_MAYOR}${OLD_MINOR}${OLD_PATCH}" "${DIR}" --exclude="CHANGELOG.md") )
-    for file in "${mmp_files[@]}"; do
-        sed -i "s/\b${OLD_MAYOR}${OLD_MINOR}${OLD_PATCH}\b/${NEW_MAYOR}${NEW_MINOR}${NEW_PATCH}/g" "${file}"
-        if [[ $(git diff --name-only "${file}") ]]; then
-            FILES_EDITED+=("${file}")
-        fi
-    done
 }
 
 update_stage_in_files() {
     local OLD_STAGE="$(echo "${OLD_STAGE}")"
-    files=( $(grep_command "${OLD_STAGE}" "${DIR}") )
+    files=( $(grep_command "${OLD_STAGE}" "${DIR}" --exclude="README.md") )
     for file in "${files[@]}"; do
         sed -i "s/${OLD_STAGE}/${STAGE}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
