@@ -12,7 +12,7 @@ STAGE=""
 FILES_EDITED=()
 
 get_old_version_and_stage() {
-    local VERSION_FILE="../VERSION.json"
+    local VERSION_FILE="${DIR}/VERSION.json"
 
     OLD_VERSION=$(jq -r '.version' "${VERSION_FILE}")
     OLD_STAGE=$(jq -r '.stage' "${VERSION_FILE}")
@@ -38,10 +38,9 @@ update_version_in_files() {
     m_m_p_files=( $(grep_command "${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}" "${DIR}") )
     for file in "${m_m_p_files[@]}"; do
         if [[ "${file}" == *"CHANGELOG.md"* ]]; then
-            sed -i "/^All notable changes to this project will be documented in this file.$/a \\\n## [${VERSION}]\\n\\n### Added\\n\\n- None\\n\\n### Changed\\n\\n- None\\n\\n### Fixed\\n\\n- None\\n\\n### Deleted\\n\\n- None" "${file}"
-        elif [[ "${file}" == *"README.md"* ]]; then
-            sed -i "/^| v${OLD_VERSION}       |         |        |/i | v${VERSION}       |         |        |" "${file}"
-            sed -i "/^| v${OLD_VERSION}       |         |        |/!s/${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
+            if ! sed -i "/^All notable changes to this project will be documented in this file.$/a \\\n## [${VERSION}]\\n\\n### Added\\n\\n- None\\n\\n### Changed\\n\\n- None\\n\\n### Fixed\\n\\n- None\\n\\n### Deleted\\n\\n- None" "${file}"; then
+                echo "Error: Failed to update CHANGELOG.md" | tee -a "${LOG_FILE}"
+            fi
         else
             sed -i "s/${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
         fi
@@ -106,6 +105,19 @@ main() {
 
     if [[ -z "$STAGE" ]]; then
         echo "Error: --stage argument is required." | tee -a "${LOG_FILE}"
+        exit 1
+    fi
+
+    # Validate if version is in the correct format
+    if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: Version must be in the format X.Y.Z (e.g., 1.2.3)." | tee -a "${LOG_FILE}"
+        exit 1
+    fi
+
+    # Validate if stage is in the correct format
+    STAGE=$(echo "$STAGE" | tr '[:upper:]' '[:lower:]')
+    if ! [[ "$STAGE" =~ ^(alpha[0-9]*|beta[0-9]*|rc[0-9]*|stable)$ ]]; then
+        echo "Error: Stage must be one of the following examples: alpha1, beta1, rc1, stable." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
