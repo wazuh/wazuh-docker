@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
 
 ### Changed
 
