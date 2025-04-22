@@ -24,7 +24,7 @@ grep_command() {
     # This function is used to search for a specific string in the specified directory.
     # It takes two arguments: the string to search for and the directory to search in.
     # Usage: grep_command <string> <directory>
-    eval grep -Rl "${1}" "${2}" --exclude-dir=".git" --exclude="repository_bumper_*.log" "${3}"
+    eval grep -Rl "${1}" "${2}" --exclude-dir=".git" --exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" "${3}"
 }
 
 update_version_in_files() {
@@ -37,31 +37,31 @@ update_version_in_files() {
     local NEW_PATCH="$(echo "${VERSION}" | cut -d '.' -f 3)"
     m_m_p_files=( $(grep_command "${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}" "${DIR}") )
     for file in "${m_m_p_files[@]}"; do
-        if [[ "${file}" == *"CHANGELOG.md"* ]]; then
-            if ! sed -i "/^All notable changes to this project will be documented in this file.$/a \\\n## [${VERSION}]\\n\\n### Added\\n\\n- None\\n\\n### Changed\\n\\n- None\\n\\n### Fixed\\n\\n- None\\n\\n### Deleted\\n\\n- None" "${file}"; then
-                echo "Error: Failed to update CHANGELOG.md" | tee -a "${LOG_FILE}"
-            fi
-        else
-            sed -i "s/${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
-        fi
+        sed -i "s/\bv${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}\b/v${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g; s/\b${OLD_MAYOR}\.${OLD_MINOR}\.${OLD_PATCH}/${NEW_MAYOR}\.${NEW_MINOR}\.${NEW_PATCH}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
         fi
     done
-    m_m_files=( $(grep_command "${OLD_MAYOR}\.${OLD_MINOR}" "${DIR}" --exclude="CHANGELOG.md") )
+    m_m_files=( $(grep_command "${OLD_MAYOR}\.${OLD_MINOR}" "${DIR}") )
     for file in "${m_m_files[@]}"; do
-        sed -i "/^${OLD_MAYOR}\.${OLD_MINOR}./!s/\\b${OLD_MAYOR}\.${OLD_MINOR}\b/${NEW_MAYOR}\.${NEW_MINOR}/g" "${file}"
+        sed -i -E "/[0-9]+\.[0-9]+\.[0-9]+/! s/(^|[^0-9.])(${OLD_MAYOR}\.${OLD_MINOR})([^0-9.]|$)/\1${NEW_MAYOR}.${NEW_MINOR}\3/g" "$file"
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
         fi
     done
-    m_x_files=( $(grep_command "${OLD_MAYOR}\.x" "${DIR}" --exclude="CHANGELOG.md") )
+    m_x_files=( $(grep_command "${OLD_MAYOR}\.x" "${DIR}") )
     for file in "${m_x_files[@]}"; do
         sed -i "s/\b${OLD_MAYOR}\.x\b/${NEW_MAYOR}\.x/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
         fi
     done
+    if ! sed -i "/^All notable changes to this project will be documented in this file.$/a \\\n## [${VERSION}]\\n\\n### Added\\n\\n- None\\n\\n### Changed\\n\\n- None\\n\\n### Fixed\\n\\n- None\\n\\n### Deleted\\n\\n- None" "${DIR}/CHANGELOG.md"; then
+        echo "Error: Failed to update CHANGELOG.md" | tee -a "${LOG_FILE}"
+    fi
+    if [[ $(git diff --name-only "${DIR}/CHANGELOG.md") ]]; then
+        FILES_EDITED+=("${DIR}/CHANGELOG.md")
+    fi
 }
 
 update_stage_in_files() {
