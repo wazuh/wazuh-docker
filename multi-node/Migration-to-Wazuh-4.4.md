@@ -6,7 +6,7 @@ The example is migrating from v4.2 to v4.4.
 Assuming that you have a v4.2 production deployment, perform the following steps.
 
 **1. Stop 4.2 environment**
-`docker-compose -f production-cluster.yml stop`
+`docker compose -f production-cluster.yml stop`
 
 **2. List elasticsearch volumes**
 `docker volume ls --filter name='wazuh-docker_elastic-data'`
@@ -15,7 +15,7 @@ Assuming that you have a v4.2 production deployment, perform the following steps
 `docker volume inspect wazuh-docker_elastic-data-1`
 
 **4. Spin down the 4.2 environment.**
-`docker-compose -f production-cluster.yml down`
+`docker compose -f production-cluster.yml down`
 
 **Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker compose version and project name as parameters.**
 
@@ -354,8 +354,8 @@ docker container run --rm -it \
 ```
 git checkout 4.4
 cd multi-node
-docker-compose -f generate-certs.yml run --rm generator
-docker-compose up -d
+docker compose -f generate-certs.yml run --rm generator
+docker compose up -d
 ```
 
 **8. Check the access to Wazuh dashboard**: go to the Wazuh dashboard using the web browser and check the data.
