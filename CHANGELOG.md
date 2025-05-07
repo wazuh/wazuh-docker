@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Fix permanent data scripts ([#1792](https://github.com/wazuh/wazuh-docker/pull/1792))
+- Add Wazuh agent image build and deploy ([#1792](https://github.com/wazuh/wazuh-docker/pull/1792))
 
 ### Changed
 
