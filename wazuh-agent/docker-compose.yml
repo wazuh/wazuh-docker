@@ -1,0 +1,20 @@
+# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+version: '3.7'
+
+services:
+  wazuh.agent:
+    image: wazuh/wazuh-agent:4.10.1
+    hostname: wazuh.agent
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
+    environment:
+      - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
+      - WAZUH_AGENT_NAME=<AGENT_NAME>
+    volumes:
+      - ./config/wazuh-agent-conf:/wazuh-config-mount/etc/ossec.conf
