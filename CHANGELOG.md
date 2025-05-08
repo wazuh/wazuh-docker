@@ -46,6 +46,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Change VERSION file format ([#1728](https://github.com/wazuh/wazuh-docker/pull/1728)) \- (VERSION file)
+- Change Ubuntu version used in workflows ([#1662](https://github.com/wazuh/wazuh-docker/pull/1662)) \- (Docker workflows)
 
 ### Fixed
 
