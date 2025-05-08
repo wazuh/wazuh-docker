@@ -20,6 +20,25 @@ All notable changes to this project will be documented in this file.
 - Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
 - Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
 
+## [4.12.2]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+
 ## [4.12.1]
 
 ### Added
@@ -47,6 +66,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Change VERSION file format ([#1728](https://github.com/wazuh/wazuh-docker/pull/1728)) \- (VERSION file)
+- Change Ubuntu version used in workflows ([#1662](https://github.com/wazuh/wazuh-docker/pull/1662)) \- (Docker workflows)
 
 ### Fixed
 
