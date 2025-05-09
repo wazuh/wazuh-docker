@@ -6,6 +6,6 @@ services:
     image: wazuh/wazuh-agent:4.10.1
     restart: always
     environment:
-      - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
+      - WAZUH_MANAGER_SERVER=172.17.0.1
     volumes:
       - ./config/wazuh-agent-conf:/wazuh-config-mount/etc/ossec.conf

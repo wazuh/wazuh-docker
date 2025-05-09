@@ -27,6 +27,7 @@ jobs:
         docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker save wazuh/wazuh-agent:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v3
@@ -47,6 +48,13 @@ jobs:
       with:
         name: docker-artifact-dashboard
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        retention-days: 1
+
+    - name: Temporarily save Wazuh agent Docker image
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-artifact-agent
+        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
         retention-days: 1
 
     - name: Install Goss
@@ -91,12 +99,17 @@ jobs:
       with:
         name: docker-artifact-dashboard
 
+    - name: Retrieve saved Wazuh agent Docker image
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-artifact-agent
+
     - name: Docker load
       run: |
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
-
+        docker load --input ./wazuh-agent.tar
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
@@ -187,6 +200,17 @@ jobs:
 
     - name: Check errors in ossec.log
       run: ./.github/single-node-log-check.sh
+
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start single node stack
+      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "curl -k -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
 
   check-multi-node:
     runs-on: ubuntu-latest
