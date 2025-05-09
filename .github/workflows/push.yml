@@ -207,7 +207,7 @@ jobs:
     - name: Check Wazuh agent enrollment
       run: |
         sleep 20
-        curl -k -s -X GET "curl -k -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
