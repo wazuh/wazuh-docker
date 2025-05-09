@@ -8,7 +8,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install docker-compose
       run: |
@@ -30,28 +30,28 @@ jobs:
         docker save wazuh/wazuh-agent:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
 
     - name: Temporarily save Wazuh manager Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-manager
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-indexer
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-dashboard
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh agent Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-agent
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
@@ -74,7 +74,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install docker-compose
       run: |
@@ -85,22 +85,22 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-indexer
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-dashboard
 
     - name: Retrieve saved Wazuh agent Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-agent
 
@@ -218,7 +218,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install docker-compose
       run: |
@@ -237,17 +237,17 @@ jobs:
         df -h
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-dashboard
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-indexer
 
