@@ -252,12 +252,18 @@ jobs:
       with:
         name: docker-artifact-indexer
 
+    - name: Retrieve saved Wazuh agent Docker image
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-artifact-agent
+
     - name: Docker load
       run: |
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
-        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
+        docker load --input ./wazuh-agent.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-agent.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
