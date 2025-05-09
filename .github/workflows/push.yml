@@ -364,5 +364,18 @@ jobs:
         exit 1
        fi
 
-    - name: Check errors in ossec.log
-      run: ./.github/multi-node-log-check.sh
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start Wazuh agent
+      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log for Wazuh manager
+      run: ./.github/single-node-log-check.sh
