@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
 
 ### Changed
 
