@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Add wazuh agent test and push ([#1817](https://github.com/wazuh/wazuh-docker/pull/1817))
+- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
 
 ### Changed
 
@@ -23,7 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
+- None
 
 ### Changed
 
@@ -165,7 +166,6 @@ All notable changes to this project will be documented in this file.
 
 - None
 
-
 ### Fixed
 
 - Fix typos into Wazuh manager entrypoint ([#1569](https://github.com/wazuh/wazuh-docker/pull/1569))
@@ -173,7 +173,6 @@ All notable changes to this project will be documented in this file.
 ### Deleted
 
 - None
-
 
 ## Wazuh Docker v4.9.0
 ### Added
