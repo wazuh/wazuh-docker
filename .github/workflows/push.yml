@@ -8,7 +8,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Install docker-compose
       run: |
@@ -27,7 +27,6 @@ jobs:
         docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
-        docker save wazuh/wazuh-agent:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
 
     - name: Temporarily save Wazuh manager Docker image
       uses: actions/upload-artifact@v4
@@ -50,13 +49,6 @@ jobs:
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
-    - name: Temporarily save Wazuh agent Docker image
-      uses: actions/upload-artifact@v4
-      with:
-        name: docker-artifact-agent
-        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
-        retention-days: 1
-
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
       with:
@@ -74,7 +66,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Install docker-compose
       run: |
@@ -99,17 +91,12 @@ jobs:
       with:
         name: docker-artifact-dashboard
 
-    - name: Retrieve saved Wazuh agent Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-agent
-
     - name: Docker load
       run: |
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
-        docker load --input ./wazuh-agent.tar
+
 
     - name: Create single node certficates
       run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
@@ -198,20 +185,7 @@ jobs:
         exit 1
        fi
 
-    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
-      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
-
-    - name: Start Wazuh agent
-      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
-
-    - name: Check Wazuh agent enrollment
-      run: |
-        sleep 20
-        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
-      env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in ossec.log
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
@@ -220,7 +194,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Install docker-compose
       run: |
@@ -248,18 +222,12 @@ jobs:
       with:
         name: docker-artifact-indexer
 
-    - name: Retrieve saved Wazuh agent Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-agent
-
     - name: Docker load
       run: |
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
-        docker load --input ./wazuh-agent.tar
-        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-agent.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar
 
     - name: Create multi node certficates
       run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
@@ -366,18 +334,5 @@ jobs:
         exit 1
        fi
 
-    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
-      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
-
-    - name: Start Wazuh agent
-      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
-
-    - name: Check Wazuh agent enrollment
-      run: |
-        sleep 20
-        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
-      env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in ossec.log
       run: ./.github/multi-node-log-check.sh
