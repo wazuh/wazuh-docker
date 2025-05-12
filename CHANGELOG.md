@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- BACKPORT: Agent Docker images code ([#1807](https://github.com/wazuh/wazuh-docker/pull/1807))
 
 ### Changed
 

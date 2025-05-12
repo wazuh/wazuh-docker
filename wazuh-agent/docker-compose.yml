@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.agent:
-    image: wazuh/wazuh-agent:4.10.1
+    image: wazuh/wazuh-agent:4.10.2
     restart: always
     environment:
       - WAZUH_MANAGER_SERVER=172.17.0.1
