@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:5.0.0
+    image: wazuh/wazuh-manager:6.0.0
     hostname: wazuh.master
     restart: always
     ulimits:
@@ -45,7 +45,7 @@ services:
       - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh.worker:
-    image: wazuh/wazuh-manager:5.0.0
+    image: wazuh/wazuh-manager:6.0.0
     hostname: wazuh.worker
     restart: always
     ulimits:
@@ -81,7 +81,7 @@ services:
       - ./config/wazuh_cluster/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: wazuh/wazuh-indexer:6.0.0
     hostname: wazuh1.indexer
     restart: always
     ulimits:
@@ -134,7 +134,7 @@ services:
       # - ./config/wazuh_indexer/wazuh1.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: wazuh/wazuh-indexer:6.0.0
     hostname: wazuh2.indexer
     restart: always
     ulimits:
@@ -183,7 +183,7 @@ services:
       # - ./config/wazuh_indexer/wazuh2.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: wazuh/wazuh-indexer:6.0.0
     hostname: wazuh3.indexer
     restart: always
     ulimits:
@@ -232,7 +232,7 @@ services:
       # - ./config/wazuh_indexer/wazuh3.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: wazuh/wazuh-dashboard:6.0.0
     hostname: wazuh.dashboard
     restart: always
     ulimits:
