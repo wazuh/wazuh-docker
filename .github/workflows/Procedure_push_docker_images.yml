@@ -119,8 +119,8 @@ jobs:
     - name: Install Docker Compose
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker-compose
-        echo "Installed Docker Compose version: $(docker-compose --version)"
+        sudo apt-get install -y docker-compose-plugin
+        echo "Installed Docker Compose version: $(docker compose --version)"
 
     - name: Build Wazuh images
       run: |
