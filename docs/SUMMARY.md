@@ -25,6 +25,4 @@
   - [CEnvironment Variabless](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
 - [Upgrade](ref/upgrade.md)
-- [Back Up and Restore](ref/backup-restore.md)
-- [Security](ref/security.md)
 - [Glossary](ref/glossary.md)
