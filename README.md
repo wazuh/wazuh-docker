@@ -74,105 +74,149 @@ WAZUH_MONITORING_REPLICAS=0         ##
 
 ## Directory structure
 
-    ├── build-docker-images
-    │   ├── build-images.sh
-    │   ├── build-images.yml
-    │   ├── README.md
-    │   ├── wazuh-dashboard
-    │   │   ├── config
-    │   │   │   ├── config.sh
-    │   │   │   ├── config.yml
-    │   │   │   ├── dl_base.sh
-    │   │   │   ├── entrypoint.sh
-    │   │   │   ├── install_wazuh_app.sh
-    │   │   │   ├── opensearch_dashboards.yml
-    │   │   │   ├── wazuh_app_config.sh
-    │   │   │   └── wazuh.yml
-    │   │   └── Dockerfile
-    │   ├── wazuh-indexer
-    │   │   ├── config
-    │   │   │   ├── action_groups.yml
-    │   │   │   ├── config.sh
-    │   │   │   ├── config.yml
-    │   │   │   ├── entrypoint.sh
-    │   │   │   ├── internal_users.yml
-    │   │   │   ├── opensearch.yml
-    │   │   │   ├── roles_mapping.yml
-    │   │   │   ├── roles.yml
-    │   │   │   └── securityadmin.sh
-    │   │   └── Dockerfile
-    │   └── wazuh-manager
-    │       ├── config
-    │       │   ├── check_repository.sh
-    │       │   ├── create_user.py
-    │       │   ├── etc
-    │       │   │   ├── cont-init.d
-    │       │   │   │   ├── 0-wazuh-init
-    │       │   │   │   ├── 1-config-filebeat
-    │       │   │   │   └── 2-manager
-    │       │   │   └── services.d
-    │       │   │       ├── filebeat
-    │       │   │       │   ├── finish
-    │       │   │       │   └── run
-    │       │   │       └── ossec-logs
-    │       │   │           └── run
-    │       │   ├── filebeat_module.sh
-    │       │   ├── filebeat.yml
-    │       │   ├── permanent_data.env
-    │       │   └── permanent_data.sh
-    │       └── Dockerfile
-    ├── CHANGELOG.md
-    ├── indexer-certs-creator
-    │   ├── config
-    │   │   └── entrypoint.sh
-    │   ├── Dockerfile
-    │   └── README.md
-    ├── LICENSE
-    ├── multi-node
-    │   ├── config
-    │   │   ├── certs.yml
-    │   │   ├── nginx
-    │   │   │   └── nginx.conf
-    │   │   ├── wazuh_cluster
-    │   │   │   ├── wazuh_manager.conf
-    │   │   │   └── wazuh_worker.conf
-    │   │   ├── wazuh_dashboard
-    │   │   │   ├── opensearch_dashboards.yml
-    │   │   │   └── wazuh.yml
-    │   │   └── wazuh_indexer
-    │   │       ├── internal_users.yml
-    │   │       ├── wazuh1.indexer.yml
-    │   │       ├── wazuh2.indexer.yml
-    │   │       └── wazuh3.indexer.yml
-    │   ├── docker-compose.yml
-    │   ├── generate-indexer-certs.yml
-    │   ├── Migration-to-Wazuh-4.4.md
-    │   ├── README.md
-    │   └── volume-migrator.sh
-    ├── README.md
-    ├── SECURITY.md
-    ├── single-node
-    │   ├── config
-    │   │   ├── certs.yml
-    │   │   ├── wazuh_cluster
-    │   │   │   └── wazuh_manager.conf
-    │   │   ├── wazuh_dashboard
-    │   │   │   ├── opensearch_dashboards.yml
-    │   │   │   └── wazuh.yml
-    │   │   └── wazuh_indexer
-    │   │       ├── internal_users.yml
-    │   │       └── wazuh.indexer.yml
-    │   ├── docker-compose.yml
-    │   ├── generate-indexer-certs.yml
-    │   └── README.md
-    └── VERSION.json
-
+	├── build-docker-images
+	│   ├── build-images.sh
+	│   ├── build-images.yml
+	│   ├── README.md
+	│   ├── wazuh-agent
+	│   │   ├── config
+	│   │   │   ├── check_repository.sh
+	│   │   │   └── etc
+	│   │   │       ├── cont-init.d
+	│   │   │       │   ├── 0-wazuh-init
+	│   │   │       │   └── 1-agent
+	│   │   │       └── services.d
+	│   │   │           └── ossec-logs
+	│   │   │               └── run
+	│   │   └── Dockerfile
+	│   ├── wazuh-dashboard
+	│   │   ├── config
+	│   │   │   ├── check_repository.sh
+	│   │   │   ├── config.sh
+	│   │   │   ├── config.yml
+	│   │   │   ├── entrypoint.sh
+	│   │   │   ├── wazuh_app_config.sh
+	│   │   │   └── wazuh.yml
+	│   │   └── Dockerfile
+	│   ├── wazuh-indexer
+	│   │   ├── config
+	│   │   │   ├── action_groups.yml
+	│   │   │   ├── check_repository.sh
+	│   │   │   ├── config.sh
+	│   │   │   ├── config.yml
+	│   │   │   ├── entrypoint.sh
+	│   │   │   ├── internal_users.yml
+	│   │   │   ├── opensearch.yml
+	│   │   │   ├── roles_mapping.yml
+	│   │   │   ├── roles.yml
+	│   │   │   └── securityadmin.sh
+	│   │   └── Dockerfile
+	│   └── wazuh-manager
+	│       ├── config
+	│       │   ├── check_repository.sh
+	│       │   ├── create_user.py
+	│       │   ├── etc
+	│       │   │   ├── cont-init.d
+	│       │   │   │   ├── 0-wazuh-init
+	│       │   │   │   ├── 1-config-filebeat
+	│       │   │   │   └── 2-manager
+	│       │   │   └── services.d
+	│       │   │       ├── filebeat
+	│       │   │       │   ├── finish
+	│       │   │       │   └── run
+	│       │   │       └── ossec-logs
+	│       │   │           └── run
+	│       │   ├── filebeat_module.sh
+	│       │   ├── filebeat.yml
+	│       │   ├── permanent_data.env
+	│       │   └── permanent_data.sh
+	│       └── Dockerfile
+	├── CHANGELOG.md
+	├── docs
+	│   ├── book.toml
+	│   ├── build.sh
+	│   ├── dev
+	│   │   ├── build-image.md
+	│   │   ├── README.md
+	│   │   ├── run-tests.md
+	│   │   └── setup.md
+	│   ├── README.md
+	│   ├── ref
+	│   │   ├── configuration
+	│   │   │   ├── configuration-files.md
+	│   │   │   ├── environment-variables.md
+	│   │   │   └── README.md
+	│   │   ├── getting-started
+	│   │   │   ├── deployment
+	│   │   │   │   ├── multi-node.md
+	│   │   │   │   ├── README.md
+	│   │   │   │   ├── single-node.md
+	│   │   │   │   └── wazuh-agent.md
+	│   │   │   ├── README.md
+	│   │   │   └── requirements.md
+	│   │   ├── glossary.md
+	│   │   ├── Introduction
+	│   │   │   ├── compatibility.md
+	│   │   │   ├── description.md
+	│   │   │   └── README.md
+	│   │   ├── README.md
+	│   │   └── upgrade.md
+	│   ├── server.sh
+	│   └── SUMMARY.md
+	├── indexer-certs-creator
+	│   ├── config
+	│   │   └── entrypoint.sh
+	│   ├── Dockerfile
+	│   └── README.md
+	├── LICENSE
+	├── multi-node
+	│   ├── config
+	│   │   ├── certs.yml
+	│   │   ├── nginx
+	│   │   │   └── nginx.conf
+	│   │   ├── wazuh_cluster
+	│   │   │   ├── wazuh_manager.conf
+	│   │   │   └── wazuh_worker.conf
+	│   │   ├── wazuh_dashboard
+	│   │   │   ├── opensearch_dashboards.yml
+	│   │   │   └── wazuh.yml
+	│   │   └── wazuh_indexer
+	│   │       ├── internal_users.yml
+	│   │       ├── wazuh1.indexer.yml
+	│   │       ├── wazuh2.indexer.yml
+	│   │       └── wazuh3.indexer.yml
+	│   ├── docker-compose.yml
+	│   ├── generate-indexer-certs.yml
+	│   ├── Migration-to-Wazuh-4.4.md
+	│   ├── README.md
+	│   └── volume-migrator.sh
+	├── README.md
+	├── SECURITY.md
+	├── single-node
+	│   ├── config
+	│   │   ├── certs.yml
+	│   │   ├── wazuh_cluster
+	│   │   │   └── wazuh_manager.conf
+	│   │   ├── wazuh_dashboard
+	│   │   │   ├── opensearch_dashboards.yml
+	│   │   │   └── wazuh.yml
+	│   │   ├── wazuh_indexer
+	│   │   │   ├── internal_users.yml
+	│   │   │   └── wazuh.indexer.yml
+	│   │   └── wazuh_indexer_ssl_certs  [error opening dir]
+	│   ├── docker-compose.yml
+	│   ├── generate-indexer-certs.yml
+	│   └── README.md
+	├── VERSION.json
+	└── wazuh-agent
+		├── config
+		│   └── wazuh-agent-conf
+		└── docker-compose.yml
 
 
 ## Branches
 
-* `master` branch contains the latest code, be aware of possible bugs on this branch.
-* `stable` branch corresponds to the last Wazuh stable version.
+* `main` branch contains the latest code, be aware of possible bugs on this branch.
 
 ## Compatibility Matrix
 

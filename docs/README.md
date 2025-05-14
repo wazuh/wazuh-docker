@@ -142,13 +142,16 @@ WAZUH_MONITORING_REPLICAS=0         ##
 	│   │   └── setup.md
 	│   ├── README.md
 	│   ├── ref
-	│   │   ├── backup-restore.md
 	│   │   ├── configuration
 	│   │   │   ├── configuration-files.md
 	│   │   │   ├── environment-variables.md
 	│   │   │   └── README.md
 	│   │   ├── getting-started
-	│   │   │   ├── installation.md
+	│   │   │   ├── deployment
+	│   │   │   │   ├── multi-node.md
+	│   │   │   │   ├── README.md
+	│   │   │   │   ├── single-node.md
+	│   │   │   │   └── wazuh-agent.md
 	│   │   │   ├── README.md
 	│   │   │   └── requirements.md
 	│   │   ├── glossary.md
@@ -156,10 +159,7 @@ WAZUH_MONITORING_REPLICAS=0         ##
 	│   │   │   ├── compatibility.md
 	│   │   │   ├── description.md
 	│   │   │   └── README.md
-	│   │   ├── performance.md
 	│   │   ├── README.md
-	│   │   ├── security.md
-	│   │   ├── uninstall.md
 	│   │   └── upgrade.md
 	│   ├── server.sh
 	│   └── SUMMARY.md
