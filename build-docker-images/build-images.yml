@@ -1,6 +1,4 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-version: '3.7'
-
 services:
   wazuh.manager:
     build:
