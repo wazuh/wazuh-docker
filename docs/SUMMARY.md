@@ -4,25 +4,23 @@
 
 # Development Guide
 
-- [Introduction](dev/README.md)
+- [Introduction](dev/introduction.md)
 - [Setup Environment](dev/setup.md)
 - [Build Image](dev/build-image.md)
 - [Run Tests](dev/run-tests.md)
 
 # Reference Manual
 
-- [Reference](ref/README.md)
-- [Introduction](ref/Introduction/README.md)
+- [Introduction](ref/Introduction/introduction.md)
   - [Description](ref/Introduction/description.md)
-  - [Compatibility](ref/Introduction/compatibility.md)
-- [Getting Started](ref/getting-started/README.md)
+- [Getting Started](ref/getting-started/getting-started.md)
   - [Requirements](ref/getting-started/requirements.md)
-  - [Deployment](ref/getting-started/deployment/README.md)
+  - [Deployment](ref/getting-started/deployment/deployment.md)
     - [Single Node Wazuh Stack](ref/getting-started/deployment/single-node.md)
     - [Multi Node Wazuh Stack](ref/getting-started/deployment/multi-node.md)
     - [Wazuh Agent](ref/getting-started/deployment/wazuh-agent.md)
-- [Configuration](ref/configuration/README.md)
-  - [CEnvironment Variabless](ref/configuration/environment-variables.md)
+- [Configuration](ref/configuration/configuration.md)
+  - [Environment Variabless](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
 - [Upgrade](ref/upgrade.md)
 - [Glossary](ref/glossary.md)

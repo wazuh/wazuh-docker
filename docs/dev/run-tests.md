@@ -1,1 +1,1 @@
-# How to run the tests.
+# Run Tests

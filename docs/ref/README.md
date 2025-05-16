@@ -1,7 +1,0 @@
-# Introduction
-
-## Description
-
-## Architecture
-
-## Compatibility
