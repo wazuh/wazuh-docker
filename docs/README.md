@@ -213,7 +213,6 @@ WAZUH_MONITORING_REPLICAS=0         ##
 		│   └── wazuh-agent-conf
 		└── docker-compose.yml
 
-
 ## Branches
 
 * `main` branch contains the latest code, be aware of possible bugs on this branch.
