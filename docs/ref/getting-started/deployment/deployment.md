@@ -1,6 +1,6 @@
 # Reference Manual - Deployment
 
-This section provides detailed instructions for deploying Wazuh-Docker (version 4.12.0) in various configurations. Choose the deployment model that best suits your needs, from simple single-node setups for testing to more robust multi-node configurations for production environments.
+This section provides detailed instructions for deploying Wazuh-Docker (version 4.12.2) in various configurations. Choose the deployment model that best suits your needs, from simple single-node setups for testing to more robust multi-node configurations for production environments.
 
 ## Overview of Deployment Options
 
