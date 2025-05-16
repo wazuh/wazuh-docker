@@ -116,12 +116,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-        echo "Installed Docker Compose version: $(docker-compose --version)"
-
     - name: Build Wazuh images
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
