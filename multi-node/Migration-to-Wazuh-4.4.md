@@ -6,12 +6,35 @@ The example is migrating from v4.2 to v4.4.
 Assuming that you have a v4.2 production deployment, perform the following steps.
 
 **1. Stop 4.2 environment**
-`docker compose -f production-cluster.yml stop`
+`docker-compose -f production-cluster.yml stop`
 
 **2. List elasticsearch volumes**
 `docker volume ls --filter name='wazuh-docker_elastic-data'`
 
-**3. Inspect elasticsearch volume**docker-compose
+**3. Inspect elasticsearch volume**
+`docker volume inspect wazuh-docker_elastic-data-1`
+
+**4. Spin down the 4.2 environment.**
+`docker-compose -f production-cluster.yml down`
+
+**Steps 5 and 6 can be done with the volume-migrator.sh script, specifying Docker compose version and project name as parameters.**
+
+Ex: $ multi-node/volume-migrator.sh 1.25.0 multi-node
+
+**5. Run the volume create command:** create new indexer and Wazuh manager volumes using the `com.docker.compose.version` label value from the previous command.
+
+```
+docker volume create \
+           --label com.docker.compose.project=multi-node \
+           --label com.docker.compose.version=1.25.0 \
+           --label com.docker.compose.volume=wazuh-indexer-data-1 \
+           multi-node_wazuh-indexer-data-1
+```
+```
+docker volume create \
+           --label com.docker.compose.project=multi-node \
+           --label com.docker.compose.version=1.25.0 \
+           --label com.docker.compose.volume=wazuh-indexer-data-2 \
            multi-node_wazuh-indexer-data-2
 ```
 ```
