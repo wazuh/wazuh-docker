@@ -8,7 +8,7 @@ else
   for MASTER_CONTAINERS in $MASTER_CONTAINERS; do
     FILEBEAT_OUTPUT=$(docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE)
     FILEBEAT_STATUS=$(echo "${FILEBEAT_OUTPUT}" | grep -c OK)
-    if [[ filebeatstatus -eq 7 ]]; then
+    if [[ $FILEBEAT_STATUS -eq 7 ]]; then
       echo "No errors in filebeat"
       echo "${FILEBEAT_OUTPUT}"
     else
