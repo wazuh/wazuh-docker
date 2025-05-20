@@ -36,16 +36,6 @@ services:
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
 
-  wazuh.agent:
-    build:
-      context: wazuh-agent/
-      args:
-        WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-    image: wazuh/wazuh-agent:${WAZUH_IMAGE_VERSION}
-    hostname: wazuh.manager
-    restart: always
-
   wazuh.indexer:
     build:
       context: wazuh-indexer/
