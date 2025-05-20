@@ -1,6 +1,6 @@
 COMMAND_TO_EXECUTE="filebeat test output"
 
-MASTER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep -E '*manager*')
+MASTER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep -E 'manager')
 
 if [ -z "$CONTAINER_NAMES" ]; then
   echo "No se encontraron contenedores con 'master' en su nombre."
