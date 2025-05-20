@@ -1,18 +1,39 @@
-filebeatout1=$(docker exec multi-node_wazuh.master_1 sh -c 'filebeat test output')
-filebeatstatus1=$(echo "${filebeatout1}" | grep -c OK)
-if [[ filebeatstatus1 -eq 7 ]]; then
-  echo "No errors in master filebeat"
+COMMAND_TO_EXECUTE="filebeat test output"
+
+MASTER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep -E 'master')
+
+if [ -z "$MASTER_CONTAINERS" ]; then
+  echo "No containers were found with 'master' in their name."
 else
-  echo "Errors in master filebeat"
-  echo "${filebeatout1}"
-  exit 1
+  for MASTER_CONTAINERS in $MASTER_CONTAINERS; do
+    FILEBEAT_OUTPUT=$(docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE)
+    FILEBEAT_STATUS=$(echo "${FILEBEAT_OUTPUT}" | grep -c OK)
+    if [[ filebeatstatus -eq 7 ]]; then
+      echo "No errors in filebeat"
+      echo "${FILEBEAT_OUTPUT}"
+    else
+      echo "Errors in filebeat"
+      echo "${FILEBEAT_OUTPUT}"
+      exit 1
+    fi
+  done
 fi
-filebeatout2=$(docker exec multi-node_wazuh.worker_1 sh -c 'filebeat test output')
-filebeatstatus2=$(echo "${filebeatout2}" | grep -c OK)
-if [[ filebeatstatus2 -eq 7 ]]; then
- echo "No errors in worker filebeat"
+
+MASTER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep -E 'worker')
+
+if [ -z "$MASTER_CONTAINERS" ]; then
+  echo "No containers were found with 'worker' in their name."
 else
- echo "Errors in worker filebeat"
- echo "${filebeatout2}"
- exit 1
+  for MASTER_CONTAINERS in $MASTER_CONTAINERS; do
+    FILEBEAT_OUTPUT=$(docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE)
+    FILEBEAT_STATUS=$(echo "${FILEBEAT_OUTPUT}" | grep -c OK)
+    if [[ filebeatstatus -eq 7 ]]; then
+      echo "No errors in filebeat"
+      echo "${FILEBEAT_OUTPUT}"
+    else
+      echo "Errors in filebeat"
+      echo "${FILEBEAT_OUTPUT}"
+      exit 1
+    fi
+  done
 fi
