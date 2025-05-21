@@ -16,62 +16,13 @@ The folder `build-docker-images` contains a README explaining how to build the W
 The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets.
 The folder `single-node` contains a README explaining how to run a Wazuh environment with one Wazuh manager, one Wazuh indexer, and one Wazuh dashboard.
 The folder `multi-node` contains a README explaining how to run a Wazuh environment with two Wazuh managers, three Wazuh indexers, and one Wazuh dashboard.
+The folder `wazuh-agent` contains a README explaining how to run a container with Wazuh agent.
 
 ## Documentation
 
 * [Wazuh full documentation](http://documentation.wazuh.com)
 * [Wazuh documentation for Docker](https://documentation.wazuh.com/current/docker/index.html)
 * [Docker Hub](https://hub.docker.com/u/wazuh)
-
-
-### Setup SSL certificate
-
-Before starting the environment it is required to provide an SSL certificate (or just generate one self-signed).
-
-Documentation on how to provide these two can be found at [Wazuh Docker Documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#production-deployment).
-
-
-## Environment Variables
-
-Default values are included when available.
-
-### Wazuh
-```
-API_USERNAME="wazuh-wui"                            # Wazuh API username
-API_PASSWORD="MyS3cr37P450r.*-"                     # Wazuh API password - Must comply with requirements
-                                                    # (8+ length, uppercase, lowercase, special chars)
-
-INDEXER_URL=https://wazuh.indexer:9200              # Wazuh indexer URL
-INDEXER_USERNAME=admin                              # Wazuh indexer Username
-INDEXER_PASSWORD=SecretPassword                     # Wazuh indexer Password
-FILEBEAT_SSL_VERIFICATION_MODE=full                 # Filebeat SSL Verification mode (full or none)
-SSL_CERTIFICATE_AUTHORITIES=""                      # Path of Filebeat SSL CA
-SSL_CERTIFICATE=""                                  # Path of Filebeat SSL Certificate
-SSL_KEY=""                                          # Path of Filebeat SSL Key
-```
-
-### Dashboard
-```
-PATTERN="wazuh-alerts-*"        # Default index pattern to use
-
-CHECKS_PATTERN=true             # Defines which checks must be considered by the healthcheck
-CHECKS_TEMPLATE=true            # step once the Wazuh app starts. Values must be true or false
-CHECKS_API=true
-CHECKS_SETUP=true
-
-APP_TIMEOUT=20000               # Defines maximum timeout to be used on the Wazuh app requests
-
-API_SELECTOR=true               Defines if the user is allowed to change the selected API directly from the Wazuh app top menu
-IP_SELECTOR=true                # Defines if the user is allowed to change the selected index pattern directly from the Wazuh app top menu
-IP_IGNORE="[]"                  # List of index patterns to be ignored
-
-DASHBOARD_USERNAME=kibanaserver     # Custom user saved in the dashboard keystore
-DASHBOARD_PASSWORD=kibanaserver     # Custom password saved in the dashboard keystore
-WAZUH_MONITORING_ENABLED=true       # Custom settings to enable/disable wazuh-monitoring indices
-WAZUH_MONITORING_FREQUENCY=900      # Custom setting to set the frequency for wazuh-monitoring indices cron task
-WAZUH_MONITORING_SHARDS=2           # Configure wazuh-monitoring-* indices shards and replicas
-WAZUH_MONITORING_REPLICAS=0         ##
-```
 
 ## Directory structure
 
