@@ -10,6 +10,7 @@ In this repository you will find the containers to run:
 * Wazuh manager: it runs the Wazuh manager, Wazuh API and Filebeat OSS
 * Wazuh dashboard: provides a web user interface to browse through alert data and allows you to visualize the agents configuration and status.
 * Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
+* Wazuh agent: This container contains the Wazuh agent services. Current functionality is limited.
 
 The folder `build-docker-images` contains a README explaining how to build the Wazuh images and the necessary assets.
 The folder `indexer-certs-creator` contains a README explaining how to create the certificates creator tool and the necessary assets.
