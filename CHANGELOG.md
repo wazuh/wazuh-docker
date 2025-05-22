@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Updated docker/login-action module ([#1837](https://github.com/wazuh/wazuh-docker/pull/1837))
 
 ### Deleted
 
