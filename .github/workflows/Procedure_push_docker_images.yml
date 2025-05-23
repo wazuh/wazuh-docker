@@ -6,11 +6,11 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.10.2'
+        default: '4.10.3'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.10.2'
+        default: 'v4.10.3'
         required: false
       products:
         description: 'Comma-separated list of the image names to build and push'
@@ -42,12 +42,12 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.10.2'
+        default: '4.10.3'
         required: true
         type: string
       docker_reference:
         description: 'wazuh-docker reference'
-        default: 'v4.10.2'
+        default: 'v4.10.3'
         required: false
         type: string
       products:
