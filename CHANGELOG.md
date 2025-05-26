@@ -1,6 +1,45 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.12.2]
+
+### Added
+
+- Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
+- Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
+- Add wazuh agent test and push ([#1817](https://github.com/wazuh/wazuh-docker/pull/1817))
+- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.12.1]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.12.0]
 
 ### Added
@@ -129,7 +168,6 @@ All notable changes to this project will be documented in this file.
 
 - None
 
-
 ### Fixed
 
 - Fix typos into Wazuh manager entrypoint ([#1569](https://github.com/wazuh/wazuh-docker/pull/1569))
@@ -137,7 +175,6 @@ All notable changes to this project will be documented in this file.
 ### Deleted
 
 - None
-
 
 ## Wazuh Docker v4.9.0
 ### Added

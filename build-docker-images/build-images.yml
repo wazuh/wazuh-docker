@@ -1,6 +1,4 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-version: '3.7'
-
 services:
   wazuh.manager:
     build:
@@ -35,6 +33,16 @@ services:
       - wazuh_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
+
+  wazuh.agent:
+    build:
+      context: wazuh-agent/
+      args:
+        WAZUH_VERSION: ${WAZUH_VERSION}
+        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+    image: wazuh/wazuh-agent:${WAZUH_IMAGE_VERSION}
+    hostname: wazuh.agent
+    restart: always
 
   wazuh.indexer:
     build:
