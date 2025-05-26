@@ -10,11 +10,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-
     - name: Build Wazuh images
       run: build-docker-images/build-images.sh
 
@@ -76,11 +71,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
@@ -112,10 +102,10 @@ jobs:
         docker load --input ./wazuh-agent.tar
 
     - name: Create single node certficates
-      run: docker-compose -f single-node/generate-indexer-certs.yml run --rm generator
+      run: docker compose -f single-node/generate-indexer-certs.yml run --rm generator
 
     - name: Start single node stack
-      run: docker-compose -f single-node/docker-compose.yml up -d
+      run: docker compose -f single-node/docker-compose.yml up -d
 
     - name: Check Wazuh indexer start
       run: |
@@ -222,11 +212,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
@@ -262,10 +247,10 @@ jobs:
         rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-agent.tar
 
     - name: Create multi node certficates
-      run: docker-compose -f multi-node/generate-indexer-certs.yml run --rm generator
+      run: docker compose -f multi-node/generate-indexer-certs.yml run --rm generator
 
     - name: Start multi node stack
-      run: docker-compose -f multi-node/docker-compose.yml up -d
+      run: docker compose -f multi-node/docker-compose.yml up -d
 
     - name: Check Wazuh indexer start
       run: |
