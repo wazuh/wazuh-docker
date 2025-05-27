@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.13.0]
+
+### Added
+
+- Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
+
+### Changed
+
+- Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
+
+### Fixed
+
+- None
+
+### Deleted
+
+- Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
+- Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
+
 ## [4.12.2]
 
 ### Added
@@ -21,6 +40,7 @@ All notable changes to this project will be documented in this file.
 ### Deleted
 
 - None
+
 
 ## [4.12.1]
 
