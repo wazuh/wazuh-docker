@@ -13,7 +13,7 @@ on:
         required: true
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
         required: true
       filebeat_module_version:
         description: 'Filebeat module version'
@@ -50,7 +50,7 @@ on:
         type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
         required: true
         type: string
       filebeat_module_version:
@@ -113,12 +113,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-        echo "Installed Docker Compose version: $(docker-compose --version)"
 
     - name: Build Wazuh images
       run: |
