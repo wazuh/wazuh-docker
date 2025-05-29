@@ -24,6 +24,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
+- Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
+- Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
+- Add wazuh agent test and push ([#1817](https://github.com/wazuh/wazuh-docker/pull/1817))
+- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
 
 ### Changed
 
@@ -37,28 +41,6 @@ All notable changes to this project will be documented in this file.
 
 - Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
 - Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
-
-## [4.12.2]
-
-### Added
-
-- Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
-- Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
-- Add wazuh agent test and push ([#1817](https://github.com/wazuh/wazuh-docker/pull/1817))
-- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
 
 ## [4.12.1]
 
