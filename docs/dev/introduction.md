@@ -1,6 +1,6 @@
 # Development Guide - Introduction
 
-Welcome to the Development Guide for Wazuh-docker version 4.12.2. This guide is intended for developers, contributors, and advanced users who wish to understand the development aspects of the Wazuh-Docker project, build custom Docker images, or contribute to its development.
+Welcome to the Development Guide for Wazuh-docker version 4.13.0. This guide is intended for developers, contributors, and advanced users who wish to understand the development aspects of the Wazuh-Docker project, build custom Docker images, or contribute to its development.
 
 ## Purpose of This Guide
 
