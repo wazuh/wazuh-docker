@@ -92,7 +92,7 @@ jobs:
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
-          BRANCH_NAME="enhancement/kubernetes${issue_number}-bump-${{ github.ref_name }}"
+          BRANCH_NAME="enhancement/docker${issue_number}-bump-${{ github.ref_name }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "script_params=${script_params}" >> $GITHUB_OUTPUT
 
