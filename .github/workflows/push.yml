@@ -101,7 +101,6 @@ jobs:
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-agent.tar
 
-
     - name: Create single node certficates
       run: docker compose -f single-node/generate-indexer-certs.yml run --rm generator
 
@@ -202,7 +201,7 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check errors in ossec.log
+    - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
