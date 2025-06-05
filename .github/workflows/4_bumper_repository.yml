@@ -14,6 +14,11 @@ on:
         default: ''
         required: false
         type: string
+      tag:
+        description: 'Change branches references to tag-like references (e.g. v4.12.0-alpha7)'
+        default: false
+        required: false
+        type: boolean
       issue-link:
         description: 'Issue link in format https://github.com/wazuh/<REPO>/issues/<ISSUE-NUMBER>'
         required: true
@@ -72,18 +77,22 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           STAGE: ${{ inputs.stage }}
+          TAG: ${{ inputs.tag }}
         run: |
           script_params=""
           version=${{ env.VERSION }}
           stage=${{ env.STAGE }}
+          tag=${{ env.TAG }}
+
           # Both version and stage provided
-          if [[ -n "$version" && -n "$stage" ]]; then
+          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
             script_params="--version ${version} --stage ${stage}"
-          elif [[ -z "$version" && -n "$stage" ]]; then
-            script_params="--stage ${stage}"
+          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--version ${version} --stage ${stage} --tag ${tag}"
           fi
+
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
-          BRANCH_NAME="enhancement/docker${issue_number}-bump-${{ github.ref_name }}"
+          BRANCH_NAME="enhancement/kubernetes${issue_number}-bump-${{ github.ref_name }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "script_params=${script_params}" >> $GITHUB_OUTPUT
 
