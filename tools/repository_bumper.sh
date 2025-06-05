@@ -5,11 +5,12 @@
 # Usage: ./repository_bumper.sh <version>
 
 # Global variables
-DIR=$(dirname "$(pwd)")
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
 FILES_EDITED=()
+FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="4_bumper_repository.yml"'
 
 get_old_version_and_stage() {
     local VERSION_FILE="${DIR}/VERSION.json"
@@ -24,7 +25,7 @@ grep_command() {
     # This function is used to search for a specific string in the specified directory.
     # It takes two arguments: the string to search for and the directory to search in.
     # Usage: grep_command <string> <directory>
-    eval grep -Rl "${1}" "${2}" --exclude-dir=".git" --exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" "${3}"
+    eval grep -Rl "${1}" "${2}" --exclude-dir=".git" $FILES_EXCLUDED "${3}"
 }
 
 update_version_in_files() {
