@@ -76,6 +76,17 @@ update_stage_in_files() {
     done
 }
 
+update_docker_images_tag() {
+    local NEW_TAG="$1"
+    local DOCKERFILES=( $(grep_command -E "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}") )
+    for file in "${DOCKERFILES[@]}"; do
+        sed -i -E "s/(wazuh\/wazuh-[a-zA-Z0-9._-]*):[a-zA-Z0-9._-]+/\1:${NEW_TAG}/g" "${file}"
+        if [[ $(git diff --name-only "${file}") ]]; then
+            FILES_EDITED+=("${file}")
+        fi
+    done
+}
+
 main() {
 
     echo "Starting repository version bumping process..." | tee -a "${LOG_FILE}"
@@ -91,6 +102,10 @@ main() {
                 STAGE="$2"
                 shift 2
                 ;;
+            --tag)
+                TAG="$2"
+                shift 2
+                ;;
             *)
                 echo "Unknown argument: $1"
                 exit 1
@@ -99,44 +114,50 @@ main() {
     done
 
     # Validate arguments
-    if [[ -z "$VERSION" ]]; then
+    if [[ -z "${VERSION}" ]]; then
         echo "Error: --version argument is required." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
-    if [[ -z "$STAGE" ]]; then
+    if [[ -z "${STAGE}" ]]; then
         echo "Error: --stage argument is required." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
     # Validate if version is in the correct format
-    if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Error: Version must be in the format X.Y.Z (e.g., 1.2.3)." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
     # Validate if stage is in the correct format
-    STAGE=$(echo "$STAGE" | tr '[:upper:]' '[:lower:]')
-    if ! [[ "$STAGE" =~ ^(alpha[0-9]*|beta[0-9]*|rc[0-9]*|stable)$ ]]; then
+    STAGE=$(echo "${STAGE}" | tr '[:upper:]' '[:lower:]')
+    if ! [[ "${STAGE}" =~ ^(alpha[0-9]*|beta[0-9]*|rc[0-9]*|stable)$ ]]; then
         echo "Error: Stage must be one of the following examples: alpha1, beta1, rc1, stable." | tee -a "${LOG_FILE}"
+        exit 1
+    fi
+
+    # Validate if tag is true or false
+    if [[ -n "${TAG}" && ! "${TAG}" =~ ^(true|false)$ ]]; then
+        echo "Error: --tag must be either true or false." | tee -a "${LOG_FILE}"
         exit 1
     fi
 
     # Get old version and stage
     get_old_version_and_stage
 
-    if [[ "$OLD_VERSION" == "$VERSION" && "$OLD_STAGE" == "$STAGE" ]]; then
+    if [[ "${OLD_VERSION}" == "${VERSION}" && "${OLD_STAGE}" == "${STAGE}" ]]; then
         echo "Version and stage are already up to date." | tee -a "${LOG_FILE}"
         echo "No changes needed." | tee -a "${LOG_FILE}"
         exit 0
     fi
-    if [[ "$OLD_VERSION" != "$VERSION" ]]; then
-        echo "Updating version from $OLD_VERSION to $VERSION" | tee -a "${LOG_FILE}"
-        update_version_in_files "$VERSION"
+    if [[ "${OLD_VERSION}" != "${VERSION}" ]]; then
+        echo "Updating version from ${OLD_VERSION} to ${VERSION}" | tee -a "${LOG_FILE}"
+        update_version_in_files "${VERSION}"
     fi
-    if [[ "$OLD_STAGE" != "$STAGE" ]]; then
-        echo "Updating stage from $OLD_STAGE to $STAGE" | tee -a "${LOG_FILE}"
-        update_stage_in_files "$STAGE"
+    if [[ "${OLD_STAGE}" != "${STAGE}" ]]; then
+        echo "Updating stage from ${OLD_STAGE} to ${STAGE}" | tee -a "${LOG_FILE}"
+        update_stage_in_files "${STAGE}"
     fi
 
     echo "The following files were edited:" | tee -a "${LOG_FILE}"
