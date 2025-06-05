@@ -160,6 +160,13 @@ main() {
         update_stage_in_files "${STAGE}"
     fi
 
+    # Update Docker images tag if tag is true
+    if [[ "${TAG}" == "true" ]]; then
+        echo "Updating Docker images tag to ${VERSION}-${STAGE}" | tee -a "${LOG_FILE}"
+        update_docker_images_tag "${VERSION}-${STAGE}"
+    fi
+
+
     echo "The following files were edited:" | tee -a "${LOG_FILE}"
     for file in $(printf "%s\n" "${FILES_EDITED[@]}" | sort -u); do
         echo "${file}" | tee -a "${LOG_FILE}"
