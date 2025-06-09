@@ -10,7 +10,7 @@ LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
 FILES_EDITED=()
-FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="4_bumper_repository.yml"'
+FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml"'
 
 get_old_version_and_stage() {
     local VERSION_FILE="${DIR}/VERSION.json"
