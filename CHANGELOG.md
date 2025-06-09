@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Integrate bumper script via GitHub action. ([#1863](https://github.com/wazuh/wazuh-docker/pull/1863))
+- Add missing malicious-ioc ruleset lists ([#1870](https://github.com/wazuh/wazuh-docker/pull/1870))
 - Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
 - Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
 - Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
@@ -60,24 +61,6 @@ All notable changes to this project will be documented in this file.
 
 - Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
 - Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
-
-## [4.12.1]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
 
 ## [4.12.0]
 
