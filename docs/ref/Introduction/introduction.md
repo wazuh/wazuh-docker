@@ -1,6 +1,6 @@
 # Reference Manual - Introduction
 
-Welcome to the Reference Manual for Wazuh-Docker, version 4.16.0. This manual provides comprehensive information about deploying, configuring, and managing your Wazuh environment using Docker.
+Welcome to the Reference Manual for Wazuh-Docker, version 4.13.0. This manual provides comprehensive information about deploying, configuring, and managing your Wazuh environment using Docker.
 
 ## Purpose of This Manual
 
@@ -44,4 +44,4 @@ This manual is structured to help you find information efficiently:
 -   If you need to customize your deployment, refer to the [Configuration](configuration/configuration.md) section.
 -   For specific terms or concepts, consult the [Glossary](glossary.md).
 
-This manual refers to version 4.16.0 of Wazuh-Docker. Ensure you are using the documentation that corresponds to your deployed version.
+This manual refers to version 4.13.0 of Wazuh-Docker. Ensure you are using the documentation that corresponds to your deployed version.

@@ -1,60 +1,6 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [4.16.0]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
-## [4.15.0]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
-## [4.14.0]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
 ## [4.13.0]
 
 ### Added
