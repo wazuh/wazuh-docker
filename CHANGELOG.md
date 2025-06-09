@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Add missing malicious-ioc ruleset lists ([#1870](https://github.com/wazuh/wazuh-docker/pull/1870))
 
 ### Deleted
 
