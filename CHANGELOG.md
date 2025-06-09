@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add missing malicious-ioc ruleset lists ([#1870](https://github.com/wazuh/wazuh-docker/pull/1870))
 - Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
 - Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
 - Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
