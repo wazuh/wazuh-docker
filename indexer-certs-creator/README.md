@@ -5,5 +5,5 @@ The dockerfile hosted in this directory is used to build the image used to boot 
 To create the image, the following command must be executed:
 
 ```
-$ docker build -t wazuh/wazuh-certs-generator:4.15.0-rc2 .
+$ docker build -t wazuh/wazuh-certs-generator:4.16.0-rc1 .
 ```
