@@ -10,7 +10,7 @@ LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
 FILES_EDITED=()
-FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="4_bumper_repository.yml"'
+FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml"'
 
 get_old_version_and_stage() {
     local VERSION_FILE="${DIR}/VERSION.json"
@@ -78,7 +78,7 @@ update_stage_in_files() {
 
 update_docker_images_tag() {
     local NEW_TAG="$1"
-    local DOCKERFILES=( $(grep_command -E "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}" --exclude="indexer-certs-creator/README.md"  --exclude="generate-indexer-certs.yml") )
+    local DOCKERFILES=( $(grep_command -E "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}" "--exclude="indexer-certs-creator/README.md"  --exclude="generate-indexer-certs.yml"") )
     for file in "${DOCKERFILES[@]}"; do
         sed -i -E "s/(wazuh\/wazuh-[a-zA-Z0-9._-]*):[a-zA-Z0-9._-]+/\1:${NEW_TAG}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
