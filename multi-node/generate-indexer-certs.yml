@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   generator:
-    image: wazuh/wazuh-certs-generator:0.0.2
+    image: wazuh/wazuh-certs-generator:4.15.0-rc2
     hostname: wazuh-certs-generator
     volumes:
       - ./config/wazuh_indexer_ssl_certs/:/certificates/
