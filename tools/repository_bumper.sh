@@ -78,7 +78,7 @@ update_stage_in_files() {
 
 update_docker_images_tag() {
     local NEW_TAG="$1"
-    local DOCKERFILES=( $(grep_command -E "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}" "--exclude="README.md"  --exclude="generate-indexer-certs.yml"") )
+    local DOCKERFILES=( $(grep_command "wazuh/wazuh-[a-zA-Z0-9._-]*" "${DIR}" "--exclude="README.md"  --exclude="generate-indexer-certs.yml"") )
     for file in "${DOCKERFILES[@]}"; do
         sed -i -E "s/(wazuh\/wazuh-[a-zA-Z0-9._-]*):[a-zA-Z0-9._-]+/\1:${NEW_TAG}/g" "${file}"
         if [[ $(git diff --name-only "${file}") ]]; then
