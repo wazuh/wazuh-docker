@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Target version (e.g. 4.13.0)'
+        description: 'Target version (e.g. 1.2.3)'
         default: ''
         required: false
         type: string
@@ -31,7 +31,7 @@ on:
 jobs:
   bump:
     name: Repository bumper
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
       pull-requests: write
@@ -96,7 +96,7 @@ jobs:
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
-          BRANCH_NAME="enhancement/docker${issue_number}-bump-${{ github.ref_name }}"
+          BRANCH_NAME="enhancement/wqa${issue_number}-bump-${{ github.ref_name }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "script_params=${script_params}" >> $GITHUB_OUTPUT
 
@@ -124,6 +124,7 @@ jobs:
             --body "Issue: ${{ inputs.issue-link }}" \
             --base ${{ github.ref_name }} \
             --head ${{ steps.vars.outputs.branch_name }})
+
           echo "Pull request created: ${PR_URL}"
           echo "pull_request_url=${PR_URL}" >> $GITHUB_OUTPUT
 
