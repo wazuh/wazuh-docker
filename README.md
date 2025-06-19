@@ -18,7 +18,7 @@ The `wazuh/wazuh-docker` repository provides resources to deploy the Wazuh cyber
 ## Branch Convention
 
 - `main`: Developing and testing of new features.
-- `X.Y.Z`: Version-specific branches (e.g., `5.0.0`, `4.14.0`, etc.).
+- `X.Y.Z`: Version-specific branches (e.g., `6.0.0`, `4.14.0`, etc.).
 
 ## Documentation
 
