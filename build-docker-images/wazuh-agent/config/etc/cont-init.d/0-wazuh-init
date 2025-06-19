@@ -1,0 +1,90 @@
+#!/usr/bin/with-contenv bash
+# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+
+WAZUH_INSTALL_PATH=/var/ossec
+WAZUH_CONFIG_MOUNT=/wazuh-config-mount
+WAZUH_MANAGER_SERVER=$WAZUH_MANAGER_SERVER
+WAZUH_MANAGER_PORT=${WAZUH_MANAGER_PORT:-"1514"}
+WAZUH_REGISTRATION_SERVER=${WAZUH_REGISTRATION_SERVER:-$WAZUH_MANAGER_SERVER}
+WAZUH_REGISTRATION_PORT=${WAZUH_REGISTRATION_PORT:-"1515"}
+WAZUH_REGISTRATION_PASSWORD=$WAZUH_REGISTRATION_PASSWORD
+WAZUH_AGENT_NAME=${WAZUH_AGENT_NAME:-"wazuh-agent-$HOSTNAME"}
+
+##############################################################################
+# Aux functions
+##############################################################################
+print() {
+  echo -e $1
+}
+
+error_and_exit() {
+  echo "Error executing command: '$1'."
+  echo 'Exiting.'
+  exit 1
+}
+
+exec_cmd() {
+  eval $1 > /dev/null 2>&1 || error_and_exit "$1"
+}
+
+exec_cmd_stdout() {
+  eval $1 2>&1 || error_and_exit "$1"
+}
+
+##############################################################################
+# Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
+# destination files permissions
+#
+# For example, to mount the file /var/ossec/data/etc/ossec.conf, mount it at
+# $WAZUH_CONFIG_MOUNT/etc/ossec.conf in your container and this code will
+# replace the ossec.conf file in /var/ossec/data/etc with yours.
+##############################################################################
+
+mount_files() {
+  if [ -e "$WAZUH_CONFIG_MOUNT" ]
+  then
+    print "Identified Wazuh configuration files to mount..."
+    exec_cmd_stdout "cp --verbose -r $WAZUH_CONFIG_MOUNT/* $WAZUH_INSTALL_PATH"
+  else
+    print "No Wazuh configuration files to mount..."
+  fi
+}
+
+##############################################################################
+# Allow users to set the manager ip and port, enrollment ip and port and
+# enroll dynamically on container start.
+#
+# To use this:
+# 1. Create your own ossec.conf file
+# 2. In your ossec.conf file, use the <agent> configuration
+# 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
+##############################################################################
+
+set_manager_conn() {
+  echo "ossec.conf configuration"
+  sed -i "s#<address>CHANGE_MANAGER_IP</address>#<address>$WAZUH_MANAGER_SERVER</address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  sed -i "s#<port>CHANGE_MANAGER_PORT</port>#<port>$WAZUH_MANAGER_PORT</port>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  sed -i "s#<manager_address>CHANGE_ENROLL_IP</manager_address>#<manager_address>$WAZUH_REGISTRATION_SERVER</manager_address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  sed -i "s#<port>CHANGE_ENROLL_PORT</port>#<port>$WAZUH_REGISTRATION_PORT</port>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  sed -i "s#<agent_name>CHANGEE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  [ -n "$WAZUH_REGISTRATION_PASSWORD" ] && \
+  echo "$WAZUH_REGISTRATION_PASSWORD" > ${WAZUH_INSTALL_PATH}/etc/authd.pass && \
+  chown root:wazuh ${WAZUH_INSTALL_PATH}/etc/authd.pass && \
+  chmod 640 ${WAZUH_INSTALL_PATH}/etc/authd.pass
+}
+
+##############################################################################
+# Main function
+##############################################################################
+
+main() {
+
+  # Mount selected files (WAZUH_CONFIG_MOUNT) to container
+  mount_files
+
+  # Configure agent variables
+  set_manager_conn
+
+}
+
+main

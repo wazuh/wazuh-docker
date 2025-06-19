@@ -8,7 +8,7 @@ WAZUH_TAG=$(curl --silent https://api.github.com/repos/wazuh/wazuh/git/refs/tags
 if [[ -n "${WAZUH_TAG}" ]]; then
   APT_KEY=https://packages.wazuh.com/key/GPG-KEY-WAZUH
   GPG_SIGN="gpgcheck=1\ngpgkey=${APT_KEY}]"
-  REPOSITORY="[wazuh]\n${GPG_SIGN}\nenabled=1\nname=EL-\$releasever - Wazuh\nbaseurl=https://packages.wazuh.com/4.x/yum/\nprotect=1"
+  REPOSITORY="[wazuh]\n${GPG_SIGN}\nenabled=1\nname=EL-\$releasever - Wazuh\nbaseurl=https://packages.wazuh.com/5.x/yum/\nprotect=1"
 fi
 
 rpm --import "${APT_KEY}"

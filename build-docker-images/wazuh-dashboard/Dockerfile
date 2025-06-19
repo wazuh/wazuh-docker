@@ -21,6 +21,8 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
 COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
+RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
+RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
 # Generate certificates
 COPY config/config.sh .

@@ -4,16 +4,11 @@ on: [pull_request]
 
 jobs:
   build-docker-images:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+      uses: actions/checkout@v4
 
     - name: Build Wazuh images
       run: build-docker-images/build-images.sh
@@ -27,29 +22,35 @@ jobs:
         docker save wazuh/wazuh-manager:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         docker save wazuh/wazuh-indexer:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
+        docker save wazuh/wazuh-agent:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
         docker save wazuh/wazuh-cert-tool:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-cert-tool.tar
 
     - name: Temporarily save Wazuh manager Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-manager
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-indexer
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-artifact-dashboard
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
         retention-days: 1
 
+    - name: Temporarily save Wazuh agent Docker image
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-artifact-agent
+        path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
     - name: Temporarily save Wazuh Cert Tool Docker image
       uses: actions/upload-artifact@v3
       with:
@@ -69,36 +70,35 @@ jobs:
         GOSS_FILE: .github/.goss.yaml
 
   check-single-node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-docker-images
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+      uses: actions/checkout@v4
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-indexer
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-dashboard
 
+    - name: Retrieve saved Wazuh agent Docker image
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-artifact-agent
     - name: Retrieve saved Wazuh Cert Tool Docker image
       uses: actions/download-artifact@v3
       with:
@@ -109,6 +109,10 @@ jobs:
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
         docker load --input ./wazuh-manager.tar
+        docker load --input ./wazuh-agent.tar
+
+    - name: Create single node certficates
+      run: docker compose -f single-node/generate-certs.yml run --rm generator
         docker load --input ./wazuh-cert-tool.tar
         rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-cert-tool.tar
 
@@ -117,7 +121,7 @@ jobs:
       run: docker-compose -f single-node/generate-certs.yml run --rm generator
 
     - name: Start single node stack
-      run: docker-compose -f single-node/docker-compose.yml up -d
+      run: docker compose -f single-node/docker-compose.yml up -d
 
     - name: Check Wazuh indexer start
       run: |
@@ -200,48 +204,55 @@ jobs:
         exit 1
        fi
 
-    - name: Check errors in ossec.log
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start Wazuh agent
+      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-docker-images
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Install docker-compose
-      run: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+      uses: actions/checkout@v4
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
 
     - name: free disk space
-      run: |
-        sudo swapoff -a
-        sudo rm -f /swapfile
-        sudo apt clean
-        docker rmi $(docker image ls -aq)
-        df -h
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-dashboard
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: docker-artifact-indexer
 
+    - name: Retrieve saved Wazuh agent Docker image
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-artifact-agent
     - name: Retrieve saved Wazuh Cert Tool Docker image
       uses: actions/download-artifact@v3
       with:
@@ -251,6 +262,11 @@ jobs:
       run: |
         docker load --input ./wazuh-indexer.tar
         docker load --input ./wazuh-dashboard.tar
+        docker load --input ./wazuh-agent.tar
+        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-agent.tar
+
+    - name: Create multi node certficates
+      run: docker compose -f multi-node/generate-certs.yml run --rm generator
         docker load --input ./wazuh-manager.tar
         docker load --input ./wazuh-cert-tool.tar
         rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-cert-tool.tar
@@ -259,7 +275,7 @@ jobs:
       run: docker-compose -f multi-node/generate-certs.yml run --rm generator
 
     - name: Start multi node stack
-      run: docker-compose -f multi-node/docker-compose.yml up -d
+      run: docker compose -f multi-node/docker-compose.yml up -d
 
     - name: Check Wazuh indexer start
       run: |
@@ -360,5 +376,18 @@ jobs:
         exit 1
        fi
 
-    - name: Check errors in ossec.log
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start Wazuh agent
+      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
