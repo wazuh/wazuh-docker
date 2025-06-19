@@ -1,7 +1,43 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [6.0.0]
+
+### Added
+
+- none
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [5.0.0]
+
+### Added
+
+- none
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.2]
 
 ### Added
 

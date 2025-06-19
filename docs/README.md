@@ -138,7 +138,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │       ├── wazuh2.indexer.yml
 	│   │       └── wazuh3.indexer.yml
 	│   ├── docker-compose.yml
-	│   ├── generate-indexer-certs.yml
+	│   ├── generate-certs.yml
 	│   ├── Migration-to-Wazuh-4.4.md
 	│   ├── README.md
 	│   └── volume-migrator.sh
@@ -157,7 +157,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │   │   └── wazuh.indexer.yml
 	│   │   └── wazuh_indexer_ssl_certs  [error opening dir]
 	│   ├── docker-compose.yml
-	│   ├── generate-indexer-certs.yml
+	│   ├── generate-certs.yml
 	│   └── README.md
 	├── VERSION.json
 	└── wazuh-agent

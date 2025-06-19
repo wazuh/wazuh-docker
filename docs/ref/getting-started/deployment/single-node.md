@@ -17,7 +17,7 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 
 3.  Run the script to generate the necessary certificates for the Wazuh Stack. This ensures secure communication between the nodes:
     ```bash
-    docker-compose -f generate-indexer-certs.yml run --rm generator
+    docker-compose -f generate-certs.yml run --rm generator
     ```
 
 4.  Start the Wazuh environment using `docker-compose`:
