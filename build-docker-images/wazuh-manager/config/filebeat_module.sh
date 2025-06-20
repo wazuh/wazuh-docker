@@ -4,7 +4,7 @@ WAZUH_TAG=$(curl --silent https://api.github.com/repos/wazuh/wazuh/git/refs/tags
 
 ## check tag to use the correct repository
 if [[ -n "${WAZUH_TAG}" ]]; then
-  REPOSITORY="packages.wazuh.com/4.x"
+  REPOSITORY="packages.wazuh.com/5.x"
 fi
 
 curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\

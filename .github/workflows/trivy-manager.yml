@@ -11,8 +11,7 @@ on:
     - published
   pull_request:
     branches:
-      - master
-      - stable
+      - main
   schedule:
     - cron: '34 2 * * 1'
   workflow_dispatch:

@@ -8,12 +8,12 @@
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.12/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.12/
+PACKAGES_URL=https://packages.wazuh.com/5.0/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/5.0/
 
 ## Check if the cert tool exists in S3 buckets
-CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
-CERT_TOOL_PACKAGES_DEV=$(curl --silent -I $PACKAGES_DEV_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+CERT_TOOL_PACKAGES=$(curl --silent --head --location --output /dev/null --write-out "%{http_code}" "$PACKAGES_URL$CERT_TOOL")
+CERT_TOOL_PACKAGES_DEV=$(curl --silent --head --location --output /dev/null --write-out "%{http_code}" "$PACKAGES_DEV_URL$CERT_TOOL")
 
 ## If cert tool exists in some bucket, download it, if not exit 1
 if [ "$CERT_TOOL_PACKAGES" = "200" ]; then

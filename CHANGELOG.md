@@ -1,6 +1,86 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Change validation of existing certs tool in S3 buckets ([#1880](https://github.com/wazuh/wazuh-docker/pull/1880))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.13.1]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.13.0]
+
+### Added
+
+- Add permanent_data exceptions. ([#1890](https://github.com/wazuh/wazuh-docker/pull/1890))
+- Integrate bumper script via GitHub action. ([#1863](https://github.com/wazuh/wazuh-docker/pull/1863))
+- Add missing malicious-ioc ruleset lists ([#1870](https://github.com/wazuh/wazuh-docker/pull/1870))
+- Added repository_bumper script. ([#1781](https://github.com/wazuh/wazuh-docker/pull/1781))
+- Fix Warning message when migrating Docker compose v2 ([#1828](https://github.com/wazuh/wazuh-docker/pull/1828))
+- Add technical documentation ([#1822](https://github.com/wazuh/wazuh-docker/pull/1822))
+- Add wazuh agent test and push ([#1817](https://github.com/wazuh/wazuh-docker/pull/1817))
+- Add Wazuh agent image build and deploy ([#1816](https://github.com/wazuh/wazuh-docker/pull/1816))
+
+### Changed
+
+- Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
+
+### Fixed
+
+- None
+
+### Deleted
+
+- Remove default docker reference version from workflow ([#1761](https://github.com/wazuh/wazuh-docker/pull/1761))
+- Remove 'stable' branch ocurrencies ([#1757](https://github.com/wazuh/wazuh-docker/pull/1757))
+
 ## [4.12.0]
 
 ### Added
@@ -129,7 +209,6 @@ All notable changes to this project will be documented in this file.
 
 - None
 
-
 ### Fixed
 
 - Fix typos into Wazuh manager entrypoint ([#1569](https://github.com/wazuh/wazuh-docker/pull/1569))
@@ -137,7 +216,6 @@ All notable changes to this project will be documented in this file.
 ### Deleted
 
 - None
-
 
 ## Wazuh Docker v4.9.0
 ### Added
