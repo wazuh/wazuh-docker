@@ -79,7 +79,7 @@ services:
     environment:
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=SecretPassword
-      - WAZUH_API_URL=https://wazuh.manager
+      - WAZUH_API_URL=http://wazuh.manager
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
