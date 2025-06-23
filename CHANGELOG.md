@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Fix OpenSearch deprecated settings [#1366](https://github.com/wazuh/wazuh-puppet/issues/1366)
 
 ### Fixed
 
