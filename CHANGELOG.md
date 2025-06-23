@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add filebeat config file in the PERMANENT_DATA_EXCP list ([#1898](https://github.com/wazuh/wazuh-docker/pull/1898))
 - Change validation of existing certs tool in S3 buckets ([#1880](https://github.com/wazuh/wazuh-docker/pull/1880))
 
 ### Fixed
