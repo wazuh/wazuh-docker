@@ -1,5 +1,5 @@
 ## variables
-REPOSITORY="packages-dev.wazuh.com/pre-release"
+REPOSITORY="packages-dev.wazuh.info/pre-release"
 WAZUH_TAG=$(curl --silent https://api.github.com/repos/wazuh/wazuh/git/refs/tags | grep '["]ref["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/'  | cut -c 11- | grep ^v${WAZUH_VERSION}$)
 
 ## check tag to use the correct repository
