@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Update Dockerfile to copy opensearch-security files ([#1928](https://github.com/wazuh/wazuh-docker/pull/1928))
 
 ### Deleted
 
