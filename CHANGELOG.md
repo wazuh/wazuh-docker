@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.14.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Add filebeat config file in the PERMANENT_DATA_EXCP list ([#1898](https://github.com/wazuh/wazuh-docker/pull/1898))
+- Change validation of existing certs tool in S3 buckets ([#1880](https://github.com/wazuh/wazuh-docker/pull/1880))
+
+### Fixed
+
+- Update Dockerfile to copy opensearch-security files ([#1928](https://github.com/wazuh/wazuh-docker/pull/1928))
+
+### Deleted
+
+- None
+
 ## [4.13.1]
 
 ### Added
