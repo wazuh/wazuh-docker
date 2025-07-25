@@ -167,16 +167,17 @@ set_custom_cluster_key() {
 }
 
 ##############################################################################
-# Modify /var/ossec/queue/rids directory owner on
-# container start.
+# Set correct ownership for Wazuh related directories
+# on container start.
 ##############################################################################
 
-set_rids_owner() {
+configure_permissions() {
   chown -R wazuh:wazuh /var/ossec/queue/rids
+  chown -R wazuh:wazuh /var/ossec/etc/lists
 }
 
 ##############################################################################
-# Change any ossec user/group to wazuh user/group 
+# Change any ossec user/group to wazuh user/group
 ##############################################################################
 
 set_correct_permOwner() {
@@ -226,8 +227,8 @@ main() {
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
-  # Set rids directory owner
-  set_rids_owner
+  # Set correct ownership for Wazuh related directories
+  configure_permissions
 }
 
 main

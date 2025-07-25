@@ -192,7 +192,7 @@ jobs:
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
     - name: Start Wazuh agent
-      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+      run: docker compose -f wazuh-agent/docker-compose.yml up -d
 
     - name: Check Wazuh agent enrollment
       run: |
@@ -355,7 +355,7 @@ jobs:
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
     - name: Start Wazuh agent
-      run: docker-compose -f wazuh-agent/docker-compose.yml up -d
+      run: docker compose -f wazuh-agent/docker-compose.yml up -d
 
     - name: Check Wazuh agent enrollment
       run: |
