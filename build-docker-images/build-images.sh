@@ -76,7 +76,7 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or rc2, not used by default."
+    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc1 or rc2, not used by default."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
