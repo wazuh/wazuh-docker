@@ -8,6 +8,9 @@ services:
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         FILEBEAT_TEMPLATE_BRANCH: ${FILEBEAT_TEMPLATE_BRANCH}
         WAZUH_FILEBEAT_MODULE: ${WAZUH_FILEBEAT_MODULE}
+      platforms:
+        - linux/amd64
+        - linux/arm64
     image: wazuh/wazuh-manager:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.manager
     restart: always
@@ -50,6 +53,9 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+      platforms:
+        - linux/amd64
+        - linux/arm64
     image: wazuh/wazuh-indexer:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.indexer
     restart: always
@@ -72,6 +78,9 @@ services:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         WAZUH_UI_REVISION: ${WAZUH_UI_REVISION}
+      platforms:
+        - linux/amd64
+        - linux/arm64
     image: wazuh/wazuh-dashboard:${WAZUH_IMAGE_VERSION}
     hostname: wazuh.dashboard
     restart: always
