@@ -17,18 +17,18 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
 3.  Run the script to generate the necessary certificates for the Wazuh Stack. This ensures secure communication between the nodes:
     ```bash
-    docker-compose -f generate-indexer-certs.yml run --rm generator
+    docker compose -f generate-indexer-certs.yml run --rm generator
     ```
 
-4.  Start the Wazuh environment using `docker-compose`:
+4.  Start the Wazuh environment using `docker compose`:
 
     * To run in the foreground (logs will be displayed in your current terminal; press `Ctrl+C` to stop):
         ```bash
-        docker-compose up
+        docker compose up
         ```
     * To run in the background (detached mode, allowing the containers to run independently of your terminal):
         ```bash
-        docker-compose up -d
+        docker compose up -d
         ```
 
 Please allow some time for the environment to initialize, especially on the first run. A multi-node setup can take a few minutes (depending on your host resources and network) as the Wazuh Indexer cluster forms, and the necessary indexes and index patterns are generated.

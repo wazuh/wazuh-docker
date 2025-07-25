@@ -42,6 +42,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Set right ownership for malicious-ioc files on container start ([#1926](https://github.com/wazuh/wazuh-docker/pull/1926))
+- Delete services statement in wazuh agent deployment. ([#1925](https://github.com/wazuh/wazuh-docker/pull/1925))
 - Add permanent_data exceptions. ([#1890](https://github.com/wazuh/wazuh-docker/pull/1890))
 - Integrate bumper script via GitHub action. ([#1863](https://github.com/wazuh/wazuh-docker/pull/1863))
 - Add missing malicious-ioc ruleset lists ([#1870](https://github.com/wazuh/wazuh-docker/pull/1870))
