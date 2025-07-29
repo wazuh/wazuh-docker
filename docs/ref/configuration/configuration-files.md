@@ -29,4 +29,4 @@
         ```
 
 
-Consult the official Wazuh documentation for version 4.14.0 for detailed information on all possible configuration parameters for each component.
+Consult the official Wazuh documentation for version 4.14.1 for detailed information on all possible configuration parameters for each component.
