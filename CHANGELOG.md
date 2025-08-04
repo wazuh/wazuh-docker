@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fix config directory for opensearch_security plugin work ([#1951](https://github.com/wazuh/wazuh-docker/pull/1951))
 - Update Dockerfile to copy opensearch-security files ([#1928](https://github.com/wazuh/wazuh-docker/pull/1928))
 
 ### Deleted
