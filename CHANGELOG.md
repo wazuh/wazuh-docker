@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Add wazuh-template.json into permanent data exception ([#1967](https://github.com/wazuh/wazuh-docker/pull/1967))
 
 ### Deleted
 
