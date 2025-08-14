@@ -22,7 +22,7 @@
       <port>CHANGE_ENROLL_PORT</port>
       <agent_name>CHANGEE_AGENT_NAME</agent_name>
       <authorization_pass_path>etc/authd.pass</authorization_pass_path>
-      <group>CHANGEE_AGENT_GROUP</group>
+      <groups>CHANGEE_AGENT_GROUP</groups>
     </enrollment>
   </client>
 
