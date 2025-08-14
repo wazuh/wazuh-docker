@@ -6,7 +6,7 @@ umask 0002
 
 export USER=wazuh-indexer
 export INSTALLATION_DIR=/usr/share/wazuh-indexer
-export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}
+export OPENSEARCH_PATH_CONF=${INSTALLATION_DIR}/config
 export JAVA_HOME=${INSTALLATION_DIR}/jdk
 export DISCOVERY=$(grep -oP "(?<=discovery.type: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)
 export CACERT=$(grep -oP "(?<=plugins.security.ssl.transport.pemtrustedcas_filepath: ).*" ${OPENSEARCH_PATH_CONF}/opensearch.yml)

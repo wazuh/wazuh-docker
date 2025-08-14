@@ -1,5 +1,6 @@
 network.host: "0.0.0.0"
 node.name: "wazuh.indexer"
+cluster.name: "wazuh-cluster"
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
 discovery.type: single-node
