@@ -13,7 +13,10 @@ IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 # Foundation.
 
 WAZUH_IMAGE_VERSION="5.0.0"
+WAZUH_TAG_REVISION="1"
+WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.4"
+
 # -----------------------------------------------------------------------------
 
 trap ctrl_c INT
