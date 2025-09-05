@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add opensearch_dashboard.yml parameters. ([#1985](https://github.com/wazuh/wazuh-docker/pull/1985))
 - Set right ownership for malicious-ioc files on container start ([#1926](https://github.com/wazuh/wazuh-docker/pull/1926))
 - Delete services statement in wazuh agent deployment. ([#1925](https://github.com/wazuh/wazuh-docker/pull/1925))
 - Add permanent_data exceptions. ([#1890](https://github.com/wazuh/wazuh-docker/pull/1890))
