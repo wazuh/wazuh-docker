@@ -15,4 +15,3 @@ opensearch_security.cookie.ttl: 900000
 opensearch_security.session.ttl: 900000
 opensearch_security.session.keepalive: true
 assistant.chat.enabled: true
-data_source.enabled: true
