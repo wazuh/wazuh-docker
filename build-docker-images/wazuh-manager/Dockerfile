@@ -22,8 +22,8 @@ RUN chmod 775 /check_repository.sh
 RUN source /check_repository.sh
 
 RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all && \
     yum install python3-requests -y && \
+    yum clean all && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
     rm /filebeat_module.sh && \
