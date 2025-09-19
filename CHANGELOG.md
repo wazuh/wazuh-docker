@@ -45,6 +45,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Rollback data source setting ([#1999](https://github.com/wazuh/wazuh-docker/pull/1999))
+- Dashboard settings added ([#1998](https://github.com/wazuh/wazuh-docker/pull/1998))
 - Add filebeat config file in the PERMANENT_DATA_EXCP list ([#1898](https://github.com/wazuh/wazuh-docker/pull/1898))
 - Change validation of existing certs tool in S3 buckets ([#1880](https://github.com/wazuh/wazuh-docker/pull/1880))
 
@@ -76,6 +78,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Syscollector configuration change ([#1994](https://github.com/wazuh/wazuh-docker/pull/1994))
 - Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
 
 ### Fixed
