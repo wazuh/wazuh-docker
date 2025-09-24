@@ -13,7 +13,7 @@ export LOG_DIR=/var/log/${NAME}
 export LIB_DIR=/var/lib/${NAME}
 export PID_DIR=/run/${NAME}
 export INSTALLATION_DIR=/usr/share/${NAME}
-export CONFIG_DIR=${INSTALLATION_DIR}
+export CONFIG_DIR=${INSTALLATION_DIR}/config
 export BASE_DIR=${NAME}-*
 export INDEXER_FILE=wazuh-indexer-base.tar.xz
 export BASE_FILE=wazuh-indexer-base-${VERSION}-linux-x64.tar.xz
@@ -22,8 +22,8 @@ export REPO_DIR=/unattended_installer
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.13/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.13/
+PACKAGES_URL=https://packages.wazuh.com/4.14/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.14/
 
 ## Check if the cert tool exists in S3 buckets
 CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
