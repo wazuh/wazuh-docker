@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Remove dashboard chat setting ([#2021](https://github.com/wazuh/wazuh-docker/pull/2021))
 - Rollback data source setting ([#1999](https://github.com/wazuh/wazuh-docker/pull/1999))
 - Dashboard settings added ([#1998](https://github.com/wazuh/wazuh-docker/pull/1998))
 - Add filebeat config file in the PERMANENT_DATA_EXCP list ([#1898](https://github.com/wazuh/wazuh-docker/pull/1898))
