@@ -1,7 +1,7 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM ubuntu:focal
+FROM amazonlinux:2023
 
-RUN apt-get update && apt-get install openssl curl -y
+RUN yum update -y && yum install openssl curl-minimal -y
 
 WORKDIR /
 
