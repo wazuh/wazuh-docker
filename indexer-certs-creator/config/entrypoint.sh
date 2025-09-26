@@ -16,7 +16,7 @@ OUTPUT_FILE="/$CERT_TOOL"
 download_package() {
     local url=$1
     echo "Checking $url$CERT_TOOL ..."
-    if curl -fsSL "$url$CERT_TOOL" -o "$OUTPUT_FILE"; then
+    if curl -fsL "$url$CERT_TOOL" -o "$OUTPUT_FILE"; then
         echo "Downloaded $CERT_TOOL from $url"
         return 0
     else
