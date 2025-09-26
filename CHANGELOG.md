@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Wazuh cert tool generator improvements ([#2027](https://github.com/wazuh/wazuh-docker/pull/2027))
 
 ### Fixed
 
