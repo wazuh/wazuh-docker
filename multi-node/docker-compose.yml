@@ -31,9 +31,7 @@ services:
       - master-wazuh-logs:/var/ossec/logs
       - master-wazuh-queue:/var/ossec/queue
       - master-wazuh-var-multigroups:/var/ossec/var/multigroups
-      - master-wazuh-integrations:/var/ossec/integrations
       - master-wazuh-active-response:/var/ossec/active-response/bin
-      - master-wazuh-agentless:/var/ossec/agentless
       - master-wazuh-wodles:/var/ossec/wodles
       - master-filebeat-etc:/etc/filebeat
       - master-filebeat-var:/var/lib/filebeat
@@ -67,9 +65,7 @@ services:
       - worker-wazuh-logs:/var/ossec/logs
       - worker-wazuh-queue:/var/ossec/queue
       - worker-wazuh-var-multigroups:/var/ossec/var/multigroups
-      - worker-wazuh-integrations:/var/ossec/integrations
       - worker-wazuh-active-response:/var/ossec/active-response/bin
-      - worker-wazuh-agentless:/var/ossec/agentless
       - worker-wazuh-wodles:/var/ossec/wodles
       - worker-filebeat-etc:/etc/filebeat
       - worker-filebeat-var:/var/lib/filebeat
@@ -198,9 +194,7 @@ volumes:
   master-wazuh-logs:
   master-wazuh-queue:
   master-wazuh-var-multigroups:
-  master-wazuh-integrations:
   master-wazuh-active-response:
-  master-wazuh-agentless:
   master-wazuh-wodles:
   master-filebeat-etc:
   master-filebeat-var:
@@ -209,9 +203,7 @@ volumes:
   worker-wazuh-logs:
   worker-wazuh-queue:
   worker-wazuh-var-multigroups:
-  worker-wazuh-integrations:
   worker-wazuh-active-response:
-  worker-wazuh-agentless:
   worker-wazuh-wodles:
   worker-filebeat-etc:
   worker-filebeat-var:
