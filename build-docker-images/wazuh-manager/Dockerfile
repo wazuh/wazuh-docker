@@ -50,9 +50,6 @@ RUN chmod go-w /etc/filebeat/wazuh-template.json
 RUN mkdir -p /var/ossec/var/multigroups && \
     chown root:wazuh /var/ossec/var/multigroups && \
     chmod 770 /var/ossec/var/multigroups && \
-    mkdir -p /var/ossec/agentless && \
-    chown root:wazuh /var/ossec/agentless && \
-    chmod 770 /var/ossec/agentless && \
     mkdir -p /var/ossec/active-response/bin && \
     chown root:wazuh /var/ossec/active-response/bin && \
     chmod 770 /var/ossec/active-response/bin && \
