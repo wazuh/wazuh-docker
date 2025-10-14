@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Backport 4.13.0 changes: Modify wazuh-keystore use ([#2036](https://github.com/wazuh/wazuh-docker/pull/2036)) \- (wazuh-keystore)
 
 ### Fixed
 
@@ -27,8 +27,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Modify wazuh-keystore use ([#1750](https://github.com/wazuh/wazuh-docker/pull/1750)) \- (wazuh-keystore)
-
+- None
 
 ### Fixed
 
