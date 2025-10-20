@@ -69,7 +69,7 @@ services:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.14.0-rc1
+    image: merecu/wazuh-dashboard:4.14.0
     hostname: wazuh.dashboard
     restart: always
     ports:
