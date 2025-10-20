@@ -3,15 +3,18 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
+ARG REPO_ORIGIN=https://packages-dev.wazuh.com/pre-release
+ARG TARGETARCH
+ENV PKG_ARCH=${TARGETARCH}
 
-RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y
-
-COPY config/check_repository.sh /
-RUN chmod 775 /check_repository.sh && \
-    source /check_repository.sh
-
-RUN yum install wazuh-indexer-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all
+RUN dnf install curl-minimal openssl xz tar findutils shadow-utils -y &&\
+    case "$PKG_ARCH" in \
+      amd64) ARCH_NAME="x86_64" ;; \
+      arm64) ARCH_NAME="aarch64" ;; \
+      *) echo "Unsupported arch: $PKG_ARCH" && exit 1 ;; \
+    esac && \
+    dnf install ${REPO_ORIGIN}/yum/wazuh-indexer-${WAZUH_VERSION}-${WAZUH_TAG_REVISION}.${ARCH_NAME}.rpm -y && \
+    dnf clean all
 
 COPY config/opensearch.yml /
 

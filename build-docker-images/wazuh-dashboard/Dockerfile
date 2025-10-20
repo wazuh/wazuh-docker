@@ -5,16 +5,19 @@ ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG WAZUH_UI_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
+ARG REPO_ORIGIN=https://packages-dev.wazuh.com/pre-release
+ARG TARGETARCH
+ENV PKG_ARCH=${TARGETARCH}
 
 # Update and install dependencies
-RUN yum install curl-minimal libcap openssl -y
-
-COPY config/check_repository.sh /
-RUN chmod 775 /check_repository.sh && \
-    source /check_repository.sh
-
-RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all
+RUN dnf install curl-minimal libcap openssl -y &&\
+    case "$PKG_ARCH" in \
+      amd64) ARCH_NAME="x86_64" ;; \
+      arm64) ARCH_NAME="aarch64" ;; \
+      *) echo "Unsupported arch: $PKG_ARCH" && exit 1 ;; \
+    esac && \
+    dnf install ${REPO_ORIGIN}/yum/wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION}.${ARCH_NAME}.rpm -y && \
+    dnf clean all
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -60,7 +63,7 @@ ENV PATTERN="" \
     WAZUH_MONITORING_REPLICAS=""
 
 # Update and install dependencies
-RUN yum install shadow-utils -y
+RUN dnf install shadow-utils -y
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP

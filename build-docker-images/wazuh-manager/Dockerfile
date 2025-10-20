@@ -11,19 +11,22 @@ ARG FILEBEAT_VERSION=7.10.2
 ARG FILEBEAT_REVISION=2
 ARG WAZUH_FILEBEAT_MODULE
 ARG S6_VERSION="v2.2.0.3"
+ARG REPO_ORIGIN=https://packages-dev.wazuh.com/pre-release
+ARG TARGETARCH
+ENV PKG_ARCH=${TARGETARCH}
 
-RUN yum install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
-    yum clean all
-
-COPY config/check_repository.sh /
 COPY config/filebeat_module.sh /
 COPY config/permanent_data.env config/permanent_data.sh /
 
-RUN chmod 775 /check_repository.sh
-RUN source /check_repository.sh
 
-RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all && \
+RUN dnf install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
+    case "$PKG_ARCH" in \
+      amd64) ARCH_NAME="x86_64" ;; \
+      arm64) ARCH_NAME="aarch64" ;; \
+      *) echo "Unsupported arch: $PKG_ARCH" && exit 1 ;; \
+    esac && \
+    dnf install ${REPO_ORIGIN}/yum/wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION}.${ARCH_NAME}.rpm -y && \
+    dnf clean all && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
     rm /filebeat_module.sh && \
@@ -60,8 +63,6 @@ RUN mkdir -p /var/ossec/var/multigroups && \
     chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
-
-RUN rm /etc/yum.repos.d/wazuh.repo
 
 # Services ports
 EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
