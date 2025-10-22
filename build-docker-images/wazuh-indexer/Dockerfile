@@ -13,19 +13,7 @@ RUN chmod 775 /check_repository.sh && \
 RUN yum install wazuh-indexer-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all
 
-COPY config/opensearch.yml /
-
 COPY config/config.sh .
-
-COPY config/config.yml /
-
-COPY config/action_groups.yml /
-
-COPY config/internal_users.yml /
-
-COPY config/roles_mapping.yml /
-
-COPY config/roles.yml /
 
 RUN bash config.sh
 
@@ -36,6 +24,7 @@ RUN bash config.sh
 # Add entrypoint
 
 ################################################################################
+
 FROM amazonlinux:2023
 
 ENV USER="wazuh-indexer" \
