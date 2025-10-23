@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.14.1]
+
+### Added
+
+- None
+
+### Changed
+
+- Wazuh cert tool generator improvements ([#2027](https://github.com/wazuh/wazuh-docker/pull/2027))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.14.0]
 
 ### Added
