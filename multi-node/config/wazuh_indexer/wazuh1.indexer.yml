@@ -1,6 +1,6 @@
 network.host: wazuh1.indexer
 node.name: wazuh1.indexer
-cluster.initial_master_nodes:
+cluster.initial_cluster_manager_nodes:
         - wazuh1.indexer
         - wazuh2.indexer
         - wazuh3.indexer
@@ -35,4 +35,3 @@ plugins.security.restapi.roles_enabled:
 - "security_rest_api_access"
 plugins.security.allow_default_init_securityindex: true
 cluster.routing.allocation.disk.threshold_enabled: false
-compatibility.override_main_response_version: true

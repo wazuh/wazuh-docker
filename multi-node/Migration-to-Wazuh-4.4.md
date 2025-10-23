@@ -83,22 +83,8 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=master-wazuh-integrations \
-           multi-node_master-wazuh-integrations
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
            --label com.docker.compose.volume=master-wazuh-active-response \
            multi-node_master-wazuh-active-response
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=master-wazuh-agentless \
-           multi-node_master-wazuh-agentless
 ```
 ```
 docker volume create \
@@ -160,22 +146,8 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=worker-wazuh-integrations \
-           multi-node_worker-wazuh-integrations
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
            --label com.docker.compose.volume=worker-wazuh-active-response \
            multi-node_worker-wazuh-active-response
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=worker-wazuh-agentless \
-           multi-node_worker-wazuh-agentless
 ```
 ```
 docker volume create \
@@ -249,20 +221,8 @@ docker container run --rm -it \
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_ossec-integrations:/from \
-           -v multi-node_master-wazuh-integrations:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
            -v wazuh-docker_ossec-active-response:/from \
            -v multi-node_master-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
-           -v wazuh-docker_ossec-agentless:/from \
-           -v multi-node_master-wazuh-agentless:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
@@ -315,20 +275,8 @@ docker container run --rm -it \
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-integrations:/from \
-           -v multi-node_worker-wazuh-integrations:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
            -v wazuh-docker_worker-ossec-active-response:/from \
            -v multi-node_worker-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-agentless:/from \
-           -v multi-node_worker-wazuh-agentless:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
