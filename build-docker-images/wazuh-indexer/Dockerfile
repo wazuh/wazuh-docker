@@ -62,9 +62,10 @@ COPY config/entrypoint.sh /
 
 COPY config/securityadmin.sh /
 
-RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh
-
-RUN chown 1000:1000 /*.sh
+RUN chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && \
+    mkdir -p /usr/share/wazuh-indexer && \
+    chown 1000:1000 /usr/share/wazuh-indexer && \
+    chown 1000:1000 /*.sh
 
 COPY --from=builder --chown=1000:1000 /usr/share/wazuh-indexer /usr/share/wazuh-indexer
 COPY --from=builder --chown=1000:1000 /etc/wazuh-indexer /usr/share/wazuh-indexer/config
