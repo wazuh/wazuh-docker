@@ -28,7 +28,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Wazuh cert tool generator improvements ([#2027](https://github.com/wazuh/wazuh-docker/pull/2027))
 
 ### Fixed
 
@@ -46,6 +46,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change filebeat install method ([#2020](https://github.com/wazuh/wazuh-docker/pull/2020))
+- Remove dashboard chat setting ([#2021](https://github.com/wazuh/wazuh-docker/pull/2021))
 - Rollback data source setting ([#1999](https://github.com/wazuh/wazuh-docker/pull/1999))
 - Dashboard settings added ([#1998](https://github.com/wazuh/wazuh-docker/pull/1998))
 - Add filebeat config file in the PERMANENT_DATA_EXCP list ([#1898](https://github.com/wazuh/wazuh-docker/pull/1898))
@@ -53,6 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Change Wazuh indexer directory owner ([#2029](https://github.com/wazuh/wazuh-docker/pull/2029))
 - Double the amount of space consumed in Wazuh Indexer ([#1953](https://github.com/wazuh/wazuh-docker/pull/1953))
 - Fix config directory for opensearch_security plugin work ([#1951](https://github.com/wazuh/wazuh-docker/pull/1951))
 - Update Dockerfile to copy opensearch-security files ([#1928](https://github.com/wazuh/wazuh-docker/pull/1928))
