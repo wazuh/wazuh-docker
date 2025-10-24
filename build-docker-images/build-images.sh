@@ -58,15 +58,42 @@ build() {
         fi
     fi
 
-    echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > .env
-    echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> .env
-    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> .env
-    echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> .env
-    echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .env
-    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
+    # Variables
+    FILE="packages_url.txt"
 
-    docker compose -f build-docker-images/build-images.yml --env-file .env build --no-cache || clean 1
+    if [[ -f "$FILE" ]]; then
+        echo "$FILE exists. Using existing file."
+    else
+        TAG="v${WAZUH_VERSION}"
+        REPO="wazuh/wazuh-docker"
+        GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
 
+        echo "🔎 Verificando si existe el tag ${TAG} en ${REPO} ..."
+        if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
+            curl -fsSL -o "$FILE" "https://packages.wazuh.com/5.0/packages_url.txt"
+        else
+            curl -fsSL -o "$FILE" "https://packages-dev.wazuh.com/5.0/packages_url.txt"
+        fi
+    fi
+    sed -Ei 's/^([^:]+):[[:space:]]+(https?:\/\/.*)$/\1=\2/' $FILE
+    
+    echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > .../.env
+    echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> .../.env
+    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> .../.env
+    echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> .../.env
+    echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .../.env
+    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .../.env
+
+    set -a
+    source ../.env
+    source $FILE
+    set +a
+
+    if  [ "${MULTIARCH}" ];then
+        docker buildx bake --file build-images.yml --push --set *.platform=linux/amd64,linux/arm64 --no-cache|| clean 1
+    else
+        docker buildx bake --file build-images.yml --no-cache|| clean 1
+    fi
     return 0
 }
 
@@ -80,6 +107,7 @@ help() {
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
+    echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
     echo "    -h, --help                   Show this help."
     echo
     exit $1
@@ -109,6 +137,10 @@ main() {
             else
                 help 1
             fi
+            ;;
+        "-m"|"--multiarch")
+            ="${2}"
+                shift 2
             ;;
         "-r"|"--revision")
             if [ -n "${2}" ]; then

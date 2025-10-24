@@ -1,0 +1,12 @@
+wazuh-manager-4.14.0-arm64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-manager/wazuh-manager_4.14.0-1_arm64.deb
+wazuh-manager-4.14.0-amd64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-manager/wazuh-manager_4.14.0-1_amd64.deb
+wazuh-indexer-4.14.0-amd64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-indexer/wazuh-indexer_4.14.0-1_amd64.deb
+wazuh-dashboard-4.14.0-amd64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-dashboard/wazuh-dashboard_4.14.0-1_amd64.deb
+wazuh-agent-4.14.0-arm64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.14.0-1_arm64.deb
+wazuh-agent-4.14.0-amd64.deb: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.14.0-1_amd64.deb
+wazuh-manager-4.14.0-arm64.rpm: https://packages.wazuh.com/4.x/yum/wazuh-manager-4.14.0-1.aarch64.rpm
+wazuh-manager-4.14.0-amd64.rpm: https://packages.wazuh.com/4.x/yim/wazuh-manager-4.14.0-1.x86_64.rpm
+wazuh-indexer-4.14.0-amd64.rpm: https://packages.wazuh.com/4.x/yum/wazuh-indexer-4.14.0-1.x86_64.rpm
+wazuh-dashboard-4.14.0-amd64.rpm: https://packages.wazuh.com/4.x/yum/wazuh-dashboard-4.14.0-1.x86_64.rpm
+wazuh-agent-4.14.0-arm64.rpm: https://packages.wazuh.com/4.x/yum/wazuh-agent-4.14.0-1.aarch64.rpm
+wazuh-agent-4.14.0-amd64.rpm: https://packages.wazuh.com/4.x/yum/wazuh-agent-4.14.0-1.x86_64.rpm

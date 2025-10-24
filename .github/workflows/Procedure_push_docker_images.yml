@@ -28,6 +28,10 @@ on:
         type: boolean
         default: true
         required: true
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest 
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -68,6 +72,10 @@ on:
         type: boolean
         default: true
         required: true
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest 
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -101,6 +109,7 @@ jobs:
         echo "* revision: ${{ inputs.revision }}"
         echo "* push_images: ${{ inputs.push_images }}"
         echo "* dev: ${{ inputs.dev }}"
+        echo "* dev reference: ${{ inputs.reference }}"
         echo "---------------------------------------------"
 
     - name: Checkout repository
@@ -113,6 +122,34 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Create packages-url.txt file
+      run: |
+        cd build-docker-images
+        if  [ "${{ inputs.dev }}" ];then
+          cat << EOF > packages-url.txt
+          wazuh_manager_url_amd64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_manager_url_arm64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_manager_url_x86_64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_manager_url_aarch64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_indexer_url_amd64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_indexer_url_arm64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_indexer_url_x86_64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_indexer_url_aarch64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_dashboard_url_amd64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_dashboard_url_arm64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_dashboard_url_x86_64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_dashboard_url_aarch64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_amd64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_arm64_deb: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_x86_64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_aarch64_rpm: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_i386_msi: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_intel64_pkg: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          wazuh_agent_url_arm64_pkg: $(aws s3 presign s3://xdrsiem-packages-dev-internal/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 43200 --region us-west-1 --profile xdrsiem-pre)
+          EOF
+        fi
+      working-directory: ./build-docker-images
 
     - name: Build Wazuh images
       run: |
@@ -128,13 +165,13 @@ jobs:
           fi
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
-          ./build-docker-images/build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION
+          ./build-docker-images/build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION -m
         else
-          ./build-docker-images/build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION
+          ./build-docker-images/build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION -m
         fi
 
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
-        ENV_FILE_PATH=".env"
+        ENV_FILE_PATH="../.env"
 
         if [ -f $ENV_FILE_PATH ]; then
           while IFS= read -r line || [ -n "$line" ]; do
@@ -144,6 +181,7 @@ jobs:
           echo "The environment file $ENV_FILE_PATH does not exist!"
           exit 1
         fi
+      working-directory: ./build-docker-images
 
     - name: Tag and Push Wazuh images
       if: ${{ inputs.push_images }}
