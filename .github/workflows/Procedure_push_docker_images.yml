@@ -134,36 +134,27 @@ jobs:
       if : ${{ inputs.dev == true }}
       run: |
           cat << EOF > packages-url.txt
-          wazuh_manager_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
-          wazuh_manager_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
-          wazuh_manager_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_manager_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_indexer_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
-          wazuh_indexer_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
-          wazuh_indexer_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_indexer_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_dashboard_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
-          wazuh_dashboard_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
-          wazuh_dashboard_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_dashboard_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_i386_msi: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_intel64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 43200 --region us-west-1)
-          wazuh_agent_url_arm64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 43200 --region us-west-1)
+          wazuh_manager_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)
+          wazuh_manager_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)
+          wazuh_manager_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_manager_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_indexer_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)
+          wazuh_indexer_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)
+          wazuh_indexer_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_indexer_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_dashboard_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)
+          wazuh_dashboard_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)
+          wazuh_dashboard_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_dashboard_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_i386_msi: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_intel64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 3600 --region us-west-1)
+          wazuh_agent_url_arm64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 3600 --region us-west-1)
           EOF
-          cat packages-url.txt
       working-directory: ./build-docker-images
-
-    - name: Save packages_url.txt file created as artifact
-      if: ${{ inputs.dev == true }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: packages_url.txt
-        path: /home/runner/work/wazuh-docker/wazuh-docker/build-docker-images/packages-url.txt
-        retention-days: 5
 
     - name: Build Wazuh images
       run: |
