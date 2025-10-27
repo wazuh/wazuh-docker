@@ -11,10 +11,6 @@ on:
       docker_reference:
         description: 'wazuh-docker reference'
         required: true
-      products:
-        description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
-        required: true
       filebeat_module_version:
         description: 'Filebeat module version'
         default: '0.4'
@@ -23,11 +19,10 @@ on:
         description: 'Package revision'
         default: '1'
         required: true
-      push_images:
-        description: 'Push images'
-        type: boolean
-        default: true
-        required: true
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest 
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -48,11 +43,6 @@ on:
         description: 'wazuh-docker reference'
         required: false
         type: string
-      products:
-        description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
-        required: true
-        type: string
       filebeat_module_version:
         description: 'Filebeat module version'
         default: '0.4'
@@ -63,11 +53,10 @@ on:
         default: '1'
         required: true
         type: string
-      push_images:
-        description: 'Push images'
-        type: boolean
-        default: true
-        required: true
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest 
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -81,6 +70,16 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-22.04
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      FILEBEAT_MODULE_VERSION: ${{ inputs.filebeat_module_version }}
+      REVISION: ${{ inputs.revision }}
 
     steps:
     - name: Print inputs
@@ -96,45 +95,97 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
-        echo "* products: ${{ inputs.products }}"
         echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
         echo "* revision: ${{ inputs.revision }}"
-        echo "* push_images: ${{ inputs.push_images }}"
         echo "* dev: ${{ inputs.dev }}"
+        echo "* dev reference: ${{ inputs.reference }}"
         echo "---------------------------------------------"
 
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.docker_reference }}
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Configure aws credentials
+      if: ${{ inputs.dev == true }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      if: ${{ inputs.dev == true }}
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Log in to Docker Hub
+      if: ${{ inputs.dev == false }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Create packages-url.txt file
+      if : ${{ inputs.dev == true }}
+      run: |
+          cat << EOF > packages-url.txt
+          wazuh_manager_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
+          wazuh_manager_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
+          wazuh_manager_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_manager_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_indexer_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
+          wazuh_indexer_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
+          wazuh_indexer_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_indexer_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_dashboard_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
+          wazuh_dashboard_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
+          wazuh_dashboard_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_dashboard_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_amd64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_arm64_deb: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_x86_64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_aarch64_rpm: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_i386_msi: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_intel64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 43200 --region us-west-1)
+          wazuh_agent_url_arm64_pkg: $(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 43200 --region us-west-1)
+          EOF
+          cat packages-url.txt
+      working-directory: ./build-docker-images
+
+    - name: Save packages_url.txt file created as artifact
+      if: ${{ inputs.dev == true }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages_url.txt
+        path: /home/runner/work/wazuh-docker/wazuh-docker/build-docker-images/packages-url.txt
+        retention-days: 5
+
     - name: Build Wazuh images
       run: |
-        IMAGE_TAG=${{ inputs.image_tag }}
-        FILEBEAT_MODULE_VERSION=${{ inputs.filebeat_module_version }}
-        REVISION=${{ inputs.revision }}
-
-        if [[ "$IMAGE_TAG" == *"-"* ]]; then
-          IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
-          if [ -z "${tokens[1]}" ]; then
-            echo "Invalid image tag: $IMAGE_TAG"
-            exit 1
+        if [ "${{ inputs.dev }}" = true ]; then
+          IMAGE_TAG="${{ inputs.image_tag }}-${{ inputs.reference }}"
+          ./build-images.sh -v ${{ inputs.image_tag }} -r $REVISION -d "dev" -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }}
+        else  
+          if [[ "$IMAGE_TAG" == *"-"* ]]; then
+            IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
+            if [ -z "${tokens[1]}" ]; then
+              echo "Invalid image tag: $IMAGE_TAG"
+              exit 1
+            fi
+            DEV_STAGE=${tokens[1]}
+            WAZUH_VER=${tokens[0]}
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m
+          else
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m
           fi
-          DEV_STAGE=${tokens[1]}
-          WAZUH_VER=${tokens[0]}
-          ./build-docker-images/build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION
-        else
-          ./build-docker-images/build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION
         fi
-
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
-        ENV_FILE_PATH=".env"
+        ENV_FILE_PATH="../.env"
 
         if [ -f $ENV_FILE_PATH ]; then
           while IFS= read -r line || [ -n "$line" ]; do
@@ -144,16 +195,4 @@ jobs:
           echo "The environment file $ENV_FILE_PATH does not exist!"
           exit 1
         fi
-
-    - name: Tag and Push Wazuh images
-      if: ${{ inputs.push_images }}
-      run: |
-        IMAGE_TAG="${{ inputs.image_tag }}$( [ "${{ inputs.dev }}" == "true" ] && echo '-dev' || true )"
-        IMAGE_NAMES=${{ inputs.products }}
-        IFS=',' read -r -a images <<< "$IMAGE_NAMES"
-        for image in "${images[@]}"; do
-          echo "Tagging and pushing wazuh/$image:${WAZUH_VERSION} to wazuh/$image:$IMAGE_TAG"
-          docker tag wazuh/$image:${WAZUH_VERSION} wazuh/$image:$IMAGE_TAG
-          echo "Pushing wazuh/$image:$IMAGE_TAG ..."
-          docker push wazuh/$image:$IMAGE_TAG
-        done
+      working-directory: ./build-docker-images

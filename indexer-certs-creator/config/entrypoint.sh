@@ -8,29 +8,35 @@
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 PASSWORD_TOOL=wazuh-passwords-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/5.0/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/5.0/
+PACKAGES_URL=https://packages.wazuh.com/$CERT_TOOL_VERSION/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/$CERT_TOOL_VERSION/
 
-## Check if the cert tool exists in S3 buckets
-CERT_TOOL_PACKAGES=$(curl --silent --head --location --output /dev/null --write-out "%{http_code}" "$PACKAGES_URL$CERT_TOOL")
-CERT_TOOL_PACKAGES_DEV=$(curl --silent --head --location --output /dev/null --write-out "%{http_code}" "$PACKAGES_DEV_URL$CERT_TOOL")
+OUTPUT_FILE="/$CERT_TOOL"
 
-## If cert tool exists in some bucket, download it, if not exit 1
-if [ "$CERT_TOOL_PACKAGES" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_URL$CERT_TOOL -s
-  echo "The tool to create the certificates exists in the in Packages bucket"
-elif [ "$CERT_TOOL_PACKAGES_DEV" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_DEV_URL$CERT_TOOL -s
-  echo "The tool to create the certificates exists in Packages-dev bucket"
+download_package() {
+    local url=$1
+    echo "Checking $url$CERT_TOOL ..."
+    if curl -fsL "$url$CERT_TOOL" -o "$OUTPUT_FILE"; then
+        echo "Downloaded $CERT_TOOL from $url"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Try first the prod URL, if it fails try the dev URL
+if download_package "$PACKAGES_URL"; then
+    :
+elif download_package "$PACKAGES_DEV_URL"; then
+    :
 else
-  echo "The tool to create the certificates does not exist in any bucket"
-  echo "ERROR: certificates were not created"
-  exit 1
+    echo "The tool to create the certificates does not exist in any bucket"
+    echo "ERROR: certificates were not created"
+    exit 1
 fi
 
 cp /config/certs.yml /config.yml
-
-chmod 700 /$CERT_TOOL
+chmod 700 "$OUTPUT_FILE"
 
 ##############################################################################
 # Creating Cluster certificates

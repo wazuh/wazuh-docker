@@ -7,6 +7,5 @@ if [[ -n "${WAZUH_TAG}" ]]; then
   REPOSITORY="packages.wazuh.com/5.x"
 fi
 
-curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm &&\
-yum install -y ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && rm -f ${FILEBEAT_CHANNEL}-${FILEBEAT_VERSION}-x86_64.rpm && \
+yum install filebeat-${FILEBEAT_VERSION}-${FILEBEAT_REVISION} -y && \
 curl -s https://${REPOSITORY}/filebeat/${WAZUH_FILEBEAT_MODULE} | tar -xvz -C /usr/share/filebeat/module
