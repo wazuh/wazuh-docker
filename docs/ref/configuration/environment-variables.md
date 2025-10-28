@@ -4,11 +4,14 @@ This document outlines the environment variables applicable to the Wazuh Docker 
 
 ## Table of Contents
 
-- [Wazuh Manager](#wazuh-manager)
-- [Wazuh Indexer](#wazuh-indexer)
-- [Wazuh Dashboard](#wazuh-dashboard)
-- [Wazuh Agent](#wazuh-agent)
-- [Overriding Configuration Files with Environment Variables](#overriding-configuration-files-with-environment-variables)
+- [Environment Variables in Wazuh Docker Deployment](#environment-variables-in-wazuh-docker-deployment)
+  - [Table of Contents](#table-of-contents)
+  - [Wazuh Manager](#wazuh-manager)
+  - [Wazuh Indexer](#wazuh-indexer)
+  - [Wazuh Dashboard](#wazuh-dashboard)
+  - [Wazuh Agent](#wazuh-agent)
+  - [Overriding Configuration Files with Environment Variables](#overriding-configuration-files-with-environment-variables)
+    - [Examples:](#examples)
 
 ---
 
@@ -88,6 +91,7 @@ environment:
   - WAZUH_REGISTRATION_SERVER=wazuh.manager
   - WAZUH_REGISTRATION_PORT=1515
   - WAZUH_AGENT_NAME=my-agent
+  - WAZUH_AGENT_GROUPS=default
   - WAZUH_REGISTRATION_PASSWORD=StrongPassword
 ```
 
