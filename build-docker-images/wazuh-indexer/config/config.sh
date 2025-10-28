@@ -74,6 +74,10 @@ in_indexer && /^[[:space:]]*[^#].*name:/ {sub(/name:.*/, "name: indexer")}
 {print}
 ' config.yml > config.yml.tmp && mv config.yml config.yml.bak && mv config.yml.tmp config.yml
 
+sed -i \
+  -e 's/^ *ip: "<wazuh-manager-ip>"$/  ip: "127.0.0.1"/' \
+  -e 's/^ *ip: "<indexer-node-ip>"$/  ip: "127.0.0.1"/' \
+  config.yaml
 
 chmod 700 "$CERT_CONFIG_FILE"
 # Create the certificates
@@ -88,10 +92,8 @@ cp -pr /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
 cp -pr /wazuh-certificates/admin.pem ${CONFIG_DIR}/certs/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${CONFIG_DIR}/certs/admin-key.pem
 
-# Delete xms and xmx parameters in jvm.options
-sed '/-Xms/d' -i /etc/wazuh-indexer/jvm.options
-sed '/-Xmx/d' -i /etc/wazuh-indexer/jvm.options
 sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' /etc/wazuh-indexer/jvm.options
+sed -i 's|/etc/wazuh-indexer|/usr/share/wazuh-indexer/config|g' /etc/wazuh-indexer/opensearch.yml
 
 chown -R ${USER}:${GROUP} ${CONFIG_DIR}
 chmod -R 500 ${CONFIG_DIR}/certs

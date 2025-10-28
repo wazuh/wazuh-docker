@@ -9,26 +9,67 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/4.14/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/4.14/
+CERT_CONFIG_FILE=config.yml
+CERT_TOOL_VERSION="4.14"
+PACKAGES_URL=https://packages.wazuh.com/$CERT_TOOL_VERSION/
+PACKAGES_DEV_URL=https://packages-dev.wazuh.com/$CERT_TOOL_VERSION/
 
-## Check if the cert tool exists in S3 buckets
-CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
-CERT_TOOL_PACKAGES_DEV=$(curl --silent -I $PACKAGES_DEV_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+download_package() {
+    local url=$1
+    local package=$2
+    local output=$2
+    echo "Checking $url$package ..."
+    if curl -fsL "$url$package" -o "$output"; then
+        echo "Downloaded $package from $url"
+        return 0
+    else
+        return 1
+    fi
+}
 
-## If cert tool exists in some bucket, download it, if not exit 1
-if [ "$CERT_TOOL_PACKAGES" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_URL$CERT_TOOL
-  echo "Cert tool exists in Packages bucket"
-elif [ "$CERT_TOOL_PACKAGES_DEV" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_DEV_URL$CERT_TOOL
-  echo "Cert tool exists in Packages-dev bucket"
+# Download the tool to create the certificates
+echo "Downloading the tool to create the certificates..."
+# Try first the prod URL, if it fails try the dev URL
+if download_package "$PACKAGES_URL" "$CERT_TOOL"; then
+    :
+elif download_package "$PACKAGES_DEV_URL" "$CERT_TOOL"; then
+    :
 else
-  echo "Cert tool does not exist in any bucket"
-  exit 1
+    echo "The tool to create the certificates does not exist in any bucket"
+    echo "ERROR: certificates were not created"
+    exit 1
 fi
 
-chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
+# Download the config file for the certificate tool
+echo "Downloading the config file for the certificate tool..."
+# Try first the prod URL, if it fails try the dev URL
+if download_package "$PACKAGES_URL" "$CERT_CONFIG_FILE"; then
+    :
+elif download_package "$PACKAGES_DEV_URL" "$CERT_CONFIG_FILE"; then
+    :
+else
+    echo "The config file for the certificate tool does not exist in any bucket"
+    echo "ERROR: certificates were not created"
+    exit 1
+fi
+
+awk '
+/^  dashboard:/ {dashboard=1}
+/^  # Wazuh server nodes/ {dashboard=0}
+dashboard && /^[[:space:]]*[^#].*name:/ {sub(/name:.*/, "name: dashboard")}
+dashboard && /^[[:space:]]*[^#].*ip:/ {sub(/ip:.*/, "ip: \"127.0.0.1\"")}
+
+{print}
+' config.yml > config.yml.tmp && mv config.yml config.yml.bak && mv config.yml.tmp config.yml
+
+sed -i \
+  -e 's/^ *ip: "<wazuh-manager-ip>"$/  ip: "127.0.0.1"/' \
+  -e 's/^ *ip: "<indexer-node-ip>"$/  ip: "127.0.0.1"/' \
+  config.yaml
+
+chmod 700 "$CERT_CONFIG_FILE"
+# Create the certificates
+chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
 
 # Create certs directory
 mkdir -p ${CONFIG_DIR}/certs

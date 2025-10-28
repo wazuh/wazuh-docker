@@ -32,11 +32,6 @@ do
     fi
 done
 
-
-grep -q 1513629884013 $dashboard_config_file
-_config_exists=$?
-
-if [[ $_config_exists -ne 0 ]]; then
 cat << EOF >> $dashboard_config_file
 hosts:
   - 1513629884013:
@@ -46,7 +41,4 @@ hosts:
       password: $api_password
       run_as: $api_run_as
 EOF
-else
-  echo "Wazuh APP already configured"
-fi
 

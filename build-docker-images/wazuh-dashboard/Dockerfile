@@ -20,13 +20,11 @@ RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
-COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
 # Generate certificates
 COPY config/config.sh .
-COPY config/config.yml /
 RUN bash config.sh
 
 ################################################################################
@@ -82,6 +80,7 @@ RUN chown 1000:1000 /*.sh
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder --chown=1000:1000 /etc/wazuh-dashboard $INSTALL_DIR/config  
 
 # Create custom directory
 RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
