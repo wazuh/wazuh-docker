@@ -10,7 +10,7 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 CERT_CONFIG_FILE=config.yml
-CERT_TOOL_VERSION="4.14"
+CERT_TOOL_VERSION="${WAZUH_VERSION%.*}"
 PACKAGES_URL=https://packages.wazuh.com/$CERT_TOOL_VERSION/
 PACKAGES_DEV_URL=https://packages-dev.wazuh.com/$CERT_TOOL_VERSION/
 
@@ -53,19 +53,8 @@ else
     exit 1
 fi
 
-awk '
-/^  dashboard:/ {dashboard=1}
-/^  # Wazuh server nodes/ {dashboard=0}
-dashboard && /^[[:space:]]*[^#].*name:/ {sub(/name:.*/, "name: dashboard")}
-dashboard && /^[[:space:]]*[^#].*ip:/ {sub(/ip:.*/, "ip: \"127.0.0.1\"")}
-
-{print}
-' config.yml > config.yml.tmp && mv config.yml config.yml.bak && mv config.yml.tmp config.yml
-
-sed -i \
-  -e 's/^ *ip: "<wazuh-manager-ip>"$/  ip: "127.0.0.1"/' \
-  -e 's/^ *ip: "<indexer-node-ip>"$/  ip: "127.0.0.1"/' \
-  config.yaml
+# Modify the config file to set the IP to localhost
+sed -i 's/  ip:.*/  ip: "127.0.0.1"/' $CERT_CONFIG_FILE
 
 chmod 700 "$CERT_CONFIG_FILE"
 # Create the certificates
@@ -75,9 +64,16 @@ chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
 mkdir -p ${CONFIG_DIR}/certs
 
 # Copy Wazuh dashboard certs to install config dir
-cp /wazuh-certificates/demo.dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
-cp /wazuh-certificates/demo.dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
-cp /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
+mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
+cp -pr /wazuh-certificates/dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
+cp -pr /wazuh-certificates/dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
+cp -pr /wazuh-certificates/root-ca.key ${CONFIG_DIR}/certs/root-ca.key
+cp -pr /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
+cp -pr /wazuh-certificates/admin.pem ${CONFIG_DIR}/certs/admin.pem
+cp -pr /wazuh-certificates/admin-key.pem ${CONFIG_DIR}/certs/admin-key.pem
+
+# Modify opensearch.yml config paths
+sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboards.yml
 
 chmod -R 500 ${CONFIG_DIR}/certs
 chmod -R 400 ${CONFIG_DIR}/certs/*

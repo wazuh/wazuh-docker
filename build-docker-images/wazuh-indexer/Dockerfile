@@ -22,5 +22,51 @@ RUN bash config.sh
 #
 # Copy wazuh-indexer from stage 0
 # Add entrypoint
-
 ################################################################################
+FROM amazonlinux:2023
+
+ENV USER="wazuh-indexer" \
+    GROUP="wazuh-indexer" \
+    NAME="wazuh-indexer" \
+    INSTALL_DIR="/usr/share/wazuh-indexer"
+
+
+COPY config/entrypoint.sh /
+COPY config/securityadmin.sh /
+
+RUN yum install curl-minimal shadow-utils findutils hostname -y && \
+    yum clean all && \
+    getent group $GROUP || groupadd -r -g 1000 $GROUP && \
+    useradd --system \
+            --uid 1000 \
+            --no-create-home \
+            --home-dir $INSTALL_DIR \
+            --gid $GROUP \
+            --shell /sbin/nologin \
+            --comment "$USER user" \
+            $USER && \
+    chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && \
+    mkdir -p $INSTALL_DIR && \
+    chown 1000:1000 $INSTALL_DIR && \
+    chown 1000:1000 /*.sh && \
+    mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer && \
+    mkdir -p $INSTALL_DIR/logs && chown 1000:1000 $INSTALL_DIR/logs && \
+    mkdir -p /run/wazuh-indexer && chown 1000:1000 /run/wazuh-indexer && \
+    mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer    
+
+COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+
+RUN chmod 700 $INSTALL_DIR && \
+    chmod 700 $INSTALL_DIR/config && \
+    chmod 600 $INSTALL_DIR/config/jvm.options && \
+    chmod 600 $INSTALL_DIR/config/opensearch.yml
+
+USER wazuh-indexer
+WORKDIR $INSTALL_DIR
+
+# Services ports
+EXPOSE 9200
+
+ENTRYPOINT ["/entrypoint.sh"]
+# Dummy overridable parameter parsed by entrypoint
+CMD ["opensearchwrapper"]

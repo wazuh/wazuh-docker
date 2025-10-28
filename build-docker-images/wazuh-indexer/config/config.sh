@@ -22,7 +22,7 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 CERT_CONFIG_FILE=config.yml
-CERT_TOOL_VERSION="4.14"
+CERT_TOOL_VERSION="${WAZUH_VERSION%.*}"
 PACKAGES_URL=https://packages.wazuh.com/$CERT_TOOL_VERSION/
 PACKAGES_DEV_URL=https://packages-dev.wazuh.com/$CERT_TOOL_VERSION/
 
@@ -65,35 +65,28 @@ else
     exit 1
 fi
 
-awk '
-/^  indexer:/ {in_indexer=1}
-/^  # Wazuh server nodes/ {in_indexer=0}
-in_indexer && /^[[:space:]]*[^#].*name:/ {sub(/name:.*/, "name: indexer")}
-/^[[:space:]]*[^#].*ip:/ {sub(/ip:.*/, "ip: \"127.0.0.1\"")}
-
-{print}
-' config.yml > config.yml.tmp && mv config.yml config.yml.bak && mv config.yml.tmp config.yml
-
-sed -i \
-  -e 's/^ *ip: "<wazuh-manager-ip>"$/  ip: "127.0.0.1"/' \
-  -e 's/^ *ip: "<indexer-node-ip>"$/  ip: "127.0.0.1"/' \
-  config.yaml
+# Modify the config file to set the IP to localhost
+sed -i 's/  ip:.*/  ip: "127.0.0.1"/' $CERT_CONFIG_FILE
 
 chmod 700 "$CERT_CONFIG_FILE"
 # Create the certificates
 chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
 
-# Copy Wazuh indexer's certificates
+# Copy Wazuh indexer's certificates and config files to $CONFIG_DIR
 mkdir -p ${CONFIG_DIR}/certs
-cp -pr /wazuh-certificates/indexer.pem ${CONFIG_DIR}/certs/indexer.pem
-cp -pr /wazuh-certificates/indexer-key.pem ${CONFIG_DIR}/certs/indexer-key.pem
+mv /etc/wazuh-indexer/* ${CONFIG_DIR}/
+cp -pr /wazuh-certificates/node-1.pem ${CONFIG_DIR}/certs/indexer.pem
+cp -pr /wazuh-certificates/node-1-key.pem ${CONFIG_DIR}/certs/indexer-key.pem
 cp -pr /wazuh-certificates/root-ca.key ${CONFIG_DIR}/certs/root-ca.key
 cp -pr /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
 cp -pr /wazuh-certificates/admin.pem ${CONFIG_DIR}/certs/admin.pem
 cp -pr /wazuh-certificates/admin-key.pem ${CONFIG_DIR}/certs/admin-key.pem
 
+# Modify opensearch.yml config paths
+sed -i "s|/etc/wazuh-indexer|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch.yml
+
+# Delete xms and xmx parameters in jvm.options
 sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' /etc/wazuh-indexer/jvm.options
-sed -i 's|/etc/wazuh-indexer|/usr/share/wazuh-indexer/config|g' /etc/wazuh-indexer/opensearch.yml
 
 chown -R ${USER}:${GROUP} ${CONFIG_DIR}
 chmod -R 500 ${CONFIG_DIR}/certs

@@ -40,10 +40,8 @@ FROM amazonlinux:2023
 ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
-    INSTALL_DIR="/usr/share/wazuh-dashboard"
-
-# Set Wazuh app variables
-ENV PATTERN="" \
+    INSTALL_DIR="/usr/share/wazuh-dashboard" \
+    PATTERN="" \
     CHECKS_PATTERN="" \
     CHECKS_TEMPLATE="" \
     CHECKS_API="" \
@@ -57,34 +55,31 @@ ENV PATTERN="" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
 
-# Update and install dependencies
-RUN yum install shadow-utils -y
+# Copy and set permissions to scripts
+COPY config/entrypoint.sh /
+COPY config/wazuh_app_config.sh /
 
-# Create wazuh-dashboard user and group
-RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
-RUN useradd --system \
+# Update and install dependencies
+RUN yum install shadow-utils -y && \
+    yum clean all && \
+    getent group $GROUP || groupadd -r -g 1000 $GROUP && \
+    useradd --system \
             --uid 1000 \
             --no-create-home \
             --home-dir $INSTALL_DIR \
             --gid $GROUP \
             --shell /sbin/nologin \
             --comment "$USER user" \
-            $USER
-
-# Copy and set permissions to scripts
-COPY config/entrypoint.sh /
-COPY config/wazuh_app_config.sh /
-RUN chmod 700 /entrypoint.sh
-RUN chmod 700 /wazuh_app_config.sh
-RUN chown 1000:1000 /*.sh
+            $USER && \
+    chmod 700 /entrypoint.sh && \
+    chmod 700 /wazuh_app_config.sh && \
+    mkdir -p $INSTALL_DIR && \
+    chown 1000:1000 $INSTALL_DIR && \
+    chown 1000:1000 /*.sh && \
+    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
-COPY --from=builder --chown=1000:1000 /etc/wazuh-dashboard $INSTALL_DIR/config  
-
-# Create custom directory
-RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
-RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR
