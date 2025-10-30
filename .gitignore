@@ -3,3 +3,5 @@ single-node/config/wazuh_indexer_ssl_certs/*.key
 multi-node/config/wazuh_indexer_ssl_certs/*.pem
 multi-node/config/wazuh_indexer_ssl_certs/*.key
 *.log
+build-docker-images/packages_env.txt
+build-docker-images/packages-url.txt

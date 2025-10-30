@@ -3,31 +3,16 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
-
-RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y
-
-COPY config/check_repository.sh /
-RUN chmod 775 /check_repository.sh && \
-    source /check_repository.sh
-
-RUN yum install wazuh-indexer-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all
-
-COPY config/opensearch.yml /
+ARG wazuh_indexer_url_amd64_rpm
+ARG wazuh_indexer_url_arm64_rpm
 
 COPY config/config.sh .
 
-COPY config/config.yml /
-
-COPY config/action_groups.yml /
-
-COPY config/internal_users.yml /
-
-COPY config/roles_mapping.yml /
-
-COPY config/roles.yml /
-
-RUN bash config.sh
+RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y &&\
+    curl -o wazuh-indexer.rpm "${wazuh_indexer_url_amd64_rpm}" && \
+    dnf install /wazuh-indexer.rpm -y && \
+    dnf clean all && \
+    bash config.sh
 
 ################################################################################
 # Build stage 1 (the actual Wazuh indexer image):
