@@ -146,6 +146,14 @@ jobs:
           EOF
       working-directory: ./build-docker-images
 
+    - name: Save packages-url.txt as artifact
+      if: ${{ inputs.dev == true }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages-url.txt
+        path: /home/runner/work/wazuh-docker/wazuh-docker/build-docker-images/packages-url.txt
+        retention-days: 1
+
     - name: Build Wazuh images
       run: |
         if [ "${{ inputs.dev }}" = true ]; then
