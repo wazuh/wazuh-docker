@@ -10,7 +10,7 @@ ARG wazuh_dashboard_url_arm64_rpm
 
 # Update and install dependencies
 RUN dnf install curl-minimal libcap openssl -y && \
-    curl -o /wazuh-dashboard.rpm "${wazuh_dashboard_url_amd64_rpm}" && \
+    curl -o /wazuh-dashboard.rpm "${wazuh_dashboard_url_$TARGETARCH_rpm}" && \
     dnf install /wazuh-dashboard.rpm -y && \
     dnf clean all
 

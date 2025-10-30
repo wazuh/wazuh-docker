@@ -11,7 +11,7 @@ ARG wazuh_manager_url_arm64_rpm
 
 RUN dnf install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
     dnf clean all && \
-    curl -o /wazuh-manager.rpm "${wazuh_manager_url_amd64_rpm}" && \
+    curl -o /wazuh-manager.rpm "${wazuh_manager_url_$TARGETARCH_rpm}" && \
     dnf install /wazuh-manager.rpm -y && \
     dnf clean all && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \

@@ -15,7 +15,7 @@ ARG wazuh_agent_url_amd64_rpm
 ARG wazuh_agent_url_arm64_rpm
 
 RUN dnf install curl-minimal tar gzip procps -y &&\
-    curl -o /wazuh-agent.rpm "${wazuh_agent_url_amd64_rpm}" && \
+    curl -o /wazuh-agent.rpm "${wazuh_agent_url_$TARGETARCH_rpm}" && \
     dnf install /wazuh-agent.rpm -y && \
     dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
