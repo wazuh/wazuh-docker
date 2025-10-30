@@ -43,7 +43,7 @@ build() {
     WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     # Variables
-    FILE="packages-url.txt"
+    FILE="packages_url.txt"
 
     if [[ -f "$FILE" ]]; then
         echo "$FILE exists. Using existing file."
