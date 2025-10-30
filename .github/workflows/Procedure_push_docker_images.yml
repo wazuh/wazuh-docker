@@ -91,13 +91,13 @@ jobs:
         echo "* dev reference: ${{ inputs.reference }}"
         echo "---------------------------------------------"
 
-    - name: free disk space
-      uses: ./.github/free-disk-space
-
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.docker_reference }}
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
     
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
