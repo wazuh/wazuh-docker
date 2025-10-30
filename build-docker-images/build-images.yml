@@ -6,8 +6,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-        FILEBEAT_TEMPLATE_BRANCH: ${FILEBEAT_TEMPLATE_BRANCH}
-        WAZUH_FILEBEAT_MODULE: ${WAZUH_FILEBEAT_MODULE}
+        wazuh_manager_url_amd64_rpm: ${wazuh_manager_url_x86_64_rpm}
+        wazuh_manager_url_arm64_rpm: ${wazuh_manager_url_aarch64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-manager:${IMAGE_TAG}
     hostname: wazuh.manager
     restart: always
@@ -20,7 +20,6 @@ services:
       - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
     volumes:
       - wazuh_api_configuration:/var/ossec/api/configuration
       - wazuh_etc:/var/ossec/etc
@@ -29,8 +28,6 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - filebeat_etc:/etc/filebeat
-      - filebeat_var:/var/lib/filebeat
 
   wazuh.agent:
     build:
@@ -38,6 +35,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+        wazuh_agent_url_amd64_rpm: ${wazuh_agent_url_x86_64_rpm}
+        wazuh_agent_url_arm64_rpm: ${wazuh_agent_url_aarch64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-agent:${IMAGE_TAG}
     hostname: wazuh.agent
     restart: always
@@ -48,6 +47,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
+        wazuh_indexer_url_amd64_rpm: ${wazuh_indexer_url_x86_64_rpm}
+        wazuh_indexer_url_arm64_rpm: ${wazuh_indexer_url_aarch64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-indexer:${IMAGE_TAG}
     hostname: wazuh.indexer
     restart: always
@@ -70,6 +71,8 @@ services:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         WAZUH_UI_REVISION: ${WAZUH_UI_REVISION}
+        wazuh_dashboard_url_amd64_rpm: ${wazuh_dashboard_url_x86_64_rpm}
+        wazuh_dashboard_url_arm64_rpm: ${wazuh_dashboard_url_aarch64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-dashboard:${IMAGE_TAG}
     hostname: wazuh.dashboard
     restart: always
@@ -94,5 +97,4 @@ volumes:
   wazuh_var_multigroups:
   wazuh_active_response:
   wazuh_wodles:
-  filebeat_etc:
-  filebeat_var:
+

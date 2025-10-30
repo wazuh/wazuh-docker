@@ -5,16 +5,17 @@ ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG WAZUH_UI_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
+ARG TARGETARCH
+ARG wazuh_dashboard_url_amd64_rpm
+ARG wazuh_dashboard_url_arm64_rpm
 
 # Update and install dependencies
-RUN yum install curl-minimal libcap openssl -y
-
-COPY config/check_repository.sh /
-RUN chmod 775 /check_repository.sh && \
-    source /check_repository.sh
-
-RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all
+RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \
+    dashboard_url="${!URL_VAR}" && \
+    dnf install curl-minimal libcap openssl -y && \
+    curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
+    dnf install /wazuh-dashboard.rpm -y && \
+    dnf clean all
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -42,10 +43,8 @@ FROM amazonlinux:2023
 ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
-    INSTALL_DIR="/usr/share/wazuh-dashboard"
-
-# Set Wazuh app variables
-ENV PATTERN="" \
+    INSTALL_DIR="/usr/share/wazuh-dashboard" \
+    PATTERN="" \
     CHECKS_PATTERN="" \
     CHECKS_TEMPLATE="" \
     CHECKS_API="" \
@@ -60,7 +59,7 @@ ENV PATTERN="" \
     WAZUH_MONITORING_REPLICAS=""
 
 # Update and install dependencies
-RUN yum install shadow-utils -y
+RUN dnf install shadow-utils -y && dnf clean all
 
 # Create wazuh-dashboard user and group
 RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
