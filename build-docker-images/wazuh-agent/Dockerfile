@@ -11,11 +11,14 @@ ARG WAZUH_MANAGER_PORT='CHANGE_MANAGER_PORT'
 ARG WAZUH_REGISTRATION_SERVER='CHANGE_ENROLL_IP'
 ARG WAZUH_REGISTRATION_PORT='CHANGE_ENROLL_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
+ARG TARGETARCH
 ARG wazuh_agent_url_amd64_rpm
 ARG wazuh_agent_url_arm64_rpm
 
-RUN dnf install curl-minimal tar gzip procps -y &&\
-    curl -o /wazuh-agent.rpm "${wazuh_agent_url_$TARGETARCH_rpm}" && \
+RUN URL_VAR="wazuh_agent_url_${TARGETARCH}_rpm" && \
+    agent_url="${!URL_VAR}" && \
+    dnf install curl-minimal tar gzip procps -y &&\
+    curl -o /wazuh-agent.rpm "${agent_url}" && \
     dnf install /wazuh-agent.rpm -y && \
     dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
