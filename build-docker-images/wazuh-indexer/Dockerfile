@@ -9,7 +9,7 @@ ARG wazuh_indexer_url_arm64_rpm
 COPY config/config.sh .
 
 RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y &&\
-    curl -o wazuh-indexer.rpm "${wazuh_indexer_url_amd64_rpm}" && \
+    curl -o /wazuh-indexer.rpm "${wazuh_indexer_url_amd64_rpm}" && \
     dnf install /wazuh-indexer.rpm -y && \
     dnf clean all && \
     bash config.sh
