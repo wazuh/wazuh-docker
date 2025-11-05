@@ -49,20 +49,8 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=$2 \
            --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=master-wazuh-integrations \
-           $2_master-wazuh-integrations
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
            --label com.docker.compose.volume=master-wazuh-active-response \
            $2_master-wazuh-active-response
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=master-wazuh-agentless \
-           $2_master-wazuh-agentless
 
 docker volume create \
            --label com.docker.compose.project=$2 \
@@ -115,20 +103,8 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=$2 \
            --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=worker-wazuh-integrations \
-           $2_worker-wazuh-integrations
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
            --label com.docker.compose.volume=worker-wazuh-active-response \
            $2_worker-wazuh-active-response
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=worker-wazuh-agentless \
-           $2_worker-wazuh-agentless
 
 docker volume create \
            --label com.docker.compose.project=$2 \
@@ -194,18 +170,8 @@ docker container run --rm -it \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \
-           -v wazuh-docker_ossec-integrations:/from \
-           -v $2_master-wazuh-integrations:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
            -v wazuh-docker_ossec-active-response:/from \
            -v $2_master-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
-           -v wazuh-docker_ossec-agentless:/from \
-           -v $2_master-wazuh-agentless:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \
@@ -249,18 +215,8 @@ docker container run --rm -it \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-integrations:/from \
-           -v $2_worker-wazuh-integrations:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
            -v wazuh-docker_worker-ossec-active-response:/from \
            -v $2_worker-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-agentless:/from \
-           -v $2_worker-wazuh-agentless:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \

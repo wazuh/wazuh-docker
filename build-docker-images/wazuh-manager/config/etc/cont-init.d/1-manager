@@ -60,12 +60,6 @@ function_wazuh_migration(){
       chown wazuh:wazuh /var/ossec/etc/rules/*
       chmod 660 /var/ossec/etc/rules/*
 
-      if [ -e /wazuh-migration/data/agentless/.passlist ]; then
-        \cp -f /wazuh-migration/data/agentless/.passlist /var/ossec/agentless/.passlist
-        chown root:wazuh /var/ossec/agentless/.passlist
-        chmod 640 /var/ossec/agentless/.passlist
-      fi
-
       \cp -f /wazuh-migration/global.db /var/ossec/queue/db/global.db
       chown wazuh:wazuh /var/ossec/queue/db/global.db
       chmod 640 /var/ossec/queue/db/global.db
