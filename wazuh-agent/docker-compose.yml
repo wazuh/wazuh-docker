@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.agent:
-    image: wazuh/wazuh-agent:4.14.1
+    image: wazuh/wazuh-agent:4.14.1-rc2
     restart: always
     environment:
       - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
