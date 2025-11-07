@@ -1,6 +1,27 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-puppet/issues/2058))
+- Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-puppet/issues/2054))
+- Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-puppet/issues/2030))
+- Fix OpenSearch deprecated settings ([#1366](https://github.com/wazuh/wazuh-puppet/issues/1366))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.14.1]
 
 ### Added
