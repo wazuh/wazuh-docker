@@ -16,6 +16,7 @@ RUN URL_VAR="wazuh_manager_url_${TARGETARCH}_rpm" && \
     dnf clean all && \
     curl -o /wazuh-manager.rpm "${manager_url}" && \
     dnf install /wazuh-manager.rpm -y && \
+    rm -rf /wazuh-manager.rpm && \
     dnf clean all && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \

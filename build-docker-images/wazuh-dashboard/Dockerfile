@@ -15,6 +15,7 @@ RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
     dnf install /wazuh-dashboard.rpm -y && \
+    rm -rf /wazuh-dashboard.rpm && \
     dnf clean all
 
 # Create and set permissions to data directories

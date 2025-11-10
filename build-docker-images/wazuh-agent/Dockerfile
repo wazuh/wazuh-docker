@@ -20,6 +20,7 @@ RUN URL_VAR="wazuh_agent_url_${TARGETARCH}_rpm" && \
     dnf install curl-minimal tar gzip procps -y &&\
     curl -o /wazuh-agent.rpm "${agent_url}" && \
     dnf install /wazuh-agent.rpm -y && \
+    rm -rf /wazuh-agent.rpm && \
     dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \

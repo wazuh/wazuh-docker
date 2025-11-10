@@ -14,6 +14,7 @@ RUN URL_VAR="wazuh_indexer_url_${TARGETARCH}_rpm" && \
     dnf install curl-minimal openssl xz tar findutils shadow-utils -y &&\
     curl -o /wazuh-indexer.rpm "${indexer_url}" && \
     dnf install /wazuh-indexer.rpm -y && \
+    rm -rf /wazuh-indexer.rpm && \
     dnf clean all && \
     bash config.sh
 
@@ -69,4 +70,4 @@ EXPOSE 9200
 
 ENTRYPOINT ["/entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
-CMD ["opensearchwrapper"]
+CMD ["opensearch"]

@@ -10,7 +10,7 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 ## Variables
 CERT_TOOL=wazuh-certs-tool.sh
 CERT_CONFIG_FILE=config.yml
-CERT_TOOL_VERSION="${WAZUH_VERSION%.*}"
+CERT_TOOL_VERSION=5.0 #"${WAZUH_VERSION%.*}"
 PACKAGES_URL=https://packages.wazuh.com/$CERT_TOOL_VERSION/
 PACKAGES_DEV_URL=https://packages-dev.wazuh.com/$CERT_TOOL_VERSION/
 
