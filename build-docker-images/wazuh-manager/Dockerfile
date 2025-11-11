@@ -9,6 +9,10 @@ ARG S6_VERSION="v2.2.0.3"
 ARG TARGETARCH
 ARG wazuh_manager_url_amd64_rpm
 ARG wazuh_manager_url_arm64_rpm
+ARG wazuh_cert_tool
+ARG wazuh_config_yml
+
+COPY config/config.sh .
 
 RUN URL_VAR="wazuh_manager_url_${TARGETARCH}_rpm" && \
     manager_url="${!URL_VAR}" && \
@@ -18,6 +22,8 @@ RUN URL_VAR="wazuh_manager_url_${TARGETARCH}_rpm" && \
     dnf install /wazuh-manager.rpm -y && \
     rm -rf /wazuh-manager.rpm && \
     dnf clean all && \
+    chmod 755 /config.sh && \
+    /config.sh && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \

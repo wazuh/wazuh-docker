@@ -8,6 +8,8 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_url_amd64_rpm
 ARG wazuh_dashboard_url_arm64_rpm
+ARG wazuh_cert_tool
+ARG wazuh_config_yml
 
 # Update and install dependencies
 RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \

@@ -6,6 +6,8 @@ ARG WAZUH_TAG_REVISION
 ARG TARGETARCH
 ARG wazuh_indexer_url_amd64_rpm
 ARG wazuh_indexer_url_arm64_rpm
+ARG wazuh_cert_tool
+ARG wazuh_config_yml
 
 COPY config/config.sh .
 
