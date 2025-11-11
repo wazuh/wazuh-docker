@@ -13,12 +13,23 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 # Variables for certificate generation
 CERT_TOOL="wazuh-certs-tool.sh"
 CERT_CONFIG_FILE="config.yml"
+download_package() {
+    local url=$1
+    local package=$2
+    if curl -fsL "$url" -o "$package"; then
+        echo "Downloaded $package"
+        return 0
+    else
+        echo "Error downloading $package from $url"
+        return 1
+    fi
+}
 # Download the tool to create the certificates
 echo "Downloading the tool to create the certificates..."
-curl -fsL "$wazuh_cert_tool" -o $CERT_TOOL
+download_package "$wazuh_cert_tool" $CERT_TOOL
 # Download the config file for the certificate tool
 echo "Downloading the config file for the certificate tool..."
-curl -fsL "$wazuh_config_yml" -o $CERT_CONFIG_FILE
+download_package "$wazuh_config_yml" $CERT_CONFIG_FILE
 
 # Modify the config file to set the IP to localhost
 sed -i 's/  ip:.*/  ip: "127.0.0.1"/' $CERT_CONFIG_FILE
