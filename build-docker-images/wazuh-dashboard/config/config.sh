@@ -7,36 +7,51 @@ export TARGET_DIR=${CURDIR}/debian/${NAME}
 export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 
-## Variables
-CERT_TOOL=wazuh-certs-tool.sh
-PACKAGES_URL=https://packages.wazuh.com/5.0/
-PACKAGES_DEV_URL=https://packages-dev.wazuh.com/5.0/
+##############################################################################
+# Downloading Cert Gen Tool
+##############################################################################
+# Variables for certificate generation
+CERT_TOOL="wazuh-certs-tool.sh"
+CERT_CONFIG_FILE="config.yml"
+download_package() {
+    local url=$1
+    local package=$2
+    if curl -fsL "$url" -o "$package"; then
+        echo "Downloaded $package"
+        return 0
+    else
+        echo "Error downloading $package from $url"
+        return 1
+    fi
+}
+# Download the tool to create the certificates
+echo "Downloading the tool to create the certificates..."
+download_package "$wazuh_cert_tool" $CERT_TOOL
+# Download the config file for the certificate tool
+echo "Downloading the config file for the certificate tool..."
+download_package "$wazuh_config_yml" $CERT_CONFIG_FILE
 
-## Check if the cert tool exists in S3 buckets
-CERT_TOOL_PACKAGES=$(curl --silent -I $PACKAGES_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
-CERT_TOOL_PACKAGES_DEV=$(curl --silent -I $PACKAGES_DEV_URL$CERT_TOOL | grep -E "^HTTP" | awk  '{print $2}')
+# Modify the config file to set the IP to localhost
+sed -i 's/  ip:.*/  ip: "127.0.0.1"/' $CERT_CONFIG_FILE
 
-## If cert tool exists in some bucket, download it, if not exit 1
-if [ "$CERT_TOOL_PACKAGES" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_URL$CERT_TOOL
-  echo "Cert tool exists in Packages bucket"
-elif [ "$CERT_TOOL_PACKAGES_DEV" = "200" ]; then
-  curl -o $CERT_TOOL $PACKAGES_DEV_URL$CERT_TOOL
-  echo "Cert tool exists in Packages-dev bucket"
-else
-  echo "Cert tool does not exist in any bucket"
-  exit 1
-fi
-
-chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
+chmod 700 "$CERT_CONFIG_FILE"
+# Create the certificates
+chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
 
 # Create certs directory
 mkdir -p ${CONFIG_DIR}/certs
 
 # Copy Wazuh dashboard certs to install config dir
-cp /wazuh-certificates/demo.dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
-cp /wazuh-certificates/demo.dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
-cp /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
+mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
+cp -pr /wazuh-certificates/dashboard.pem ${CONFIG_DIR}/certs/dashboard.pem
+cp -pr /wazuh-certificates/dashboard-key.pem ${CONFIG_DIR}/certs/dashboard-key.pem
+cp -pr /wazuh-certificates/root-ca.key ${CONFIG_DIR}/certs/root-ca.key
+cp -pr /wazuh-certificates/root-ca.pem ${CONFIG_DIR}/certs/root-ca.pem
+cp -pr /wazuh-certificates/admin.pem ${CONFIG_DIR}/certs/admin.pem
+cp -pr /wazuh-certificates/admin-key.pem ${CONFIG_DIR}/certs/admin-key.pem
+
+# Modify opensearch.yml config paths
+sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboards.yml
 
 chmod -R 500 ${CONFIG_DIR}/certs
 chmod -R 400 ${CONFIG_DIR}/certs/*

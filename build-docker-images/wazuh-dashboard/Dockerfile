@@ -8,6 +8,8 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_url_amd64_rpm
 ARG wazuh_dashboard_url_arm64_rpm
+ARG wazuh_cert_tool
+ARG wazuh_config_yml
 
 # Update and install dependencies
 RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \
@@ -15,19 +17,18 @@ RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
     dnf install /wazuh-dashboard.rpm -y && \
+    rm -rf /wazuh-dashboard.rpm && \
     dnf clean all
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
-COPY config/wazuh.yml $INSTALL_DIR/data/wazuh/config/
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
 # Generate certificates
 COPY config/config.sh .
-COPY config/config.yml /
 RUN bash config.sh
 
 ################################################################################
@@ -58,33 +59,31 @@ ENV USER="wazuh-dashboard" \
     WAZUH_MONITORING_SHARDS="" \
     WAZUH_MONITORING_REPLICAS=""
 
-# Update and install dependencies
-RUN dnf install shadow-utils -y && dnf clean all
+# Copy and set permissions to scripts
+COPY config/entrypoint.sh /
+COPY config/wazuh_app_config.sh /
 
-# Create wazuh-dashboard user and group
-RUN getent group $GROUP || groupadd -r -g 1000 $GROUP
-RUN useradd --system \
+# Update and install dependencies
+RUN yum install shadow-utils -y && \
+    yum clean all && \
+    getent group $GROUP || groupadd -r -g 1000 $GROUP && \
+    useradd --system \
             --uid 1000 \
             --no-create-home \
             --home-dir $INSTALL_DIR \
             --gid $GROUP \
             --shell /sbin/nologin \
             --comment "$USER user" \
-            $USER
-
-# Copy and set permissions to scripts
-COPY config/entrypoint.sh /
-COPY config/wazuh_app_config.sh /
-RUN chmod 700 /entrypoint.sh
-RUN chmod 700 /wazuh_app_config.sh
-RUN chown 1000:1000 /*.sh
+            $USER && \
+    chmod 700 /entrypoint.sh && \
+    chmod 700 /wazuh_app_config.sh && \
+    mkdir -p $INSTALL_DIR && \
+    chown 1000:1000 $INSTALL_DIR && \
+    chown 1000:1000 /*.sh && \
+    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
-
-# Create custom directory
-RUN mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
-RUN chown 1000:1000 /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR
