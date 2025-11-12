@@ -145,6 +145,30 @@ jobs:
           exit 1
         fi
 
+    - name: Image exists validation
+      if: ${{ !inputs.push_images }}
+      id: validation
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        PURPOSE=""
+
+        if [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if docker manifest inspect wazuh/wazuh-manager:$IMAGE_TAG > /dev/null 2>&1; then
+            PURPOSE="regeneration"
+            echo "Image  wazuh/wazuh-manager:$IMAGE_TAG exists. Setting PURPOSE to 'regeneration'"
+          else
+            echo "Image wazuh/wazuh-manager:$IMAGE_TAG does NOT exist. Setting PURPOSE to 'new release'"
+          fi
+          echo "✅ Release tag: '$IMAGE_TAG'"
+        elif [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)[0-9]+$ ]]; then
+          PURPOSE="new stage"
+          echo "✅ Stage tag: '$IMAGE_TAG'. Setting PURPOSE to 'new stage'"
+        else
+          echo "❌ No release or stage tag ('$IMAGE_TAG'), the GH issue will not be created"
+        fi
+
+        echo "purpose=$PURPOSE" >> $GITHUB_OUTPUT
+
     - name: Tag and Push Wazuh images
       if: ${{ inputs.push_images }}
       run: |
@@ -157,3 +181,31 @@ jobs:
           echo "Pushing wazuh/$image:$IMAGE_TAG ..."
           docker push wazuh/$image:$IMAGE_TAG
         done
+
+    - name: GH issue notification
+      if: ${{ inputs.push_images && steps.validation.outputs.purpose != '' }}
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        GH_MESSAGE=""
+        GH_TITLE=""
+        PURPOSE="${{ steps.validation.outputs.purpose }}""
+
+        GH_TITLE="Artifactory vulnerabilities update \`$IMAGE_TAG\`"
+        read -r -d '' GH_MESSAGE << EOF
+        ## Description
+        - [ ] Update the [Artifactory vulnerabilities](https://docs.google.com/spreadsheets/d/1ZtkyvmZ_CS9fa0nEmZf9sZb4a3o65_HoMP1g83XmlK0/edit?usp=sharing) sheet with the \`$IMAGE_TAG\` vulnerabilities.
+
+        >[!NOTE]
+        >To update the \`Tentative Release\` column, follow these steps:
+        https://github.com/wazuh/wazuh-automation/issues/2049#issuecomment-2671590268
+        EOF
+
+        # Print the GH Variables content
+        echo "--- Variable Content ---"
+        echo "$GH_TITLE"
+        echo "------------------------"
+
+        echo "--- Variable Content ---"
+        echo "$GH_MESSAGE"
+        echo "------------------------"
+
