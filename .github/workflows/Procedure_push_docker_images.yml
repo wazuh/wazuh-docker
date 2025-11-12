@@ -191,13 +191,15 @@ jobs:
         GH_MESSAGE=""
         PURPOSE="${{ steps.validation.outputs.purpose }}"
 
-
+        ## Setting GH issue title
         GH_TITLE="Artifactory vulnerabilities update \`v$IMAGE_TAG\`"
 
+        ## Setting GH issue body
         GH_MESSAGE=$(cat <<- EOF | tr -d '\r' | sed 's/^[[:space:]]*//'
         ### Description
-        - [ ] Update the [Artifactory vulnerabilities](https://docs.google.com/spreadsheets/d/1ZtkyvmZ_CS9fa0nEmZf9sZb4a3o65_HoMP1g83XmlK0/edit?usp=sharing) sheet with the \`$IMAGE_TAG\` vulnerabilities.
+        - [ ] Update the [Artifactory vulnerabilities](https://docs.google.com/spreadsheets/d/1ZtkyvmZ_CS9fa0nEmZf9sZb4a3o65_HoMP1g83XmlK0/edit?usp=sharing) sheet with the \`v$IMAGE_TAG\` vulnerabilities.
 
+        **Purpose**: $PURPOSE
         >[!NOTE]
         >To update the \`Tentative Release\` column, follow these steps:
         https://github.com/wazuh/wazuh-automation/issues/2049#issuecomment-2671590268
@@ -213,3 +215,20 @@ jobs:
         echo "$GH_MESSAGE"
         echo "------------------------"
 
+        ## GH issue creation
+        ISSUE_URL=$(gh issue create \
+          -R wazuh/${{ secrets.NOTIFICATION_REPO }} \
+          --title $GH_TITLE \
+          --body $GH_MESSAGE \
+          --label "level/task" \
+          --label "type/maintenance" \
+          --label "request/operational" \
+          --json url -q .url)
+
+        ## Adding the issue to the team project
+        gh project item-add \
+          ${{ secrets.NOTIFICATION_PROJECT_ID }} \
+          --url $ISSUE_URL
+
+        env:
+          GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
