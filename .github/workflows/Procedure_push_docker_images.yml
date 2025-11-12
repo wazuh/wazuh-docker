@@ -157,6 +157,7 @@ jobs:
             PURPOSE="regeneration"
             echo "Image  wazuh/wazuh-manager:$IMAGE_TAG exists. Setting PURPOSE to 'regeneration'"
           else
+            PURPOSE="new release"
             echo "Image wazuh/wazuh-manager:$IMAGE_TAG does NOT exist. Setting PURPOSE to 'new release'"
           fi
           echo "✅ Release tag: '$IMAGE_TAG'"
@@ -186,19 +187,22 @@ jobs:
       if: ${{ !inputs.push_images && steps.validation.outputs.purpose != '' }}
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
-        GH_MESSAGE=""
         GH_TITLE=""
-        PURPOSE="${{ steps.validation.outputs.purpose }}""
+        GH_MESSAGE=""
+        PURPOSE="${{ steps.validation.outputs.purpose }}"
 
-        GH_TITLE="Artifactory vulnerabilities update \`$IMAGE_TAG\`"
-        read -r -d '' GH_MESSAGE << EOF
-        ## Description
+
+        GH_TITLE="Artifactory vulnerabilities update \`v$IMAGE_TAG\`"
+
+        GH_MESSAGE=$(cat <<- EOF | tr -d '\r' | sed 's/^[[:space:]]*//'
+        ### Description
         - [ ] Update the [Artifactory vulnerabilities](https://docs.google.com/spreadsheets/d/1ZtkyvmZ_CS9fa0nEmZf9sZb4a3o65_HoMP1g83XmlK0/edit?usp=sharing) sheet with the \`$IMAGE_TAG\` vulnerabilities.
 
         >[!NOTE]
         >To update the \`Tentative Release\` column, follow these steps:
         https://github.com/wazuh/wazuh-automation/issues/2049#issuecomment-2671590268
         EOF
+        )
 
         # Print the GH Variables content
         echo "--- Variable Content ---"
