@@ -183,7 +183,7 @@ jobs:
         done
 
     - name: GH issue notification
-      if: ${{ inputs.push_images && steps.validation.outputs.purpose != '' }}
+      if: ${{ !inputs.push_images && steps.validation.outputs.purpose != '' }}
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
         GH_MESSAGE=""
