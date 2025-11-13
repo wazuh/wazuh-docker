@@ -218,17 +218,17 @@ jobs:
         ## GH issue creation
         ISSUE_URL=$(gh issue create \
           -R wazuh/${{ secrets.NOTIFICATION_REPO }} \
-          --title $GH_TITLE \
-          --body $GH_MESSAGE \
+          --title "$GH_TITLE" \
+          --body "$GH_MESSAGE" \
           --label "level/task" \
           --label "type/maintenance" \
-          --label "request/operational" \
-          --json url -q .url)
+          --label "request/operational")
 
         ## Adding the issue to the team project
         gh project item-add \
           ${{ secrets.NOTIFICATION_PROJECT_ID }} \
-          --url $ISSUE_URL
+          --url $ISSUE_URL \
+          --owner wazuh
 
-        env:
-          GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
+      env:
+        GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
