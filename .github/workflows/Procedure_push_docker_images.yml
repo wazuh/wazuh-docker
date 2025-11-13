@@ -197,12 +197,12 @@ jobs:
         ## Setting GH issue body
         GH_MESSAGE=$(cat <<- EOF | tr -d '\r' | sed 's/^[[:space:]]*//'
         ### Description
-        - [ ] Update the [Artifactory vulnerabilities](https://docs.google.com/spreadsheets/d/1ZtkyvmZ_CS9fa0nEmZf9sZb4a3o65_HoMP1g83XmlK0/edit?usp=sharing) sheet with the \`v$IMAGE_TAG\` vulnerabilities.
+        - [ ] Update the [Artifactory vulnerabilities](${{ secrets.NOTIFICATION_SHEET_URL }}) sheet with the \`v$IMAGE_TAG\` vulnerabilities.
 
         **Purpose**: $PURPOSE
         >[!NOTE]
         >To update the \`Tentative Release\` column, follow these steps:
-        https://github.com/wazuh/wazuh-automation/issues/2049#issuecomment-2671590268
+        https://github.com/wazuh/${{ secrets.NOTIFICATION_REPO }}/issues/2049#issuecomment-2671590268
         EOF
         )
 
