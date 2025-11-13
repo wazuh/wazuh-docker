@@ -225,10 +225,15 @@ jobs:
           --label "request/operational")
 
         ## Adding the issue to the team project
-        gh project item-add \
-          ${{ secrets.NOTIFICATION_PROJECT_ID }} \
+        PROJECT_ITEM_ID=$(gh project item-add \
+          ${{ secrets.NOTIFICATION_PROJECT_NUMBER }} \
           --url $ISSUE_URL \
-          --owner wazuh
+          --owner wazuh \
+          --format json \
+          | jq -r '.id')
+
+          ## Setting Objective
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_OBJECTIVE_ID }} --text  "Security scans"
 
       env:
         GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
