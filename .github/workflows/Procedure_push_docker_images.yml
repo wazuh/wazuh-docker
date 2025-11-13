@@ -234,6 +234,12 @@ jobs:
 
           ## Setting Objective
           gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_OBJECTIVE_ID }} --text  "Security scans"
+          ## Setting Priority
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_PRIORITY_ID }} --text  "Very high"
+          ## Setting Size
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SIZE_ID }} --text  "Small"
+          ## Setting Subteam
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SUBTEAM_ID }} --text  "Div 1"
 
       env:
         GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
