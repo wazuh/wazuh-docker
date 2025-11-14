@@ -18,7 +18,7 @@ services:
       - "55000:55000"
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
-      - WAZUH_NODE_NAME=wazuh.manager
+      - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin

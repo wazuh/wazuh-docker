@@ -205,6 +205,11 @@ sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$WAZUH_
 sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$WAZUH_CLUSTER_KEY</key>|" "$OSSEC_CONF"
 
 # --------------------------
+# Cluster: bind_addr
+# --------------------------
+sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$OSSEC_CONF"
+
+# --------------------------
 # Cluster: nodes list
 # --------------------------
 if [[ -n "$WAZUH_CLUSTER_NODES" ]]; then

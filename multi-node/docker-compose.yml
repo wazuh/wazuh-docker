@@ -17,9 +17,10 @@ services:
       - "55000:55000"
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
-      - WAZUH_NODE_NAME=wazuh.master
+      - WAZUH_NODE_NAME=master
       - WAZUH_NODE_TYPE=master
-      - WAZUH_CLUSTER_NODES=wazuh.master,wazuh.worker
+      - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
+      - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - API_USERNAME=wazuh-wui
@@ -48,9 +49,10 @@ services:
         hard: 655360
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
-      - WAZUH_NODE_NAME=wazuh.worker
+      - WAZUH_NODE_NAME=worker01
       - WAZUH_NODE_TYPE=worker
-      - WAZUH_CLUSTER_NODES=wazuh.master,wazuh.worker
+      - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
+      - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - API_USERNAME=wazuh-wui
