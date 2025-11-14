@@ -4,18 +4,25 @@
 # Variables for certificate generation
 CERT_TOOL="wazuh-certs-tool.sh"
 CERT_CONFIG_FILE="config.yml"
-CERT_DIR=/var/ossec/etc/certs/
+CERT_DIR=/etc/filebeat/certs
 download_package() {
     local url=$1
     local package=$2
     if curl -fsL "$url" -o "$package"; then
+        echo $url
+        cat $package
         echo "Downloaded $package"
         return 0
     else
+        echo $url
+        cat $package
         echo "Error downloading $package from $url"
         return 1
     fi
 }
+echo "pwd"
+pwd
+mkdir -p $CERT_DIR
 # Download the tool to create the certificates
 echo "Downloading the tool to create the certificates..."
 download_package "$wazuh_cert_tool" $CERT_TOOL
@@ -29,6 +36,9 @@ sed -i 's/  ip:.*/  ip: "127.0.0.1"/' $CERT_CONFIG_FILE
 chmod 700 "$CERT_CONFIG_FILE"
 # Create the certificates
 chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
+
+echo "files in pwd"
+ls -la
 
 # Copy Wazuh manager certs
 cp -pr /wazuh-certificates/wazuh-1.pem ${CERT_DIR}/wazuh-1.pem

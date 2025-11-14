@@ -85,7 +85,6 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
-        echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
         echo "* revision: ${{ inputs.revision }}"
         echo "* dev: ${{ inputs.dev }}"
         echo "* dev reference: ${{ inputs.reference }}"
