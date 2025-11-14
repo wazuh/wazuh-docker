@@ -26,6 +26,10 @@ echo $DASHBOARD_PASSWORD | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards
 
 opensearch_dashboards_vars=(
     opensearch.hosts
+    server.port
+    server.host
+    opensearch.username
+    opensearch.password
 )
 
 function runOpensearchDashboards {

@@ -6,11 +6,47 @@ This deployment is defined in the `docker-compose.yml` file with two Wazuh manag
 ```
 $ sysctl -w vm.max_map_count=262144
 ```
-2) Run the certificate creation script:
+
+2) Download the certificate creation script and config.yml file:
 ```
-$ docker compose -f generate-indexer-certs.yml run --rm generator
+$ curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
+$ curl -sO https://packages.wazuh.com/5.0/config.yml
 ```
-3) Start the environment with docker compose:
+
+3) Edit the config.yml file with the configuration of the Wazuh components to be deployed
+```
+nodes:
+  # Wazuh indexer server nodes
+  indexer:
+    - name: wazuh1.indexer
+      ip: wazuh1.indexer
+    - name: wazuh2.indexer
+      ip: wazuh2.indexer
+    - name: wazuh3.indexer
+      ip: wazuh3.indexer
+
+  # Wazuh server nodes
+  # Use node_type only with more than one Wazuh manager
+  server:
+    - name: wazuh.master
+      ip: wazuh.master
+      node_type: master
+    - name: wazuh.worker
+      ip: wazuh.worker
+      node_type: worker
+
+  # Wazuh dashboard node
+  dashboard:
+    - name: wazuh.dashboard
+      ip: wazuh.dashboard
+```
+
+4) Run the certificate creation script:
+```
+bash ./wazuh-certs-tool.sh -A
+```
+
+5) Start the environment with docker compose:
 
 - In the foregroud:
 ```

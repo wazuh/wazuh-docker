@@ -11,6 +11,7 @@
 # Export OpenSearch Home
 export OPENSEARCH_HOME=/usr/share/wazuh-indexer
 export OPENSEARCH_PATH_CONF=$OPENSEARCH_HOME/config
+export CONFIG_FILE=${OPENSEARCH_PATH_CONF}/opensearch.yml
 export PATH=$OPENSEARCH_HOME/bin:$PATH
 
 
@@ -62,8 +63,39 @@ function runOpensearch {
 
 }
 
+function configureOpensearch {
+# Update opensearch.yml with NODES_DN if set
+if [ -n "$NODES_DN" ]; then
+
+  CLEAN_NODES_DN=$(echo "$NODES_DN" | sed 's/^["'\'']//; s/["'\'']$//; s/""/"/g')
+  NODES_DN_YAML=$(echo $CLEAN_NODES_DN | tr ';' '\n' | sed 's/^/- "/; s/$/"/')
+
+  awk '
+    /^plugins\.security\.nodes_dn:/ {in_block=1; print; next}
+    in_block && /^[^#[:space:]-]/ {in_block=0}
+    !in_block || /^plugins\.security\.nodes_dn:/ {next}
+    {print}
+  ' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
+
+  awk -v repl="$NODES_DN_YAML" '
+    /^plugins\.security\.nodes_dn:/ {
+      print "plugins.security.nodes_dn:";
+      print repl;
+      skip=1; next
+    }
+    skip && /^[^#[:space:]-]/ {skip=0}
+    !skip
+  ' "${CONFIG_FILE}" > "${CONFIG_FILE}.new"
+  mv "${CONFIG_FILE}.new" "$CONFIG_FILE"
+  rm -f "${CONFIG_FILE}.tmp"
+fi
+}
+
 # Prepend "opensearch" command if no argument was provided or if the first
 # argument looks like a flag (i.e. starts with a dash).
+
+configureOpensearch
+
 if [ $# -eq 0 ] || [ "${1:0:1}" = '-' ]; then
     set -- opensearch "$@"
 fi
