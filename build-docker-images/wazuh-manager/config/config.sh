@@ -9,19 +9,13 @@ download_package() {
     local url=$1
     local package=$2
     if curl -fsL "$url" -o "$package"; then
-        echo $url
-        cat $package
         echo "Downloaded $package"
         return 0
     else
-        echo $url
-        cat $package
         echo "Error downloading $package from $url"
         return 1
     fi
 }
-echo "pwd"
-pwd
 mkdir -p $CERT_DIR
 # Download the tool to create the certificates
 echo "Downloading the tool to create the certificates..."
