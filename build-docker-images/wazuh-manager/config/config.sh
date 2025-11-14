@@ -31,9 +31,6 @@ chmod 700 "$CERT_CONFIG_FILE"
 # Create the certificates
 chmod 755 "$CERT_TOOL" && bash "$CERT_TOOL" -A
 
-echo "files in pwd"
-ls -la
-
 # Copy Wazuh manager certs
 cp -pr /wazuh-certificates/wazuh-1.pem ${CERT_DIR}/wazuh-1.pem
 cp -pr /wazuh-certificates/wazuh-1-key.pem ${CERT_DIR}/wazuh-1-key.pem
