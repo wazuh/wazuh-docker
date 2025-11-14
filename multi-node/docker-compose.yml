@@ -82,7 +82,7 @@ services:
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - node.max_local_storage_nodes=3
       - plugins.security.allow_default_init_securityindex=true
-      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US
+      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
     ulimits:
       memlock:
         soft: -1
@@ -111,7 +111,7 @@ services:
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - node.max_local_storage_nodes=3
       - plugins.security.allow_default_init_securityindex=true
-      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US
+      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
     ulimits:
       memlock:
         soft: -1
@@ -138,7 +138,7 @@ services:
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - node.max_local_storage_nodes=3
       - plugins.security.allow_default_init_securityindex=true
-      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=filebeat,OU=Wazuh,O=Wazuh,L=California,C=US
+      - NODES_DN=CN=wazuh1.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh2.indexer,OU=Wazuh,O=Wazuh,L=California,C=US;CN=wazuh3.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
     ulimits:
       memlock:
         soft: -1
