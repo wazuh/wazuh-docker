@@ -70,6 +70,13 @@ jobs:
       IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
       IMAGE_TAG: ${{ inputs.image_tag }}
       REVISION: ${{ inputs.revision }}
+      MAJOR: 5
+      WAZUH_VERSION: 5.0.0
+      MANAGER_REVISION: ${{ inputs.reference }}
+      INDEXER_REVISION: ${{ inputs.reference }}
+      DASHBOARD_REVISION: ${{ inputs.reference }}
+      AGENT_REVISION: ${{ inputs.reference }}
+      OVA_REVISION: ${{ inputs.reference }}
 
     steps:
     - name: Print inputs
