@@ -123,32 +123,56 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Create packages_url.txt file
-      if : ${{ inputs.dev == true }}
+    - name: Downoad artifact_urls.yml from S3 and replace variables
+      shell: python
+      env:
+        CONTEXT_VARS: ${{ toJson(vars) }}
       run: |
-          cat << EOF > packages_url.txt
-          wazuh_manager_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_manager_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_manager_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_manager_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_indexer_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_indexer_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_indexer_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_indexer_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_dashboard_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_dashboard_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_dashboard_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_dashboard_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_i386_msi: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_intel64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 3600 --region us-west-1)"
-          wazuh_agent_url_arm64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 3600 --region us-west-1)"
-          wazuh_cert_tool: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)"
-          wazuh_config_yml: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/config.yml --expires-in 3600 --region us-west-1)"
-          EOF
+          import os
+          import re
+          import json
+          import subprocess
+
+          filename = "artifact_urls.yml"
+          bucket_path = "s3://xdrsiem-devops-wazuh-artifacts/deployment/artifact_urls.yml"
+
+          subprocess.run(f"aws s3 cp {bucket_path} ./{filename}", shell=True, check=True)
+
+          try:
+              repo_vars = json.loads(os.environ.get('CONTEXT_VARS', '{}'))
+          except:
+              repo_vars = {}
+
+          def replace_match(match):
+              prefix = match.group(1)
+              key = match.group(2)
+              
+              value = None
+              if prefix == 'env':
+                  value = os.environ.get(key)
+              elif prefix == 'vars':
+                  value = repo_vars.get(key)
+              
+              if value is not None:
+                  return value
+              else:
+                  return match.group(0)
+
+          with open(filename, 'r') as f:
+              content = f.read()
+
+          pattern = r'\$\{\{\s*(env|vars)\.([\w_]+)\s*\}\}'
+          
+          new_content = re.sub(pattern, replace_match, content)
+
+          with open(filename, 'w') as f:
+              f.write(new_content)
+      working-directory: ./build-docker-images
+
+    - name: Verify content (Debug)
+      run: |
+        cat artifact_urls.yml
+        mv artifact_urls.yml packages_url.yml
       working-directory: ./build-docker-images
 
     - name: Build Wazuh images
