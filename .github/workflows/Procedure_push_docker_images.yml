@@ -123,7 +123,12 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Downoad artifact_urls.yml from S3 and replace variables
+    - name: Download artifact_urls.yml from S3
+      run: |
+        aws s3 cp s3://xdrsiem-devops-wazuh-artifacts/deployment/artifact_urls.yml ./artifact_urls.yml
+      working-directory: ./build-docker-images
+
+    - name: replace variables
       shell: python
       env:
         CONTEXT_VARS: ${{ toJson(vars) }}
@@ -135,8 +140,6 @@ jobs:
 
           filename = "artifact_urls.yml"
           bucket_path = "s3://xdrsiem-devops-wazuh-artifacts/deployment/artifact_urls.yml"
-
-          subprocess.run(f"aws s3 cp {bucket_path} ./{filename}", shell=True, check=True)
 
           try:
               repo_vars = json.loads(os.environ.get('CONTEXT_VARS', '{}'))
