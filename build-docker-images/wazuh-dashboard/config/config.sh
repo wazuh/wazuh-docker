@@ -26,7 +26,7 @@ download_package() {
 }
 # Download the tool to create the certificates
 echo "Downloading the tool to create the certificates..."
-download_package "$wazuh_cert_tool" $CERT_TOOL
+download_package "$wazuh_certs_tool" $CERT_TOOL
 # Download the config file for the certificate tool
 echo "Downloading the config file for the certificate tool..."
 download_package "$wazuh_config_yml" $CERT_CONFIG_FILE

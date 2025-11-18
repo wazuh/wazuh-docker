@@ -9,7 +9,7 @@ ARG S6_VERSION="v2.2.0.3"
 ARG TARGETARCH
 ARG wazuh_manager_url_amd64_rpm
 ARG wazuh_manager_url_arm64_rpm
-ARG wazuh_cert_tool
+ARG wazuh_certs_tool
 ARG wazuh_config_yml
 
 COPY config/config.sh .
