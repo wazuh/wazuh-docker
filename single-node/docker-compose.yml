@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:main
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -37,7 +37,7 @@ services:
       - ./wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:main
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -67,7 +67,7 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:main
+    image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:
