@@ -43,22 +43,22 @@ build() {
     WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     # Variables
-    FILE="packages_url.txt"
+    ARTIFACT_URLS_FILE="artifact_urls.txt"
 
-    if [[ -f "$FILE" ]]; then
-        echo "$FILE exists. Using existing file."
+    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
+        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
     else
         TAG="v${WAZUH_VERSION}"
         REPO="wazuh/wazuh-docker"
         GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
 
         if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
-            curl -fsSL -o "$FILE" "https://packages.wazuh.com/${WAZUH_MINOR_VERSION}/packages_url.txt"
+            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
         else
-            curl -fsSL -o "$FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/packages_url.txt"
+            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
         fi
     fi
-    awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $FILE > packages_env.txt
+    awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
     
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
@@ -69,7 +69,7 @@ build() {
 
     set -a
     source ../.env
-    source ./packages_env.txt
+    source ./artifacts_env.txt
     set +a
 
     if  [ "${MULTIARCH}" ];then
