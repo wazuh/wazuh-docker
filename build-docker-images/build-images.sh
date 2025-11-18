@@ -43,7 +43,7 @@ build() {
     WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     # Variables
-    ARTIFACT_URLS_FILE="artifact_urls.txt"
+    ARTIFACT_URLS_FILE="artifact_urls.yml"
 
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
         echo "$ARTIFACT_URLS_FILE exists. Using existing file."
