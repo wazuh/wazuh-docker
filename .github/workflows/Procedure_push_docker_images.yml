@@ -85,7 +85,6 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
-        echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
         echo "* revision: ${{ inputs.revision }}"
         echo "* dev: ${{ inputs.dev }}"
         echo "* dev reference: ${{ inputs.reference }}"
@@ -123,10 +122,10 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Create packages_url.txt file
+    - name: Create artifact_urls.yml file
       if : ${{ inputs.dev == true }}
       run: |
-          cat << EOF > packages_url.txt
+          cat << EOF > artifact_urls.yml
           wazuh_manager_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
           wazuh_manager_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
           wazuh_manager_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
@@ -146,7 +145,7 @@ jobs:
           wazuh_agent_url_i386_msi: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 3600 --region us-west-1)"
           wazuh_agent_url_intel64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 3600 --region us-west-1)"
           wazuh_agent_url_arm64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 3600 --region us-west-1)"
-          wazuh_cert_tool: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)"
+          wazuh_certs_tool: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)"
           wazuh_config_yml: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/config.yml --expires-in 3600 --region us-west-1)"
           EOF
       working-directory: ./build-docker-images

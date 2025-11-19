@@ -4,7 +4,7 @@
 # Variables for certificate generation
 CERT_TOOL="wazuh-certs-tool.sh"
 CERT_CONFIG_FILE="config.yml"
-CERT_DIR=/var/ossec/etc/certs/
+CERT_DIR=/etc/filebeat/certs
 download_package() {
     local url=$1
     local package=$2
@@ -16,9 +16,10 @@ download_package() {
         return 1
     fi
 }
+mkdir -p $CERT_DIR
 # Download the tool to create the certificates
 echo "Downloading the tool to create the certificates..."
-download_package "$wazuh_cert_tool" $CERT_TOOL
+download_package "$wazuh_certs_tool" $CERT_TOOL
 # Download the config file for the certificate tool
 echo "Downloading the config file for the certificate tool..."
 download_package "$wazuh_config_yml" $CERT_CONFIG_FILE

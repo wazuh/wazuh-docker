@@ -1,5 +1,5 @@
-WAZUH_IMAGE_VERSION=main
-IMAGE_TAG=main
+WAZUH_IMAGE_VERSION=5.0.0
+IMAGE_TAG=5.0.0
 WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
 WAZUH_TAG_REVISION=1
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
@@ -14,7 +14,7 @@ WAZUH_REGISTRY=docker.io
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_IMAGE_VERSION="main"
+WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 WAZUH_TAG_REFERENCE=""
@@ -43,22 +43,22 @@ build() {
     WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     # Variables
-    FILE="packages_url.txt"
+    ARTIFACT_URLS_FILE="artifact_urls.yml"
 
-    if [[ -f "$FILE" ]]; then
-        echo "$FILE exists. Using existing file."
+    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
+        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
     else
         TAG="v${WAZUH_VERSION}"
         REPO="wazuh/wazuh-docker"
         GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
 
         if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
-            curl -fsSL -o "$FILE" "https://packages.wazuh.com/${WAZUH_MINOR_VERSION}/packages_url.txt"
+            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
         else
-            curl -fsSL -o "$FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/packages_url.txt"
+            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
         fi
     fi
-    awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $FILE > packages_env.txt
+    awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
     
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
@@ -69,7 +69,7 @@ build() {
 
     set -a
     source ../.env
-    source ./packages_env.txt
+    source ./artifacts_env.txt
     set +a
 
     if  [ "${MULTIARCH}" ];then

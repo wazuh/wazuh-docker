@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-puppet/issues/2081))
 - Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-puppet/issues/2058))
 - Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-puppet/issues/2054))
 - Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-puppet/issues/2030))
