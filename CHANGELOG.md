@@ -27,7 +27,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Artifactory vulnerabilities notification ([#2078](https://github.com/wazuh/wazuh-docker/pull/2078))
 
 ### Changed
 
