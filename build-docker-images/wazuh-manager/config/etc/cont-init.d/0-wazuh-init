@@ -70,8 +70,17 @@ apply_exclusion_data() {
         mkdir -p ${DIR}
       fi
 
+      safe_cp() {
+          if cp -p "$1" "$2" 2>/dev/null; then
+              return 0
+          else
+              echo "Warning: Could not copy $1 (may be read-only)"
+              return 0
+          fi
+      }
+
       print "Updating ${exclusion_file}"
-      exec_cmd "cp -p ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
+      exec_cmd "safe_cp ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
     fi
   done
 }
