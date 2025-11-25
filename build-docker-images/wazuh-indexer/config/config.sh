@@ -62,7 +62,6 @@ chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
-mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}
 mkdir -p ${TARGET_DIR}${LIB_DIR}
 mkdir -p ${TARGET_DIR}${LOG_DIR}
