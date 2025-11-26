@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Code improvements for 4.14.2 ([#2090](https://github.com/wazuh/wazuh-docker/pull/2090))
 - Artifactory vulnerabilities notification ([#2078](https://github.com/wazuh/wazuh-docker/pull/2078))
 
 ### Changed

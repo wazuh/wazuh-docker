@@ -62,7 +62,6 @@ chmod 755 $CERT_TOOL && bash /$CERT_TOOL -A
 
 # copy to target
 mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}
-mkdir -p ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}
 mkdir -p ${TARGET_DIR}${LIB_DIR}
 mkdir -p ${TARGET_DIR}${LOG_DIR}
@@ -73,10 +72,10 @@ mkdir -p ${TARGET_DIR}/usr/lib/sysctl.d
 mkdir -p ${TARGET_DIR}/usr/lib/systemd/system
 mkdir -p ${TARGET_DIR}${CONFIG_DIR}/certs
 # Copy Wazuh's config files for the security plugin
-cp -pr /roles_mapping.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /roles.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /action_groups.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
-cp -pr /internal_users.yml ${TARGET_DIR}${INSTALLATION_DIR}/opensearch-security/
+cp -pr /roles_mapping.yml ${TARGET_DIR}${CONFIG_DIR}/opensearch-security/
+cp -pr /roles.yml ${TARGET_DIR}${CONFIG_DIR}/opensearch-security/
+cp -pr /action_groups.yml ${TARGET_DIR}${CONFIG_DIR}/opensearch-security/
+cp -pr /internal_users.yml ${TARGET_DIR}${CONFIG_DIR}/opensearch-security/
 cp -pr /opensearch.yml ${TARGET_DIR}${CONFIG_DIR}
 # Copy Wazuh indexer's certificates
 cp -pr /wazuh-certificates/demo.indexer.pem ${TARGET_DIR}${CONFIG_DIR}/certs/indexer.pem
