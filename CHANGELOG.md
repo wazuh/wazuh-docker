@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.10.4]
+
+### Added
+
+- None
+
+### Changed
+
+- Backport 4.13.0 changes: Modify wazuh-keystore use ([#2036](https://github.com/wazuh/wazuh-docker/pull/2036)) \- (wazuh-keystore)
+
+### Fixed
+
+- Add wazuh-template.json into permanent data exception ([#1967](https://github.com/wazuh/wazuh-docker/pull/1967))
+
+### Deleted
+
+- None
+
 ## [4.10.3]
 
 ### Added
