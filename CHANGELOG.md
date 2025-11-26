@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Removed sslmanager key from the docker manager image. ([#2092](https://github.com/wazuh/wazuh-docker/pull/2092))
 - Backport 4.13.0 changes: Modify wazuh-keystore use ([#2036](https://github.com/wazuh/wazuh-docker/pull/2036)) \- (wazuh-keystore)
 
 ### Fixed
