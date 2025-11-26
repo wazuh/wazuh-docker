@@ -40,6 +40,10 @@ COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
 
+# Remove wazuh-authd default certs to force generation of new ones at container startup
+RUN rm -f /var/ossec/etc/sslmanager.key && \
+    rm -f /var/ossec/etc/sslmanager.cert
+
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$FILEBEAT_TEMPLATE_BRANCH/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
 
