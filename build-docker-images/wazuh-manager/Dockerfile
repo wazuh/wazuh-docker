@@ -31,7 +31,9 @@ RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     -o /tmp/s6-overlay-amd64.tar.gz && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz
+    rm  /tmp/s6-overlay-amd64.tar.gz && \
+    rm -f /var/ossec/etc/sslmanager.key && \
+    rm -f /var/ossec/etc/sslmanager.cert
 
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
@@ -39,10 +41,6 @@ COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/creat
 COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
-
-# Remove wazuh-authd default certs to force generation of new ones at container startup
-RUN rm -f /var/ossec/etc/sslmanager.key && \
-    rm -f /var/ossec/etc/sslmanager.cert
 
 ADD https://raw.githubusercontent.com/wazuh/wazuh/$FILEBEAT_TEMPLATE_BRANCH/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
 RUN chmod go-w /etc/filebeat/wazuh-template.json
