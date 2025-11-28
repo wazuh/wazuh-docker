@@ -27,11 +27,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Code improvements for 4.14.2 ([#2090](https://github.com/wazuh/wazuh-docker/pull/2090))
 - Artifactory vulnerabilities notification ([#2078](https://github.com/wazuh/wazuh-docker/pull/2078))
 
 ### Changed
 
-- 
+- The location of the remove command for the wazuh-authd certificates has been changed. ([#2094](https://github.com/wazuh/wazuh-docker/pull/2094))
+- Removed sslmanager key from the docker manager image to 4.14.2. ([#2093](https://github.com/wazuh/wazuh-docker/pull/2093))
 
 ### Fixed
 
