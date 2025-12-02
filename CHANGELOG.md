@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Add missing SSL ciphers and protocols and remove outdated ports parameters from opensearch.yml template ([#2104](https://github.com/wazuh/wazuh-docker/pull/2104))
 
 ### Deleted
 
