@@ -18,7 +18,7 @@ on:
       reference:
         description: 'Dev reference'
         type: string
-        default: latest 
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -47,7 +47,7 @@ on:
       reference:
         description: 'Dev reference'
         type: string
-        default: latest 
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -97,7 +97,7 @@ jobs:
 
     - name: free disk space
       uses: ./.github/free-disk-space
-    
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -145,8 +145,8 @@ jobs:
           wazuh_agent_url_i386_msi: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 3600 --region us-west-1)"
           wazuh_agent_url_intel64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 3600 --region us-west-1)"
           wazuh_agent_url_arm64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 3600 --region us-west-1)"
-          wazuh_certs_tool: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)"
-          wazuh_config_yml: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/config.yml --expires-in 3600 --region us-west-1)"
+          wazuh_certs_tool: "https://s3.us-west-1.amazonaws.com/packages-dev.wazuh.com/4.13/wazuh-certs-tool.sh"
+          wazuh_config_yml: "https://s3.us-west-1.amazonaws.com/packages-dev.wazuh.com/4.13/config.yml"
           EOF
       working-directory: ./build-docker-images
 
@@ -155,7 +155,7 @@ jobs:
         if [ "${{ inputs.dev }}" = true ]; then
           IMAGE_TAG="${{ inputs.image_tag }}-${{ inputs.reference }}"
           ./build-images.sh -v ${{ inputs.image_tag }} -r $REVISION -d "dev" -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }}
-        else  
+        else
           if [[ "$IMAGE_TAG" == *"-"* ]]; then
             IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
             if [ -z "${tokens[1]}" ]; then
