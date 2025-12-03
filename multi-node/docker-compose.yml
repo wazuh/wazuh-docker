@@ -34,8 +34,8 @@ services:
       - master-wazuh-active-response:/var/ossec/active-response/bin
       - master-wazuh-wodles:/var/ossec/wodles
       - ./wazuh-certificates/root-ca.pem:/etc/ssl/root-ca.pem
-      - ./wazuh-certificates/wazuh.master.pem:/etc/ssl/filebeat.pem
-      - ./wazuh-certificates/wazuh.master-key.pem:/etc/ssl/filebeat.key
+      - ./wazuh-certificates/wazuh.master.pem:/etc/ssl/wazuh.master.pem
+      - ./wazuh-certificates/wazuh.master-key.pem:/etc/ssl/wazuh.master.key
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
@@ -65,9 +65,9 @@ services:
       - worker-wazuh-var-multigroups:/var/ossec/var/multigroups
       - worker-wazuh-active-response:/var/ossec/active-response/bin
       - worker-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.worker.pem:/etc/filebeat/certs/filebeat.pem
-      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.worker.pem:/etc/wazuh/certs/wazuh.worker.pem
+      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/wazuh/certs/wazuh.worker.key
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0

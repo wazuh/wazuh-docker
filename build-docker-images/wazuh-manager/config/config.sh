@@ -4,7 +4,7 @@
 # Variables for certificate generation
 CERT_TOOL="wazuh-certs-tool.sh"
 CERT_CONFIG_FILE="config.yml"
-CERT_DIR=/etc/filebeat/certs
+CERT_DIR=/etc/wazuh/certs
 download_package() {
     local url=$1
     local package=$2

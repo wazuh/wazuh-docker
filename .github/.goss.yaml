@@ -1,11 +1,4 @@
 file:
-  /etc/filebeat/filebeat.yml:
-    exists: true
-    mode: "0644"
-    owner: root
-    group: root
-    filetype: file
-    contains: []
   /var/ossec/bin/wazuh-control:
     exists: true
     mode: "0750"
@@ -49,10 +42,6 @@ file:
     filetype: file
     contains: []
 package:
-  filebeat:
-    installed: true
-    versions:
-    - 7.10.2
   wazuh-manager:
     installed: true
     versions:
@@ -71,8 +60,6 @@ port:
     ip:
     - 0.0.0.0
 process:
-  filebeat:
-    running: true
   wazuh-analysisd:
     running: true
   wazuh-authd:

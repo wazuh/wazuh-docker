@@ -32,9 +32,9 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/etc/wazuh/certs/wazuh.manager.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/wazuh/certs/wazuh.manager-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
