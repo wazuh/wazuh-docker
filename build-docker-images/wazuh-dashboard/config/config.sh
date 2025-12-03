@@ -1,5 +1,6 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 # This has to be exported to make some magic below work.
+set -x
 export DH_OPTIONS
 
 export NAME=wazuh-dashboard
@@ -55,3 +56,5 @@ sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboa
 
 chmod -R 500 ${CONFIG_DIR}/certs
 chmod -R 400 ${CONFIG_DIR}/certs/*
+
+set +x

@@ -1,5 +1,6 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 # This has to be exported to make some magic below work.
+set -x
 export DH_OPTIONS
 
 export NAME=wazuh-indexer
@@ -64,3 +65,5 @@ sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-perfo
 chown -R ${USER}:${GROUP} ${CONFIG_DIR}
 chmod -R 500 ${CONFIG_DIR}/certs
 chmod -R 400 ${CONFIG_DIR}/certs/*
+
+set +x
