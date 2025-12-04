@@ -6,8 +6,22 @@ wazuh_port="${API_PORT:-55000}"
 api_username="${API_USERNAME:-wazuh-wui}"
 api_password="${API_PASSWORD:-wazuh-wui}"
 api_run_as="${RUN_AS:-false}"
+export DH_OPTIONS
+
+export NAME=wazuh-dashboard
+export INSTALLATION_DIR=/usr/share/${NAME}
+export CONFIG_DIR=${INSTALLATION_DIR}/config
 
 dashboard_config_file="/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml"
+
+# Modify opensearch_dashboards.yml config paths
+if [ -d "/etc/wazuh-dashboard" ]; then
+    mkdir -p ${CONFIG_DIR}
+    mkdir -p ${CONFIG_DIR}/certs
+    mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
+    rmdir /etc/wazuh-dashboard
+fi
+sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboards.yml
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN

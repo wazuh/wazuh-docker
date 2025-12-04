@@ -27,10 +27,6 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazu
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
-# Generate certificates
-COPY config/config.sh .
-RUN bash config.sh
-
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
 #
