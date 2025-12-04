@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -20,6 +20,7 @@ services:
       - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
+      - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - API_USERNAME=wazuh-wui
@@ -33,11 +34,11 @@ services:
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
       - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/etc/wazuh/certs/wazuh.manager.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/wazuh/certs/wazuh.manager-key.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/etc/wazuh/certs/wazuh.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/wazuh/certs/wazuh-key.pem
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -67,13 +68,12 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:
-      - 443:5601
+      - 443:443
     environment:
-      - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin

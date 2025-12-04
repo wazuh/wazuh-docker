@@ -55,7 +55,7 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
     mkdir -p /var/lib/wazuh-indexer && chown 1000:1000 /var/lib/wazuh-indexer && \
     mkdir -p $INSTALL_DIR/logs && chown 1000:1000 $INSTALL_DIR/logs && \
     mkdir -p /run/wazuh-indexer && chown 1000:1000 /run/wazuh-indexer && \
-    mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer    
+    mkdir -p /var/log/wazuh-indexer && chown 1000:1000 /var/log/wazuh-indexer
 
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
 
