@@ -44,7 +44,7 @@ if [[ $_config_exists -ne 0 ]]; then
       username: $api_username
       password: $api_password
       run_as: $api_run_as
-  EOF
+EOF
 else
   echo "Wazuh APP already configured"
 fi
