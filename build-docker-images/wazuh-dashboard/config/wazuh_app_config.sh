@@ -32,7 +32,7 @@ do
     fi
 done
 
-grep -q default $dashboard_config_file
+grep -q wazuh_core.hosts $dashboard_config_file
 _config_exists=$?
 
 if [[ $_config_exists -ne 0 ]]; then

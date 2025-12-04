@@ -80,7 +80,8 @@ RUN yum install shadow-utils -y && \
     mkdir -p $INSTALL_DIR && \
     chown 1000:1000 $INSTALL_DIR && \
     chown 1000:1000 /*.sh && \
-    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom \
+    bash /wazuh_app_config.sh
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR

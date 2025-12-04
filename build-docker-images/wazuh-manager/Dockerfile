@@ -18,11 +18,13 @@ RUN URL_VAR="wazuh_manager_url_${TARGETARCH}_rpm" && \
     dnf install /wazuh-manager.rpm -y && \
     rm -rf /wazuh-manager.rpm && \
     dnf clean all && \
-    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-    -o /tmp/s6-overlay-amd64.tar.gz && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz && \
+    S6_ARCH="amd64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
+    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz \
+    -o /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C /usr ./bin && \
+    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
     rm -f /var/ossec/etc/sslmanager.key && \
     rm -f /var/ossec/etc/sslmanager.cert
 
