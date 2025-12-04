@@ -19,8 +19,5 @@ if [ -d "/etc/wazuh-indexer" ]; then
 fi
 sed -i "s|/etc/wazuh-indexer|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch.yml
 
-sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' /etc/wazuh-indexer/jvm.options
+sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' ${CONFIG_DIR}/jvm.options
 
-chown -R ${USER}:${GROUP} ${CONFIG_DIR}
-chmod -R 500 ${CONFIG_DIR}/certs
-chmod -R 400 ${CONFIG_DIR}/certs/*
