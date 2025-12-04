@@ -1,5 +1,6 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+set -x
 
 wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
@@ -12,7 +13,13 @@ export NAME=wazuh-dashboard
 export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 
-dashboard_config_file="/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml"
+dashboard_config_file="${CONFIG_DIR}/opensearch_dashboards.yml"
+
+printf "Modifying Wazuh App configuration file: %s\n" "$dashboard_config_file"
+ls -la ${CONFIG_DIR}
+
+printf "/etc/wazuh-dashboard contents:\n"
+ls -la /etc/wazuh-dashboard
 
 # Modify opensearch_dashboards.yml config paths
 if [ -d "/etc/wazuh-dashboard" ]; then
@@ -21,7 +28,7 @@ if [ -d "/etc/wazuh-dashboard" ]; then
     mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
     rmdir /etc/wazuh-dashboard
 fi
-sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboards.yml
+sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${dashboard_config_file}
 
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
@@ -62,3 +69,5 @@ EOF
 else
   echo "Wazuh APP already configured"
 fi
+
+set +x
