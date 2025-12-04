@@ -6,5 +6,11 @@ export NAME=wazuh-dashboard
 export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 
-# Modify opensearch.yml config paths
+# Modify opensearch_dashboards.yml config paths
+if [ -d "/etc/wazuh-dashboard" ]; then
+    mkdir -p ${CONFIG_DIR}
+    mkdir -p ${CONFIG_DIR}/certs
+    mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
+    rmdir /etc/wazuh-dashboard
+fi
 sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch_dashboards.yml
