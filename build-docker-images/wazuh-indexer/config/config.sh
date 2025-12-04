@@ -11,6 +11,12 @@ export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 
 # Modify opensearch.yml config paths
+if [ -d "/etc/wazuh-indexer" ]; then
+    mkdir -p ${CONFIG_DIR}
+    mkdir -p ${CONFIG_DIR}/certs
+    mv /etc/wazuh-indexer/* ${CONFIG_DIR}/
+    rmdir /etc/wazuh-indexer
+fi
 sed -i "s|/etc/wazuh-indexer|${CONFIG_DIR}|g" ${CONFIG_DIR}/opensearch.yml
 
 sed -i 's/-Djava.security.policy=file:\/\/\/etc\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/-Djava.security.policy=file:\/\/\/usr\/share\/wazuh-indexer\/opensearch-performance-analyzer\/opensearch_security.policy/g' /etc/wazuh-indexer/jvm.options
