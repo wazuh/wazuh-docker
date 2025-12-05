@@ -8,7 +8,6 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_url_amd64_rpm
 ARG wazuh_dashboard_url_arm64_rpm
-ARG wazuh_certs_tool
 ARG wazuh_config_yml
 
 # Update and install dependencies
@@ -76,8 +75,7 @@ RUN yum install shadow-utils -y && \
     mkdir -p $INSTALL_DIR && \
     chown 1000:1000 $INSTALL_DIR && \
     chown 1000:1000 /*.sh && \
-    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom && \
-    bash /wazuh_app_config.sh
+    mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR

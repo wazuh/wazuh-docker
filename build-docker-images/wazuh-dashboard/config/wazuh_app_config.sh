@@ -15,21 +15,6 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 
 dashboard_config_file="${CONFIG_DIR}/opensearch_dashboards.yml"
 
-printf "Modifying Wazuh App configuration file: %s\n" "$dashboard_config_file"
-ls -la ${CONFIG_DIR}
-
-printf "/etc/wazuh-dashboard contents:\n"
-ls -la /etc/wazuh-dashboard
-
-# Modify opensearch_dashboards.yml config paths
-if [ -d "/etc/wazuh-dashboard" ]; then
-    mkdir -p ${CONFIG_DIR}
-    mkdir -p ${CONFIG_DIR}/certs
-    mv /etc/wazuh-dashboard/* ${CONFIG_DIR}/
-    rmdir /etc/wazuh-dashboard
-fi
-sed -i "s|/etc/wazuh-dashboard|${CONFIG_DIR}|g" ${dashboard_config_file}
-
 declare -A CONFIG_MAP=(
   [pattern]=$PATTERN
   [checks.pattern]=$CHECKS_PATTERN
