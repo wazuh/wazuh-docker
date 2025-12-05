@@ -1,6 +1,5 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-set -x
 
 wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
@@ -16,6 +15,11 @@ export CONFIG_DIR=${INSTALLATION_DIR}/config
 dashboard_config_file="${CONFIG_DIR}/opensearch_dashboards.yml"
 
 declare -A CONFIG_MAP=(
+  [url]=$wazuh_url
+  [port]=$wazuh_port
+  [username]=$api_username
+  [password]=$api_password
+  [run_as]=$api_run_as
   [pattern]=$PATTERN
   [checks.pattern]=$CHECKS_PATTERN
   [checks.template]=$CHECKS_TEMPLATE
@@ -29,6 +33,7 @@ declare -A CONFIG_MAP=(
   [wazuh.monitoring.frequency]=$WAZUH_MONITORING_FREQUENCY
   [wazuh.monitoring.shards]=$WAZUH_MONITORING_SHARDS
   [wazuh.monitoring.replicas]=$WAZUH_MONITORING_REPLICAS
+
 )
 
 for i in "${!CONFIG_MAP[@]}"
@@ -37,22 +42,3 @@ do
         sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $dashboard_config_file
     fi
 done
-
-grep -q wazuh_core.hosts $dashboard_config_file
-_config_exists=$?
-
-if [[ $_config_exists -ne 0 ]]; then
-  cat << EOF >> $dashboard_config_file
-  wazuh_core.hosts:
-    default:
-      url: $wazuh_url
-      port: $wazuh_port
-      username: $api_username
-      password: $api_password
-      run_as: $api_run_as
-EOF
-else
-  echo "Wazuh APP already configured"
-fi
-
-set +x
