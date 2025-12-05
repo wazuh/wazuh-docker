@@ -1,7 +1,13 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+OPENSEARCH_DASHBOARDS_CONFIG=/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
 
 declare -A CONFIG_MAP=(
+  [server.host]=$SERVER_HOST
+  [opensearch.hosts]=$OPENSEARCH_HOSTS
+  [server.ssl.key]="/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem"
+  [server.ssl.certificate]="/usr/share/wazuh-dashboard/config/certs/dashboard.pem"
+  [server.ssl.certificateAuthorities]="/usr/share/wazuh-dashboard/config/certs/root-ca.pem"
   [url]=$WAZUH_API_URL
   [port]=$API_PORT
   [username]=$API_USERNAME

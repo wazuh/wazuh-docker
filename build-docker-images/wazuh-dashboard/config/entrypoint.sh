@@ -17,7 +17,6 @@ export OPENSEARCH_DASHBOARDS_HOME=/usr/share/wazuh-dashboard
 export PATH=$OPENSEARCH_DASHBOARDS_HOME/bin:$PATH
 DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
 DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
-export OPENSEARCH_DASHBOARDS_CONFIG=/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
 
 # Create and configure Wazuh dashboard keystore
 
@@ -25,7 +24,7 @@ yes | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore create --al
 echo $DASHBOARD_USERNAME | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
 echo $DASHBOARD_PASSWORD | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
 
-/wazuh_app_config.sh
+/wazuh_dashboard_config.sh
 
 opensearch_dashboards_vars=(
     opensearch.hosts

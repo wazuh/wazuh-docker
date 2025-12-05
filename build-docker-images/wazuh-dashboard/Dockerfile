@@ -31,7 +31,7 @@ RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/b
 #
 # Copy wazuh-dashboard from stage 0
 # Add entrypoint
-# Add wazuh_app_config
+# Add wazuh_dashboard_config
 ################################################################################
 FROM amazonlinux:2023
 
@@ -56,7 +56,7 @@ ENV USER="wazuh-dashboard" \
 
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
-COPY config/wazuh_app_config.sh /
+COPY config/wazuh_dashboard_config.sh /
 
 # Update and install dependencies
 RUN yum install shadow-utils -y && \
@@ -71,7 +71,7 @@ RUN yum install shadow-utils -y && \
             --comment "$USER user" \
             $USER && \
     chmod 700 /entrypoint.sh && \
-    chmod 700 /wazuh_app_config.sh && \
+    chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \
     chown 1000:1000 $INSTALL_DIR && \
     chown 1000:1000 /*.sh && \

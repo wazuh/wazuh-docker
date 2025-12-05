@@ -43,39 +43,23 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │   └── Dockerfile
 	│   ├── wazuh-dashboard
 	│   │   ├── config
-	│   │   │   ├── check_repository.sh
-	│   │   │   ├── config.sh
-	│   │   │   ├── config.yml
 	│   │   │   ├── entrypoint.sh
-	│   │   │   ├── wazuh_app_config.sh
-	│   │   │   └── wazuh.yml
+	│   │   │   ├── wazuh_dashboard_config.sh
 	│   │   └── Dockerfile
 	│   ├── wazuh-indexer
 	│   │   ├── config
-	│   │   │   ├── action_groups.yml
-	│   │   │   ├── check_repository.sh
 	│   │   │   ├── config.sh
-	│   │   │   ├── config.yml
 	│   │   │   ├── entrypoint.sh
-	│   │   │   ├── internal_users.yml
-	│   │   │   ├── opensearch.yml
-	│   │   │   ├── roles_mapping.yml
-	│   │   │   ├── roles.yml
 	│   │   │   └── securityadmin.sh
 	│   │   └── Dockerfile
 	│   └── wazuh-manager
 	│       ├── config
-	│       │   ├── check_repository.sh
 	│       │   ├── create_user.py
 	│       │   ├── etc
 	│       │   │   ├── cont-init.d
 	│       │   │   │   ├── 0-wazuh-init
-	│       │   │   │   ├── 1-config-
 	│       │   │   │   └── 2-manager
 	│       │   │   └── services.d
-	│       │   │       ├──
-	│       │   │       │   ├── finish
-	│       │   │       │   └── run
 	│       │   │       └── ossec-logs
 	│       │   │           └── run
 	│       │   ├── permanent_data.env
