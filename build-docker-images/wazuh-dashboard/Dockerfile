@@ -5,6 +5,7 @@ ARG WAZUH_VERSION
 ARG WAZUH_TAG_REVISION
 ARG WAZUH_UI_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
+ARG CONFIG_DIR=/etc/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_url_amd64_rpm
 ARG wazuh_dashboard_url_arm64_rpm
@@ -79,6 +80,7 @@ RUN yum install shadow-utils -y && \
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder --chown=1000:1000 $CONFIG_DIR $INSTALL_DIR/config/
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR

@@ -1,25 +1,12 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
-wazuh_url="${WAZUH_API_URL:-https://wazuh}"
-wazuh_port="${API_PORT:-55000}"
-api_username="${API_USERNAME:-wazuh-wui}"
-api_password="${API_PASSWORD:-wazuh-wui}"
-api_run_as="${RUN_AS:-false}"
-export DH_OPTIONS
-
-export NAME=wazuh-dashboard
-export INSTALLATION_DIR=/usr/share/${NAME}
-export CONFIG_DIR=${INSTALLATION_DIR}/config
-
-dashboard_config_file="${CONFIG_DIR}/opensearch_dashboards.yml"
-
 declare -A CONFIG_MAP=(
-  [url]=$wazuh_url
-  [port]=$wazuh_port
-  [username]=$api_username
-  [password]=$api_password
-  [run_as]=$api_run_as
+  [url]=$WAZUH_API_URL
+  [port]=$API_PORT
+  [username]=$API_USERNAME
+  [password]=$API_PASSWORD
+  [run_as]=$RUN_AS
   [pattern]=$PATTERN
   [checks.pattern]=$CHECKS_PATTERN
   [checks.template]=$CHECKS_TEMPLATE
@@ -39,6 +26,6 @@ declare -A CONFIG_MAP=(
 for i in "${!CONFIG_MAP[@]}"
 do
     if [ "${CONFIG_MAP[$i]}" != "" ]; then
-        sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $dashboard_config_file
+        sed -i 's/.*#'"$i"'.*/'"$i"': '"${CONFIG_MAP[$i]}"'/' $OPENSEARCH_DASHBOARDS_CONFIG
     fi
 done
