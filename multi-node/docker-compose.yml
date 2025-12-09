@@ -33,9 +33,9 @@ services:
       - master-wazuh-var-multigroups:/var/ossec/var/multigroups
       - master-wazuh-active-response:/var/ossec/active-response/bin
       - master-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/ssl/root-ca.pem
-      - ./wazuh-certificates/wazuh.master.pem:/etc/ssl/wazuh.master.pem
-      - ./wazuh-certificates/wazuh.master-key.pem:/etc/ssl/wazuh.master.key
+      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.master.pem:/etc/wazuh/certs/wazuh.pem
+      - ./wazuh-certificates/wazuh.master-key.pem:/etc/wazuh/certs/wazuh-key.pem
   wazuh.worker:
     image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
@@ -66,8 +66,8 @@ services:
       - worker-wazuh-active-response:/var/ossec/active-response/bin
       - worker-wazuh-wodles:/var/ossec/wodles
       - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.worker.pem:/etc/wazuh/certs/wazuh.worker.pem
-      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/wazuh/certs/wazuh.worker.key
+      - ./wazuh-certificates/wazuh.worker.pem:/etc/wazuh/certs/wazuh.pem
+      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/wazuh/certs/wazuh-key.pem
 
   wazuh1.indexer:
     image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
