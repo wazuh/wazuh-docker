@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.master
     restart: always
     ulimits:
@@ -37,7 +37,7 @@ services:
       - ./wazuh-certificates/wazuh.master.pem:/etc/ssl/wazuh.master.pem
       - ./wazuh-certificates/wazuh.master-key.pem:/etc/ssl/wazuh.master.key
   wazuh.worker:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
     restart: always
     ulimits:
@@ -70,7 +70,7 @@ services:
       - ./wazuh-certificates/wazuh.worker-key.pem:/etc/wazuh/certs/wazuh.worker.key
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh1.indexer
     restart: always
     ports:
@@ -101,7 +101,7 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh2.indexer
     restart: always
     environment:
@@ -128,7 +128,7 @@ services:
       - ./wazuh-certificates/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh3.indexer
     restart: always
     environment:
@@ -155,7 +155,7 @@ services:
       - ./wazuh-certificates/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:
@@ -171,6 +171,9 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
+      - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
+      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
     volumes:
       - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
