@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -33,12 +33,12 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/etc/wazuh/certs/wazuh.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/wazuh/certs/wazuh-key.pem
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/var/ossec/etc/certs/server-key.pem
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
     restart: always
     ports:
@@ -68,7 +68,7 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:

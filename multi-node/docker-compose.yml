@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.master
     restart: always
     ulimits:
@@ -33,11 +33,11 @@ services:
       - master-wazuh-var-multigroups:/var/ossec/var/multigroups
       - master-wazuh-active-response:/var/ossec/active-response/bin
       - master-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.master.pem:/etc/wazuh/certs/wazuh.pem
-      - ./wazuh-certificates/wazuh.master-key.pem:/etc/wazuh/certs/wazuh-key.pem
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.master.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.master-key.pem:/var/ossec/etc/certs/server-key.pem
   wazuh.worker:
-    image: wazuh/wazuh-manager:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
     restart: always
     ulimits:
@@ -65,12 +65,12 @@ services:
       - worker-wazuh-var-multigroups:/var/ossec/var/multigroups
       - worker-wazuh-active-response:/var/ossec/active-response/bin
       - worker-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/wazuh/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.worker.pem:/etc/wazuh/certs/wazuh.pem
-      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/wazuh/certs/wazuh-key.pem
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.worker.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.worker-key.pem:/var/ossec/etc/certs/server-key.pem
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh1.indexer
     restart: always
     ports:
@@ -101,7 +101,7 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh2.indexer
     restart: always
     environment:
@@ -128,7 +128,7 @@ services:
       - ./wazuh-certificates/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh3.indexer
     restart: always
     environment:
@@ -155,7 +155,7 @@ services:
       - ./wazuh-certificates/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: 966237403726.dkr.ecr.us-west-1.amazonaws.com/wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
     ports:
