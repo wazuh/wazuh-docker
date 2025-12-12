@@ -24,7 +24,7 @@ $ build-docker-images/build-images.sh -h
 Usage: build-docker-images/build-images.sh [OPTIONS]
 
     -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc1 or beta1, not used by default.
-    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.4.
+    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.5.
     -r, --revision <rev>         [Optional] Package revision. By default 1
     -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 5.0.0.
     -h, --help                   Show this help.
