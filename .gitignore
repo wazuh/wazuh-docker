@@ -5,7 +5,9 @@ single-node/wazuh-certificates
 single-node/wazuh-certificates/*
 single-node/wazuh-certificates-tool.log
 single-node/wazuh-certs-tool.sh
+single-node/config.yml
 multi-node/wazuh-certificates
 multi-node/wazuh-certificates/*
 multi-node/wazuh-certificates-tool.log
 multi-node/wazuh-certs-tool.sh
+multi-node/config.yml
