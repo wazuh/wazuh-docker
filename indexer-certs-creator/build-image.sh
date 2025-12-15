@@ -37,11 +37,16 @@ build() {
     set +a
 
     if [ "${MULTIARCH}" ]; then
-        docker buildx bake --file build-image.yml \
+        docker buildx bake \
+            --file build-image.yml \
             --set *.platform=linux/amd64,linux/arm64 \
+            --push \
             --no-cache || clean 1
     else
-        docker buildx bake --file build-image.yml --no-cache || clean 1
+        docker buildx bake \
+            --file build-image.yml \
+            --load \
+            --no-cache || clean 1
     fi
     return 0
 }

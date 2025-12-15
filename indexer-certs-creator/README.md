@@ -21,7 +21,7 @@ Run the following script to build the wazuh-certs-generator docker image
 ./build-image.sh -v <IMAGE_TAG> [-m] [-rg <REGISTRY>]
 ```
 
-Replace <IMAGE_TAG> with the new image desired tag.
-Use the `-m` flag to build a multi-architecture image (supports both `amd64` and `arm64`)
-Use the `-rg <REGISTRY>` parameter to specify a custom Docker registry (default is Docker Hub)
-  By default, the script will attempt to push the image to the registry and will only work if credentials are properly configured.
+- Replace <IMAGE_TAG> with the new image desired tag.
+- Use the `-m` flag to build a multi-architecture image (supports both `amd64` and `arm64`)
+  - If multiarch build is enabled, the script will attempt to push the image to the specified registry. This image upload will only work if credentials are properly configured.
+- Use the `-rg <REGISTRY>` parameter to specify a custom Docker registry (default is Docker Hub)

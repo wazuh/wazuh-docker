@@ -42,7 +42,7 @@ build() {
     if  [ "${WAZUH_DEV_STAGE}" ];then
         FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
         if ! curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
-        echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
+            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
             clean 1
         fi
     else
@@ -71,9 +71,16 @@ build() {
     set +a
 
     if  [ "${MULTIARCH}" ];then
-        docker buildx bake --file build-images.yml --push --set *.platform=linux/amd64,linux/arm64 --no-cache || clean 1
+        docker buildx bake \
+            --file build-images.yml \
+            --push \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --no-cache || clean 1
     else
-        docker buildx bake --file build-images.yml --no-cache|| clean 1
+        docker buildx bake \
+            --file build-images.yml \
+            --load \
+            --no-cache || clean 1
     fi
     return 0
 }
