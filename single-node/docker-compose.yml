@@ -20,6 +20,7 @@ services:
       - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
+      - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - API_USERNAME=wazuh-wui
@@ -32,9 +33,9 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/var/ossec/etc/certs/server-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -71,9 +72,8 @@ services:
     hostname: wazuh.dashboard
     restart: always
     ports:
-      - 443:5601
+      - 443:443
     environment:
-      - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
@@ -83,11 +83,14 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
+      - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
     volumes:
       - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
-      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
       - wazuh.indexer

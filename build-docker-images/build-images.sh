@@ -59,7 +59,7 @@ build() {
         fi
     fi
     awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
-    
+
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
     echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> ../.env

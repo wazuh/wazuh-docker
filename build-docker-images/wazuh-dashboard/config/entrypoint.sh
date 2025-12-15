@@ -24,6 +24,8 @@ yes | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore create --al
 echo $DASHBOARD_USERNAME | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore add opensearch.username --stdin --allow-root && \
 echo $DASHBOARD_PASSWORD | $OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore add opensearch.password --stdin --allow-root
 
+/wazuh_dashboard_config.sh
+
 opensearch_dashboards_vars=(
     opensearch.hosts
     server.port

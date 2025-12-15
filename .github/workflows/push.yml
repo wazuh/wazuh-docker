@@ -175,9 +175,6 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
-    - name: Check filebeat output
-      run: ./.github/single-node-filebeat-check.sh
-
     - name: Check Wazuh dashboard service URL
       run: |
        status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I -s | grep -E "^HTTP" | awk  '{print $2}')
@@ -337,9 +334,6 @@ jobs:
         fi
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-
-    - name: Check filebeat output
-      run: ./.github/multi-node-filebeat-check.sh
 
     - name: Check Wazuh dashboard service URL
       run: |

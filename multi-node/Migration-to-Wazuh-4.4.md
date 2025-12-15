@@ -97,15 +97,15 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=master-filebeat-etc \
-           multi-node_master-filebeat-etc
+           --label com.docker.compose.volume=master-wazuh-etc \
+           multi-node_master-wazuh-etc
 ```
 ```
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=master-filebeat-var \
-           multi-node_master-filebeat-var
+           --label com.docker.compose.volume=master-wazuh-var \
+           multi-node_master-wazuh-var
 ```
 ```
 docker volume create \
@@ -160,15 +160,15 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=worker-filebeat-etc \
-           multi-node_worker-filebeat-etc
+           --label com.docker.compose.volume=worker-wazuh-etc \
+           multi-node_worker-wazuh-etc
 ```
 ```
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=worker-filebeat-var \
-           multi-node_worker-filebeat-var
+           --label com.docker.compose.volume=worker-wazuh-var \
+           multi-node_worker-wazuh-var
 ```
 **6. Copy the volume content from elasticsearch to Wazuh indexer volumes and old Wazuh manager content to new volumes.**
 ```
@@ -233,14 +233,14 @@ docker container run --rm -it \
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_filebeat-etc:/from \
-           -v multi-node_master-filebeat-etc:/to \
+           -v wazuh-docker-etc:/from \
+           -v multi-node_master-etc:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_filebeat-var:/from \
-           -v multi-node_master-filebeat-var:/to \
+           -v wazuh-docker-var:/from \
+           -v multi-node_master-wazuh-var:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
@@ -287,14 +287,14 @@ docker container run --rm -it \
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_worker-filebeat-etc:/from \
-           -v multi-node_worker-filebeat-etc:/to \
+           -v wazuh-docker_worker-etc:/from \
+           -v multi-node_worker-wazuh-etc:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_worker-filebeat-var:/from \
-           -v multi-node_worker-filebeat-var:/to \
+           -v wazuh-docker_worker-var:/from \
+           -v multi-node_worker-wazuh-var:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 

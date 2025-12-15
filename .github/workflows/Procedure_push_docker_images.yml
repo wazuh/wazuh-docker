@@ -18,7 +18,7 @@ on:
       reference:
         description: 'Dev reference'
         type: string
-        default: latest 
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -47,7 +47,7 @@ on:
       reference:
         description: 'Dev reference'
         type: string
-        default: latest 
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -97,7 +97,7 @@ jobs:
 
     - name: free disk space
       uses: ./.github/free-disk-space
-    
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -155,7 +155,7 @@ jobs:
         if [ "${{ inputs.dev }}" = true ]; then
           IMAGE_TAG="${{ inputs.image_tag }}-${{ inputs.reference }}"
           ./build-images.sh -v ${{ inputs.image_tag }} -r $REVISION -d "dev" -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }}
-        else  
+        else
           if [[ "$IMAGE_TAG" == *"-"* ]]; then
             IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
             if [ -z "${tokens[1]}" ]; then

@@ -33,9 +33,9 @@ services:
       - master-wazuh-var-multigroups:/var/ossec/var/multigroups
       - master-wazuh-active-response:/var/ossec/active-response/bin
       - master-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/ssl/root-ca.pem
-      - ./wazuh-certificates/wazuh.master.pem:/etc/ssl/filebeat.pem
-      - ./wazuh-certificates/wazuh.master-key.pem:/etc/ssl/filebeat.key
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.master.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.master-key.pem:/var/ossec/etc/certs/server-key.pem
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
@@ -65,9 +65,9 @@ services:
       - worker-wazuh-var-multigroups:/var/ossec/var/multigroups
       - worker-wazuh-active-response:/var/ossec/active-response/bin
       - worker-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.worker.pem:/etc/filebeat/certs/filebeat.pem
-      - ./wazuh-certificates/wazuh.worker-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.worker.pem:/var/ossec/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.worker-key.pem:/var/ossec/etc/certs/server-key.pem
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -171,11 +171,14 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
+      - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
+      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
     volumes:
       - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
-      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
       - wazuh1.indexer

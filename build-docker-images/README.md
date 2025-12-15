@@ -23,7 +23,7 @@ $ build-docker-images/build-images.sh -h
 
 Usage: build-docker-images/build-images.sh [OPTIONS]
 
-    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default.
+    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc1 or beta1, not used by default.
     -r, --revision <rev>         [Optional] Package revision. By default 1
     -ref, --reference <ref>      [Optional] Set the Wazuh reference to build development images. By default, the latest stable release.
     -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.

@@ -8,7 +8,6 @@ ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_url_amd64_rpm
 ARG wazuh_dashboard_url_arm64_rpm
-ARG wazuh_certs_tool
 ARG wazuh_config_yml
 
 # Update and install dependencies
@@ -27,16 +26,12 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazu
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
-# Generate certificates
-COPY config/config.sh .
-RUN bash config.sh
-
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
 #
 # Copy wazuh-dashboard from stage 0
 # Add entrypoint
-# Add wazuh_app_config
+# Add wazuh_dashboard_config
 ################################################################################
 FROM amazonlinux:2023
 
@@ -61,7 +56,7 @@ ENV USER="wazuh-dashboard" \
 
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
-COPY config/wazuh_app_config.sh /
+COPY config/wazuh_dashboard_config.sh /
 
 # Update and install dependencies
 RUN yum install shadow-utils -y && \
@@ -76,7 +71,7 @@ RUN yum install shadow-utils -y && \
             --comment "$USER user" \
             $USER && \
     chmod 700 /entrypoint.sh && \
-    chmod 700 /wazuh_app_config.sh && \
+    chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \
     chown 1000:1000 $INSTALL_DIR && \
     chown 1000:1000 /*.sh && \
@@ -84,6 +79,7 @@ RUN yum install shadow-utils -y && \
 
 # Copy Install dir from builder to current image
 COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder --chown=1000:1000 /etc/wazuh-dashboard $INSTALL_DIR/config/
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR

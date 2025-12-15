@@ -184,7 +184,8 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
     TMP_HOSTS=$(mktemp)
     {
         echo "    <hosts>"
-        for NODE in $WAZUH_INDEXER_HOSTS; do
+        IFS=',' read -ra NODES <<< "$WAZUH_INDEXER_HOSTS"
+        for NODE in "${NODES[@]}"; do
             IP="${NODE%:*}"
             PORT="${NODE#*:}"
             echo "      <host>https://$IP:$PORT</host>"
@@ -194,6 +195,7 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
     sed -i -e '/<indexer>/,/<\/indexer>/{ /<hosts>/,/<\/hosts>/{ /<hosts>/r '"$TMP_HOSTS" \
             -e 'd }}' "$OSSEC_CONF";
     rm -f "$TMP_HOSTS";
+
 fi
 
 # --------------------------
