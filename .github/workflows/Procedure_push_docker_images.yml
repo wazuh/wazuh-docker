@@ -157,6 +157,7 @@ jobs:
       working-directory: ./build-docker-images
 
     - name: Image exists validation
+      if: ${{ inputs.dev == false }}
       id: validation
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
@@ -181,7 +182,7 @@ jobs:
         echo "purpose=$PURPOSE" >> $GITHUB_OUTPUT
 
     - name: GH issue notification
-      if: ${{ steps.validation.outputs.purpose != '' }}
+      if: ${{ inputs.dev == false && steps.validation.outputs.purpose != '' }}
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
         GH_TITLE=""
