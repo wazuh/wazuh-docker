@@ -245,7 +245,6 @@ echo "Wazuh manager config modified successfully."
 
 configure_permissions() {
   chown -R wazuh:wazuh /var/ossec/queue/rids
-  chown -R wazuh:wazuh /var/ossec/etc/lists
 }
 
 ##############################################################################
