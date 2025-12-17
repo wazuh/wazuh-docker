@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Agent group parameter added ([#2127](https://github.com/wazuh/wazuh-docker/pull/2127))
 - Adapt to multi architecture build ([#2120](https://github.com/wazuh/wazuh-docker/pull/2120))
 
 ### Fixed
