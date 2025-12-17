@@ -1,0 +1,8 @@
+# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+services:
+  wazuh.certs.generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${WAZUH_REGISTRY}/wazuh/wazuh-certs-generator:${IMAGE_TAG}
+    hostname: wazuh-certs-generator
