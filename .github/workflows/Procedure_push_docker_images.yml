@@ -13,7 +13,7 @@ on:
         required: true
       filebeat_module_version:
         description: 'Filebeat module version'
-        default: '0.4'
+        default: '0.5'
         required: true
       revision:
         description: 'Package revision'
@@ -41,7 +41,7 @@ on:
         type: string
       filebeat_module_version:
         description: 'Filebeat module version'
-        default: '0.4'
+        default: '0.5'
         required: true
         type: string
       revision:
