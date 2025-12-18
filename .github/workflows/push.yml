@@ -1,6 +1,7 @@
 name: Wazuh Docker pipeline
 permissions:
   contents: read
+  id-token: write
 on: [pull_request]
 
 jobs:
