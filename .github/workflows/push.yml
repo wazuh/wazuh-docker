@@ -34,6 +34,7 @@ jobs:
   build-images:
     needs: prepare-variables
     uses: ./.github/workflows/Procedure_push_docker_images.yml
+    secrets: inherit
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       docker_reference: ${{ github.head_ref }}
