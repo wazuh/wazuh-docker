@@ -46,6 +46,9 @@ jobs:
   Execute-Goss-tests:
     needs: [prepare-variables, build-images]
     runs-on: ubuntu-22.04
+    env:
+      WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
     steps:
 
     - name: Install Goss
@@ -54,7 +57,7 @@ jobs:
         version: v0.3.16
 
     - name: Execute Goss tests (wazuh-manager)
-      run: dgoss run ${{needs.prepare-variables.outputs.WAZUH_REGISTRY}}/wazuh/wazuh-manager:${{needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION}}
+      run: dgoss run ${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_IMAGE_VERSION }}
       env:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
@@ -62,6 +65,10 @@ jobs:
   check-single-node:
     runs-on: ubuntu-22.04
     needs: [prepare-variables, build-images]
+    env:
+      WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
     steps:
 
     - name: Check out code
@@ -69,7 +76,7 @@ jobs:
 
     - name: Create single node certficates
       run: |
-        curl -sO https://packages.wazuh.com/${{needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION}}/wazuh-certs-tool.sh
+        curl -sO https://packages.wazuh.com/${{ env.WAZUH_MINOR_VERSION }}/wazuh-certs-tool.sh
         cat > config.yml <<EOF
         nodes:
           # Wazuh indexer server nodes
@@ -94,12 +101,12 @@ jobs:
     - name: Edit single node docker-compose file
       shell: bash
       env:
-        WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
       run: |
-        TARGET_FILE="single_node/docker-compose.yml"
+        TARGET_FILE="single-node/docker-compose.yml"
         if [ -f "$TARGET_FILE" ]; then
-          echo "Updating registry in $TARGET_FILE to: $WAZUH_REGISTRY"
-          sed -i "s|wazuh/wazuh-|$WAZUH_REGISTRY/wazuh/wazuh-|g" "$TARGET_FILE"
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
         else
           echo "File $TARGET_FILE not found"
           exit 1
@@ -207,50 +214,65 @@ jobs:
   check-multi-node:
     runs-on: ubuntu-22.04
     needs: [prepare-variables, build-images]
+    env:
+      WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
     steps:
 
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: Create enviroment variables
-      run: cat .env > $GITHUB_ENV
-
     - name: free disk space
       uses: ./.github/free-disk-space
 
-    - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-dashboard
-
-    - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-manager
-
-    - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-indexer
-
-    - name: Retrieve saved Wazuh agent Docker image
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-artifact-agent
-
-    - name: Docker load
-      run: |
-        docker load --input ./wazuh-manager.tar
-        docker load --input ./wazuh-indexer.tar
-        docker load --input ./wazuh-dashboard.tar
-        docker load --input ./wazuh-agent.tar
-        rm -rf wazuh-manager.tar wazuh-indexer.tar wazuh-dashboard.tar wazuh-agent.tar
-
     - name: Create multi node certficates
-      run: docker compose -f multi-node/generate-indexer-certs.yml run --rm generator
+      run: |
+        curl -sO https://packages.wazuh.com/${{ env.WAZUH_MINOR_VERSION }}/wazuh-certs-tool.sh
+        cat > config.yml <<EOF
+        nodes:
+        # Wazuh indexer server nodes
+        indexer:
+          - name: wazuh1.indexer
+            ip: wazuh1.indexer
+          - name: wazuh2.indexer
+            ip: wazuh2.indexer
+          - name: wazuh3.indexer
+            ip: wazuh3.indexer
+
+        # Wazuh server nodes
+        # Use node_type only with more than one Wazuh manager
+        server:
+          - name: wazuh.master
+            ip: wazuh.master
+            node_type: master
+          - name: wazuh.worker
+            ip: wazuh.worker
+            node_type: worker
+
+        # Wazuh dashboard node
+        dashboard:
+          - name: wazuh.dashboard
+            ip: wazuh.dashboard
+        EOF
+        bash ./wazuh-certs-tool.sh -A
+      working-directory: ./multi-node
+
+    - name: Edit multi node docker-compose file
+      shell: bash
+      run: |
+        TARGET_FILE="multi-node/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
 
     - name: Start multi node stack
-      run: docker compose -f multi-node/docker-compose.yml up -d
+      run: docker compose up -d
+      working-directory: ./multi-node
 
     - name: Check Wazuh indexer start
       run: |
@@ -336,7 +358,7 @@ jobs:
          exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -359,7 +381,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
