@@ -204,7 +204,7 @@ jobs:
 
   check-multi-node:
     runs-on: ubuntu-22.04
-    needs: build-docker-images
+    needs: [prepare-variables, build-images]
     steps:
 
     - name: Check out code
