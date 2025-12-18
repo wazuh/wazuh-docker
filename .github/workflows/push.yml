@@ -13,7 +13,7 @@ jobs:
       WAZUH_IMAGE_VERSION: ${{ steps.dotenv.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_TAG_REVISION: ${{ steps.dotenv.outputs.WAZUH_TAG_REVISION }}
       WAZUH_UI_REVISION: ${{ steps.dotenv.outputs.WAZUH_UI_REVISION }}
-      WAZUH_REGISTRY: ${{ steps.dotenv.outputs.WAZUH_REGISTRY }}
+      WAZUH_REGISTRY: ${{ vars.IMAGE_REGISTRY_DEV }}
       IMAGE_TAG: ${{ steps.dotenv.outputs.IMAGE_TAG }}
       WAZUH_MINOR_VERSION: ${{ steps.dotenv.outputs.WAZUH_MINOR_VERSION }}
     steps:
@@ -56,6 +56,15 @@ jobs:
       with:
         version: v0.3.16
 
+    - name: Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
     - name: Execute Goss tests (wazuh-manager)
       run: dgoss run ${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-manager:${{ env.WAZUH_IMAGE_VERSION }}
       env:
@@ -74,9 +83,19 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
+    - name: Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
     - name: Create single node certficates
       run: |
-        curl -sO https://packages.wazuh.com/${{ env.WAZUH_MINOR_VERSION }}/wazuh-certs-tool.sh
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        curl -sO $wazuh_certs_tool_url
         cat > config.yml <<EOF
         nodes:
           # Wazuh indexer server nodes
@@ -226,9 +245,19 @@ jobs:
     - name: free disk space
       uses: ./.github/free-disk-space
 
+    - name: Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
     - name: Create multi node certficates
       run: |
-        curl -sO https://packages.wazuh.com/${{ env.WAZUH_MINOR_VERSION }}/wazuh-certs-tool.sh
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        curl -sO $wazuh_certs_tool_url
         cat > config.yml <<EOF
         nodes:
         # Wazuh indexer server nodes
