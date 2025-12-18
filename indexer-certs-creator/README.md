@@ -4,14 +4,15 @@ The dockerfile hosted in this directory is used to build the image required for 
 
 ## Pre-requisites
 
-### QEMU
-
-Set up QEMU to enable building multi-architecture Docker images
+1. Verify the Docker Buildx plugin is properly set up
+2. For multi-architecture image builds:
+    - Ensure QEMU is installed
+    - Check permissions to push images to a Docker registry
 
 Useful documentation:
 
+- https://docs.docker.com/build/building/multi-platform/
 - https://www.qemu.org/download/
-- https://docs.docker.com/build/building/multi-platform/#qemu
 
 ## Procedure
 
