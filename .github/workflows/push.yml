@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/Procedure_push_docker_images.yml
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      docker_reference: ${{ github.ref_name }}
+      docker_reference: ${{ github.head_ref }}
       revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
       reference: "latest"
       id: ${{ github.run_id }}
