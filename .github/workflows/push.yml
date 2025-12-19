@@ -172,11 +172,11 @@ jobs:
     - name: Check documents into wazuh-alerts index
       run: |
        sleep 120
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count"`"
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
        if [[ $docs -gt 0 ]]; then
-        echo "wazuh-alerts index documents: ${docs}"
+        echo "wazuh-states index documents: ${docs}"
        else
-        echo "wazuh-alerts index documents: ${docs}"
+        echo "wazuh-states index documents: ${docs}"
         exit 1
        fi
 
@@ -338,18 +338,11 @@ jobs:
 
     - name: Check documents into wazuh-alerts index
       run: |
-       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count"``)  -gt 0 ]]
-       do
-         echo 'Waiting for Wazuh indexer events'
-         free -m
-         df -h
-         sleep 10
-       done
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:admin -k -s | jq -r ".count"`"
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
        if [[ $docs -gt 0 ]]; then
-        echo "wazuh-alerts index documents: ${docs}"
+        echo "wazuh-states index documents: ${docs}"
        else
-        echo "wazuh-alerts index documents: ${docs}"
+        echo "wazuh-states index documents: ${docs}"
         exit 1
        fi
 
