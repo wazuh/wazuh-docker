@@ -230,6 +230,20 @@ jobs:
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
+    - name: Edit Wazuh agent docker-compose file
+      shell: bash
+      env:
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
+      run: |
+        TARGET_FILE="wazuh-agent/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
+
     - name: Start Wazuh agent
       run: docker compose up -d
       working-directory: ./wazuh-agent
@@ -398,6 +412,20 @@ jobs:
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Edit Wazuh agent docker-compose file
+      shell: bash
+      env:
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
+      run: |
+        TARGET_FILE="wazuh-agent/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
 
     - name: Start Wazuh agent
       run: docker compose up -d
@@ -584,6 +612,20 @@ jobs:
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
+    - name: Edit Wazuh agent docker-compose file
+      shell: bash
+      env:
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
+      run: |
+        TARGET_FILE="wazuh-agent/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
+
     - name: Start Wazuh agent
       run: docker compose -f wazuh-agent/docker-compose.yml up -d
 
@@ -767,6 +809,20 @@ jobs:
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Edit Wazuh agent docker-compose file
+      shell: bash
+      env:
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
+      run: |
+        TARGET_FILE="wazuh-agent/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
 
     - name: Start Wazuh agent
       run: docker compose -f wazuh-agent/docker-compose.yml up -d
