@@ -29,14 +29,14 @@ file:
     contains: []
   /var/ossec/etc/sslmanager.cert:
     exists: true
-    mode: "0640"
+    mode: "0600"
     owner: root
     group: root
     filetype: file
     contains: []
   /var/ossec/etc/sslmanager.key:
     exists: true
-    mode: "0640"
+    mode: "0644"
     owner: root
     group: root
     filetype: file
