@@ -6,13 +6,6 @@ file:
     group: root
     filetype: file
     contains: []
-  /var/ossec/etc/lists/audit-keys:
-    exists: true
-    mode: "0660"
-    owner: wazuh
-    group: wazuh
-    filetype: file
-    contains: []
   /var/ossec/etc/ossec.conf:
     exists: true
     mode: "0660"
@@ -29,23 +22,18 @@ file:
     contains: []
   /var/ossec/etc/sslmanager.cert:
     exists: true
-    mode: "0600"
+    mode: "0644"
     owner: root
     group: root
     filetype: file
     contains: []
   /var/ossec/etc/sslmanager.key:
     exists: true
-    mode: "0644"
+    mode: "0600"
     owner: root
     group: root
     filetype: file
     contains: []
-package:
-  wazuh-manager:
-    installed: true
-    versions:
-    - 5.0.0
 user:
   wazuh:
     exists: true
