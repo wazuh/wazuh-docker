@@ -17,6 +17,7 @@ jobs:
       IMAGE_TAG: ${{ steps.dotenv.outputs.IMAGE_TAG }}
       WAZUH_MINOR_VERSION: ${{ steps.dotenv.outputs.WAZUH_MINOR_VERSION }}
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -50,6 +51,9 @@ jobs:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
     steps:
+
+    - name: Check out code
+      uses: actions/checkout@v4
 
     - name: Install Goss
       uses: e1himself/goss-installation-action@v1.0.3
