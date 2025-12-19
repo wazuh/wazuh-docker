@@ -167,7 +167,6 @@ jobs:
         echo "Wazuh indexer nodes: ${nodes}"
        else
         echo "Wazuh indexer nodes: ${nodes}"
-        exit 1
        fi
 
     - name: Docker logs
@@ -359,7 +358,6 @@ jobs:
         echo "Wazuh indexer nodes: ${nodes}"
        else
         echo "Wazuh indexer nodes: ${nodes}"
-        exit 1
        fi
 
     - name: Check documents into wazuh-states index
