@@ -169,6 +169,16 @@ jobs:
         exit 1
        fi
 
+    - name: Docker logs
+      run: |
+        echo "===== Wazuh Manager Logs ====="
+        docker compose logs wazuh.manager
+        echo "===== Wazuh Indexer Logs ====="
+        docker compose logs wazuh.indexer
+        echo "===== Wazuh Dashboard Logs ====="
+        docker compose logs wazuh.dashboard
+
+
     - name: Check documents into wazuh-states index
       run: |
        sleep 120
@@ -325,6 +335,18 @@ jobs:
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
         exit 1
        fi
+
+    - name: Docker logs
+      run: |
+        echo "===== Wazuh Manager Logs ====="
+        docker compose logs wazuh.master
+        docker compose logs wazuh.worker
+        echo "===== Wazuh Indexer Logs ====="
+        docker compose logs wazuh1.indexer
+        docker compose logs wazuh2.indexer
+        docker compose logs wazuh3.indexer
+        echo "===== Wazuh Dashboard Logs ====="
+        docker compose logs wazuh.dashboard
 
     - name: Check Wazuh indexer nodes
       run: |
