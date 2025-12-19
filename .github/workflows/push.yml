@@ -204,14 +204,14 @@ jobs:
        fi
 
     - name: Check Wazuh manager start
-      run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+      run: | 
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 9 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
         else
           echo "Wazuh indexer nodes: ${nodes}"
-          curl -k -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          curl -k -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
           exit 1
         fi
       env:
@@ -374,13 +374,13 @@ jobs:
 
     - name: Check Wazuh manager start
       run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 9 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
         else
           echo "Wazuh indexer nodes: ${nodes}"
-          curl -k -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          curl -k -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
           exit 1
         fi
       env:
@@ -552,13 +552,13 @@ jobs:
 
     - name: Check Wazuh manager start
       run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/clsuter/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 10 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
         else
           echo "Wazuh indexer nodes: ${nodes}"
-          curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          curl -k -s -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
           exit 1
         fi
         nodes=$(curl -k -s -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}" | jq -r ".data.affected_items[].name" | wc -l)
@@ -736,13 +736,13 @@ jobs:
 
     - name: Check Wazuh manager start
       run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 10 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
         else
           echo "Wazuh indexer nodes: ${nodes}"
-          curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          curl -k -s -X GET "https://0.0.0.0:55000/cluster/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
           exit 1
         fi
         nodes=$(curl -k -s -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}" | jq -r ".data.affected_items[].name" | wc -l)
