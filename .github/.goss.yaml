@@ -13,13 +13,6 @@ file:
     group: wazuh
     filetype: file
     contains: []
-  /var/ossec/etc/rules/local_rules.xml:
-    exists: true
-    mode: "0660"
-    owner: wazuh
-    group: wazuh
-    filetype: file
-    contains: []
   /var/ossec/etc/sslmanager.cert:
     exists: true
     mode: "0644"
