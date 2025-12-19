@@ -32,20 +32,20 @@ jobs:
           echo "WAZUH_MINOR_VERSION=$MINOR_VERSION" >> "$GITHUB_OUTPUT"
 
 
-  build-images:
-    needs: prepare-variables
-    uses: ./.github/workflows/Procedure_push_docker_images.yml
-    secrets: inherit
-    with:
-      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      docker_reference: ${{ github.head_ref }}
-      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
-      reference: "latest"
-      id: ${{ github.run_id }}
-      dev: true
+#  build-images:
+#    needs: prepare-variables
+#    uses: ./.github/workflows/Procedure_push_docker_images.yml
+#    secrets: inherit
+#    with:
+#      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+#      docker_reference: ${{ github.head_ref }}
+#      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
+#      reference: "latest"
+#      id: ${{ github.run_id }}
+#      dev: true
 
   Execute-Goss-tests:
-    needs: [prepare-variables, build-images]
+    needs: [prepare-variables] #, build-images]
     runs-on: ubuntu-22.04
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
@@ -309,7 +309,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 180
+       sleep 600
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
