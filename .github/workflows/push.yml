@@ -77,7 +77,7 @@ jobs:
 
   check-single-node:
     runs-on: ubuntu-22.04
-    needs: [prepare-variables, build-images]
+    needs: [prepare-variables] #, build-images]
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
@@ -236,7 +236,7 @@ jobs:
 
   check-multi-node:
     runs-on: ubuntu-22.04
-    needs: [prepare-variables, build-images]
+    needs: [prepare-variables] #, build-images]
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
