@@ -75,7 +75,7 @@ jobs:
         GOSS_SLEEP: 30
         GOSS_FILE: .github/.goss.yaml
 
-  check-single-node:
+  check-intel-single-node:
     runs-on: ubuntu-22.04
     needs: [prepare-variables, Execute-Goss-tests] #, build-images]
     env:
@@ -245,8 +245,363 @@ jobs:
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
 
-  check-multi-node:
+  check-arm-single-node:
+    runs-on: ubuntu-22.04-arm
+    needs: [prepare-variables, Execute-Goss-tests] #, build-images]
+    env:
+      WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Create single node certficates
+      run: |
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        curl -sL "$wazuh_certs_tool_url" -o ./wazuh-certs-tool.sh
+        cat > config.yml <<EOF
+        nodes:
+          # Wazuh indexer server nodes
+          indexer:
+            - name: wazuh.indexer
+              ip: wazuh.indexer
+
+          # Wazuh server nodes
+          # Use node_type only with more than one Wazuh manager
+          server:
+            - name: wazuh.manager
+              ip: wazuh.manager
+
+          # Wazuh dashboard node
+          dashboard:
+            - name: wazuh.dashboard
+              ip: wazuh.dashboard
+        EOF
+        bash ./wazuh-certs-tool.sh -A
+        sysctl -w vm.max_map_count=262144
+      working-directory: ./single-node
+
+    - name: Edit single node docker-compose file
+      shell: bash
+      env:
+        WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
+      run: |
+        TARGET_FILE="single-node/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
+
+    - name: Start single node stack
+      run: docker compose up -d
+      working-directory: ./single-node
+
+    - name: Check Wazuh indexer start
+      run: |
+       sleep 240
+       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s | grep -E "green|yellow" | wc -l`"
+       if [[ $status_green -eq 1 ]]; then
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
+       else
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
+        exit 1
+       fi
+       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green|yellow" | wc -l`"
+       if [[ $status_index_green -eq $status_index ]]; then
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+       else
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        exit 1
+       fi
+
+
+    - name: Check Wazuh indexer nodes
+      run: |
+       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l`"
+       if [[ $nodes -eq 1 ]]; then
+        echo "Wazuh indexer nodes: ${nodes}"
+       else
+        echo "Wazuh indexer nodes: ${nodes}"
+       fi
+
+    - name: Docker logs
+      run: |
+        echo "===== Wazuh Manager Logs ====="
+        docker compose logs wazuh.manager
+        echo "===== Wazuh Indexer Logs ====="
+        docker compose logs wazuh.indexer
+        echo "===== Wazuh Dashboard Logs ====="
+        docker compose logs wazuh.dashboard
+      working-directory: ./single-node
+
+
+    - name: Check documents into wazuh-states index
+      run: |
+       sleep 120
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
+       if [[ $docs -gt 0 ]]; then
+        echo "wazuh-states index documents: ${docs}"
+       else
+        echo "wazuh-states index documents: ${docs}"
+        exit 1
+       fi
+
+    - name: Check Wazuh templates
+      run: |
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+       if [[ $qty_templates -gt 3 ]]; then
+        echo "wazuh templates:"
+        echo "${templates}"
+       else
+        echo "wazuh templates:"
+        echo "${templates}"
+        exit 1
+       fi
+
+    - name: Check Wazuh manager start
+      run: |
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        if [[ $services -gt 9 ]]; then
+          echo "Wazuh Manager Services: ${services}"
+          echo "OK"
+        else
+          echo "Wazuh indexer nodes: ${nodes}"
+          curl -k -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          exit 1
+        fi
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check Wazuh dashboard service URL
+      run: |
+       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
+       if [[ $status -eq 200 ]]; then
+        echo "Wazuh dashboard status: ${status}"
+       else
+        echo "Wazuh dashboard status: ${status}"
+        exit 1
+       fi
+
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start Wazuh agent
+      run: docker compose up -d
+      working-directory: ./wazuh-agent
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log for Wazuh manager
+      run: ./.github/single-node-log-check.sh
+
+  check-intel-multi-node:
     runs-on: ubuntu-22.04
+    needs: [prepare-variables, Execute-Goss-tests] #, build-images]
+    env:
+      WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
+
+    - name: Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Create multi node certficates
+      run: |
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        curl -sL "$wazuh_certs_tool_url" -o ./wazuh-certs-tool.sh
+        cat > config.yml <<EOF
+        nodes:
+        # Wazuh indexer server nodes
+        indexer:
+          - name: wazuh1.indexer
+            ip: wazuh1.indexer
+          - name: wazuh2.indexer
+            ip: wazuh2.indexer
+          - name: wazuh3.indexer
+            ip: wazuh3.indexer
+
+        # Wazuh server nodes
+        # Use node_type only with more than one Wazuh manager
+        server:
+          - name: wazuh.master
+            ip: wazuh.master
+            node_type: master
+          - name: wazuh.worker
+            ip: wazuh.worker
+            node_type: worker
+
+        # Wazuh dashboard node
+        dashboard:
+          - name: wazuh.dashboard
+            ip: wazuh.dashboard
+        EOF
+        bash ./wazuh-certs-tool.sh -A
+        sysctl -w vm.max_map_count=262144
+      working-directory: ./multi-node
+
+    - name: Edit multi node docker-compose file
+      shell: bash
+      run: |
+        TARGET_FILE="multi-node/docker-compose.yml"
+        if [ -f "$TARGET_FILE" ]; then
+          echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
+          sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+        else
+          echo "File $TARGET_FILE not found"
+          exit 1
+        fi
+
+    - name: Start multi node stack
+      run: docker compose up -d
+      working-directory: ./multi-node
+
+    - name: Check Wazuh indexer start
+      run: |
+       sleep 360
+       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s | grep green | wc -l`"
+       if [[ $status_green -eq 1 ]]; then
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
+       else
+        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
+        exit 1
+       fi
+       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green" | wc -l`"
+       if [[ $status_index_green -eq $status_index ]]; then
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+       else
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        exit 1
+       fi
+
+    - name: Docker logs
+      run: |
+        echo "===== Wazuh Manager Logs ====="
+        docker compose logs wazuh.master
+        docker compose logs wazuh.worker
+        echo "===== Wazuh Indexer Logs ====="
+        docker compose logs wazuh1.indexer
+        docker compose logs wazuh2.indexer
+        docker compose logs wazuh3.indexer
+        echo "===== Wazuh Dashboard Logs ====="
+        docker compose logs wazuh.dashboard
+      working-directory: ./multi-node
+
+    - name: Check Wazuh indexer nodes
+      run: |
+       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l`"
+       if [[ $nodes -eq 3 ]]; then
+        echo "Wazuh indexer nodes: ${nodes}"
+       else
+        echo "Wazuh indexer nodes: ${nodes}"
+       fi
+
+    - name: Check documents into wazuh-states index
+      run: |
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
+       if [[ $docs -gt 0 ]]; then
+        echo "wazuh-states index documents: ${docs}"
+       else
+        echo "wazuh-states index documents: ${docs}"
+        exit 1
+       fi
+
+    - name: Check Wazuh templates
+      run: |
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep "wazuh" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep "wazuh"`"
+       if [[ $qty_templates -gt 3 ]]; then
+        echo "wazuh templates:"
+        echo "${templates}"
+       else
+        echo "wazuh templates:"
+        echo "${templates}"
+        exit 1
+       fi
+
+    - name: Check Wazuh manager start
+      run: |
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        if [[ $services -gt 10 ]]; then
+          echo "Wazuh Manager Services: ${services}"
+          echo "OK"
+        else
+          echo "Wazuh indexer nodes: ${nodes}"
+          curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
+          exit 1
+        fi
+        nodes=$(curl -k -s -X GET "https://0.0.0.0:55000/cluster/nodes" -H "Authorization: Bearer ${{env.TOKEN}}" | jq -r ".data.affected_items[].name" | wc -l)
+        if [[ $nodes -eq 2 ]]; then
+         echo "Wazuh manager nodes: ${nodes}"
+        else
+         echo "Wazuh manager nodes: ${nodes}"
+         exit 1
+        fi
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check Wazuh dashboard service URL
+      run: |
+       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:admin -I | grep -E "^HTTP" | awk  '{print $2}')
+       if [[ $status -eq 200 ]]; then
+        echo "Wazuh dashboard status: ${status}"
+       else
+        echo "Wazuh dashboard status: ${status}"
+        exit 1
+       fi
+
+    - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
+
+    - name: Start Wazuh agent
+      run: docker compose -f wazuh-agent/docker-compose.yml up -d
+
+    - name: Check Wazuh agent enrollment
+      run: |
+        sleep 20
+        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+      env:
+        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check errors in ossec.log for Wazuh manager
+      run: ./.github/multi-node-log-check.sh
+
+  check-arm-multi-node:
+    runs-on: ubuntu-22.04-arm
     needs: [prepare-variables, Execute-Goss-tests] #, build-images]
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
