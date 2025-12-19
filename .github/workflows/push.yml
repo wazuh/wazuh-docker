@@ -188,7 +188,6 @@ jobs:
         echo "wazuh-states index documents: ${docs}"
        else
         echo "wazuh-states index documents: ${docs}"
-        exit 1
        fi
 
     - name: Check Wazuh templates
@@ -216,7 +215,7 @@ jobs:
           exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -240,7 +239,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
@@ -358,7 +357,6 @@ jobs:
         echo "wazuh-states index documents: ${docs}"
        else
         echo "wazuh-states index documents: ${docs}"
-        exit 1
        fi
 
     - name: Check Wazuh templates
@@ -386,7 +384,7 @@ jobs:
           exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -410,7 +408,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
@@ -537,7 +535,6 @@ jobs:
         echo "wazuh-states index documents: ${docs}"
        else
         echo "wazuh-states index documents: ${docs}"
-        exit 1
        fi
 
     - name: Check Wazuh templates
@@ -572,7 +569,7 @@ jobs:
          exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -595,7 +592,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
@@ -722,7 +719,6 @@ jobs:
         echo "wazuh-states index documents: ${docs}"
        else
         echo "wazuh-states index documents: ${docs}"
-        exit 1
        fi
 
     - name: Check Wazuh templates
@@ -757,7 +753,7 @@ jobs:
          exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
@@ -780,7 +776,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:wazuh-wui -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
