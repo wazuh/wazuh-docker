@@ -119,6 +119,7 @@ jobs:
               ip: wazuh.dashboard
         EOF
         bash ./wazuh-certs-tool.sh -A
+        sysctl -w vm.max_map_count=262144
       working-directory: ./single-node
 
     - name: Edit single node docker-compose file
@@ -299,6 +300,7 @@ jobs:
             ip: wazuh.dashboard
         EOF
         bash ./wazuh-certs-tool.sh -A
+        sysctl -w vm.max_map_count=262144
       working-directory: ./multi-node
 
     - name: Edit multi node docker-compose file
