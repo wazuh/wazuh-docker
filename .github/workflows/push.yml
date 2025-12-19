@@ -178,6 +178,7 @@ jobs:
         docker compose logs wazuh.indexer
         echo "===== Wazuh Dashboard Logs ====="
         docker compose logs wazuh.dashboard
+      working-directory: ./single-node
 
 
     - name: Check documents into wazuh-states index
@@ -349,6 +350,7 @@ jobs:
         docker compose logs wazuh3.indexer
         echo "===== Wazuh Dashboard Logs ====="
         docker compose logs wazuh.dashboard
+      working-directory: ./multi-node
 
     - name: Check Wazuh indexer nodes
       run: |
