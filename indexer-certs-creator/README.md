@@ -16,7 +16,11 @@ Useful documentation:
 
 ## Procedure
 
-Run the following script to build the wazuh-certs-generator docker image
+Execute the following to run the script used to build the wazuh-certs-generator docker image
+
+```console
+cd indexer-certs-creator
+```
 
 ```console
 ./build-image.sh -v <IMAGE_TAG> [-m] [-rg <REGISTRY>]
