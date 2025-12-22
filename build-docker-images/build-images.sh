@@ -94,7 +94,6 @@ help() {
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc1 or beta1, not used by default."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
-    echo "    -ref, --reference <ref>      [Optional] Set the Wazuh reference to build development images. By default, the latest stable release."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
     echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
@@ -135,14 +134,6 @@ main() {
         "-r"|"--revision")
             if [ -n "${2}" ]; then
                 WAZUH_TAG_REVISION="${2}"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
-        "-ref"|"--reference")
-            if [ -n "${2}" ]; then
-                WAZUH_TAG_REFERENCE="${2}"
                 shift 2
             else
                 help 1
