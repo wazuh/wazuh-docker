@@ -22,11 +22,11 @@ Wazuh-Docker offers flexibility in how you can deploy the Wazuh stack. The prima
 
 Ensure you have:
 
--   Met all the [System Requirements](ref/getting-started/requirements.md).
+-   Met all the [System Requirements](../requirements.md).
 -   Installed Docker and Docker Compose on your host(s).
 -   Cloned the `wazuh-docker` repository (version `5.0.0`) or downloaded the necessary deployment files.
     ```bash
-    git clone [https://github.com/wazuh/wazuh-docker.git](https://github.com/wazuh/wazuh-docker.git)
+    git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
     git checkout v5.0.0
     ```
