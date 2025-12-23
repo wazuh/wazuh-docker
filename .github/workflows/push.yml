@@ -149,7 +149,7 @@ jobs:
       run: |
        for i in {1..10}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
-         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s)
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
         
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
@@ -351,7 +351,7 @@ jobs:
       run: |
        for i in {1..10}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
-         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s)
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
         
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
