@@ -127,8 +127,9 @@ jobs:
             - name: wazuh.dashboard
               ip: wazuh.dashboard
         EOF
+        cat config.yml
         bash ./wazuh-certs-tool.sh -A
-        sysctl -w vm.max_map_count=262144
+        sudo sysctl -w vm.max_map_count=262144
       working-directory: ./single-node
 
     - name: Edit single node docker-compose file
@@ -340,7 +341,6 @@ jobs:
             ip: wazuh2.indexer
           - name: wazuh3.indexer
             ip: wazuh3.indexer
-
         # Wazuh server nodes
         # Use node_type only with more than one Wazuh manager
         server:
@@ -350,14 +350,14 @@ jobs:
           - name: wazuh.worker
             ip: wazuh.worker
             node_type: worker
-
         # Wazuh dashboard node
         dashboard:
           - name: wazuh.dashboard
             ip: wazuh.dashboard
         EOF
+        cat config.yml
         bash ./wazuh-certs-tool.sh -A
-        sysctl -w vm.max_map_count=262144
+        sudo sysctl -w vm.max_map_count=262144
       working-directory: ./multi-node
 
     - name: Edit multi node docker-compose file
