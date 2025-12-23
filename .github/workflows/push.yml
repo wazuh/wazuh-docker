@@ -155,7 +155,7 @@ jobs:
        for i in {1..10}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
-        
+         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
            echo "$RESPONSE"
@@ -381,13 +381,12 @@ jobs:
        for i in {1..20}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
-        
+         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
            echo "$RESPONSE"
            exit 0
          fi
-        
          echo "Waiting for cluster to be online"
          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
            echo ""
