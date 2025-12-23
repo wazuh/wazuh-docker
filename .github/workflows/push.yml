@@ -147,14 +147,19 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 240
-       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s | grep -E "green|yellow" | wc -l`"
-       if [[ $status_green -eq 1 ]]; then
-        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
-       else
-        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
-        exit 1
-       fi
+       for i in {1..10}; do
+        echo "Checking Wazuh indexer health (Attempt $i/10)"
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s)
+        
+         if echo "$RESPONSE" | grep -qE "green|yellow"; then
+           echo "Cluster Online"
+           echo "$RESPONSE"
+           exit 0
+         fi
+        
+         echo "Waiting for cluster to be online"
+         [ $i -lt 10 ] && sleep 60
+       done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green|yellow" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
@@ -344,14 +349,19 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 360
-       status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s | grep green | wc -l`"
-       if [[ $status_green -eq 1 ]]; then
-        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
-       else
-        curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:admin -k -s
-        exit 1
-       fi
+       for i in {1..10}; do
+        echo "Checking Wazuh indexer health (Attempt $i/10)"
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s)
+        
+         if echo "$RESPONSE" | grep -qE "green|yellow"; then
+           echo "Cluster Online"
+           echo "$RESPONSE"
+           exit 0
+         fi
+        
+         echo "Waiting for cluster to be online"
+         [ $i -lt 10 ] && sleep 60
+       done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
