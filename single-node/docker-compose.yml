@@ -3,6 +3,7 @@ services:
   wazuh.manager:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.manager
+    container_name: single-node-wazuh.manager
     restart: always
     ulimits:
       memlock:
@@ -40,6 +41,7 @@ services:
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
+    container_name: single-node-wazuh.indexer
     restart: always
     ports:
       - "9200:9200"
@@ -70,6 +72,7 @@ services:
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
+    container_name: single-node-wazuh.dashboard
     restart: always
     ports:
       - 443:443

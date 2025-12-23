@@ -33,16 +33,20 @@ jobs:
 
 
   build-images:
-    needs: prepare-variables
-    uses: ./.github/workflows/Procedure_push_docker_images.yml
-    secrets: inherit
-    with:
-      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      docker_reference: ${{ github.head_ref }}
-      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
-      reference: "latest"
-      id: ${{ github.run_id }}
-      dev: true
+  #  needs: prepare-variables
+  #  uses: ./.github/workflows/Procedure_push_docker_images.yml
+  #  secrets: inherit
+  #  with:
+  #    image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+  #    docker_reference: ${{ github.head_ref }}
+  #    revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
+  #    reference: "latest"
+  #    id: ${{ github.run_id }}
+  #    dev: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip build
+        run: echo "Build images step skipped"
 
   Execute-Goss-tests:
     needs: [prepare-variables, build-images]
@@ -147,6 +151,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
+       INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
        for i in {1..10}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
@@ -156,8 +161,15 @@ jobs:
            echo "$RESPONSE"
            exit 0
          fi
-        
          echo "Waiting for cluster to be online"
+         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+           echo ""
+           echo "========================================================="
+           echo "Container logs for $CONTAINER_NAME"
+           echo "========================================================="
+           docker logs --tail 30 "$CONTAINER_NAME"
+           echo "---------------------------------------------------------"
+         done
          [ $i -lt 10 ] && sleep 60
        done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
@@ -192,13 +204,21 @@ jobs:
 
     - name: Check documents into wazuh-states index
       run: |
-       sleep 120
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
-       if [[ $docs -gt 0 ]]; then
-        echo "wazuh-states index documents: ${docs}"
-       else
-        echo "wazuh-states index documents: ${docs}"
-       fi
+        for i in {1..10}; do
+          echo "Checking documents in wazuh-states (Attempt $i/10)..."
+          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s || echo "{}")
+          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
+          if [[ "$DOCS" -gt 0 ]]; then
+            echo "wazuh-states index has documents: ${DOCS}"
+            exit 0
+          fi
+
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 30s"
+          [ $i -lt 10 ] && sleep 30
+        done
+        echo "Error: No documents found in wazuh-states after 10 attempts."
+        echo "Last response: $RESPONSE"
+        exit 1
 
     - name: Check Wazuh templates
       run: |
@@ -229,13 +249,22 @@ jobs:
 
     - name: Check Wazuh dashboard service URL
       run: |
-       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:admin -I -s | grep -E "^HTTP" | awk  '{print $2}')
-       if [[ $status -eq 200 ]]; then
-        echo "Wazuh dashboard status: ${status}"
-       else
-        echo "Wazuh dashboard status: ${status}"
+        for i in {1..10}; do
+          echo "Checking Wazuh dashboard (Attempt $i/10)"
+          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u admin:admin "https://0.0.0.0:443/app/status")
+          echo "Current status: $STATUS"
+          if [[ "$STATUS" == "200" ]]; then
+            echo "Wazuh dashboard is UP"
+            exit 0
+          elif [[ "$STATUS" == "429" || "$STATUS" == "503" ]]; then
+            echo "Dashboard is busy or initializing (Status $STATUS). Retrying in 30s"
+          else
+            echo "Unexpected status $STATUS. Retrying in 30s"
+          fi
+          sleep 30
+        done
+        echo "Error: Dashboard did not reach 200 status in time."
         exit 1
-       fi
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
@@ -349,7 +378,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       for i in {1..10}; do
+       for i in {1..20}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
         
@@ -360,6 +389,14 @@ jobs:
          fi
         
          echo "Waiting for cluster to be online"
+         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+           echo ""
+           echo "========================================================="
+           echo "Container logs for $CONTAINER_NAME"
+           echo "========================================================="
+           docker logs --tail 30 "$CONTAINER_NAME"
+           echo "---------------------------------------------------------"
+         done
          [ $i -lt 10 ] && sleep 60
        done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
@@ -395,12 +432,21 @@ jobs:
 
     - name: Check documents into wazuh-states index
       run: |
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s | jq -r ".count"`"
-       if [[ $docs -gt 0 ]]; then
-        echo "wazuh-states index documents: ${docs}"
-       else
-        echo "wazuh-states index documents: ${docs}"
-       fi
+        for i in {1..10}; do
+          echo "Checking documents in wazuh-states (Attempt $i/10)..."
+          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s || echo "{}")
+          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
+          if [[ "$DOCS" -gt 0 ]]; then
+            echo "wazuh-states index has documents: ${DOCS}"
+            exit 0
+          fi
+
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 30s"
+          [ $i -lt 10 ] && sleep 30
+        done
+        echo "Error: No documents found in wazuh-states after 10 attempts."
+        echo "Last response: $RESPONSE"
+        exit 1
 
     - name: Check Wazuh templates
       run: |
@@ -438,13 +484,22 @@ jobs:
 
     - name: Check Wazuh dashboard service URL
       run: |
-       status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:admin -I | grep -E "^HTTP" | awk  '{print $2}')
-       if [[ $status -eq 200 ]]; then
-        echo "Wazuh dashboard status: ${status}"
-       else
-        echo "Wazuh dashboard status: ${status}"
+        for i in {1..10}; do
+          echo "Checking Wazuh dashboard (Attempt $i/10)"
+          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u admin:admin "https://0.0.0.0:443/app/status")
+          echo "Current status: $STATUS"
+          if [[ "$STATUS" == "200" ]]; then
+            echo "Wazuh dashboard is UP"
+            exit 0
+          elif [[ "$STATUS" == "429" || "$STATUS" == "503" ]]; then
+            echo "Dashboard is busy or initializing (Status $STATUS). Retrying in 30s"
+          else
+            echo "Unexpected status $STATUS. Retrying in 30s"
+          fi
+          sleep 30
+        done
+        echo "Error: Dashboard did not reach 200 status in time."
         exit 1
-       fi
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml

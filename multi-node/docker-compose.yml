@@ -3,6 +3,7 @@ services:
   wazuh.master:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.master
+    container_name: multi-node-wazuh.master
     restart: always
     ulimits:
       memlock:
@@ -39,6 +40,7 @@ services:
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
+    container_name: multi-node-wazuh.worker
     restart: always
     ulimits:
       memlock:
@@ -72,6 +74,7 @@ services:
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh1.indexer
+    container_name: multi-node-wazuh1.indexer
     restart: always
     ports:
       - "9200:9200"
@@ -103,6 +106,7 @@ services:
   wazuh2.indexer:
     image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh2.indexer
+    container_name: multi-node-wazuh2.indexer
     restart: always
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
@@ -130,6 +134,7 @@ services:
   wazuh3.indexer:
     image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh3.indexer
+    container_name: multi-node-wazuh3.indexer
     restart: always
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
@@ -157,6 +162,7 @@ services:
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
+    container_name: multi-node-wazuh.dashboard
     restart: always
     ports:
       - 443:5601
@@ -190,6 +196,7 @@ services:
   nginx:
     image: nginx:stable
     hostname: nginx
+    container_name: multi-node-nginx
     restart: always
     ports:
       - "1514:1514"
