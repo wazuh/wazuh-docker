@@ -8,6 +8,7 @@
 - [Setup Environment](dev/setup.md)
 - [Build Image](dev/build-image.md)
 - [Run Tests](dev/run-tests.md)
+- [Workflow Usage](dev/workflow-usage.md)
 
 # Reference Manual
 

@@ -11,18 +11,17 @@ ARG WAZUH_MANAGER_PORT='CHANGE_MANAGER_PORT'
 ARG WAZUH_REGISTRATION_SERVER='CHANGE_ENROLL_IP'
 ARG WAZUH_REGISTRATION_PORT='CHANGE_ENROLL_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
-ARG WAZUH_AGENT_GROUPS='CHANGE_AGENT_GROUPS'
+ARG TARGETARCH
+ARG wazuh_agent_url_amd64_rpm
+ARG wazuh_agent_url_arm64_rpm
 
-COPY config/check_repository.sh /
-
-RUN yum install curl-minimal tar gzip procps -y &&\
-    yum clean all
-
-RUN chmod 775 /check_repository.sh
-RUN source /check_repository.sh
-
-RUN yum install wazuh-agent-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all && \
+RUN URL_VAR="wazuh_agent_url_${TARGETARCH}_rpm" && \
+    agent_url="${!URL_VAR}" && \
+    dnf install curl-minimal tar gzip procps -y &&\
+    curl -o /wazuh-agent.rpm "${agent_url}" && \
+    dnf install /wazuh-agent.rpm -y && \
+    rm -rf /wazuh-agent.rpm && \
+    dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
     -o /tmp/s6-overlay-amd64.tar.gz && \
@@ -31,7 +30,5 @@ RUN yum install wazuh-agent-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     rm  /tmp/s6-overlay-amd64.tar.gz
 
 COPY config/etc/ /etc/
-
-RUN rm /etc/yum.repos.d/wazuh.repo
 
 ENTRYPOINT [ "/init" ]

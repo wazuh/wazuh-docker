@@ -6,19 +6,19 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.14.3'
+        default: '5.0.0'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
-        required: true
-      filebeat_module_version:
-        description: 'Filebeat module version'
-        default: '0.5'
         required: true
       revision:
         description: 'Package revision'
         default: '1'
         required: true
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -32,23 +32,22 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.14.3'
+        default: '5.0.0'
         required: true
         type: string
       docker_reference:
         description: 'wazuh-docker reference'
         required: false
         type: string
-      filebeat_module_version:
-        description: 'Filebeat module version'
-        default: '0.5'
-        required: true
-        type: string
       revision:
         description: 'Package revision'
         default: '1'
         required: true
         type: string
+      reference:
+        description: 'Dev reference'
+        type: string
+        default: latest
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -70,7 +69,6 @@ jobs:
     env:
       IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
       IMAGE_TAG: ${{ inputs.image_tag }}
-      FILEBEAT_MODULE_VERSION: ${{ inputs.filebeat_module_version }}
       REVISION: ${{ inputs.revision }}
 
     steps:
@@ -87,9 +85,9 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
-        echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
         echo "* revision: ${{ inputs.revision }}"
         echo "* dev: ${{ inputs.dev }}"
+        echo "* dev reference: ${{ inputs.reference }}"
         echo "---------------------------------------------"
 
     - name: Checkout repository
@@ -124,25 +122,53 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Create artifact_urls.yml file
+      if : ${{ inputs.dev == true }}
+      run: |
+          cat << EOF > artifact_urls.yml
+          wazuh_manager_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_manager_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_manager_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_manager_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-manager-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_indexer_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_indexer_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_indexer_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_indexer_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-indexer-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_dashboard_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_dashboard_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_dashboard_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_dashboard_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-dashboard-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_amd64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_amd64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_arm64_deb: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent_5.0.0-${{ inputs.reference }}_arm64.deb --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_x86_64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.x86_64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_aarch64_rpm: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.aarch64.rpm --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_i386_msi: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.i386.msi --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_intel64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.intel64.pkg --expires-in 3600 --region us-west-1)"
+          wazuh_agent_url_arm64_pkg: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/main/packages/wazuh-agent-5.0.0-${{ inputs.reference }}.arm64.pkg --expires-in 3600 --region us-west-1)"
+          wazuh_certs_tool: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)"
+          wazuh_config_yml: "$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/5.0.0/config.yml --expires-in 3600 --region us-west-1)"
+          EOF
+      working-directory: ./build-docker-images
+
     - name: Build Wazuh images
       run: |
-        IMAGE_TAG="${{ inputs.image_tag }}"
-        FILEBEAT_MODULE_VERSION=${{ inputs.filebeat_module_version }}
-        REVISION=${{ inputs.revision }}
-
-        if [[ "$IMAGE_TAG" == *"-"* ]]; then
-          IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
-          if [ -z "${tokens[1]}" ]; then
-            echo "Invalid image tag: $IMAGE_TAG"
-            exit 1
-          fi
-          DEV_STAGE=${tokens[1]}
-          WAZUH_VER=${tokens[0]}
-          ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m
+        if [ "${{ inputs.dev }}" = true ]; then
+          IMAGE_TAG="${{ inputs.image_tag }}-${{ inputs.reference }}"
+          ./build-images.sh -v ${{ inputs.image_tag }} -r $REVISION -d "dev" -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }}
         else
-          ./build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m
+          if [[ "$IMAGE_TAG" == *"-"* ]]; then
+            IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
+            if [ -z "${tokens[1]}" ]; then
+              echo "Invalid image tag: $IMAGE_TAG"
+              exit 1
+            fi
+            DEV_STAGE=${tokens[1]}
+            WAZUH_VER=${tokens[0]}
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m
+          else
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m
+          fi
         fi
-
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
         ENV_FILE_PATH="../.env"
 
