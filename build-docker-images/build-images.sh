@@ -128,21 +128,9 @@ main() {
                 help 1
             fi
             ;;
-        "-m"|"--multiarch")
-            MULTIARCH="true"
-                shift
-            ;;
         "-ref"|"--reference")
             if [ -n "${2}" ]; then
                 WAZUH_TAG_REFERENCE="${2}"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
-        "-rg"|"--registry")
-            if [ -n "${2}" ]; then
-                WAZUH_REGISTRY="${2}"
                 shift 2
             else
                 help 1
