@@ -181,3 +181,89 @@ jobs:
           exit 1
         fi
       working-directory: ./build-docker-images
+
+    - name: Image exists validation
+      if: ${{ inputs.dev == false }}
+      id: validation
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        PURPOSE=""
+
+        if [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if docker manifest inspect $IMAGE_REGISTRY/wazuh/wazuh-manager:$IMAGE_TAG > /dev/null 2>&1; then
+            PURPOSE="regeneration"
+            echo "Image wazuh/wazuh-manager:$IMAGE_TAG exists. Setting PURPOSE to 'regeneration'"
+          else
+            PURPOSE="new release"
+            echo "Image wazuh/wazuh-manager:$IMAGE_TAG does NOT exist. Setting PURPOSE to 'new release'"
+          fi
+          echo "✅ Release tag: '$IMAGE_TAG'"
+        elif [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)[0-9]+$ ]]; then
+          PURPOSE="new stage"
+          echo "✅ Stage tag: '$IMAGE_TAG'. Setting PURPOSE to 'new stage'"
+        else
+          echo "❌ No release or stage tag ('$IMAGE_TAG'), the GH issue will not be created"
+        fi
+
+        echo "purpose=$PURPOSE" >> $GITHUB_OUTPUT
+
+    - name: GH issue notification
+      if: ${{ inputs.dev == false && steps.validation.outputs.purpose != '' }}
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        GH_TITLE=""
+        GH_MESSAGE=""
+        PURPOSE="${{ steps.validation.outputs.purpose }}"
+
+        ## Setting GH issue title
+        GH_TITLE="Artifactory vulnerabilities update \`v$IMAGE_TAG\`"
+
+        ## Setting GH issue body
+        GH_MESSAGE=$(cat <<- EOF | tr -d '\r' | sed 's/^[[:space:]]*//'
+        ### Description
+        - [ ] Update the [Artifactory vulnerabilities](${{ secrets.NOTIFICATION_SHEET_URL }}) sheet with the \`v$IMAGE_TAG\` vulnerabilities.
+
+        **Purpose**: $PURPOSE
+        >[!NOTE]
+        >To update the \`Tentative Release\` column, follow these steps:
+        https://github.com/wazuh/${{ secrets.NOTIFICATION_REPO }}/issues/2049#issuecomment-2671590268
+        EOF
+        )
+
+        # Print the GH Variables content
+        echo "--- Variable Content ---"
+        echo "$GH_TITLE"
+        echo "------------------------"
+
+        echo "--- Variable Content ---"
+        echo "$GH_MESSAGE"
+        echo "------------------------"
+
+        ## GH issue creation
+        ISSUE_URL=$(gh issue create \
+          -R wazuh/${{ secrets.NOTIFICATION_REPO }} \
+          --title "$GH_TITLE" \
+          --body "$GH_MESSAGE" \
+          --label "level/task" \
+          --label "type/maintenance" \
+          --label "request/operational")
+
+        ## Adding the issue to the team project
+        PROJECT_ITEM_ID=$(gh project item-add \
+          ${{ secrets.NOTIFICATION_PROJECT_NUMBER }} \
+          --url $ISSUE_URL \
+          --owner wazuh \
+          --format json \
+          | jq -r '.id')
+
+          ## Setting Objective
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_OBJECTIVE_ID }} --text  "Security scans"
+          ## Setting Priority
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_PRIORITY_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_PRIORITY_OPTION_ID }}
+          ## Setting Size
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SIZE_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_SIZE_OPTION_ID }}
+          ## Setting Subteam
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SUBTEAM_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_SUBTEAM_OPTION_ID }}
+
+      env:
+        GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
