@@ -159,8 +159,8 @@ jobs:
     - name: Check Wazuh indexer start
       run: |
        INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
-       for i in {1..10}; do
-        echo "Checking Wazuh indexer health (Attempt $i/10)"
+       for i in {1..20}; do
+        echo "Checking Wazuh indexer health (Attempt $i/20)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
@@ -177,7 +177,7 @@ jobs:
            docker logs --tail 30 "$CONTAINER_NAME"
            echo "---------------------------------------------------------"
          done
-         [ $i -lt 10 ] && sleep 60
+         [ $i -lt 20 ] && sleep 60
        done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
@@ -211,8 +211,8 @@ jobs:
 
     - name: Check documents into wazuh-states index
       run: |
-        for i in {1..10}; do
-          echo "Checking documents in wazuh-states (Attempt $i/10)..."
+        for i in {1..20}; do
+          echo "Checking documents in wazuh-states (Attempt $i/20)..."
           RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
           DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
           if [[ "$DOCS" -gt 0 ]]; then
@@ -221,9 +221,9 @@ jobs:
           fi
 
           echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
-          [ $i -lt 10 ] && sleep 60
+          [ $i -lt 20 ] && sleep 60
         done
-        echo "Error: No documents found in wazuh-states after 10 attempts."
+        echo "Error: No documents found in wazuh-states after 20 attempts."
         echo "Last response: $RESPONSE"
         exit 1
 
@@ -254,10 +254,11 @@ jobs:
         done
       env:
         TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        
     - name: Check Wazuh dashboard service URL
       run: |
-        for i in {1..10}; do
-          echo "Checking Wazuh dashboard (Attempt $i/10)"
+        for i in {1..20}; do
+          echo "Checking Wazuh dashboard (Attempt $i/20)"
           STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} "https://0.0.0.0:443/app/status")
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "200" ]]; then
@@ -320,7 +321,7 @@ jobs:
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
       API_PASSWORD: MyS3cr37P450r.*-
-      MANAGER_NODES: "master worker"
+      MANAGER_NODES: "master,worker"
     steps:
 
     - name: Check out code
@@ -392,7 +393,7 @@ jobs:
     - name: Check Wazuh indexer start
       run: |
        for i in {1..20}; do
-        echo "Checking Wazuh indexer health (Attempt $i/10)"
+        echo "Checking Wazuh indexer health (Attempt $i/20)"
          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
@@ -409,7 +410,7 @@ jobs:
            docker logs --tail 30 "$CONTAINER_NAME"
            echo "---------------------------------------------------------"
          done
-         [ $i -lt 10 ] && sleep 60
+         [ $i -lt 20 ] && sleep 60
        done
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
        status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
@@ -444,8 +445,9 @@ jobs:
 
     - name: Check documents into wazuh-states index
       run: |
-        for i in {1..10}; do
-          echo "Checking documents in wazuh-states (Attempt $i/10)..."
+        IFS=','
+        for i in {1..20}; do
+          echo "Checking documents in wazuh-states (Attempt $i/20)..."
           RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
           DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
           if [[ "$DOCS" -gt 0 ]]; then
@@ -454,9 +456,9 @@ jobs:
           fi
 
           echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
-          [ $i -lt 10 ] && sleep 60
+          [ $i -lt 20 ] && sleep 60
         done
-        echo "Error: No documents found in wazuh-states after 10 attempts."
+        echo "Error: No documents found in wazuh-states after 20 attempts."
         echo "Last response: $RESPONSE"
         exit 1
 
@@ -490,8 +492,8 @@ jobs:
 
     - name: Check Wazuh dashboard service URL
       run: |
-        for i in {1..10}; do
-          echo "Checking Wazuh dashboard (Attempt $i/10)"
+        for i in {1..20}; do
+          echo "Checking Wazuh dashboard (Attempt $i/20)"
           STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} "https://0.0.0.0:443/app/status")
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "200" ]]; then
