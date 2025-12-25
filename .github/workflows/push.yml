@@ -102,6 +102,9 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
+    - name: free disk space
+      uses: ./.github/free-disk-space
+
     - name: Configure aws credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
