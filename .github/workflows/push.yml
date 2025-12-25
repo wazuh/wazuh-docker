@@ -334,7 +334,7 @@ jobs:
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
       API_PASSWORD: MyS3cr37P450r.*-
-      MANAGER_NODES: "master,worker"
+      MANAGER_NODES: "master,worker01"
     steps:
 
     - name: Check out code
