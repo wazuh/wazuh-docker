@@ -33,21 +33,16 @@ jobs:
 
 
   build-images:
-    runs-on: ubuntu-latest
     needs: prepare-variables
-    steps:
-
-      - name: Build step
-        run: echo "Build Docker images here"
-#    uses: ./.github/workflows/Procedure_push_docker_images.yml
-#    secrets: inherit
-#    with:
-#      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-#      docker_reference: ${{ github.head_ref }}
-#      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
-#      reference: "latest"
-#      id: ${{ github.run_id }}
-#      dev: true
+    uses: ./.github/workflows/Procedure_push_docker_images.yml
+    secrets: inherit
+    with:
+      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      docker_reference: ${{ github.head_ref }}
+      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
+      reference: "latest"
+      id: ${{ github.run_id }}
+      dev: true
 
   Execute-Goss-tests:
     needs: [prepare-variables, build-images]
@@ -200,17 +195,6 @@ jobs:
         echo "Wazuh indexer nodes: ${nodes}"
        fi
 
-    - name: Docker logs
-      run: |
-        echo "===== Wazuh Manager Logs ====="
-        docker compose logs wazuh.manager
-        echo "===== Wazuh Indexer Logs ====="
-        docker compose logs wazuh.indexer
-        echo "===== Wazuh Dashboard Logs ====="
-        docker compose logs wazuh.dashboard
-      working-directory: ./single-node
-
-
     - name: Check documents into wazuh-states index
       run: |
         for i in {1..20}; do
@@ -221,16 +205,6 @@ jobs:
             echo "wazuh-states index has documents: ${DOCS}"
             exit 0
           fi
-
-          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
-          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-            echo ""
-            echo "========================================================="
-            echo "Container logs for $CONTAINER_NAME"
-            echo "========================================================="
-            docker logs --tail 30 "$CONTAINER_NAME"
-            echo "---------------------------------------------------------"
-          done
           echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
           [ $i -lt 20 ] && sleep 60
         done
@@ -311,12 +285,25 @@ jobs:
     - name: Check Wazuh agent enrollment
       run: |
         sleep 20
-        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+        curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
+    
+    - name: Docker logs
+      run: |
+        INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
+        for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+           echo ""
+           echo "========================================================="
+           echo "Container logs for $CONTAINER_NAME"
+           echo "========================================================="
+           docker logs "$CONTAINER_NAME"
+           echo "---------------------------------------------------------"
+         done
+      working-directory: ./single-node
 
   check-multi-node:
     name: Check multi node on ${{ matrix.os }}
@@ -434,19 +421,6 @@ jobs:
         exit 1
        fi
 
-    - name: Docker logs
-      run: |
-        echo "===== Wazuh Manager Logs ====="
-        docker compose logs wazuh.master
-        docker compose logs wazuh.worker
-        echo "===== Wazuh Indexer Logs ====="
-        docker compose logs wazuh1.indexer
-        docker compose logs wazuh2.indexer
-        docker compose logs wazuh3.indexer
-        echo "===== Wazuh Dashboard Logs ====="
-        docker compose logs wazuh.dashboard
-      working-directory: ./multi-node
-
     - name: Check Wazuh indexer nodes
       run: |
        nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
@@ -466,15 +440,6 @@ jobs:
             echo "wazuh-states index has documents: ${DOCS}"
             exit 0
           fi
-          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
-          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-            echo ""
-            echo "========================================================="
-            echo "Container logs for $CONTAINER_NAME"
-            echo "========================================================="
-            docker logs --tail 30 "$CONTAINER_NAME"
-            echo "---------------------------------------------------------"
-          done
           echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
           [ $i -lt 20 ] && sleep 60
         done
@@ -556,9 +521,22 @@ jobs:
     - name: Check Wazuh agent enrollment
       run: |
         sleep 20
-        curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
+        curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
+    
+    - name: Docker logs
+      run: |
+        INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
+        for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+           echo ""
+           echo "========================================================="
+           echo "Container logs for $CONTAINER_NAME"
+           echo "========================================================="
+           docker logs "$CONTAINER_NAME"
+           echo "---------------------------------------------------------"
+         done
+      working-directory: ./single-node
