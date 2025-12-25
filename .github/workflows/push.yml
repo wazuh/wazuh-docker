@@ -214,8 +214,8 @@ jobs:
             exit 0
           fi
 
-          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 30s"
-          [ $i -lt 10 ] && sleep 30
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          [ $i -lt 10 ] && sleep 60
         done
         echo "Error: No documents found in wazuh-states after 10 attempts."
         echo "Last response: $RESPONSE"
@@ -445,8 +445,8 @@ jobs:
             exit 0
           fi
 
-          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 30s"
-          [ $i -lt 10 ] && sleep 30
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          [ $i -lt 10 ] && sleep 60
         done
         echo "Error: No documents found in wazuh-states after 10 attempts."
         echo "Last response: $RESPONSE"
