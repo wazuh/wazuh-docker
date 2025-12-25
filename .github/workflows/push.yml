@@ -445,7 +445,6 @@ jobs:
 
     - name: Check documents into wazuh-states index
       run: |
-        IFS=','
         for i in {1..20}; do
           echo "Checking documents in wazuh-states (Attempt $i/20)..."
           RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
@@ -477,6 +476,7 @@ jobs:
 
     - name: Check Wazuh manager start
       run: | 
+        IFS=','
         for NODE in "${{ env.MANAGER_NODES }}"; do
           services="`curl -k -s -X GET "https://0.0.0.0:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
           if [[ $services -gt 9 ]]; then
