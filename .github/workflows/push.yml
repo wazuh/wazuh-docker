@@ -33,20 +33,16 @@ jobs:
 
 
   build-images:
-  #  needs: prepare-variables
-  #  uses: ./.github/workflows/Procedure_push_docker_images.yml
-  #  secrets: inherit
-  #  with:
-  #    image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-  #    docker_reference: ${{ github.head_ref }}
-  #    revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
-  #    reference: "latest"
-  #    id: ${{ github.run_id }}
-  #    dev: true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip build
-        run: echo "Build images step skipped"
+    needs: prepare-variables
+    uses: ./.github/workflows/Procedure_push_docker_images.yml
+    secrets: inherit
+    with:
+      image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
+      docker_reference: ${{ github.head_ref }}
+      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
+      reference: "latest"
+      id: ${{ github.run_id }}
+      dev: true
 
   Execute-Goss-tests:
     needs: [prepare-variables, build-images]
@@ -91,6 +87,10 @@ jobs:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: admin
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: MyS3cr37P450r.*-
     steps:
 
     - name: Check out code
@@ -155,7 +155,7 @@ jobs:
        INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
        for i in {1..10}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
-         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
@@ -173,19 +173,19 @@ jobs:
          done
          [ $i -lt 10 ] && sleep 60
        done
-       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green|yellow" | wc -l`"
+       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
        else
-        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
         exit 1
        fi
 
 
     - name: Check Wazuh indexer nodes
       run: |
-       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l`"
+       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 1 ]]; then
         echo "Wazuh indexer nodes: ${nodes}"
        else
@@ -207,7 +207,7 @@ jobs:
       run: |
         for i in {1..10}; do
           echo "Checking documents in wazuh-states (Attempt $i/10)..."
-          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s || echo "{}")
+          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
           DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
           if [[ "$DOCS" -gt 0 ]]; then
             echo "wazuh-states index has documents: ${DOCS}"
@@ -223,8 +223,8 @@ jobs:
 
     - name: Check Wazuh templates
       run: |
-       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
-       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
        if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
@@ -246,13 +246,12 @@ jobs:
           exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
-
+        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
     - name: Check Wazuh dashboard service URL
       run: |
         for i in {1..10}; do
           echo "Checking Wazuh dashboard (Attempt $i/10)"
-          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u admin:admin "https://0.0.0.0:443/app/status")
+          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} "https://0.0.0.0:443/app/status")
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "200" ]]; then
             echo "Wazuh dashboard is UP"
@@ -293,7 +292,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
@@ -310,6 +309,10 @@ jobs:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: admin
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: MyS3cr37P450r.*-
     steps:
 
     - name: Check out code
@@ -351,7 +354,7 @@ jobs:
             - name: wazuh.worker
               ip: wazuh.worker
               node_type: worker
-              
+
           # Wazuh dashboard node
           dashboard:
             - name: wazuh.dashboard
@@ -382,7 +385,7 @@ jobs:
       run: |
        for i in {1..20}; do
         echo "Checking Wazuh indexer health (Attempt $i/10)"
-         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u admin:admin -k -s --retry 2 || true)
+         RESPONSE=$(curl -XGET "https://0.0.0.0:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
          if echo "$RESPONSE" | grep -qE "green|yellow"; then
            echo "Cluster Online"
@@ -400,12 +403,12 @@ jobs:
          done
          [ $i -lt 10 ] && sleep 60
        done
-       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s | grep -E "green" | wc -l`"
+       status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
        else
-        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:admin -k -s
+        curl -XGET "https://0.0.0.0:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
         exit 1
        fi
 
@@ -424,7 +427,7 @@ jobs:
 
     - name: Check Wazuh indexer nodes
       run: |
-       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:admin -k -s | grep -E "indexer" | wc -l`"
+       nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 3 ]]; then
         echo "Wazuh indexer nodes: ${nodes}"
        else
@@ -435,7 +438,7 @@ jobs:
       run: |
         for i in {1..10}; do
           echo "Checking documents in wazuh-states (Attempt $i/10)..."
-          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u admin:admin -k -s || echo "{}")
+          RESPONSE=$(curl -XGET "https://0.0.0.0:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
           DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
           if [[ "$DOCS" -gt 0 ]]; then
             echo "wazuh-states index has documents: ${DOCS}"
@@ -451,8 +454,8 @@ jobs:
 
     - name: Check Wazuh templates
       run: |
-       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep "wazuh" | wc -l`"
-       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:admin -k -s | grep "wazuh"`"
+       qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh" | wc -l`"
+       templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh"`"
        if [[ $qty_templates -gt 3 ]]; then
         echo "wazuh templates:"
         echo "${templates}"
@@ -464,7 +467,7 @@ jobs:
 
     - name: Check Wazuh manager start
       run: |
-        services="`curl -k -s -X GET "https://0.0.0.0:55000/clsuter/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
+        services="`curl -k -s -X GET "https://0.0.0.0:55000/clsuter/manager/status?pretty=true" -H  "Authorization: Bearer ${{ env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 10 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
@@ -481,13 +484,13 @@ jobs:
          exit 1
         fi
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check Wazuh dashboard service URL
       run: |
         for i in {1..10}; do
           echo "Checking Wazuh dashboard (Attempt $i/10)"
-          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u admin:admin "https://0.0.0.0:443/app/status")
+          STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} "https://0.0.0.0:443/app/status")
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "200" ]]; then
             echo "Wazuh dashboard is UP"
@@ -527,7 +530,7 @@ jobs:
         sleep 20
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
-        TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
