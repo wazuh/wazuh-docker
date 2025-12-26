@@ -13,64 +13,20 @@ file:
     group: wazuh
     filetype: file
     contains: []
-  /var/ossec/etc/rules/local_rules.xml:
-    exists: true
-    mode: "0660"
-    owner: wazuh
-    group: wazuh
-    filetype: file
-    contains: []
   /var/ossec/etc/sslmanager.cert:
     exists: true
-    mode: "0640"
+    mode: "0644"
     owner: root
     group: root
     filetype: file
     contains: []
   /var/ossec/etc/sslmanager.key:
     exists: true
-    mode: "0640"
+    mode: "0600"
     owner: root
     group: root
     filetype: file
     contains: []
-package:
-  wazuh-manager:
-    installed: true
-    versions:
-    - 5.0.0
-port:
-  tcp:1514:
-    listening: true
-    ip:
-    - 0.0.0.0
-  tcp:1515:
-    listening: true
-    ip:
-    - 0.0.0.0
-  tcp:55000:
-    listening: true
-    ip:
-    - 0.0.0.0
-process:
-  wazuh-analysisd:
-    running: true
-  wazuh-authd:
-    running: true
-  wazuh-execd:
-    running: true
-  wazuh-monitord:
-    running: true
-  wazuh-remoted:
-    running: true
-  wazuh-syscheckd:
-    running: true
-  s6-supervise:
-    running: true
-  wazuh-db:
-    running: true
-  wazuh-modulesd:
-    running: true
 user:
   wazuh:
     exists: true
