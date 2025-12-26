@@ -1,10 +1,4 @@
-WAZUH_IMAGE_VERSION=5.0.0
-IMAGE_TAG=5.0.0
-WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
-WAZUH_TAG_REVISION=1
-WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
-IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
-WAZUH_REGISTRY=docker.io
+#!/bin/bash
 
 # Wazuh package generator
 # Copyright (C) 2023, Wazuh Inc.
@@ -13,6 +7,14 @@ WAZUH_REGISTRY=docker.io
 # and/or modify it under the terms of the GNU General Public
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
+
+WAZUH_IMAGE_VERSION=5.0.0
+IMAGE_TAG=5.0.0
+WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
+WAZUH_TAG_REVISION=1
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
+IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
+WAZUH_REGISTRY=docker.io
 
 WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
