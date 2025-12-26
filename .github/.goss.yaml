@@ -6,13 +6,6 @@ file:
     group: root
     filetype: file
     contains: []
-  /var/ossec/etc/lists/audit-keys:
-    exists: true
-    mode: "0660"
-    owner: wazuh
-    group: wazuh
-    filetype: file
-    contains: []
   /var/ossec/etc/ossec.conf:
     exists: true
     mode: "0660"
