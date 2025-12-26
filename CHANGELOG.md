@@ -9,16 +9,16 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-puppet/issues/2136))
-- Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-puppet/issues/2081))
-- Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-puppet/issues/2058))
-- Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-puppet/issues/2054))
-- Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-puppet/issues/2030))
-- Fix OpenSearch deprecated settings ([#1366](https://github.com/wazuh/wazuh-puppet/issues/1366))
+- Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-docker/issues/2136))
+- Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-docker/pull/2081))
+- Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-docker/pull/2058))
+- Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-docker/pull/2054))
+- Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-docker/pull/2030))
+- Fix OpenSearch deprecated settings ([#1899](https://github.com/wazuh/wazuh-docker/pull/1899))
 
 ### Fixed
 
-- None
+ Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
 
 ### Deleted
 
@@ -32,7 +32,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Agent group parameter added ([#2127](https://github.com/wazuh/wazuh-docker/pull/2127))
+- Adapt to multi architecture build ([#2120](https://github.com/wazuh/wazuh-docker/pull/2120))
 
 ### Fixed
 
