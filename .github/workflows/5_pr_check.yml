@@ -284,10 +284,19 @@ jobs:
 
     - name: Check Wazuh agent enrollment
       run: |
-        sleep 20
-        curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
-      env:
-        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+        for i in {1..5}; do
+          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+          agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
+          if [[ $agents -gt 1 ]]; then
+            echo "Wazuh agents: ${agents}"
+            echo "OK"
+            break
+          else
+            curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}"
+            echo "Wazuh agents: ${agents}. Retrying in 10s"
+            [ $i -lt 5 ] && sleep 10
+          fi
+        done
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
@@ -520,10 +529,19 @@ jobs:
 
     - name: Check Wazuh agent enrollment
       run: |
-        sleep 20
-        curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
-      env:
-        TOKEN: $(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+        for i in {1..5}; do
+          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+          agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
+          if [[ $agents -gt 1 ]]; then
+            echo "Wazuh agents: ${agents}"
+            echo "OK"
+            break
+          else
+            curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}"
+            echo "Wazuh agents: ${agents}. Retrying in 10s"
+            [ $i -lt 5 ] && sleep 10
+          fi
+        done
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
