@@ -23,12 +23,11 @@ RUN URL_VAR="wazuh_agent_url_${TARGETARCH}_rpm" && \
     rm -rf /wazuh-agent.rpm && \
     dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
-    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-    -o /tmp/s6-overlay-amd64.tar.gz && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz
-
+    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz \
+    -o /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C /usr ./bin && \
+    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz
 COPY config/etc/ /etc/
 
 ENTRYPOINT [ "/init" ]
