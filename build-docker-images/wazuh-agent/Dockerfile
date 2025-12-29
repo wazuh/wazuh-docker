@@ -29,7 +29,7 @@ RUN URL_VAR="wazuh_agent_url_${TARGETARCH}_rpm" && \
     -o /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
     tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
+    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz &&
 COPY config/etc/ /etc/
 
 ENTRYPOINT [ "/init" ]
