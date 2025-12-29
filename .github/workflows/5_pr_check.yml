@@ -302,6 +302,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
     
     - name: Docker logs
+      if: always()
       run: |
         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
@@ -547,6 +548,7 @@ jobs:
       run: ./.github/multi-node-log-check.sh
     
     - name: Docker logs
+      if: always()
       run: |
         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
