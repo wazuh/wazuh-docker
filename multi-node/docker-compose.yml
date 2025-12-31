@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:5.0.0-alpha0
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.master
     container_name: multi-node-wazuh.master
     restart: always
@@ -38,7 +38,7 @@ services:
       - ./wazuh-certificates/wazuh.master.pem:/var/ossec/etc/certs/server.pem
       - ./wazuh-certificates/wazuh.master-key.pem:/var/ossec/etc/certs/server-key.pem
   wazuh.worker:
-    image: wazuh/wazuh-manager:5.0.0-alpha0
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
     container_name: multi-node-wazuh.worker
     restart: always
@@ -72,7 +72,7 @@ services:
       - ./wazuh-certificates/wazuh.worker-key.pem:/var/ossec/etc/certs/server-key.pem
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:5.0.0-alpha0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
@@ -104,7 +104,7 @@ services:
       - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:5.0.0-alpha0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh2.indexer
     container_name: multi-node-wazuh2.indexer
     restart: always
@@ -132,7 +132,7 @@ services:
       - ./wazuh-certificates/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:5.0.0-alpha0
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh3.indexer
     container_name: multi-node-wazuh3.indexer
     restart: always
@@ -160,7 +160,7 @@ services:
       - ./wazuh-certificates/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0-alpha0
+    image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     container_name: multi-node-wazuh.dashboard
     restart: always
