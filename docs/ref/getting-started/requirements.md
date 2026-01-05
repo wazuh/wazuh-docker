@@ -51,7 +51,6 @@ These are general recommendations. Actual needs may vary based on the number of 
 #### Windows:
 
 * **Docker Desktop**
-    * Latest version
     * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
 * **WSL Linux distribution**
     * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not comptible with wazuh-certs-tool.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
@@ -63,7 +62,6 @@ These are general recommendations. Actual needs may vary based on the number of 
 #### macOS:
 
 * **Docker Desktop**
-    * Latest version
     * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
 * **Bash Shell**
 * **GNU versions of apps**:
