@@ -34,7 +34,7 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:
-    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh Dashboard.
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
 * **`vm.max_map_count` (Linux Hosts for Wazuh Indexer/OpenSearch)**:
     * The Wazuh Indexer (OpenSearch) requires a higher `vm.max_map_count` setting than the default on most Linux systems.
     * Set it permanently:
@@ -57,7 +57,7 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:
-    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh Dashboard.
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
 
 #### macOS:
 
@@ -73,7 +73,7 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:
-    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh Dashboard.
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
 
 ## Network Ports
 
