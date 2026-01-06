@@ -24,17 +24,17 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Network**:
     * A stable network connection with sufficient bandwidth, especially if agents are reporting from remote locations.
 
-### Software:
+### Software Prerequisites:
 
-* **Operating System**:
-    * A 64-bit Linux distribution is preferred (e.g., Ubuntu, CentOS, RHEL, Debian).
+#### Linux:
+
 * **Docker Engine**:
     * Version `20.10.0` or newer.
     * Install Docker by following the official instructions: [Install Docker Engine](https://docs.docker.com/engine/install/).
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:
-    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh Dashboard.
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
 * **`vm.max_map_count` (Linux Hosts for Wazuh Indexer/OpenSearch)**:
     * The Wazuh Indexer (OpenSearch) requires a higher `vm.max_map_count` setting than the default on most Linux systems.
     * Set it permanently:
@@ -47,6 +47,33 @@ These are general recommendations. Actual needs may vary based on the number of 
             sudo sysctl -p
             ```
     * This is crucial for the stability of the Wazuh Indexer.
+
+#### Windows:
+
+* **Docker Desktop**
+    * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
+* **WSL Linux distribution**
+    * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not comptible with wazuh-certs-tool.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
+* **Git Client**:
+    * Required for cloning the `wazuh-docker` repository.
+* **Web Browser**:
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
+
+#### macOS:
+
+* **Docker Desktop**
+    * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
+* **Bash Shell**
+* **GNU versions of apps**:
+    * [Install GNU sed](https://formulae.brew.sh/formula/gnu-sed).
+    * [Install GNU awk](https://formulae.brew.sh/formula/gawk).
+    * [Install GNU grep](https://formulae.brew.sh/formula/grep).
+* **OpenSSL**:
+    * [Install OpenSSL](https://formulae.brew.sh/formula/openssl@3).
+* **Git Client**:
+    * Required for cloning the `wazuh-docker` repository.
+* **Web Browser**:
+    * A modern web browser (e.g., Chrome, Firefox, Edge, Safari) for accessing the Wazuh dashboard.
 
 ## Network Ports
 

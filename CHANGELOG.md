@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change macOS and Windows deployment documentation ([#2150](https://github.com/wazuh/wazuh-docker/issues/2150))
 - Modify docker build image process ([#2131](https://github.com/wazuh/wazuh-docker/issues/2131))
 - Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-docker/issues/2136))
 - Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-docker/pull/2081))
@@ -19,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
- Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
+- Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
 
 ### Deleted
 
