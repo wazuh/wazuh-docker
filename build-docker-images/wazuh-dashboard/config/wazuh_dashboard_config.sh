@@ -25,7 +25,7 @@ WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
 API_USERNAME="${API_USERNAME:-wazuh-wui}"
 API_PASSWORD="${API_PASSWORD:-wazuh-wui}"
-RUN_AS="${RUN_AS:-false}"
+RUN_AS="${RUN_AS:-true}"
 
 # Optional Wazuh app configurations
 PATTERN="${PATTERN:-}"
