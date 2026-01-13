@@ -5,7 +5,7 @@ wazuh_url="${WAZUH_API_URL:-https://wazuh}"
 wazuh_port="${API_PORT:-55000}"
 api_username="${API_USERNAME:-wazuh-wui}"
 api_password="${API_PASSWORD:-wazuh-wui}"
-api_run_as="${RUN_AS:-false}"
+api_run_as="${RUN_AS:-true}"
 
 dashboard_config_file="/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml"
 
