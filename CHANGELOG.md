@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Modify run_as parameter value - main ([#2158](https://github.com/wazuh/wazuh-docker/pull/2158))
 - Change macOS and Windows deployment documentation ([#2150](https://github.com/wazuh/wazuh-docker/issues/2150))
 - Modify docker build image process ([#2131](https://github.com/wazuh/wazuh-docker/issues/2131))
 - Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-docker/issues/2136))
