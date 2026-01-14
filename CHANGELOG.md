@@ -1,6 +1,32 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Modify run_as parameter value - main ([#2158](https://github.com/wazuh/wazuh-docker/pull/2158))
+- Change macOS and Windows deployment documentation ([#2150](https://github.com/wazuh/wazuh-docker/issues/2150))
+- Modify docker build image process ([#2131](https://github.com/wazuh/wazuh-docker/issues/2131))
+- Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-docker/issues/2136))
+- Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-docker/pull/2081))
+- Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-docker/pull/2058))
+- Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-docker/pull/2054))
+- Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-docker/pull/2030))
+- Fix OpenSearch deprecated settings ([#1899](https://github.com/wazuh/wazuh-docker/pull/1899))
+
+### Fixed
+
+- Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
+
+### Deleted
+
+- None
+
 ## [4.14.3]
 
 ### Added
