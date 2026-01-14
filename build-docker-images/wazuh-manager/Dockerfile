@@ -11,6 +11,7 @@ ARG FILEBEAT_VERSION=7.10.2
 ARG FILEBEAT_REVISION=2
 ARG WAZUH_FILEBEAT_MODULE
 ARG S6_VERSION="v2.2.0.3"
+ARG TARGETARCH
 
 RUN yum install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
     yum clean all
@@ -27,11 +28,13 @@ RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
     rm /filebeat_module.sh && \
-    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-    -o /tmp/s6-overlay-amd64.tar.gz && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-amd64.tar.gz && \
+    S6_ARCH="amd64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
+    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz \
+    -o /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C /usr ./bin && \
+    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
     rm -f /var/ossec/etc/sslmanager.key && \
     rm -f /var/ossec/etc/sslmanager.cert
 

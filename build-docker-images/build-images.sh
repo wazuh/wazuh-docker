@@ -1,8 +1,4 @@
-WAZUH_IMAGE_VERSION=4.14.2
-WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
-WAZUH_TAG_REVISION=1
-WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
-IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
+#!/bin/bash
 
 # Wazuh package generator
 # Copyright (C) 2023, Wazuh Inc.
@@ -12,7 +8,11 @@ IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_IMAGE_VERSION="4.14.2"
+IMAGE_TAG=4.14.3
+WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
+WAZUH_REGISTRY=docker.io
+
+WAZUH_IMAGE_VERSION="4.14.3"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.5"
@@ -58,15 +58,32 @@ build() {
         fi
     fi
 
-    echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > .env
-    echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> .env
-    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> .env
-    echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> .env
-    echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> .env
-    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> .env
 
-    docker compose -f build-docker-images/build-images.yml --env-file .env build --no-cache || clean 1
+    echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
+    echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
+    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> ../.env
+    echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> ../.env
+    echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> ../.env
+    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> ../.env
+    echo WAZUH_REGISTRY=$WAZUH_REGISTRY >> ../.env
+    echo IMAGE_TAG=$IMAGE_TAG >> ../.env
 
+    set -a
+    source ../.env
+    set +a
+
+    if  [ "${MULTIARCH}" ];then
+        docker buildx bake \
+            --file build-images.yml \
+            --push \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --no-cache || clean 1
+    else
+        docker buildx bake \
+            --file build-images.yml \
+            --load \
+            --no-cache || clean 1
+    fi
     return 0
 }
 
@@ -79,7 +96,9 @@ help() {
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
+    echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
+    echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
     echo "    -h, --help                   Show this help."
     echo
     exit $1
@@ -110,9 +129,21 @@ main() {
                 help 1
             fi
             ;;
+        "-m"|"--multiarch")
+            MULTIARCH="true"
+                shift
+            ;;
         "-r"|"--revision")
             if [ -n "${2}" ]; then
                 WAZUH_TAG_REVISION="${2}"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-rg"|"--registry")
+            if [ -n "${2}" ]; then
+                WAZUH_REGISTRY="${2}"
                 shift 2
             else
                 help 1

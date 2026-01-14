@@ -4,4 +4,4 @@ hosts:
       port: 55000
       username: wazuh-wui
       password: "MyS3cr37P450r.*-"
-      run_as: false
+      run_as: true
