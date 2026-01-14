@@ -93,7 +93,7 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
+    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
