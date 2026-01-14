@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Modify run_as parameter value - v4.14.3 ([#2157](https://github.com/wazuh/wazuh-docker/pull/2157))
+- Adapt Wazuh Agent Dockerfile for multi-architecture support ([#2149](https://github.com/wazuh/wazuh-docker/pull/2149))
 - Agent group parameter added ([#2127](https://github.com/wazuh/wazuh-docker/pull/2127))
 - Adapt to multi architecture build ([#2120](https://github.com/wazuh/wazuh-docker/pull/2120))
 
