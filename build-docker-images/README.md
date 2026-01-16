@@ -19,7 +19,7 @@ Then execute:
 The script also allows to build images from other versions of Wazuh by using the `-v` or `--version` argument:
 
 ```bash
-./build-images.sh -v 4.14.3
+./build-images.sh -v 4.14.4
 ```
 
 To get all the available script options use the -h or --help option:
@@ -33,7 +33,7 @@ Usage: ./build-images.sh [OPTIONS]
     -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.5.
     -r, --revision <rev>         [Optional] Package revision. By default 1
     -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.
-    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.3.
+    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.4.
     -m, --multiarch              [Optional] Enable multi-architecture builds.
     -h, --help                   Show this help.
 
