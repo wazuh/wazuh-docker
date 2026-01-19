@@ -64,7 +64,11 @@ build() {
     awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
     
     if  [ "${WAZUH_DEV_STAGE}" ];then
-        IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
+        if  [ "${WAZUH_DEV_STAGE}" ];then
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}-${WAZUH_TAG_REFERENCE}"   
+        else
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
+        fi
     else
         IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
     fi

@@ -164,7 +164,11 @@ jobs:
             fi
             DEV_STAGE=${tokens[1]}
             WAZUH_VER=${tokens[0]}
-            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m
+            if [ "${{ inputs.dev }}" = true ]; then
+              ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }}
+            else 
+              ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m
+            fi
           else
             ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m
           fi
