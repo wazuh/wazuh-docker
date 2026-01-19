@@ -74,19 +74,26 @@ build() {
     source ./artifacts_env.txt
     set +a
 
-    if [ -z "${WAZUH_COMPONENT}" ]; then
-        echo "Error: WAZUH_COMPONENT is not set" >&2
-        clean 1
-    fi
+    # Define all available components
+    local all_components=("wazuh-indexer" "wazuh-manager" "wazuh-dashboard" "wazuh-agent")
+    local components_to_build=()
 
-    # Validate component
-    case "${WAZUH_COMPONENT}" in
-        wazuh-indexer|wazuh-manager|wazuh-dashboard|wazuh-agent) ;;
-        *)
-            echo "Error: Unknown component '${WAZUH_COMPONENT}'" >&2
-            clean 1
-            ;;
-    esac
+    # Determine which components to build
+    if [ -z "${WAZUH_COMPONENT}" ]; then
+        echo "No component specified. Building all components..."
+        components_to_build=("${all_components[@]}")
+    else
+        # Validate component
+        case "${WAZUH_COMPONENT}" in
+            wazuh-indexer|wazuh-manager|wazuh-dashboard|wazuh-agent)
+                components_to_build=("${WAZUH_COMPONENT}")
+                ;;
+            *)
+                echo "Error: Unknown component '${WAZUH_COMPONENT}'" >&2
+                clean 1
+                ;;
+        esac
+    fi
 
     # Determine build command and base options
     if [ "${MULTIARCH}" ]; then
@@ -95,51 +102,57 @@ build() {
         build_cmd="docker build --no-cache"
     fi
 
-    # Build common args (used by all components)
-    build_args=(
-        -t "${WAZUH_REGISTRY}/wazuh/${WAZUH_COMPONENT}:${IMAGE_TAG}"
-        --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
-        --build-arg WAZUH_TAG_REVISION="${WAZUH_TAG_REVISION}"
-    )
+    # Build each component
+    for component in "${components_to_build[@]}"; do
+        echo "Building ${component} image..."
 
-    # Add component-specific args
-    case "${WAZUH_COMPONENT}" in
-        wazuh-indexer)
-            build_args+=(
-                --build-arg wazuh_indexer_url_amd64_rpm="${wazuh_indexer_url_x86_64_rpm}"
-                --build-arg wazuh_indexer_url_arm64_rpm="${wazuh_indexer_url_aarch64_rpm}"
-                --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
-                --build-arg wazuh_config_yml="${wazuh_config_yml}"
-            )
-            ;;
-        wazuh-manager)
-            build_args+=(
-                --build-arg wazuh_manager_url_amd64_rpm="${wazuh_manager_url_x86_64_rpm}"
-                --build-arg wazuh_manager_url_arm64_rpm="${wazuh_manager_url_aarch64_rpm}"
-            )
-            ;;
-        wazuh-dashboard)
-            build_args+=(
-                --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
-                --build-arg wazuh_dashboard_url_amd64_rpm="${wazuh_dashboard_url_x86_64_rpm}"
-                --build-arg wazuh_dashboard_url_arm64_rpm="${wazuh_dashboard_url_aarch64_rpm}"
-                --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
-                --build-arg wazuh_config_yml="${wazuh_config_yml}"
-            )
-            ;;
-        wazuh-agent)
-            build_args+=(
-                --build-arg wazuh_agent_url_amd64_rpm="${wazuh_agent_url_x86_64_rpm}"
-                --build-arg wazuh_agent_url_arm64_rpm="${wazuh_agent_url_aarch64_rpm}"
-            )
-            ;;
-    esac
+        # Build common args (used by all components)
+        build_args=(
+            -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
+            --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
+            --build-arg WAZUH_TAG_REVISION="${WAZUH_TAG_REVISION}"
+        )
 
-    # Execute build
-    echo "Building ${WAZUH_COMPONENT} image..."
-    $build_cmd "${build_args[@]}" ${WAZUH_COMPONENT}/ || clean 1
+        # Add component-specific args
+        case "${component}" in
+            wazuh-indexer)
+                build_args+=(
+                    --build-arg wazuh_indexer_url_amd64_rpm="${wazuh_indexer_url_x86_64_rpm}"
+                    --build-arg wazuh_indexer_url_arm64_rpm="${wazuh_indexer_url_aarch64_rpm}"
+                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
+                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
+                )
+                ;;
+            wazuh-manager)
+                build_args+=(
+                    --build-arg wazuh_manager_url_amd64_rpm="${wazuh_manager_url_x86_64_rpm}"
+                    --build-arg wazuh_manager_url_arm64_rpm="${wazuh_manager_url_aarch64_rpm}"
+                )
+                ;;
+            wazuh-dashboard)
+                build_args+=(
+                    --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
+                    --build-arg wazuh_dashboard_url_amd64_rpm="${wazuh_dashboard_url_x86_64_rpm}"
+                    --build-arg wazuh_dashboard_url_arm64_rpm="${wazuh_dashboard_url_aarch64_rpm}"
+                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
+                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
+                )
+                ;;
+            wazuh-agent)
+                build_args+=(
+                    --build-arg wazuh_agent_url_amd64_rpm="${wazuh_agent_url_x86_64_rpm}"
+                    --build-arg wazuh_agent_url_arm64_rpm="${wazuh_agent_url_aarch64_rpm}"
+                )
+                ;;
+        esac
 
-    echo "Image built successfully!"
+        # Execute build
+        $build_cmd "${build_args[@]}" ${component}/ || clean 1
+        echo "${component} image built successfully!"
+    done
+
+    echo ""
+    echo "Image build process completed!"
 
     return 0
 }
