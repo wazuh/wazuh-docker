@@ -70,7 +70,11 @@ build() {
             IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
         fi
     else
-        IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
+        if  [ "${WAZUH_TAG_REFERENCE}" ];then
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_TAG_REFERENCE}"
+        else
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
+        fi
     fi
 
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
