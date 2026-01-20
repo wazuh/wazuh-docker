@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add IMAGE_TAG stage reference ([#2178](https://github.com/wazuh/wazuh-docker/pull/2178))
 - Delete Wazuh agent configuration files ([#2173](https://github.com/wazuh/wazuh-docker/pull/2173))
 - Modify run_as parameter value - main ([#2158](https://github.com/wazuh/wazuh-docker/pull/2158))
 - Change macOS and Windows deployment documentation ([#2150](https://github.com/wazuh/wazuh-docker/issues/2150))
