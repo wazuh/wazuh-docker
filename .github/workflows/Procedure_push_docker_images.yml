@@ -14,7 +14,7 @@ on:
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
-        required: true
+        required: false
       revision:
         description: 'Package revision'
         default: '1'
@@ -46,7 +46,7 @@ on:
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
-        required: true
+        required: false
         type: string
       revision:
         description: 'Package revision'
