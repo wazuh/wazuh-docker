@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Allow building separate targets ([#2177](https://github.com/wazuh/wazuh-docker/pull/2177))
 - Add developement option when tag name is only version without stage ([#2179](https://github.com/wazuh/wazuh-docker/pull/2179))
 - Add IMAGE_TAG stage reference ([#2178](https://github.com/wazuh/wazuh-docker/pull/2178))
 - Delete Wazuh agent configuration files ([#2173](https://github.com/wazuh/wazuh-docker/pull/2173))
