@@ -60,12 +60,12 @@ build() {
             curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
         fi
     fi
-    
+
     awk -F':' '{name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
-    
+
     if  [ "${WAZUH_DEV_STAGE}" ];then
         if  [ "${WAZUH_TAG_REFERENCE}" ];then
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}-${WAZUH_TAG_REFERENCE}"   
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}-${WAZUH_TAG_REFERENCE}"
         else
             IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
         fi
