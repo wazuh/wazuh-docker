@@ -132,31 +132,31 @@ build() {
         case "${component}" in
             wazuh-indexer)
                 build_args+=(
-                    --build-arg wazuh_indexer_url_amd64_rpm="${wazuh_indexer_url_x86_64_rpm}"
-                    --build-arg wazuh_indexer_url_arm64_rpm="${wazuh_indexer_url_aarch64_rpm}"
+                    --build-arg wazuh_indexer_amd64_rpm="${wazuh_indexer_amd64_rpm}"
+                    --build-arg wazuh_indexer_arm64_rpm="${wazuh_indexer_arm64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-manager)
                 build_args+=(
-                    --build-arg wazuh_manager_url_amd64_rpm="${wazuh_manager_url_x86_64_rpm}"
-                    --build-arg wazuh_manager_url_arm64_rpm="${wazuh_manager_url_aarch64_rpm}"
+                    --build-arg wazuh_manager_amd64_rpm="${wazuh_manager_amd64_rpm}"
+                    --build-arg wazuh_manager_arm64_rpm="${wazuh_manager_arm64_rpm}"
                 )
                 ;;
             wazuh-dashboard)
                 build_args+=(
                     --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
-                    --build-arg wazuh_dashboard_url_amd64_rpm="${wazuh_dashboard_url_x86_64_rpm}"
-                    --build-arg wazuh_dashboard_url_arm64_rpm="${wazuh_dashboard_url_aarch64_rpm}"
+                    --build-arg wazuh_dashboard_amd64_rpm="${wazuh_dashboard_amd64_rpm}"
+                    --build-arg wazuh_dashboard_arm64_rpm="${wazuh_dashboard_arm64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-agent)
                 build_args+=(
-                    --build-arg wazuh_agent_url_amd64_rpm="${wazuh_agent_url_x86_64_rpm}"
-                    --build-arg wazuh_agent_url_arm64_rpm="${wazuh_agent_url_aarch64_rpm}"
+                    --build-arg wazuh_agent_amd64_rpm="${wazuh_agent_amd64_rpm}"
+                    --build-arg wazuh_agent_arm64_rpm="${wazuh_agent_arm64_rpm}"
                 )
                 ;;
         esac
