@@ -288,9 +288,6 @@ jobs:
       with:
         ref: ${{ inputs.docker_reference }}
 
-    - name: free disk space
-      uses: ./.github/free-disk-space
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
