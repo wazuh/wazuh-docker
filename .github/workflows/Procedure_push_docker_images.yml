@@ -347,13 +347,13 @@ jobs:
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -ref "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
           fi
         else
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -ref "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
           fi
