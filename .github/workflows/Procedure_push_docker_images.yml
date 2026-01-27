@@ -20,10 +20,10 @@ on:
         description: 'Package revision'
         default: '1'
         required: true
-      reference:
-        description: 'Dev reference'
+      commit_list:
+        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
         type: string
-        default: latest
+        default: '["latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -54,10 +54,10 @@ on:
         default: '1'
         required: true
         type: string
-      reference:
-        description: 'Dev reference'
+      commit_list:
+        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
         type: string
-        default: latest
+        default: '["latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -78,6 +78,7 @@ jobs:
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
+      COMMIT_LIST: ${{ steps.compute-outputs.outputs.COMMIT_LIST }}
 
     steps:
     - name: Print inputs
@@ -96,7 +97,7 @@ jobs:
         echo "* products: ${{ inputs.products }}"
         echo "* revision: ${{ inputs.revision }}"
         echo "* dev: ${{ inputs.dev }}"
-        echo "* dev reference: ${{ inputs.reference }}"
+        echo "* commit_list: ${{ inputs.commit_list }}"
         echo "---------------------------------------------"
 
     - name: Set up variables
@@ -117,6 +118,15 @@ jobs:
         else
           echo "WAZUH_COMPONENTS=[\"wazuh-manager\",\"wazuh-dashboard\",\"wazuh-indexer\",\"wazuh-agent\"]" >> $GITHUB_OUTPUT
         fi
+
+        # Set REVISIONS
+        if [[ "${{ inputs.commit_list }}" != "null" && "${{ inputs.commit_list }}" != "" ]]; then
+          COMMIT_LIST='${{ inputs.commit_list }}'
+        else
+          COMMIT_LIST='["latest", "latest", "latest", "latest"]'
+        fi
+        echo "COMMIT_LIST=$COMMIT_LIST" >> $GITHUB_OUTPUT
+        echo "Revision list (indexer, manager, dashboard, agent): $COMMIT_LIST"
 
   package-urls:
     name: generate package urls
@@ -164,7 +174,7 @@ jobs:
           WAZUH_VERSION_RAW="${{ inputs.image_tag }}"
           WAZUH_VERSION="${WAZUH_VERSION_RAW%%-*}"
           WAZUH_MAJOR="${WAZUH_VERSION%%.*}"
-          REFERENCE="${{ inputs.reference }}"
+          COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
 
           OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
           PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
@@ -173,6 +183,12 @@ jobs:
 
           : > "$OUTPUT_FILE"
           : > "$PRESIGNED_OUTPUT_FILE"
+
+          # Extract revisions using jq
+          INDEXER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[0]')
+          MANAGER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[1]')
+          DASHBOARD_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[2]')
+          AGENT_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[3]')
 
           # Verify if the input file exists
           if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
@@ -194,10 +210,10 @@ jobs:
             line=${line//\$\{\{ env.WAZUH_VERSION \}\}/$WAZUH_VERSION}
 
             # Replace component revisions
-            line=${line//\$\{\{ env.INDEXER_REVISION \}\}/$REFERENCE}
-            line=${line//\$\{\{ env.MANAGER_REVISION \}\}/$REFERENCE}
-            line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/$REFERENCE}
-            line=${line//\$\{\{ env.AGENT_REVISION \}\}/$REFERENCE}
+            line=${line//\$\{\{ env.INDEXER_REVISION \}\}/$INDEXER_COMMIT}
+            line=${line//\$\{\{ env.MANAGER_REVISION \}\}/$MANAGER_COMMIT}
+            line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/$DASHBOARD_COMMIT}
+            line=${line//\$\{\{ env.AGENT_REVISION \}\}/$AGENT_COMMIT}
 
             # Append the processed line to the output file
             echo "$line" >> "$OUTPUT_FILE"
@@ -321,6 +337,7 @@ jobs:
 
     - name: Build Wazuh images
       run: |
+        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
           IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
           if [ -z "${tokens[1]}" ]; then
@@ -330,13 +347,13 @@ jobs:
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }} -c ${{ matrix.wazuh_component }}
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -ref "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
           fi
         else
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -ref ${{ inputs.reference }} -c ${{ matrix.wazuh_component }}
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -ref "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
           fi
