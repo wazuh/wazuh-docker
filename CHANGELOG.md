@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Backport from 5.0.0: Backport from 5.0.0: Allow building separate targets #2177 ([#2184](https://github.com/wazuh/wazuh-docker/pull/2184))
 
 ### Fixed
 
