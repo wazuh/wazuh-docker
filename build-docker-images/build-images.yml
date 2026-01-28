@@ -6,8 +6,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-        wazuh_manager_url_amd64_rpm: ${wazuh_manager_url_x86_64_rpm}
-        wazuh_manager_url_arm64_rpm: ${wazuh_manager_url_aarch64_rpm}
+        wazuh_manager_amd64_rpm: ${wazuh_manager_amd64_rpm}
+        wazuh_manager_arm64_rpm: ${wazuh_manager_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}
         wazuh_config_yml: ${wazuh_config_yml}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-manager:${IMAGE_TAG}
@@ -37,8 +37,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-        wazuh_agent_url_amd64_rpm: ${wazuh_agent_url_x86_64_rpm}
-        wazuh_agent_url_arm64_rpm: ${wazuh_agent_url_aarch64_rpm}
+        wazuh_agent_amd64_rpm: ${wazuh_agent_amd64_rpm}
+        wazuh_agent_arm64_rpm: ${wazuh_agent_arm64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-agent:${IMAGE_TAG}
     hostname: wazuh.agent
     restart: always
@@ -49,8 +49,8 @@ services:
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-        wazuh_indexer_url_amd64_rpm: ${wazuh_indexer_url_x86_64_rpm}
-        wazuh_indexer_url_arm64_rpm: ${wazuh_indexer_url_aarch64_rpm}
+        wazuh_indexer_amd64_rpm: ${wazuh_indexer_amd64_rpm}
+        wazuh_indexer_arm64_rpm: ${wazuh_indexer_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}
         wazuh_config_yml: ${wazuh_config_yml}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-indexer:${IMAGE_TAG}
@@ -75,8 +75,8 @@ services:
         WAZUH_VERSION: ${WAZUH_VERSION}
         WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         WAZUH_UI_REVISION: ${WAZUH_UI_REVISION}
-        wazuh_dashboard_url_amd64_rpm: ${wazuh_dashboard_url_x86_64_rpm}
-        wazuh_dashboard_url_arm64_rpm: ${wazuh_dashboard_url_aarch64_rpm}
+        wazuh_dashboard_amd64_rpm: ${wazuh_dashboard_amd64_rpm}
+        wazuh_dashboard_arm64_rpm: ${wazuh_dashboard_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}
         wazuh_config_yml: ${wazuh_config_yml}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-dashboard:${IMAGE_TAG}

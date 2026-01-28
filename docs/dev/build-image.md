@@ -31,7 +31,7 @@ Usage: build-images.sh [OPTIONS]
 
     -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default.
     -r, --revision <rev>         [Optional] Package revision. By default 1
-    -ref, --reference <ref>      [Optional] Set the Wazuh reference to build development images. By default, the latest stable release.
+    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). By default, using the latest release: ['latest', 'latest', 'latest', 'latest']
     -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.
     -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 5.0.0.
     -m, --multiarch              [Optional] Enable multi-architecture builds.

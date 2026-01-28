@@ -6,12 +6,12 @@ ARG WAZUH_TAG_REVISION
 ARG WAZUH_UI_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
-ARG wazuh_dashboard_url_amd64_rpm
-ARG wazuh_dashboard_url_arm64_rpm
+ARG wazuh_dashboard_amd64_rpm
+ARG wazuh_dashboard_arm64_rpm
 ARG wazuh_config_yml
 
 # Update and install dependencies
-RUN URL_VAR="wazuh_dashboard_url_${TARGETARCH}_rpm" && \
+RUN URL_VAR="wazuh_dashboard_${TARGETARCH}_rpm" && \
     dashboard_url="${!URL_VAR}" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
