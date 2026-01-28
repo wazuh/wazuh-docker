@@ -19,7 +19,7 @@ WAZUH_REGISTRY=docker.io
 WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-WAZUH_COMPONENTS_COMMIT_LIST=""
+WAZUH_COMPONENTS_COMMIT_LIST='["latest", "latest", "latest", "latest"]'
 
 # -----------------------------------------------------------------------------
 
@@ -76,7 +76,11 @@ build() {
         echo "  - Manager: ${MANAGER_COMMIT}"
         echo "  - Dashboard: ${DASHBOARD_COMMIT}"
         echo "  - Agent: ${AGENT_COMMIT}"
+    elif [ -n "${WAZUH_DEV_STAGE}" ]; then
+        echo "Error: Not found WAZUH_COMPONENTS_COMMIT_LIST." >&2
+        clean 1
     fi
+
 
     # Function to get component-specific commit reference
     get_component_commit() {
@@ -148,20 +152,7 @@ build() {
         COMPONENT_COMMIT=$(get_component_commit "${component}")
 
         # Generate component-specific IMAGE_TAG
-        if [ "${WAZUH_DEV_STAGE}" ]; then
-            if [ -n "${COMPONENT_COMMIT}" ]; then
-                IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}-${COMPONENT_COMMIT}"
-            else
-                IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
-            fi
-        else
-            if [ -n "${COMPONENT_COMMIT}" ]; then
-                IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${COMPONENT_COMMIT}"
-            else
-                IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
-            fi
-        fi
-
+        IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}-${COMPONENT_COMMIT}}"
         echo "Using IMAGE_TAG: ${IMAGE_TAG} for ${component}"
         export IMAGE_TAG="$IMAGE_TAG"
 
@@ -224,7 +215,7 @@ help() {
     echo
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
-    echo "    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). By default, using the latest release: ['latest', 'latest', 'latest', 'latest']"
+    echo "    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). Only used for development builds. By default, using the latest release: ['latest', 'latest', 'latest', 'latest']"
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
