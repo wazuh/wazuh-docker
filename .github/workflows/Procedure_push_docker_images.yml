@@ -137,11 +137,6 @@ jobs:
       ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.docker_reference }}
-
       - name: Configure AWS credentials
         if: ${{ inputs.dev == true }}
         uses: aws-actions/configure-aws-credentials@v4
