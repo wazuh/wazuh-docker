@@ -19,7 +19,7 @@ WAZUH_REGISTRY=docker.io
 WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-WAZUH_TAG_REFERENCE=""
+WAZUH_COMPONENTS_COMMIT_LIST='["latest", "latest", "latest", "latest"]'
 
 # -----------------------------------------------------------------------------
 
@@ -63,26 +63,53 @@ build() {
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
 
-    if  [ "${WAZUH_DEV_STAGE}" ];then
-        if  [ "${WAZUH_TAG_REFERENCE}" ];then
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}-${WAZUH_TAG_REFERENCE}"
-        else
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
-        fi
-    else
-        if  [ "${WAZUH_TAG_REFERENCE}" ];then
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_TAG_REFERENCE}"
-        else
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
-        fi
+    # Parse component commit list if provided
+    if [ -n "${WAZUH_COMPONENTS_COMMIT_LIST}" ]; then
+        # Extract individual commits from JSON array format: ["indexer", "manager", "dashboard", "agent"]
+        INDEXER_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '1p' | tr -d '"')
+        MANAGER_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '2p' | tr -d '"')
+        DASHBOARD_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '3p' | tr -d '"')
+        AGENT_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '4p' | tr -d '"')
+
+        echo "Component commits parsed:"
+        echo "  - Indexer: ${INDEXER_COMMIT}"
+        echo "  - Manager: ${MANAGER_COMMIT}"
+        echo "  - Dashboard: ${DASHBOARD_COMMIT}"
+        echo "  - Agent: ${AGENT_COMMIT}"
+    elif [ -n "${WAZUH_DEV_STAGE}" ]; then
+        echo "Error: Not found WAZUH_COMPONENTS_COMMIT_LIST." >&2
+        clean 1
     fi
 
+
+    # Function to get component-specific commit reference
+    get_component_commit() {
+        local component=$1
+        case "${component}" in
+            wazuh-indexer)
+                echo "${INDEXER_COMMIT}"
+                ;;
+            wazuh-manager)
+                echo "${MANAGER_COMMIT}"
+                ;;
+            wazuh-dashboard)
+                echo "${DASHBOARD_COMMIT}"
+                ;;
+            wazuh-agent)
+                echo "${AGENT_COMMIT}"
+                ;;
+            *)
+                echo ""
+                ;;
+        esac
+    }
+
+    # Global env file (without IMAGE_TAG - will be component-specific)
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
     echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> ../.env
     echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> ../.env
     echo WAZUH_REGISTRY=$WAZUH_REGISTRY >> ../.env
-    echo IMAGE_TAG=$IMAGE_TAG >> ../.env
 
     set -a
     source ../.env
@@ -121,6 +148,14 @@ build() {
     for component in "${components_to_build[@]}"; do
         echo "Building ${component} image..."
 
+        # Get component-specific commit reference
+        COMPONENT_COMMIT=$(get_component_commit "${component}")
+
+        # Generate component-specific IMAGE_TAG
+        IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}-${COMPONENT_COMMIT}}"
+        echo "Using IMAGE_TAG: ${IMAGE_TAG} for ${component}"
+        export IMAGE_TAG="$IMAGE_TAG"
+
         # Build common args (used by all components)
         build_args=(
             -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
@@ -132,31 +167,31 @@ build() {
         case "${component}" in
             wazuh-indexer)
                 build_args+=(
-                    --build-arg wazuh_indexer_url_amd64_rpm="${wazuh_indexer_url_x86_64_rpm}"
-                    --build-arg wazuh_indexer_url_arm64_rpm="${wazuh_indexer_url_aarch64_rpm}"
+                    --build-arg wazuh_indexer_amd64_rpm="${wazuh_indexer_amd64_rpm}"
+                    --build-arg wazuh_indexer_arm64_rpm="${wazuh_indexer_arm64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-manager)
                 build_args+=(
-                    --build-arg wazuh_manager_url_amd64_rpm="${wazuh_manager_url_x86_64_rpm}"
-                    --build-arg wazuh_manager_url_arm64_rpm="${wazuh_manager_url_aarch64_rpm}"
+                    --build-arg wazuh_manager_amd64_rpm="${wazuh_manager_amd64_rpm}"
+                    --build-arg wazuh_manager_arm64_rpm="${wazuh_manager_arm64_rpm}"
                 )
                 ;;
             wazuh-dashboard)
                 build_args+=(
                     --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
-                    --build-arg wazuh_dashboard_url_amd64_rpm="${wazuh_dashboard_url_x86_64_rpm}"
-                    --build-arg wazuh_dashboard_url_arm64_rpm="${wazuh_dashboard_url_aarch64_rpm}"
+                    --build-arg wazuh_dashboard_amd64_rpm="${wazuh_dashboard_amd64_rpm}"
+                    --build-arg wazuh_dashboard_arm64_rpm="${wazuh_dashboard_arm64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-agent)
                 build_args+=(
-                    --build-arg wazuh_agent_url_amd64_rpm="${wazuh_agent_url_x86_64_rpm}"
-                    --build-arg wazuh_agent_url_arm64_rpm="${wazuh_agent_url_aarch64_rpm}"
+                    --build-arg wazuh_agent_amd64_rpm="${wazuh_agent_amd64_rpm}"
+                    --build-arg wazuh_agent_arm64_rpm="${wazuh_agent_arm64_rpm}"
                 )
                 ;;
         esac
@@ -180,7 +215,7 @@ help() {
     echo
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
-    echo "    -ref, --reference <ref>      [Optional] Set the Wazuh reference to build development images. By default, the latest stable release."
+    echo "    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). Only used for development builds. By default, using the latest release: ['latest', 'latest', 'latest', 'latest']"
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
@@ -219,9 +254,9 @@ main() {
                 help 1
             fi
             ;;
-        "-ref"|"--reference")
+        "-refs"|"--references")
             if [ -n "${2}" ]; then
-                WAZUH_TAG_REFERENCE="${2}"
+                WAZUH_COMPONENTS_COMMIT_LIST="${2}"
                 shift 2
             else
                 help 1
