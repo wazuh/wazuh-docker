@@ -6,16 +6,11 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.14.4'
+        default: '5.0.0'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
         required: true
-      filebeat_module_version:
-        description: 'Filebeat module version'
-        default: '0.5'
-        required: true
-        type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
@@ -25,6 +20,10 @@ on:
         description: 'Package revision'
         default: '1'
         required: true
+      commit_list:
+        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
+        type: string
+        default: '["latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -38,17 +37,17 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '4.14.4'
+        default: '5.0.0'
         required: true
         type: string
       docker_reference:
         description: 'wazuh-docker reference'
         required: false
         type: string
-      filebeat_module_version:
-        description: 'Filebeat module version'
-        default: '0.5'
-        required: true
+      products:
+        description: 'Comma-separated list of the image names to build and push'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
+        required: false
         type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
@@ -60,6 +59,10 @@ on:
         default: '1'
         required: true
         type: string
+      commit_list:
+        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
+        type: string
+        default: '["latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -70,19 +73,17 @@ on:
         default: false
         required: false
 
+permissions:
+      id-token: write
+      contents: read
+
 jobs:
   setup:
     runs-on: ubuntu-22.04
 
-    permissions:
-      id-token: write
-      contents: read
-
-    env:
-      IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
-      IMAGE_TAG: ${{ inputs.image_tag }}
-      FILEBEAT_MODULE_VERSION: ${{ inputs.filebeat_module_version }}
-      REVISION: ${{ inputs.revision }}
+    outputs:
+      WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
+      COMMIT_LIST: ${{ steps.compute-outputs.outputs.COMMIT_LIST }}
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
@@ -101,10 +102,10 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
-        echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
         echo "* products: ${{ inputs.products }}"
         echo "* revision: ${{ inputs.revision }}"
         echo "* dev: ${{ inputs.dev }}"
+        echo "* commit_list: ${{ inputs.commit_list }}"
         echo "---------------------------------------------"
 
     - name: Set up variables
@@ -126,15 +127,169 @@ jobs:
           echo "WAZUH_COMPONENTS=[\"wazuh-manager\",\"wazuh-dashboard\",\"wazuh-indexer\",\"wazuh-agent\"]" >> $GITHUB_OUTPUT
         fi
 
+        # Set REVISIONS
+        if [[ "${{ inputs.commit_list }}" != "null" && "${{ inputs.commit_list }}" != "" ]]; then
+          COMMIT_LIST='${{ inputs.commit_list }}'
+        else
+          COMMIT_LIST='["latest", "latest", "latest", "latest"]'
+        fi
+        echo "COMMIT_LIST=$COMMIT_LIST" >> $GITHUB_OUTPUT
+        echo "Revision list (indexer, manager, dashboard, agent): $COMMIT_LIST"
+
+  package-urls:
+    name: generate package urls
+    runs-on: ubuntu-22.04
+    needs: setup
+
+    env:
+      ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
+
+    steps:
+      - name: Configure AWS credentials
+        if: ${{ inputs.dev == true }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download S3 package URIs file (if applicable)
+        if: ${{ inputs.dev == true }}
+        run: |
+          mkdir -p "$(dirname "$ARTIFACT_URLS_FILE_TEMP")"
+
+          # Download the S3 package URIs file
+          S3_BUCKET="${{ secrets.ARTIFACTS_S3_BUCKET }}"
+          S3_KEY="deployment/artifact_urls.yml"
+          aws s3 cp "s3://$S3_BUCKET/$S3_KEY" "$ARTIFACT_URLS_FILE_TEMP" --region us-west-1
+
+          # Verify the file was downloaded
+          if [ -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
+            echo "S3 package URIs file downloaded successfully."
+          else
+            echo "Failed to download S3 package URIs file." >&2
+            exit 1
+          fi
+
+      - name: Generate the variables file (signing each package URI)
+        if: ${{ inputs.dev == true }}
+        run: |
+          # Define necessary variables
+          WAZUH_VERSION_RAW="${{ inputs.image_tag }}"
+          WAZUH_VERSION="${WAZUH_VERSION_RAW%%-*}"
+          WAZUH_MAJOR="${WAZUH_VERSION%%.*}"
+          COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
+
+          OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
+          PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
+
+          mkdir -p "$(dirname "$OUTPUT_FILE")"
+
+          : > "$OUTPUT_FILE"
+          : > "$PRESIGNED_OUTPUT_FILE"
+
+          # Extract revisions using jq
+          INDEXER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[0]')
+          MANAGER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[1]')
+          DASHBOARD_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[2]')
+          AGENT_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[3]')
+
+          # Verify if the input file exists
+          if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
+            echo "The input file $ARTIFACT_URLS_FILE_TEMP does not exist." >&2
+            exit 1
+          fi
+
+          # Process the file line by line (replacing ocurrences)
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+              echo "$line" >> "$OUTPUT_FILE"
+              continue
+            fi
+
+            # Replace variables with their actual values
+            line=${line//\$\{\{ vars.AWS_S3_BUCKET_DEV \}\}/${{ vars.AWS_S3_BUCKET_DEV }}}
+            line=${line//\$\{\{ env.MAJOR \}\}/$WAZUH_MAJOR}
+            line=${line//\$\{\{ env.WAZUH_VERSION \}\}/$WAZUH_VERSION}
+
+            # Replace component revisions
+            line=${line//\$\{\{ env.INDEXER_REVISION \}\}/$INDEXER_COMMIT}
+            line=${line//\$\{\{ env.MANAGER_REVISION \}\}/$MANAGER_COMMIT}
+            line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/$DASHBOARD_COMMIT}
+            line=${line//\$\{\{ env.AGENT_REVISION \}\}/$AGENT_COMMIT}
+
+            # Append the processed line to the output file
+            echo "$line" >> "$OUTPUT_FILE"
+          done < "$ARTIFACT_URLS_FILE_TEMP"
+
+          # Verify the output file
+          if [ -f "$OUTPUT_FILE" ]; then
+            echo "The downloaded file artifact_urls.yml was successfully processed at $OUTPUT_FILE."
+          else
+            echo "Failed to create processed artifact_urls.yml file." >&2
+            exit 1
+          fi
+
+          # Generate the presigned URLs for each package
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+              echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
+              continue
+            fi
+
+            # Extract both package_name and package_s3_uri from the line
+            if [[ "$line" =~ ^([a-zA-Z0-9_]+):[[:space:]]*\"?s3://([^\"[:space:]]+) ]]; then
+              PACKAGE_NAME="${BASH_REMATCH[1]}"
+              PACKAGE_S3_URI="s3://${BASH_REMATCH[2]}"
+
+              # Check if the object exists in S3
+              BUCKET_NAME=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 3)
+              OBJ_KEY=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 4-)
+              if ! aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJ_KEY" --region us-west-1 > /dev/null 2>&1; then
+                echo "Object $PACKAGE_S3_URI does not exist. Skipping..." >&2
+                continue
+              fi
+
+              # Generate a pre-signed URL for the S3 URI
+              echo "Generating pre-signed URL for $PACKAGE_NAME..."
+              PRESIGNED_URL=$(aws s3 presign "$PACKAGE_S3_URI" --expires-in 43200 --region us-west-1)
+              presigned_url_line="$PACKAGE_NAME: \"$PRESIGNED_URL\""
+
+              # Append the processed line to the output file
+              echo "$presigned_url_line" >> "$PRESIGNED_OUTPUT_FILE"
+            else
+              echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
+
+              echo "Skipping line for presigning (no S3 URI found):"
+              echo "$line"
+            fi
+          done < "$OUTPUT_FILE"
+
+          # Verify the presigned urls file
+          if [ -f "$PRESIGNED_OUTPUT_FILE" ]; then
+            echo "Presigned URLs file created successfully at $PRESIGNED_OUTPUT_FILE."
+          else
+            echo "Failed to create presigned artifact_urls.yml file." >&2
+            exit 1
+          fi
+
+          # Also store the final file as the name expected by build-images.sh
+          cp "$PRESIGNED_OUTPUT_FILE" artifact_urls.yml
+
+      - name: Save presigned URLs file to artifact
+        if: ${{ inputs.dev == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: presigned-artifact-urls-${{ github.run_id }}
+          path: artifact_urls.yml
+
   build-and-push:
     runs-on: ubuntu-22.04
 
-    permissions:
-      id-token: write
-      contents: read
-
     needs:
       - setup
+      - package-urls
 
     strategy:
       fail-fast: false # all jobs will run even if one fails
@@ -151,9 +306,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.docker_reference }}
-
-    - name: free disk space
-      uses: ./.github/free-disk-space
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -179,12 +331,16 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Download artifact_urls.yml (dev)
+      if: ${{ inputs.dev == true }}
+      uses: actions/download-artifact@v4
+      with:
+        name: presigned-artifact-urls-${{ github.run_id }}
+        path: ./build-docker-images
+
     - name: Build Wazuh images
       run: |
-        IMAGE_TAG="${{ inputs.image_tag }}"
-        FILEBEAT_MODULE_VERSION=${{ inputs.filebeat_module_version }}
-        REVISION=${{ inputs.revision }}
-
+        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
           IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
           if [ -z "${tokens[1]}" ]; then
@@ -193,11 +349,18 @@ jobs:
           fi
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
-          ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+          if [ "${{ inputs.dev }}" = true ]; then
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+          else
+            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+          fi
         else
-          ./build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+          if [ "${{ inputs.dev }}" = true ]; then
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+          else
+            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+          fi
         fi
-
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
         ENV_FILE_PATH="../.env"
 

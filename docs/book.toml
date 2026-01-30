@@ -2,6 +2,5 @@
 title = "Wazuh Docker Documentation"
 description = "Technical documentation for Wazuh Docker deployment."
 authors = ["Victor Erenu"]
-multilingual = false
 src = "."
 language = "en"
