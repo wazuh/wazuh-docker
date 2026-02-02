@@ -40,7 +40,7 @@ jobs:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       docker_reference: ${{ github.head_ref }}
       revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
-      reference: "latest"
+      commit_list: '["latest", "latest", "latest", "latest"]'
       id: ${{ github.run_id }}
       dev: true
 
@@ -111,7 +111,7 @@ jobs:
 
     - name: Create single node certficates
       run: |
-        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool-${{ env.WAZUH_IMAGE_VERSION }}-latest.sh --expires-in 3600 --region us-west-1)
         curl -sL "$wazuh_certs_tool_url" -o ./wazuh-certs-tool.sh
         cat > config.yml <<EOF
         nodes:
@@ -351,7 +351,7 @@ jobs:
 
     - name: Create multi node certficates
       run: |
-        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool.sh --expires-in 3600 --region us-west-1)
+        wazuh_certs_tool_url=$(aws s3 presign s3://${{ vars.AWS_S3_BUCKET_DEV }}/development/wazuh/5.x/secondary/installation-assistant/${{ env.WAZUH_IMAGE_VERSION }}/wazuh-certs-tool-${{ env.WAZUH_IMAGE_VERSION }}-latest.sh --expires-in 3600 --region us-west-1)
         curl -sL "$wazuh_certs_tool_url" -o ./wazuh-certs-tool.sh
         cat > config.yml <<EOF
         nodes:

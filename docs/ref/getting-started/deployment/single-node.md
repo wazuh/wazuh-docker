@@ -21,8 +21,8 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 3.  Download the certificate creation script and `config.yml` file:
 
     ```bash
-    curl -sO https://packages.wazuh.com/5.0/wazuh-certs-tool.sh
-    curl -sO https://packages.wazuh.com/5.0/config.yml
+    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
+    curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
     ```
 
 4.  Edit the config.yml file with the configuration of the Wazuh components to be deployed
