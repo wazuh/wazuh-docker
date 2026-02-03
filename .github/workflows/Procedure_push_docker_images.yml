@@ -134,7 +134,7 @@ jobs:
     needs: setup
 
     env:
-      ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls_test.yml"
+      ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
 
     steps:
       - name: Configure AWS credentials
@@ -151,7 +151,7 @@ jobs:
 
           # Download the S3 package URIs file
           S3_BUCKET="${{ secrets.ARTIFACTS_S3_BUCKET }}"
-          S3_KEY="deployment/artifact_urls.yml"
+          S3_KEY="deployment/artifact_urls_test.yml"
           aws s3 cp "s3://$S3_BUCKET/$S3_KEY" "$ARTIFACT_URLS_FILE_TEMP" --region us-west-1
 
           # Verify the file was downloaded
