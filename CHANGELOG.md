@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add Wazuh version and revision into wazuh-certs-tool and config file ([#2195](https://github.com/wazuh/wazuh-docker/pull/2195))
 - Improve S3 artifact URLs handling ([#2183](https://github.com/wazuh/wazuh-docker/pull/2183))
 - Allow building separate targets ([#2177](https://github.com/wazuh/wazuh-docker/pull/2177))
 - Add developement option when tag name is only version without stage ([#2179](https://github.com/wazuh/wazuh-docker/pull/2179))
