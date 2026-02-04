@@ -209,6 +209,7 @@ jobs:
             line=${line//\$\{\{ env.MANAGER_REVISION \}\}/$MANAGER_COMMIT}
             line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/$DASHBOARD_COMMIT}
             line=${line//\$\{\{ env.AGENT_REVISION \}\}/$AGENT_COMMIT}
+            line=${line//\$\{\{ env.ASSISTANT_REVISION \}\}/latest}
 
             # Append the processed line to the output file
             echo "$line" >> "$OUTPUT_FILE"
