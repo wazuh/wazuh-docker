@@ -23,7 +23,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
+- Update indexer-certs-gen README.md for clarity on procedure ([#2132](https://github.com/wazuh/wazuh-docker/pull/2132))
+- Update certs generator image version to 0.0.4 ([#2130](https://github.com/wazuh/wazuh-docker/pull/2130))
 
 ### Changed
 
