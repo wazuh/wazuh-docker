@@ -377,6 +377,19 @@ jobs:
         name: presigned-artifact-urls-${{ github.run_id }}
         path: ./build-docker-images
 
+    - name: Compute component reference (dev)
+      if: ${{ inputs.dev == true }}
+      run: |
+        COMPONENT='${{ matrix.wazuh_component }}'
+        WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
+        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
+
+        idx=$(jq -r --arg c "$COMPONENT" 'index($c)' <<<"$WAZUH_COMPONENTS")
+        ref=$(jq -r --argjson i "$idx" '.[ $i ]' <<<"$COMMIT_LIST")
+
+        echo "COMPONENT_REFS_JSON=[\"$ref\"]" >> "$GITHUB_ENV"
+        echo "Using component ref for $COMPONENT: $ref"
+
     - name: Build Wazuh images
       run: |
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
@@ -394,7 +407,7 @@ jobs:
               -d $DEV_STAGE \
               -rg $IMAGE_REGISTRY \
               -m \
-              -refs "${{ needs.setup.outputs.COMMIT_LIST }}" \
+              -refs "$COMPONENT_REFS_JSON" \
               -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh \
@@ -412,7 +425,7 @@ jobs:
               -r $REVISION \
               -rg $IMAGE_REGISTRY \
               -m \
-              -refs "${{ needs.setup.outputs.COMMIT_LIST }}" \
+              -refs "$COMPONENT_REFS_JSON" \
               -c ${{ matrix.wazuh_component }}
           else
             ./build-images.sh \
