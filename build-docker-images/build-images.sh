@@ -19,7 +19,7 @@ WAZUH_REGISTRY=docker.io
 WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
-WAZUH_COMPONENTS_COMMIT_LIST='["latest", "latest", "latest", "latest"]'
+WAZUH_COMPONENTS_COMMIT_LIST=''
 
 # -----------------------------------------------------------------------------
 
@@ -63,22 +63,63 @@ build() {
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
 
-    # Parse component commit list if provided
-    if [ -n "${WAZUH_COMPONENTS_COMMIT_LIST}" ]; then
-        # Extract individual commits from JSON array format: ["indexer", "manager", "dashboard", "agent"]
-        INDEXER_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '1p' | tr -d '"')
-        MANAGER_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '2p' | tr -d '"')
-        DASHBOARD_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '3p' | tr -d '"')
-        AGENT_COMMIT=$(echo "${WAZUH_COMPONENTS_COMMIT_LIST}" | grep -o '"[^"]*"' | sed -n '4p' | tr -d '"')
+    # Set component commit references for development builds
+    if [ -n "${WAZUH_DEV_STAGE}" ]; then
+        if [ -z "${WAZUH_COMPONENTS_COMMIT_LIST}" ]; then
+            # Set default to 'latest' for all components if no specific references are provided
+            INDEXER_COMMIT="latest"
+            MANAGER_COMMIT="latest"
+            DASHBOARD_COMMIT="latest"
+            AGENT_COMMIT="latest"
+        else
+            if ! printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" \
+                | jq -e 'type=="array" and (all(.[]; type=="string"))' >/dev/null 2>&1; then
+                echo 'Error: --references must be a JSON array of strings, e.g. ["ref1","ref2","ref3","ref4"]' >&2
+                clean 1
+            fi
 
-        echo "Component commits parsed:"
-        echo "  - Indexer: ${INDEXER_COMMIT}"
-        echo "  - Manager: ${MANAGER_COMMIT}"
-        echo "  - Dashboard: ${DASHBOARD_COMMIT}"
-        echo "  - Agent: ${AGENT_COMMIT}"
-    elif [ -n "${WAZUH_DEV_STAGE}" ]; then
-        echo "Error: Not found WAZUH_COMPONENTS_COMMIT_LIST." >&2
-        clean 1
+            refs_count="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r 'length')"
+            if [ -z "${WAZUH_COMPONENT}" ]; then
+                # No specific component to be build: require exactly 4 items
+                if [ "${refs_count}" -ne 4 ]; then
+                    echo "Error: --references must contain exactly 4 items when no --component is specified." >&2
+                    clean 1
+                fi
+
+                # Set all component commits
+
+                INDEXER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                MANAGER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[1]')"
+                DASHBOARD_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[2]')"
+                AGENT_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[3]')"
+            else
+                # Specific component to be build: allow 1 (component-only)
+                if [ "${refs_count}" -ne 1 ]; then
+                    echo "Error: --references must contain exactly 1 item when --component is specified." >&2
+                    clean 1
+                fi
+
+                # Set specific component commit
+                case "${WAZUH_COMPONENT}" in
+                    wazuh-indexer)
+                        INDEXER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-manager)
+                        MANAGER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-dashboard)
+                        DASHBOARD_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-agent)
+                        AGENT_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    *)
+                        echo "Error: Unknown component '${WAZUH_COMPONENT}'" >&2
+                        clean 1
+                        ;;
+                esac
+            fi
+        fi
     fi
 
 
@@ -215,7 +256,7 @@ help() {
     echo
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
-    echo "    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). Only used for development builds. By default, using the latest release: ['latest', 'latest', 'latest', 'latest']"
+    echo "    -refs, --references <refs>   [Optional] [Only for Dev] JSON array of commit refs for components to be build (indexer, manager, dashboard, agent) in order. Defaults to latest."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
@@ -256,7 +297,8 @@ main() {
             ;;
         "-refs"|"--references")
             if [ -n "${2}" ]; then
-                WAZUH_COMPONENTS_COMMIT_LIST="${2}"
+                # Replace single quotes with double quotes to ensure it's valid JSON for jq processing
+                WAZUH_COMPONENTS_COMMIT_LIST="$(printf '%s' "${2}" | sed "s/'/\"/g")"
                 shift 2
             else
                 help 1
