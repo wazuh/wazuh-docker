@@ -89,7 +89,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │   │   ├── README.md
 	│   │   │   └── requirements.md
 	│   │   ├── glossary.md
-	│   │   ├── Introduction
+	│   │   ├── introduction
 	│   │   │   ├── compatibility.md
 	│   │   │   ├── description.md
 	│   │   │   └── README.md

@@ -12,8 +12,9 @@
 
 # Reference Manual
 
-- [Introduction](ref/Introduction/introduction.md)
-  - [Description](ref/Introduction/description.md)
+- [Introduction](ref/introduction/introduction.md)
+  - [Description](ref/introduction/description.md)
+  - [Compatibility](ref/introduction/compatibility.md)
 - [Getting Started](ref/getting-started/getting-started.md)
   - [Requirements](ref/getting-started/requirements.md)
   - [Deployment](ref/getting-started/deployment/deployment.md)
@@ -23,5 +24,10 @@
 - [Configuration](ref/configuration/configuration.md)
   - [Environment Variabless](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
+  - [Change passwords](ref/configuration/change-passwords.md)
 - [Upgrade](ref/upgrade.md)
+- [Uninstall](ref/uninstall.md)
+- [Backup and restore](ref/backup-and-restore.md)
+- [Security](ref/security.md)
+- [Performance](ref/performance.md)
 - [Glossary](ref/glossary.md)
