@@ -2,5 +2,5 @@
 
 For backup and restore, refer to the documentation for each component:
 
-- [Wazuh central components](https://documentation.wazuh.com/current/migration-guide/index.html)
-- [Wazuh agent](https://documentation.wazuh.com/current/migration-guide/index.html)
+- [Wazuh manager](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/ref/backup-restore.md)
+- [Wazuh agent](https://github.com/wazuh/wazuh-agent/blob/v5.0.0/docs/ref/backup-restore.md)
