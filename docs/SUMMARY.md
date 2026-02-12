@@ -24,7 +24,7 @@
 - [Configuration](ref/configuration/configuration.md)
   - [Environment Variabless](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
-  - [Change passwords](ref/configuration/change-passwords.md)
+  - [Persistence](ref/configuration/persistence.md)
 - [Upgrade](ref/upgrade.md)
 - [Uninstall](ref/uninstall.md)
 - [Backup and restore](ref/backup-and-restore.md)
