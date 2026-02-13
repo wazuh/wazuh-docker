@@ -4,7 +4,7 @@
 # Variables
 source /permanent_data.env
 
-WAZUH_INSTALL_PATH=/var/ossec
+WAZUH_INSTALL_PATH=/var/wazuh-manager
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 
 ##############################################################################
@@ -119,7 +119,7 @@ remove_data_files() {
 # Create certificates: Manager
 ##############################################################################
 
-create_ossec_key_cert() {
+create_wazuh_key_cert() {
   print "Creating wazuh-authd key and cert"
   exec_cmd "openssl genrsa -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.key 4096"
   exec_cmd "openssl req -new -x509 -key ${WAZUH_INSTALL_PATH}/etc/sslmanager.key -out ${WAZUH_INSTALL_PATH}/etc/sslmanager.cert -days 3650 -subj /CN=${HOSTNAME}/"
@@ -129,9 +129,9 @@ create_ossec_key_cert() {
 # Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
 # destination files permissions
 #
-# For example, to mount the file /var/ossec/data/etc/ossec.conf, mount it at
-# $WAZUH_CONFIG_MOUNT/etc/ossec.conf in your container and this code will
-# replace the ossec.conf file in /var/ossec/data/etc with yours.
+# For example, to mount the file /var/wazuh-manager/data/etc/wazuh-manager.conf, mount it at
+# $WAZUH_CONFIG_MOUNT/etc/wazuh-manager.conf in your container and this code will
+# replace the wazuh-manager.conf file in /var/wazuh-manager/data/etc with yours.
 ##############################################################################
 
 mount_files() {
@@ -150,23 +150,23 @@ mount_files() {
 # container start.
 #
 # To use this:
-# 1. Create your own ossec.conf file
-# 2. In your ossec.conf file, set to_be_replaced_by_hostname as your node_name
-# 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
+# 1. Create your own wazuh-manager.conf file
+# 2. In your wazuh-manager.conf file, set to_be_replaced_by_hostname as your node_name
+# 3. Mount your custom wazuh-manager.conf file at $WAZUH_CONFIG_MOUNT/etc/wazuh-manager.conf
 ##############################################################################
 
 set_custom_hostname() {
-  sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf
 }
 
-function_configure_ossec_conf() {
-OSSEC_CONF="${WAZUH_INSTALL_PATH}/etc/ossec.conf"
+function_configure_wazuh_manager_conf() {
+WAZUH_MANAGER_CONF="${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf"
 
 # --------------------------
-# Defaults based on OSSEC_CONF
+# Defaults based on WAZUH_MANAGER_CONF
 # --------------------------
 if [[ -z "$WAZUH_CLUSTER_KEY" ]]; then
-    WAZUH_CLUSTER_KEY=$(sed -n '/<cluster>/,/<\/cluster>/s/.*<key>\(.*\)<\/key>.*/\1/p' "$OSSEC_CONF" | head -n1)
+    WAZUH_CLUSTER_KEY=$(sed -n '/<cluster>/,/<\/cluster>/s/.*<key>\(.*\)<\/key>.*/\1/p' "$WAZUH_MANAGER_CONF" | head -n1)
 fi
 
 # Node type logic
@@ -193,7 +193,7 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
         echo "    </hosts>"
     } > "$TMP_HOSTS";
     sed -i -e '/<indexer>/,/<\/indexer>/{ /<hosts>/,/<\/hosts>/{ /<hosts>/r '"$TMP_HOSTS" \
-            -e 'd }}' "$OSSEC_CONF";
+            -e 'd }}' "$WAZUH_MANAGER_CONF";
     rm -f "$TMP_HOSTS";
 
 fi
@@ -201,22 +201,22 @@ fi
 # --------------------------
 # Cluster: node_name
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<node_name>.*</node_name>|<node_name>$WAZUH_NODE_NAME</node_name>|" "$OSSEC_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<node_name>.*</node_name>|<node_name>$WAZUH_NODE_NAME</node_name>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: node_type
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$WAZUH_NODE_TYPE</node_type>|" "$OSSEC_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$WAZUH_NODE_TYPE</node_type>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: key
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$WAZUH_CLUSTER_KEY</key>|" "$OSSEC_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$WAZUH_CLUSTER_KEY</key>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: bind_addr
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$OSSEC_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: nodes list
@@ -231,7 +231,7 @@ if [[ -n "$WAZUH_CLUSTER_NODES" ]]; then
         echo "    </nodes>"
     } > "$TMP_NODES";
     sed -i -e '/<cluster>/,/<\/cluster>/{ /<nodes>/,/<\/nodes>/{ /<nodes>/r '"$TMP_NODES" \
-            -e 'd }}' "$OSSEC_CONF";
+            -e 'd }}' "$WAZUH_MANAGER_CONF";
     rm -f "$TMP_NODES";
 fi
 
@@ -244,17 +244,7 @@ echo "Wazuh manager config modified successfully."
 ##############################################################################
 
 configure_permissions() {
-  chown -R wazuh:wazuh /var/ossec/queue/rids
-}
-
-##############################################################################
-# Change any ossec user/group to wazuh user/group
-##############################################################################
-
-set_correct_permOwner() {
-  find / -group 997 -exec chown :999 {} +;
-  find / -group 101 -exec chown :999 {} +;
-  find / -user 101 -exec chown 999 {} +;
+  chown -R wazuh-manager:wazuh-manager /var/wazuh-manager/queue/rids
 }
 
 ##############################################################################
@@ -262,16 +252,13 @@ set_correct_permOwner() {
 ##############################################################################
 
 main() {
-  # Mount permanent data  (i.e. ossec.conf)
+  # Mount permanent data  (i.e. wazuh-manager.conf)
   mount_permanent_data
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
 
-  # Apply correct permission and ownership
-  set_correct_permOwner
-
-  # Rename files stored in permanent data (i.e. queue/ossec)
+  # Rename files stored in permanent data (i.e. queue/wazuh-manager)
   move_data_files
 
   # Remove some files in permanent_data (i.e. .template.db)
@@ -280,7 +267,7 @@ main() {
   # Create wazuh-authd key and cert if not present
   if [ ! -e ${WAZUH_INSTALL_PATH}/etc/sslmanager.key ]
   then
-    create_ossec_key_cert
+    create_wazuh_key_cert
   fi
 
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
@@ -289,9 +276,8 @@ main() {
   # Allow setting custom hostname
   set_custom_hostname
 
-  # Configure ossec.conf based on environment variables
-  function_configure_ossec_conf
-
+  # Configure wazuh-manager.conf based on environment variables
+  function_configure_wazuh_manager_conf
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
 
