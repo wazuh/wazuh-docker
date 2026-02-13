@@ -18,7 +18,7 @@ Getting started with Wazuh-Docker involves the following general steps:
 
 Before diving into the deployment, please ensure you have reviewed:
 
--   The [Description](ref/Introduction/description.md) of Wazuh-docker to understand the components and architecture.
+-   The [Description](ref/introduction/description.md) of Wazuh-docker to understand the components and architecture.
 -   The [Requirements](ref/getting-started/requirements.md) to confirm your environment is suitable.
 
 ## Steps to Get Started

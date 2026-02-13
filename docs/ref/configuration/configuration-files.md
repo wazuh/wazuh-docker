@@ -28,5 +28,20 @@
         docker compose up -d
         ```
 
-
 Consult the official Wazuh documentation for version 5.0.0 for detailed information on all possible configuration parameters for each component.
+
+## Persistence configuration
+
+When customizing your Wazuh Docker deployment, certain files and directories must be persisted to retain your changes across container restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
+
+### Volumes and Bind Mounts
+
+Docker volumes allow you to persist data outside of container lifecycles. When a container is removed or recreated, data stored in volumes remains intact. This is essential for maintaining configuration files, user data, and other persistent state. While, bind mounts allow you to mount a file or directory from the host into the container.
+
+To persist files or directories in your Wazuh deployment, you can mount them as volumes or bind mounts in your `docker-compose.yml` file.
+
+> **Important**: Ensure that files exist on the host before starting the containers. If the file doesn't exist, Docker will create a directory instead, which may cause startup failures.
+
+For more information on Docker volumes and bind mounts, refer to the official Docker documentation:
+- [Use volumes](https://docs.docker.com/storage/volumes/)
+- [Bind mounts](https://docs.docker.com/storage/bind-mounts/)
