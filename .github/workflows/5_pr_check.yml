@@ -11,8 +11,6 @@ jobs:
     outputs:
       WAZUH_VERSION: ${{ steps.dotenv.outputs.WAZUH_VERSION }}
       WAZUH_IMAGE_VERSION: ${{ steps.dotenv.outputs.WAZUH_IMAGE_VERSION }}
-      WAZUH_TAG_REVISION: ${{ steps.dotenv.outputs.WAZUH_TAG_REVISION }}
-      WAZUH_UI_REVISION: ${{ steps.dotenv.outputs.WAZUH_UI_REVISION }}
       WAZUH_REGISTRY: ${{ vars.IMAGE_REGISTRY_DEV }}
       IMAGE_TAG: ${{ steps.dotenv.outputs.IMAGE_TAG }}
       WAZUH_MINOR_VERSION: ${{ steps.dotenv.outputs.WAZUH_MINOR_VERSION }}
@@ -39,7 +37,6 @@ jobs:
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       docker_reference: ${{ github.head_ref }}
-      revision: ${{ needs.prepare-variables.outputs.WAZUH_TAG_REVISION }}
       commit_list: '["latest", "latest", "latest", "latest"]'
       id: ${{ github.run_id }}
       dev: true
