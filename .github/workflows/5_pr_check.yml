@@ -420,6 +420,7 @@ jobs:
       working-directory: ./multi-node
 
     - name: Check Wazuh indexer start
+      if: always()
       run: |
        for i in {1..20}; do
         echo "Checking Wazuh indexer health (Attempt $i/20)"
@@ -451,6 +452,7 @@ jobs:
        fi
 
     - name: Check Wazuh indexer nodes
+      if: always()
       run: |
        nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 3 ]]; then
@@ -460,6 +462,7 @@ jobs:
        fi
 
     - name: Check documents into wazuh-states index
+      if: always()
       run: |
         for i in {1..20}; do
           echo "Checking documents in wazuh-states (Attempt $i/20)..."
@@ -490,6 +493,7 @@ jobs:
        fi
 
     - name: Check Wazuh manager start
+      if: always()
       run: | 
         IFS=',' read -r -a NODES <<< "${{ env.MANAGER_NODES }}"
         for NODE in "${NODES[@]}"; do
@@ -509,6 +513,7 @@ jobs:
         done
 
     - name: Check Wazuh dashboard service URL
+      if: always()
       run: |
         for i in {1..20}; do
           echo "Checking Wazuh dashboard (Attempt $i/20)"
@@ -548,6 +553,7 @@ jobs:
       run: docker compose -f wazuh-agent/docker-compose.yml up -d
 
     - name: Check Wazuh agent enrollment
+      if: always()
       run: |
         for i in {1..5}; do
           TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
@@ -564,6 +570,7 @@ jobs:
         done
 
     - name: Check errors in ossec.log for Wazuh manager
+      if: always()
       run: ./.github/multi-node-log-check.sh
     
     - name: Docker logs
