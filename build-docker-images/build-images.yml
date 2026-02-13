@@ -5,7 +5,6 @@ services:
       context: wazuh-manager/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         wazuh_manager_amd64_rpm: ${wazuh_manager_amd64_rpm}
         wazuh_manager_arm64_rpm: ${wazuh_manager_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}
@@ -36,7 +35,6 @@ services:
       context: wazuh-agent/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         wazuh_agent_amd64_rpm: ${wazuh_agent_amd64_rpm}
         wazuh_agent_arm64_rpm: ${wazuh_agent_arm64_rpm}
     image: ${WAZUH_REGISTRY}/wazuh/wazuh-agent:${IMAGE_TAG}
@@ -48,7 +46,6 @@ services:
       context: wazuh-indexer/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
         wazuh_indexer_amd64_rpm: ${wazuh_indexer_amd64_rpm}
         wazuh_indexer_arm64_rpm: ${wazuh_indexer_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}
@@ -73,8 +70,6 @@ services:
       context: wazuh-dashboard/
       args:
         WAZUH_VERSION: ${WAZUH_VERSION}
-        WAZUH_TAG_REVISION: ${WAZUH_TAG_REVISION}
-        WAZUH_UI_REVISION: ${WAZUH_UI_REVISION}
         wazuh_dashboard_amd64_rpm: ${wazuh_dashboard_amd64_rpm}
         wazuh_dashboard_arm64_rpm: ${wazuh_dashboard_arm64_rpm}
         wazuh_certs_tool: ${wazuh_certs_tool}

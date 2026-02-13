@@ -11,13 +11,11 @@
 WAZUH_IMAGE_VERSION=5.0.0
 IMAGE_TAG=5.0.0
 WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
-WAZUH_TAG_REVISION=1
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_REGISTRY=docker.io
 
 WAZUH_IMAGE_VERSION="5.0.0"
-WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 
@@ -42,7 +40,6 @@ build() {
 
     WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
     WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
-    WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
 
     # Variables
     ARTIFACT_URLS_FILE="artifact_urls.yml"
@@ -148,8 +145,6 @@ build() {
     # Global env file (without IMAGE_TAG - will be component-specific)
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
-    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> ../.env
-    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> ../.env
     echo WAZUH_REGISTRY=$WAZUH_REGISTRY >> ../.env
 
     set -a
@@ -201,7 +196,6 @@ build() {
         build_args=(
             -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
             --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
-            --build-arg WAZUH_TAG_REVISION="${WAZUH_TAG_REVISION}"
         )
 
         # Add component-specific args
@@ -222,7 +216,6 @@ build() {
                 ;;
             wazuh-dashboard)
                 build_args+=(
-                    --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
                     --build-arg wazuh_dashboard_amd64_rpm="${wazuh_dashboard_amd64_rpm}"
                     --build-arg wazuh_dashboard_arm64_rpm="${wazuh_dashboard_arm64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
@@ -255,7 +248,6 @@ help() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
-    echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
     echo "    -refs, --references <refs>   [Optional] [Only for Dev] JSON array of commit refs for components to be build (indexer, manager, dashboard, agent) in order. Defaults to latest."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
@@ -286,14 +278,6 @@ main() {
         "-m"|"--multiarch")
             MULTIARCH="true"
                 shift
-            ;;
-        "-r"|"--revision")
-            if [ -n "${2}" ]; then
-                WAZUH_TAG_REVISION="${2}"
-                shift 2
-            else
-                help 1
-            fi
             ;;
         "-refs"|"--references")
             if [ -n "${2}" ]; then
