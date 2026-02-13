@@ -2,6 +2,37 @@
 
 When customizing your Wazuh Docker deployment, certain files and directories must be persisted to retain your changes across container restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
 
+## General Instructions
+
+Docker volumes allow you to persist data outside of container lifecycles. When a container is removed or recreated, data stored in volumes remains intact. This is essential for maintaining configuration files, user data, and other persistent state.
+
+### Using Docker Volumes for Persistence
+
+To persist files or directories in your Wazuh deployment, you can mount them as volumes in your `docker-compose.yml` file. The general syntax is:
+
+```yaml
+services:
+  service_name:
+    volumes:
+      - /host/path/to/file:/container/path/to/file
+      - /host/path/to/directory:/container/path/to/directory
+```
+
+**Example**: To persist a specific configuration file:
+
+```yaml
+services:
+  wazuh.indexer:
+    volumes:
+      - ./config/custom-config.yml:/usr/share/wazuh-indexer/config/custom-config.yml
+```
+
+> **Important**: Ensure that files exist on the host before starting the containers. If the file doesn't exist, Docker will create a directory instead, which may cause startup failures.
+
+For more information on Docker volumes and bind mounts, refer to the official Docker documentation:
+- [Use volumes](https://docs.docker.com/storage/volumes/)
+- [Bind mounts](https://docs.docker.com/storage/bind-mounts/)
+
 ## Wazuh Indexer
 
 ### Internal Users
@@ -52,8 +83,6 @@ services:
     volumes:
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/opensearch-security/securityconfig/internal_users.yml
 ```
-
-> **Note**: Ensure the file exists on your host before starting the containers to prevent Docker from creating it as a directory.
 
 #### Applying Changes
 
