@@ -1,6 +1,6 @@
 # Reference Manual - Getting Started
 
-This section guides you through the initial steps to get your Wazuh-docker (version 4.14.4) environment up and running. We will cover the prerequisites and point you to the deployment instructions.
+This section guides you through the initial steps to get your Wazuh-docker (version 4.14.5) environment up and running. We will cover the prerequisites and point you to the deployment instructions.
 
 ## Overview
 
@@ -27,11 +27,11 @@ Before diving into the deployment, please ensure you have reviewed:
     Verify that your host system has sufficient RAM, CPU, and disk space. Ensure Docker and Docker Compose are installed and functioning correctly.
 
 2.  **Obtain Wazuh-docker Configuration**:
-    You'll need the Docker Compose files and any associated configuration files from the `wazuh-docker` repository for version 4.14.4.
+    You'll need the Docker Compose files and any associated configuration files from the `wazuh-docker` repository for version 4.14.5.
     ```bash
     git clone [https://github.com/wazuh/wazuh-docker.git](https://github.com/wazuh/wazuh-docker.git)
     cd wazuh-docker
-    git checkout v4.14.4
+    git checkout v4.14.5
     # Navigate to the specific docker-compose directory, e.g., single-node or multi-node
     # cd docker-compose/single-node/ (example path)
     ```

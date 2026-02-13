@@ -8,11 +8,11 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-IMAGE_TAG=4.14.4
+IMAGE_TAG=4.14.5
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 WAZUH_REGISTRY=docker.io
 
-WAZUH_IMAGE_VERSION="4.14.4"
+WAZUH_IMAGE_VERSION="4.14.5"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
 FILEBEAT_MODULE_VERSION="0.5"
