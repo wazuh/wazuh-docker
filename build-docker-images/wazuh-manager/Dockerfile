@@ -4,7 +4,6 @@ FROM amazonlinux:2023
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 ARG WAZUH_VERSION
-ARG WAZUH_TAG_REVISION
 ARG S6_VERSION="v2.2.0.3"
 ARG TARGETARCH
 ARG wazuh_manager_amd64_rpm

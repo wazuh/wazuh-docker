@@ -8,7 +8,6 @@ The Procedure_push_docker_images.yml workflow builds and pushes multi-architectu
 |-----------|-------------|---------|----------|
 | `image_tag` | Docker image version tag | `5.0.0` | Yes |
 | `docker_reference` | Branch/tag to build from | - | Yes |
-| `revision` | Package revision number | `1` | Yes |
 | `reference` | Dev reference (for pre-release builds) | `latest` | No |
 | `id` | Workflow run identifier | - | No |
 | `dev` | Enable development mode (adds `-dev` suffix) | `false`/`true` | No |

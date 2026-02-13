@@ -2,8 +2,6 @@
 FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
-ARG WAZUH_TAG_REVISION
-ARG WAZUH_UI_REVISION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
 ARG wazuh_dashboard_amd64_rpm

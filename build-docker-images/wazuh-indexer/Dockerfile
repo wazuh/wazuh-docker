@@ -2,7 +2,6 @@
 FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
-ARG WAZUH_TAG_REVISION
 ARG TARGETARCH
 ARG wazuh_indexer_amd64_rpm
 ARG wazuh_indexer_arm64_rpm
