@@ -21,7 +21,7 @@ on:
         default: '1'
         required: true
       commit_list:
-        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
+        description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
         default: '["latest", "latest", "latest", "latest"]'
       id:
@@ -55,7 +55,7 @@ on:
         required: true
         type: string
       commit_list:
-        description: 'Wazuh components revisions (comma-separated string list) ["indexer", "manager", "dashboard", "agent"]'
+        description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
         default: '["latest", "latest", "latest", "latest"]'
       id:
@@ -103,30 +103,45 @@ jobs:
     - name: Set up variables
       id: compute-outputs
       run: |
+        # Set WAZUH_COMPONENTS
+        WC_JSON_ARRAY=""
         if [[ "${{ inputs.products }}" != "null" && "${{ inputs.products }}" != "" ]]; then
           # Convert comma-separated list to JSON array format
           IFS=',' read -ra COMPONENTS <<< "${{ inputs.products }}"
-          JSON_ARRAY="["
+          WC_JSON_ARRAY="["
           for i in "${!COMPONENTS[@]}"; do
             if [ $i -gt 0 ]; then
-              JSON_ARRAY+=","
+              WC_JSON_ARRAY+=","
             fi
-            JSON_ARRAY+="\"${COMPONENTS[$i]}\""
+            WC_JSON_ARRAY+="\"${COMPONENTS[$i]}\""
           done
-          JSON_ARRAY+="]"
-          echo "WAZUH_COMPONENTS=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          WC_JSON_ARRAY+="]"
         else
-          echo "WAZUH_COMPONENTS=[\"wazuh-manager\",\"wazuh-dashboard\",\"wazuh-indexer\",\"wazuh-agent\"]" >> $GITHUB_OUTPUT
+          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent"]'
         fi
+        echo "Products to build: $WC_JSON_ARRAY"
+        echo "WAZUH_COMPONENTS=$WC_JSON_ARRAY" >> $GITHUB_OUTPUT
 
-        # Set REVISIONS
-        if [[ "${{ inputs.commit_list }}" != "null" && "${{ inputs.commit_list }}" != "" ]]; then
-          COMMIT_LIST='${{ inputs.commit_list }}'
-        else
-          COMMIT_LIST='["latest", "latest", "latest", "latest"]'
+        # Set COMMIT_LIST
+        WC_COMMIT_LIST=""
+        if [[ "${{ inputs.dev }}" == "true" ]]; then
+          if [[ "${{ inputs.commit_list }}" != "null" && "${{ inputs.commit_list }}" != "" ]]; then
+            WC_COMMIT_LIST='${{ inputs.commit_list }}'
+          else
+            # Set commit list to "latest" for all components using WAZUH_COMPONENTS
+            COMPONENTS=($(echo "$WC_JSON_ARRAY" | jq -r '.[]'))
+            WC_COMMIT_LIST="["
+            for i in "${!COMPONENTS[@]}"; do
+              if [ $i -gt 0 ]; then
+                WC_COMMIT_LIST+=" ,"
+              fi
+              WC_COMMIT_LIST+="\"latest\""
+            done
+            WC_COMMIT_LIST+="]"
+          fi
+          echo "Revision list: $WC_COMMIT_LIST"
         fi
-        echo "COMMIT_LIST=$COMMIT_LIST" >> $GITHUB_OUTPUT
-        echo "Revision list (indexer, manager, dashboard, agent): $COMMIT_LIST"
+        echo "COMMIT_LIST=$WC_COMMIT_LIST" >> $GITHUB_OUTPUT
 
   package-urls:
     name: generate package urls
@@ -169,21 +184,26 @@ jobs:
           WAZUH_VERSION_RAW="${{ inputs.image_tag }}"
           WAZUH_VERSION="${WAZUH_VERSION_RAW%%-*}"
           WAZUH_MAJOR="${WAZUH_VERSION%%.*}"
+          WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
           COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
+
+          INDEXER_COMMIT=""
+          MANAGER_COMMIT=""
+          DASHBOARD_COMMIT=""
+          AGENT_COMMIT=""
 
           OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
           PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
-
           mkdir -p "$(dirname "$OUTPUT_FILE")"
 
           : > "$OUTPUT_FILE"
           : > "$PRESIGNED_OUTPUT_FILE"
 
-          # Extract revisions using jq
-          INDEXER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[0]')
-          MANAGER_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[1]')
-          DASHBOARD_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[2]')
-          AGENT_COMMIT=$(echo "$COMMIT_LIST" | jq -r '.[3]')
+          # Validate WAZUH_COMPONENTS and COMMIT_LIST have the same length
+          if [ "$(jq length <<<"$WAZUH_COMPONENTS")" -ne "$(jq length <<<"$COMMIT_LIST")" ]; then
+            echo "WAZUH_COMPONENTS and COMMIT_LIST must have the same length." >&2
+            exit 1
+          fi
 
           # Verify if the input file exists
           if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
@@ -191,11 +211,39 @@ jobs:
             exit 1
           fi
 
+          # Set each component's commit/revison based on the input lists
+          for i in $(seq 0 $(($(echo "$WAZUH_COMPONENTS" | jq length) - 1))); do
+            COMPONENT=$(echo "$WAZUH_COMPONENTS" | jq -r ".[$i]")
+            COMMIT=$(echo "$COMMIT_LIST" | jq -r ".[$i]")
+
+            case $COMPONENT in
+              "wazuh-indexer")
+                INDEXER_COMMIT="$COMMIT"
+                echo "Indexer commit set to: $COMMIT"
+                ;;
+              "wazuh-manager")
+                MANAGER_COMMIT="$COMMIT"
+                echo "Manager commit set to: $COMMIT"
+                ;;
+              "wazuh-dashboard")
+                DASHBOARD_COMMIT="$COMMIT"
+                echo "Dashboard commit set to: $COMMIT"
+                ;;
+              "wazuh-agent")
+                AGENT_COMMIT="$COMMIT"
+                echo "Agent commit set to: $COMMIT"
+                ;;
+              *)
+                echo "Unknown component: $COMPONENT."
+                exit 1
+                ;;
+            esac
+          done
+
           # Process the file line by line (replacing ocurrences)
           while IFS= read -r line || [ -n "$line" ]; do
             # Skip empty lines and comments
             if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
-              echo "$line" >> "$OUTPUT_FILE"
               continue
             fi
 
@@ -227,7 +275,6 @@ jobs:
           while IFS= read -r line || [ -n "$line" ]; do
             # Skip empty lines and comments
             if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
-              echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
               continue
             fi
 
@@ -253,7 +300,6 @@ jobs:
               echo "$presigned_url_line" >> "$PRESIGNED_OUTPUT_FILE"
             else
               echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
-
               echo "Skipping line for presigning (no S3 URI found):"
               echo "$line"
             fi
@@ -267,7 +313,7 @@ jobs:
             exit 1
           fi
 
-          # Also store the final file as the name expected by build-images.sh
+          # Store file with the same name expected by build-images.sh
           cp "$PRESIGNED_OUTPUT_FILE" artifact_urls.yml
 
       - name: Save presigned URLs file to artifact
@@ -331,9 +377,21 @@ jobs:
         name: presigned-artifact-urls-${{ github.run_id }}
         path: ./build-docker-images
 
+    - name: Compute component reference (dev)
+      if: ${{ inputs.dev == true }}
+      run: |
+        COMPONENT='${{ matrix.wazuh_component }}'
+        WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
+        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
+
+        idx=$(jq -r --arg c "$COMPONENT" 'index($c)' <<<"$WAZUH_COMPONENTS")
+        ref=$(jq -r --argjson i "$idx" '.[ $i ]' <<<"$COMMIT_LIST")
+
+        echo "COMPONENT_REFS_JSON=[\"$ref\"]" >> "$GITHUB_ENV"
+        echo "Using component ref for $COMPONENT: $ref"
+
     - name: Build Wazuh images
       run: |
-        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
           IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
           if [ -z "${tokens[1]}" ]; then
@@ -343,15 +401,39 @@ jobs:
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+            ./build-images.sh \
+              -v $WAZUH_VER \
+              -r $REVISION \
+              -d $DEV_STAGE \
+              -rg $IMAGE_REGISTRY \
+              -m \
+              -refs "$COMPONENT_REFS_JSON" \
+              -c ${{ matrix.wazuh_component }}
           else
-            ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+            ./build-images.sh \
+              -v $WAZUH_VER \
+              -r $REVISION \
+              -d $DEV_STAGE \
+              -rg $IMAGE_REGISTRY \
+              -m \
+              -c ${{ matrix.wazuh_component }}
           fi
         else
           if [ "${{ inputs.dev }}" = true ]; then
-            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -refs "$COMMIT_LIST" -c ${{ matrix.wazuh_component }}
+            ./build-images.sh \
+              -v $IMAGE_TAG \
+              -r $REVISION \
+              -rg $IMAGE_REGISTRY \
+              -m \
+              -refs "$COMPONENT_REFS_JSON" \
+              -c ${{ matrix.wazuh_component }}
           else
-            ./build-images.sh -v $IMAGE_TAG -r $REVISION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+            ./build-images.sh \
+              -v $IMAGE_TAG \
+              -r $REVISION \
+              -rg $IMAGE_REGISTRY \
+              -m \
+              -c ${{ matrix.wazuh_component }}
           fi
         fi
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
