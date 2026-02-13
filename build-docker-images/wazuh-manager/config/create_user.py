@@ -8,7 +8,7 @@ import os
 # Set framework path
 sys.path.append(os.path.dirname(sys.argv[0]) + "/../framework")
 
-USER_FILE_PATH = "/var/ossec/api/configuration/admin.json"
+USER_FILE_PATH = "/var/wazuh-manager/api/configuration/admin.json"
 SPECIAL_CHARS = "@$!%*?&-_"
 
 
