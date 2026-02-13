@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Separate Agent/Manager - Docker - Adapt image build process ([#2220](https://github.com/wazuh/wazuh-docker/pull/2220))
 - Remove revision input ([#2217](https://github.com/wazuh/wazuh-docker/pull/2217))
 - Improve build script and workflow component revisions handling ([#2212](https://github.com/wazuh/wazuh-docker/pull/2212))
 - Add Wazuh version and revision into wazuh-certs-tool and config file ([#2195](https://github.com/wazuh/wazuh-docker/pull/2195))
