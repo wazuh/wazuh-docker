@@ -248,6 +248,16 @@ configure_permissions() {
 }
 
 ##############################################################################
+# Change any ossec user/group to wazuh-manager user/group
+##############################################################################
+
+set_correct_permOwner() {
+  find / -group 997 -exec chown :999 {} +;
+  find / -group 101 -exec chown :999 {} +;
+  find / -user 101 -exec chown 999 {} +;
+}
+
+##############################################################################
 # Main function
 ##############################################################################
 
@@ -257,6 +267,9 @@ main() {
 
   # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
   apply_exclusion_data
+
+  # Apply correct permission and ownership
+  set_correct_permOwner
 
   # Rename files stored in permanent data (i.e. queue/wazuh-manager)
   move_data_files
