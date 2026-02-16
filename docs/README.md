@@ -60,7 +60,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│       │   │   │   ├── 0-wazuh-init
 	│       │   │   │   └── 2-manager
 	│       │   │   └── services.d
-	│       │   │       └── ossec-logs
+	│       │   │       └── wazuh-manager-logs
 	│       │   │           └── run
 	│       │   ├── permanent_data.env
 	│       │   └── permanent_data.sh
