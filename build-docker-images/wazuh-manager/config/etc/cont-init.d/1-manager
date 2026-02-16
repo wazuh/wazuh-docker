@@ -36,11 +36,11 @@ function_wazuh_migration(){
       fi
 
       \cp -f /wazuh-migration/data/etc/wazuh-manager.conf /var/wazuh-manager/etc/wazuh-manager.conf
-      chown root:wazuh /var/wazuh-manager/etc/wazuh-manager.conf
+      chown root:wazuh-manager /var/wazuh-manager/etc/wazuh-manager.conf
       chmod 640 /var/wazuh-manager/etc/wazuh-manager.conf
 
       \cp -f /wazuh-migration/data/etc/client.keys /var/wazuh-manager/etc/client.keys
-      chown wazuh:wazuh /var/wazuh-manager/etc/client.keys
+      chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/client.keys
       chmod 640 /var/wazuh-manager/etc/client.keys
 
       \cp -f /wazuh-migration/data/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.cert
@@ -49,18 +49,18 @@ function_wazuh_migration(){
       chmod 640 /var/wazuh-manager/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.key
 
       \cp -f /wazuh-migration/data/etc/shared/default/agent.conf /var/wazuh-manager/etc/shared/default/agent.conf
-      chown wazuh:wazuh /var/wazuh-manager/etc/shared/default/agent.conf
+      chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/shared/default/agent.conf
       chmod 660 /var/wazuh-manager/etc/shared/default/agent.conf
 
       \cp -f /wazuh-migration/data/etc/decoders/* /var/wazuh-manager/etc/decoders/
-      chown wazuh:wazuh /var/wazuh-manager/etc/decoders/*
+      chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/decoders/*
       chmod 660 /var/wazuh-manager/etc/decoders/*
       \cp -f /wazuh-migration/data/etc/rules/* /var/wazuh-manager/etc/rules/
-      chown wazuh:wazuh /var/wazuh-manager/etc/rules/*
+      chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/rules/*
       chmod 660 /var/wazuh-manager/etc/rules/*
 
       \cp -f /wazuh-migration/global.db /var/wazuh-manager/queue/db/global.db
-      chown wazuh:wazuh /var/wazuh-manager/queue/db/global.db
+      chown wazuh-manager:wazuh-manager /var/wazuh-manager/queue/db/global.db
       chmod 640 /var/wazuh-manager/queue/db/global.db
 
       # mark volume as migrated
