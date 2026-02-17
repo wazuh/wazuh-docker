@@ -166,34 +166,34 @@ jobs:
     - name: Check Wazuh indexer start
       if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
-       for i in {1..20}; do
-        echo "Checking Wazuh indexer health (Attempt $i/20)"
-         RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
-         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
-         if echo "$RESPONSE" | grep -qE "green|yellow"; then
-           echo "Cluster Online"
-           echo "$RESPONSE"
-           exit 0
-         fi
-         echo "Waiting for cluster to be online"
-         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs --tail 30 "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
-         [ $i -lt 20 ] && sleep 60
-       done
-       status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
-       if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-       else
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-        exit 1
-       fi
+        for i in {1..20}; do
+          echo "Checking Wazuh indexer health (Attempt $i/20)"
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
+          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
+          if echo "$RESPONSE" | grep -qE "green|yellow"; then
+            echo "Cluster Online"
+            echo "$RESPONSE"
+            exit 0
+          fi
+          echo "Waiting for cluster to be online"
+          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+            echo ""
+            echo "========================================================="
+            echo "Container logs for $CONTAINER_NAME"
+            echo "========================================================="
+            docker logs --tail 30 "$CONTAINER_NAME"
+            echo "---------------------------------------------------------"
+          done
+          [ $i -lt 20 ] && sleep 60
+        done
+        status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+        status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
+        if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+        else
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+          exit 1
+        fi
 
 
     - name: Check Wazuh indexer nodes
@@ -205,16 +205,16 @@ jobs:
     - name: Check Wazuh templates
       if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
-       qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
-       templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
-       if [[ $qty_templates -gt 3 ]]; then
-        echo "wazuh templates:"
-        echo "${templates}"
-       else
-        echo "wazuh templates:"
-        echo "${templates}"
-        exit 1
-       fi
+        qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+        templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+        if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+        else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+        fi
 
     - name: Check Wazuh manager start
       if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
@@ -445,45 +445,45 @@ jobs:
     - name: Check Wazuh indexer start
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
-       for i in {1..20}; do
-        echo "Checking Wazuh indexer health (Attempt $i/20)"
-         RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
-         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
-         if echo "$RESPONSE" | grep -qE "green|yellow"; then
-           echo "Cluster Online"
-           echo "$RESPONSE"
-           exit 0
-         fi
-         echo "Waiting for cluster to be online"
-         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs --tail 30 "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
-         [ $i -lt 20 ] && sleep 60
-       done
-       status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
-       if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-       else
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-        exit 1
-       fi
+        for i in {1..20}; do
+          echo "Checking Wazuh indexer health (Attempt $i/20)"
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
+          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
+          if echo "$RESPONSE" | grep -qE "green|yellow"; then
+            echo "Cluster Online"
+            echo "$RESPONSE"
+            exit 0
+          fi
+          echo "Waiting for cluster to be online"
+          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+            echo ""
+            echo "========================================================="
+            echo "Container logs for $CONTAINER_NAME"
+            echo "========================================================="
+            docker logs --tail 30 "$CONTAINER_NAME"
+            echo "---------------------------------------------------------"
+          done
+          [ $i -lt 20 ] && sleep 60
+        done
+        status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+        status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
+        if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+        else
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+          exit 1
+        fi
 
     - name: Check Wazuh indexer nodes
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
-       nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
-       if [[ $nodes -eq 3 ]]; then
-        echo "Wazuh indexer nodes: ${nodes}"
-       else
-        echo "Wazuh indexer nodes: ${nodes}"
-        exit 1
-       fi
+        nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
+        if [[ $nodes -eq 3 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+        else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+        fi
 
     - name: Check documents into wazuh-states index
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
@@ -506,16 +506,16 @@ jobs:
     - name: Check Wazuh templates
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
-       qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh" | wc -l`"
-       templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh"`"
-       if [[ $qty_templates -gt 3 ]]; then
-        echo "wazuh templates:"
-        echo "${templates}"
-       else
-        echo "wazuh templates:"
-        echo "${templates}"
-        exit 1
-       fi
+        qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh" | wc -l`"
+        templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh"`"
+        if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+        else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+        fi
 
     - name: Check Wazuh manager start
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
@@ -619,11 +619,11 @@ jobs:
       run: |
         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
+          echo ""
+          echo "========================================================="
+          echo "Container logs for $CONTAINER_NAME"
+          echo "========================================================="
+          docker logs "$CONTAINER_NAME"
+          echo "---------------------------------------------------------"
+        done
       working-directory: ./multi-node
