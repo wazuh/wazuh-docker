@@ -485,24 +485,6 @@ jobs:
           exit 1
         fi
 
-    - name: Check documents into wazuh-states index
-      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
-      run: |
-        for i in {1..20}; do
-          echo "Checking documents in wazuh-states (Attempt $i/20)..."
-          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
-          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
-          if [[ "$DOCS" -gt 0 ]]; then
-            echo "wazuh-states index has documents: ${DOCS}"
-            exit 0
-          fi
-          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
-          [ $i -lt 20 ] && sleep 60
-        done
-        echo "Error: No documents found in wazuh-states after 20 attempts."
-        echo "Last response: $RESPONSE"
-        exit 1
-
     - name: Check Wazuh templates
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
@@ -612,6 +594,24 @@ jobs:
     - name: Check errors in wazuh-manager.log for Wazuh manager
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: ./.github/multi-node-log-check.sh
+
+    - name: Check documents into wazuh-states index
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
+      run: |
+        for i in {1..20}; do
+          echo "Checking documents in wazuh-states (Attempt $i/20)..."
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
+          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
+          if [[ "$DOCS" -gt 0 ]]; then
+            echo "wazuh-states index has documents: ${DOCS}"
+            exit 0
+          fi
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          [ $i -lt 20 ] && sleep 60
+        done
+        echo "Error: No documents found in wazuh-states after 20 attempts."
+        echo "Last response: $RESPONSE"
+        exit 1
 
     - name: Docker logs
       if: always()
