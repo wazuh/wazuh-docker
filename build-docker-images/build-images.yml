@@ -28,7 +28,6 @@ services:
       - wazuh_queue:/var/wazuh-manager/queue
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
       - wazuh_active_response:/var/wazuh-manager/active-response/bin
-      - wazuh_wodles:/var/wazuh-manager/wodles
 
   wazuh.agent:
     build:
@@ -97,5 +96,4 @@ volumes:
   wazuh_queue:
   wazuh_var_multigroups:
   wazuh_active_response:
-  wazuh_wodles:
 

@@ -33,7 +33,6 @@ services:
       - master-wazuh-queue:/var/wazuh-manager/queue
       - master-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
       - master-wazuh-active-response:/var/wazuh-manager/active-response/bin
-      - master-wazuh-wodles:/var/wazuh-manager/wodles
       - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./wazuh-certificates/wazuh.master.pem:/var/wazuh-manager/etc/certs/server.pem
       - ./wazuh-certificates/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
@@ -66,7 +65,6 @@ services:
       - worker-wazuh-queue:/var/wazuh-manager/queue
       - worker-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
       - worker-wazuh-active-response:/var/wazuh-manager/active-response/bin
-      - worker-wazuh-wodles:/var/wazuh-manager/wodles
       - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./wazuh-certificates/wazuh.worker.pem:/var/wazuh-manager/etc/certs/server.pem
       - ./wazuh-certificates/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
@@ -218,14 +216,12 @@ volumes:
   master-wazuh-queue:
   master-wazuh-var-multigroups:
   master-wazuh-active-response:
-  master-wazuh-wodles:
   worker-wazuh-api-configuration:
   worker-wazuh-etc:
   worker-wazuh-logs:
   worker-wazuh-queue:
   worker-wazuh-var-multigroups:
   worker-wazuh-active-response:
-  worker-wazuh-wodles:
   wazuh-indexer-data-1:
   wazuh-indexer-data-2:
   wazuh-indexer-data-3:

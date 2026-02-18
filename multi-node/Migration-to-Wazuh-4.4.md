@@ -90,13 +90,6 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=multi-node \
            --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=master-wazuh-wodles \
-           multi-node_master-wazuh-wodles
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
            --label com.docker.compose.volume=master-wazuh-etc \
            multi-node_master-wazuh-etc
 ```
@@ -148,13 +141,6 @@ docker volume create \
            --label com.docker.compose.version=1.25.0 \
            --label com.docker.compose.volume=worker-wazuh-active-response \
            multi-node_worker-wazuh-active-response
-```
-```
-docker volume create \
-           --label com.docker.compose.project=multi-node \
-           --label com.docker.compose.version=1.25.0 \
-           --label com.docker.compose.volume=worker-wazuh-wodles \
-           multi-node_worker-wazuh-wodles
 ```
 ```
 docker volume create \
@@ -227,12 +213,6 @@ docker container run --rm -it \
 ```
 ```
 docker container run --rm -it \
-           -v wazuh-docker_ossec-wodles:/from \
-           -v multi-node_master-wazuh-wodles:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
            -v wazuh-docker-etc:/from \
            -v multi-node_master-etc:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
@@ -277,12 +257,6 @@ docker container run --rm -it \
 docker container run --rm -it \
            -v wazuh-docker_worker-ossec-active-response:/from \
            -v multi-node_worker-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-```
-```
-docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-wodles:/from \
-           -v multi-node_worker-wazuh-wodles:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 ```
 ```
