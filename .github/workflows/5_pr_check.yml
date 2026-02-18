@@ -308,7 +308,7 @@ jobs:
           exit 1
         fi
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
       if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: ./.github/single-node-log-check.sh
 
@@ -609,7 +609,7 @@ jobs:
           exit 1
         fi
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
       if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: ./.github/multi-node-log-check.sh
 
