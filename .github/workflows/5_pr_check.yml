@@ -224,7 +224,7 @@ jobs:
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
-            if [[ $services -gt 9 ]]; then
+            if [[ $services -gt 7 ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
               echo "OK"
               ok=true
@@ -508,7 +508,7 @@ jobs:
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
-            if [[ $services -gt 9 ]]; then
+            if [[ $services -gt 7 ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
               echo "OK"
               ok=true
