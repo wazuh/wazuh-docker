@@ -504,11 +504,16 @@ jobs:
       run: |
         IFS=',' read -r -a NODES <<< "${{ env.MANAGER_NODES }}"
         for NODE in "${NODES[@]}"; do
+          if [[ "$NODE" == "master" ]]; then
+            THRESHOLD=8
+          else
+            THRESHOLD=7
+          fi
           ok=false
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
-            if [[ $services -gt 7 ]]; then
+            if [[ $services -ge $THRESHOLD ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
               echo "OK"
               ok=true
