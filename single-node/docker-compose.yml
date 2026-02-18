@@ -27,16 +27,15 @@ services:
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
-      - wazuh_api_configuration:/var/ossec/api/configuration
-      - wazuh_etc:/var/ossec/etc
-      - wazuh_logs:/var/ossec/logs
-      - wazuh_queue:/var/ossec/queue
-      - wazuh_var_multigroups:/var/ossec/var/multigroups
-      - wazuh_active_response:/var/ossec/active-response/bin
-      - wazuh_wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/var/ossec/etc/certs/server.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/var/ossec/etc/certs/server-key.pem
+      - wazuh_api_configuration:/var/wazuh-manager/api/configuration
+      - wazuh_etc:/var/wazuh-manager/etc
+      - wazuh_logs:/var/wazuh-manager/logs
+      - wazuh_queue:/var/wazuh-manager/queue
+      - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
+      - wazuh_active_response:/var/wazuh-manager/active-response/bin
+      - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/var/wazuh-manager/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -109,7 +108,6 @@ volumes:
   wazuh_queue:
   wazuh_var_multigroups:
   wazuh_active_response:
-  wazuh_wodles:
   wazuh-indexer-data:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:

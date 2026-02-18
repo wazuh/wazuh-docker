@@ -128,9 +128,9 @@ jobs:
             - name: wazuh.indexer
               ip: wazuh.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.manager
               ip: wazuh.manager
 
@@ -405,9 +405,9 @@ jobs:
             - name: wazuh3.indexer
               ip: wazuh3.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.master
               ip: wazuh.master
               node_type: master

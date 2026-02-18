@@ -55,12 +55,6 @@ docker volume create \
 docker volume create \
            --label com.docker.compose.project=$2 \
            --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=master-wazuh-wodles \
-           $2_master-wazuh-wodles
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
            --label com.docker.compose.volume=master-wazuh-etc \
            $2_master-wazuh-etc
 
@@ -105,12 +99,6 @@ docker volume create \
            --label com.docker.compose.version=$1 \
            --label com.docker.compose.volume=worker-wazuh-active-response \
            $2_worker-wazuh-active-response
-
-docker volume create \
-           --label com.docker.compose.project=$2 \
-           --label com.docker.compose.version=$1 \
-           --label com.docker.compose.volume=worker-wazuh-wodles \
-           $2_worker-wazuh-wodles
 
 docker volume create \
            --label com.docker.compose.project=$2 \
@@ -175,11 +163,6 @@ docker container run --rm -it \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \
-           -v wazuh-docker_ossec-wodles:/from \
-           -v $2_master-wazuh-wodles:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
            -v wazuh-docker-etc:/from \
            -v $2_master-wazuh-etc:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
@@ -217,11 +200,6 @@ docker container run --rm -it \
 docker container run --rm -it \
            -v wazuh-docker_worker-ossec-active-response:/from \
            -v $2_worker-wazuh-active-response:/to \
-           alpine ash -c "cd /from ; cp -avp . /to"
-
-docker container run --rm -it \
-           -v wazuh-docker_worker-ossec-wodles:/from \
-           -v $2_worker-wazuh-wodles:/to \
            alpine ash -c "cd /from ; cp -avp . /to"
 
 docker container run --rm -it \

@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+
+# dumping wazuh-manager.log to standard output
+exec tail -F /var/wazuh-manager/logs/wazuh-manager.log

@@ -34,9 +34,9 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
         - name: wazuh.indexer
         ip: wazuh.indexer
 
-    # Wazuh server nodes
+    # Wazuh manager nodes
     # Use node_type only with more than one Wazuh manager
-    server:
+    manager:
         - name: wazuh.manager
         ip: wazuh.manager
 
