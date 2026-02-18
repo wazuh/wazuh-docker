@@ -248,7 +248,7 @@ configure_permissions() {
 }
 
 ##############################################################################
-# Change any ossec user/group to wazuh-manager user/group
+# Change any legacy user/group to wazuh-manager user/group
 ##############################################################################
 
 set_correct_permOwner() {

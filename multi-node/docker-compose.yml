@@ -27,16 +27,16 @@ services:
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
-      - master-wazuh-api-configuration:/var/ossec/api/configuration
-      - master-wazuh-etc:/var/ossec/etc
-      - master-wazuh-logs:/var/ossec/logs
-      - master-wazuh-queue:/var/ossec/queue
-      - master-wazuh-var-multigroups:/var/ossec/var/multigroups
-      - master-wazuh-active-response:/var/ossec/active-response/bin
-      - master-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.master.pem:/var/ossec/etc/certs/server.pem
-      - ./wazuh-certificates/wazuh.master-key.pem:/var/ossec/etc/certs/server-key.pem
+      - master-wazuh-api-configuration:/var/wazuh-manager/api/configuration
+      - master-wazuh-etc:/var/wazuh-manager/etc
+      - master-wazuh-logs:/var/wazuh-manager/logs
+      - master-wazuh-queue:/var/wazuh-manager/queue
+      - master-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
+      - master-wazuh-active-response:/var/wazuh-manager/active-response/bin
+      - master-wazuh-wodles:/var/wazuh-manager/wodles
+      - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.master.pem:/var/wazuh-manager/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
@@ -60,16 +60,16 @@ services:
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
-      - worker-wazuh-api-configuration:/var/ossec/api/configuration
-      - worker-wazuh-etc:/var/ossec/etc
-      - worker-wazuh-logs:/var/ossec/logs
-      - worker-wazuh-queue:/var/ossec/queue
-      - worker-wazuh-var-multigroups:/var/ossec/var/multigroups
-      - worker-wazuh-active-response:/var/ossec/active-response/bin
-      - worker-wazuh-wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/var/ossec/etc/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.worker.pem:/var/ossec/etc/certs/server.pem
-      - ./wazuh-certificates/wazuh.worker-key.pem:/var/ossec/etc/certs/server-key.pem
+      - worker-wazuh-api-configuration:/var/wazuh-manager/api/configuration
+      - worker-wazuh-etc:/var/wazuh-manager/etc
+      - worker-wazuh-logs:/var/wazuh-manager/logs
+      - worker-wazuh-queue:/var/wazuh-manager/queue
+      - worker-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
+      - worker-wazuh-active-response:/var/wazuh-manager/active-response/bin
+      - worker-wazuh-wodles:/var/wazuh-manager/wodles
+      - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.worker.pem:/var/wazuh-manager/etc/certs/server.pem
+      - ./wazuh-certificates/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0

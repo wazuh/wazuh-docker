@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
     steps:
 
     - name: Check out code
@@ -83,7 +83,7 @@ jobs:
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
@@ -128,9 +128,9 @@ jobs:
             - name: wazuh.indexer
               ip: wazuh.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.manager
               ip: wazuh.manager
 
@@ -234,7 +234,7 @@ jobs:
        fi
 
     - name: Check Wazuh manager start
-      run: | 
+      run: |
         for NODE in "${{ env.MANAGER_NODES }}"; do
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
@@ -249,7 +249,7 @@ jobs:
             fi
           done
         done
-        
+
     - name: Check Wazuh dashboard service URL
       run: |
         for i in {1..20}; do
@@ -306,9 +306,9 @@ jobs:
           fi
         done
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
-    
+
     - name: Docker logs
       if: always()
       run: |
@@ -325,7 +325,7 @@ jobs:
 
   check-multi-node:
     name: Check multi node on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }} 
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-22.04-arm]
@@ -334,7 +334,7 @@ jobs:
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
@@ -383,9 +383,9 @@ jobs:
             - name: wazuh3.indexer
               ip: wazuh3.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.master
               ip: wazuh.master
               node_type: master
@@ -490,7 +490,7 @@ jobs:
        fi
 
     - name: Check Wazuh manager start
-      run: | 
+      run: |
         IFS=',' read -r -a NODES <<< "${{ env.MANAGER_NODES }}"
         for NODE in "${NODES[@]}"; do
           for i in {1..20}; do
@@ -563,9 +563,9 @@ jobs:
           fi
         done
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
-    
+
     - name: Docker logs
       if: always()
       run: |

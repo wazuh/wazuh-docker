@@ -60,7 +60,7 @@ This glossary defines key terms and concepts related to Wazuh, Docker, and their
 
 **O**
 
--   **`ossec.conf`**: The main configuration file for the Wazuh Manager and Wazuh Agent.
+-   **`ossec.conf`**: The main configuration file for the Wazuh Agent.
 
 **R**
 
@@ -84,6 +84,7 @@ This glossary defines key terms and concepts related to Wazuh, Docker, and their
 -   **Wazuh Dashboard**: See Dashboard.
 -   **Wazuh Indexer**: See Indexer.
 -   **Wazuh Manager**: See Manager.
+-   **`wazuh-manager.conf`**: The main configuration file for the Wazuh Manager.
 
 ---
 This glossary provides a starting point. For more detailed definitions or terms not listed here, please refer to the official Wazuh and Docker documentation.

@@ -38,9 +38,9 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
         - name: wazuh3.indexer
           ip: wazuh3.indexer
 
-      # Wazuh server nodes
+      # Wazuh manager nodes
       # Use node_type only with more than one Wazuh manager
-      server:
+      manager:
         - name: wazuh.master
           ip: wazuh.master
           node_type: master

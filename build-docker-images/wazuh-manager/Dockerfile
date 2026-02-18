@@ -28,7 +28,7 @@ RUN URL_VAR="wazuh_manager_${TARGETARCH}_rpm" && \
     rm -f /var/wazuh-manager/etc/sslmanager.cert
 
 COPY config/etc/ /etc/
-COPY --chown=root:wazuh config/create_user.py /var/wazuh-manager/framework/scripts/create_user.py
+COPY --chown=root:wazuh-manager config/create_user.py /var/wazuh-manager/framework/scripts/create_user.py
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 
@@ -37,10 +37,10 @@ COPY config/permanent_data.env config/permanent_data.sh /
 #Make mount directories for keep permissions
 
 RUN mkdir -p /var/wazuh-manager/var/multigroups && \
-    chown root:wazuh /var/wazuh-manager/var/multigroups && \
+    chown root:wazuh-manager /var/wazuh-manager/var/multigroups && \
     chmod 770 /var/wazuh-manager/var/multigroups && \
     mkdir -p /var/wazuh-manager/active-response/bin && \
-    chown root:wazuh /var/wazuh-manager/active-response/bin && \
+    chown root:wazuh-manager /var/wazuh-manager/active-response/bin && \
     chmod 770 /var/wazuh-manager/active-response/bin && \
     chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \

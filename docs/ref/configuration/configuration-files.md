@@ -2,8 +2,8 @@
 
 ### 1. Wazuh Manager Configuration
 
-* **`ossec.conf`**: The main configuration file for the Wazuh manager. It controls rules, decoders, agent enrollment, active responses, clustering, and more.
-    * **Customization**: Mount a custom `ossec.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container at `/wazuh-mount-point/`, which will be copied to the path `/var/ossec` (e.g., the file `/var/ossec/etc/ossec.conf` must be mounted at `/wazuh-mount-point/etc/ossec.conf`) .
+* **`wazuh-manager.conf`**: The main configuration file for the Wazuh manager. It controls rules, decoders, agent enrollment, active responses, clustering, and more.
+    * **Customization**: Mount a custom `wazuh-manager.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container at `/wazuh-mount-point/`, which will be copied to the path `/var/wazuh-manager` (e.g., the file `/var/wazuh-manager/etc/wazuh-manager.conf` must be mounted at `/wazuh-mount-point/etc/wazuh-manager.conf`) .
 
 ### 2. Wazuh Indexer Configuration
 
