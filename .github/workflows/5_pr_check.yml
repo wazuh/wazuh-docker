@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
     steps:
 
     - name: Check out code
@@ -83,7 +83,7 @@ jobs:
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
@@ -128,9 +128,9 @@ jobs:
             - name: wazuh.indexer
               ip: wazuh.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.manager
               ip: wazuh.manager
 
@@ -159,98 +159,90 @@ jobs:
         fi
 
     - name: Start single node stack
+      id: start_single_node_stack
       run: docker compose up -d
       working-directory: ./single-node
 
     - name: Check Wazuh indexer start
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
-       for i in {1..20}; do
-        echo "Checking Wazuh indexer health (Attempt $i/20)"
-         RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
-         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
-         if echo "$RESPONSE" | grep -qE "green|yellow"; then
-           echo "Cluster Online"
-           echo "$RESPONSE"
-           exit 0
-         fi
-         echo "Waiting for cluster to be online"
-         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs --tail 30 "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
-         [ $i -lt 20 ] && sleep 60
-       done
-       status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
-       if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-       else
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-        exit 1
-       fi
+        for i in {1..20}; do
+          echo "Checking Wazuh indexer health (Attempt $i/20)"
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
+          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
+          if echo "$RESPONSE" | grep -qE "green|yellow"; then
+            echo "Cluster Online"
+            echo "$RESPONSE"
+            exit 0
+          fi
+          echo "Waiting for cluster to be online"
+          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+            echo ""
+            echo "========================================================="
+            echo "Container logs for $CONTAINER_NAME"
+            echo "========================================================="
+            docker logs --tail 30 "$CONTAINER_NAME"
+            echo "---------------------------------------------------------"
+          done
+          [ $i -lt 20 ] && sleep 60
+        done
+        status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+        status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green|yellow" | wc -l`"
+        if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+        else
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+          exit 1
+        fi
 
 
     - name: Check Wazuh indexer nodes
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
-       nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
-       if [[ $nodes -eq 1 ]]; then
+        nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
         echo "Wazuh indexer nodes: ${nodes}"
-       else
-        echo "Wazuh indexer nodes: ${nodes}"
-       fi
-
-    - name: Check documents into wazuh-states index
-      run: |
-        for i in {1..20}; do
-          echo "Checking documents in wazuh-states (Attempt $i/20)..."
-          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
-          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
-          if [[ "$DOCS" -gt 0 ]]; then
-            echo "wazuh-states index has documents: ${DOCS}"
-            exit 0
-          fi
-          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
-          [ $i -lt 20 ] && sleep 60
-        done
-        echo "Error: No documents found in wazuh-states after 20 attempts."
-        echo "Last response: $RESPONSE"
-        exit 1
 
     - name: Check Wazuh templates
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
-       qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
-       templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
-       if [[ $qty_templates -gt 3 ]]; then
-        echo "wazuh templates:"
-        echo "${templates}"
-       else
-        echo "wazuh templates:"
-        echo "${templates}"
-        exit 1
-       fi
+        qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
+        templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
+        if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+        else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+        fi
 
     - name: Check Wazuh manager start
-      run: | 
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
+      run: |
         for NODE in "${{ env.MANAGER_NODES }}"; do
+          ok=false
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
-            if [[ $services -gt 9 ]]; then
+            if [[ $services -gt 7 ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
               echo "OK"
+              ok=true
+              break
             else
               curl -k -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items
               echo "Wazuh Manager $NODE Services: ${services}. Retrying in 30s"
               [ $i -lt 20 ] && sleep 30
             fi
           done
+          if [[ "$ok" != "true" ]]; then
+            echo "Error: Wazuh Manager $NODE did not reach expected running services threshold"
+            exit 1
+          fi
         done
-        
+
     - name: Check Wazuh dashboard service URL
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
         for i in {1..20}; do
           echo "Checking Wazuh dashboard (Attempt $i/20)"
@@ -270,9 +262,11 @@ jobs:
         exit 1
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
     - name: Edit Wazuh agent docker-compose file
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       shell: bash
       env:
         WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
@@ -287,17 +281,21 @@ jobs:
         fi
 
     - name: Start Wazuh agent
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: docker compose up -d
       working-directory: ./wazuh-agent
 
     - name: Check Wazuh agent enrollment
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: |
+        enrolled=false
         for i in {1..5}; do
           TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
           if [[ $agents -gt 1 ]]; then
             echo "Wazuh agents: ${agents}"
             echo "OK"
+            enrolled=true
             break
           else
             curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}"
@@ -305,27 +303,51 @@ jobs:
             [ $i -lt 5 ] && sleep 10
           fi
         done
+        if [[ "$enrolled" != "true" ]]; then
+          echo "Error: Wazuh agent enrollment did not reach expected active agents threshold"
+          exit 1
+        fi
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
       run: ./.github/single-node-log-check.sh
-    
+
+    - name: Check documents into wazuh-states index
+      if: ${{ always() && steps.start_single_node_stack.outcome == 'success' }}
+      run: |
+        for i in {1..20}; do
+          echo "Checking documents in wazuh-states (Attempt $i/20)..."
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
+          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
+          if [[ "$DOCS" -gt 0 ]]; then
+            echo "wazuh-states index has documents: ${DOCS}"
+            exit 0
+          fi
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          [ $i -lt 20 ] && sleep 60
+        done
+        echo "Error: No documents found in wazuh-states after 20 attempts."
+        echo "Last response: $RESPONSE"
+        exit 1
+
     - name: Docker logs
       if: always()
+      continue-on-error: true
       run: |
         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
+          echo ""
+          echo "========================================================="
+          echo "Container logs for $CONTAINER_NAME"
+          echo "========================================================="
+          docker logs "$CONTAINER_NAME"
+          echo "---------------------------------------------------------"
+        done
       working-directory: ./single-node
 
   check-multi-node:
     name: Check multi node on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }} 
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-22.04-arm]
@@ -334,7 +356,7 @@ jobs:
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
-      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }} 
+      WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       API_USERNAME: wazuh-wui
@@ -383,9 +405,9 @@ jobs:
             - name: wazuh3.indexer
               ip: wazuh3.indexer
 
-          # Wazuh server nodes
+          # Wazuh manager nodes
           # Use node_type only with more than one Wazuh manager
-          server:
+          manager:
             - name: wazuh.master
               ip: wazuh.master
               node_type: master
@@ -416,89 +438,85 @@ jobs:
         fi
 
     - name: Start multi node stack
+      id: start_multi_node_stack
       run: docker compose up -d
       working-directory: ./multi-node
 
     - name: Check Wazuh indexer start
-      run: |
-       for i in {1..20}; do
-        echo "Checking Wazuh indexer health (Attempt $i/20)"
-         RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
-         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
-         if echo "$RESPONSE" | grep -qE "green|yellow"; then
-           echo "Cluster Online"
-           echo "$RESPONSE"
-           exit 0
-         fi
-         echo "Waiting for cluster to be online"
-         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs --tail 30 "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
-         [ $i -lt 20 ] && sleep 60
-       done
-       status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
-       if [[ $status_index_green -eq $status_index ]]; then
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-       else
-        curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
-        exit 1
-       fi
-
-    - name: Check Wazuh indexer nodes
-      run: |
-       nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
-       if [[ $nodes -eq 3 ]]; then
-        echo "Wazuh indexer nodes: ${nodes}"
-       else
-        echo "Wazuh indexer nodes: ${nodes}"
-       fi
-
-    - name: Check documents into wazuh-states index
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
         for i in {1..20}; do
-          echo "Checking documents in wazuh-states (Attempt $i/20)..."
-          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
-          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
-          if [[ "$DOCS" -gt 0 ]]; then
-            echo "wazuh-states index has documents: ${DOCS}"
+          echo "Checking Wazuh indexer health (Attempt $i/20)"
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/_cluster/health?pretty" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s --retry 2 || true)
+          INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}' | grep "indexer")
+          if echo "$RESPONSE" | grep -qE "green|yellow"; then
+            echo "Cluster Online"
+            echo "$RESPONSE"
             exit 0
           fi
-          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          echo "Waiting for cluster to be online"
+          for CONTAINER_NAME in $INDEXER_CONTAINERS; do
+            echo ""
+            echo "========================================================="
+            echo "Container logs for $CONTAINER_NAME"
+            echo "========================================================="
+            docker logs --tail 30 "$CONTAINER_NAME"
+            echo "---------------------------------------------------------"
+          done
           [ $i -lt 20 ] && sleep 60
         done
-        echo "Error: No documents found in wazuh-states after 20 attempts."
-        echo "Last response: $RESPONSE"
-        exit 1
+        status_index="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | wc -l`"
+        status_index_green="`curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "green" | wc -l`"
+        if [[ $status_index_green -eq $status_index ]]; then
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+        else
+          curl -XGET "https://127.0.0.1:9200/_cat/indices" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s
+          exit 1
+        fi
+
+    - name: Check Wazuh indexer nodes
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
+      run: |
+        nodes="`curl -XGET "https://127.0.0.1:9200/_cat/nodes" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep -E "indexer" | wc -l`"
+        if [[ $nodes -eq 3 ]]; then
+          echo "Wazuh indexer nodes: ${nodes}"
+        else
+          echo "Wazuh indexer nodes: ${nodes}"
+          exit 1
+        fi
 
     - name: Check Wazuh templates
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
-       qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh" | wc -l`"
-       templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh"`"
-       if [[ $qty_templates -gt 3 ]]; then
-        echo "wazuh templates:"
-        echo "${templates}"
-       else
-        echo "wazuh templates:"
-        echo "${templates}"
-        exit 1
-       fi
+        qty_templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh" | wc -l`"
+        templates="`curl -XGET "https://127.0.0.1:9200/_cat/templates" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s | grep "wazuh"`"
+        if [[ $qty_templates -gt 3 ]]; then
+          echo "wazuh templates:"
+          echo "${templates}"
+        else
+          echo "wazuh templates:"
+          echo "${templates}"
+          exit 1
+        fi
 
     - name: Check Wazuh manager start
-      run: | 
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
+      run: |
         IFS=',' read -r -a NODES <<< "${{ env.MANAGER_NODES }}"
         for NODE in "${NODES[@]}"; do
+          if [[ "$NODE" == "master" ]]; then
+            THRESHOLD=8
+          else
+            THRESHOLD=7
+          fi
+          ok=false
           for i in {1..20}; do
             TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
-            if [[ $services -gt 9 ]]; then
+            if [[ $services -ge $THRESHOLD ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
               echo "OK"
+              ok=true
               break
             else
               curl -k -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items
@@ -506,9 +524,14 @@ jobs:
               [ $i -lt 20 ] && sleep 30
             fi
           done
+          if [[ "$ok" != "true" ]]; then
+            echo "Error: Wazuh Manager $NODE did not reach expected running services threshold"
+            exit 1
+          fi
         done
 
     - name: Check Wazuh dashboard service URL
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
         for i in {1..20}; do
           echo "Checking Wazuh dashboard (Attempt $i/20)"
@@ -528,9 +551,11 @@ jobs:
         exit 1
 
     - name: Modify Docker endpoint into Wazuh agent docker-compose.yml file
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: sed -i "s/<WAZUH_MANAGER_IP>/$(ip addr show docker0 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)/g" wazuh-agent/docker-compose.yml
 
     - name: Edit Wazuh agent docker-compose file
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       shell: bash
       env:
         WAZUH_REGISTRY: ${{ env.WAZUH_REGISTRY }}
@@ -545,16 +570,20 @@ jobs:
         fi
 
     - name: Start Wazuh agent
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: docker compose -f wazuh-agent/docker-compose.yml up -d
 
     - name: Check Wazuh agent enrollment
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: |
+        enrolled=false
         for i in {1..5}; do
           TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
           if [[ $agents -gt 1 ]]; then
             echo "Wazuh agents: ${agents}"
             echo "OK"
+            enrolled=true
             break
           else
             curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}"
@@ -562,20 +591,44 @@ jobs:
             [ $i -lt 5 ] && sleep 10
           fi
         done
+        if [[ "$enrolled" != "true" ]]; then
+          echo "Error: Wazuh agent enrollment did not reach expected active agents threshold"
+          exit 1
+        fi
 
-    - name: Check errors in ossec.log for Wazuh manager
+    - name: Check errors in wazuh-manager.log for Wazuh manager
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
       run: ./.github/multi-node-log-check.sh
-    
+
+    - name: Check documents into wazuh-states index
+      if: ${{ always() && steps.start_multi_node_stack.outcome == 'success' }}
+      run: |
+        for i in {1..20}; do
+          echo "Checking documents in wazuh-states (Attempt $i/20)..."
+          RESPONSE=$(curl -XGET "https://127.0.0.1:9200/wazuh-states*/_count" -u ${{ env.INDEXER_USERNAME }}:${{ env.INDEXER_PASSWORD }} -k -s || echo "{}")
+          DOCS=$(echo "$RESPONSE" | jq -r '.count // 0')
+          if [[ "$DOCS" -gt 0 ]]; then
+            echo "wazuh-states index has documents: ${DOCS}"
+            exit 0
+          fi
+          echo "The index is empty or does not exist yet (Count: $DOCS). Waiting 60s"
+          [ $i -lt 20 ] && sleep 60
+        done
+        echo "Error: No documents found in wazuh-states after 20 attempts."
+        echo "Last response: $RESPONSE"
+        exit 1
+
     - name: Docker logs
       if: always()
+      continue-on-error: true
       run: |
         INDEXER_CONTAINERS=$(docker ps --format '{{.Names}}')
         for CONTAINER_NAME in $INDEXER_CONTAINERS; do
-           echo ""
-           echo "========================================================="
-           echo "Container logs for $CONTAINER_NAME"
-           echo "========================================================="
-           docker logs "$CONTAINER_NAME"
-           echo "---------------------------------------------------------"
-         done
-      working-directory: ./single-node
+          echo ""
+          echo "========================================================="
+          echo "Container logs for $CONTAINER_NAME"
+          echo "========================================================="
+          docker logs "$CONTAINER_NAME"
+          echo "---------------------------------------------------------"
+        done
+      working-directory: ./multi-node

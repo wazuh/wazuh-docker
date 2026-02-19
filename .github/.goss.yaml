@@ -1,26 +1,26 @@
 file:
-  /var/ossec/bin/wazuh-control:
+  /var/wazuh-manager/bin/wazuh-control:
     exists: true
     mode: "0750"
     owner: root
     group: root
     filetype: file
     contains: []
-  /var/ossec/etc/ossec.conf:
+  /var/wazuh-manager/etc/wazuh-manager.conf:
     exists: true
     mode: "0660"
     owner: root
-    group: wazuh
+    group: wazuh-manager
     filetype: file
     contains: []
-  /var/ossec/etc/sslmanager.cert:
+  /var/wazuh-manager/etc/sslmanager.cert:
     exists: true
     mode: "0644"
     owner: root
     group: root
     filetype: file
     contains: []
-  /var/ossec/etc/sslmanager.key:
+  /var/wazuh-manager/etc/sslmanager.key:
     exists: true
     mode: "0600"
     owner: root
@@ -28,12 +28,12 @@ file:
     filetype: file
     contains: []
 user:
-  wazuh:
+  wazuh-manager:
     exists: true
     groups:
-    - wazuh
-    home: /var/ossec
+    - wazuh-manager
+    home: /var/wazuh-manager
     shell: /sbin/nologin
 group:
-  wazuh:
+  wazuh-manager:
     exists: true
