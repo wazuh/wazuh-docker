@@ -5,7 +5,7 @@
 
 ## Description
 
-The `wazuh/wazuh-docker` repository provides resources to deploy the Wazuh cybersecurity platform using Docker containers. This setup enables easy installation and orchestration of the full Wazuh stack, including the Wazuh server, dashboard (based on OpenSearch Dashboards), and OpenSearch for indexing and search.
+The `wazuh/wazuh-docker` repository provides resources to deploy the Wazuh cybersecurity platform using Docker containers. This setup enables easy installation and orchestration of the full Wazuh stack, including the Wazuh manager, dashboard (based on OpenSearch Dashboards), and OpenSearch for indexing and search.
 
 ## Capabilities
 
@@ -18,7 +18,7 @@ The `wazuh/wazuh-docker` repository provides resources to deploy the Wazuh cyber
 ## Branch Convention
 
 - `main`: Developing and testing of new features.
-- `X.Y.Z`: Version-specific branches (e.g., `4.14.5`, `4.13.0`, etc.).
+- `X.Y.Z`: Version-specific branches (e.g., `5.0.0`, `4.14.0`, etc.).
 
 ## Documentation
 

@@ -2,8 +2,8 @@
 
 ### 1. Wazuh Manager Configuration
 
-* **`ossec.conf`**: The main configuration file for the Wazuh manager. It controls rules, decoders, agent enrollment, active responses, integrations, clustering, and more.
-    * **Customization**: Mount a custom `ossec.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container at `/wazuh-mount-point/`, which will be copied to the path `/var/ossec` (e.g., the file `/var/ossec/etc/ossec.conf` must be mounted at `/wazuh-mount-point/etc/ossec.conf`) .
+* **`wazuh-manager.conf`**: The main configuration file for the Wazuh manager. It controls rules, decoders, agent enrollment, active responses, clustering, and more.
+    * **Customization**: Mount a custom `wazuh-manager.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container at `/wazuh-mount-point/`, which will be copied to the path `/var/wazuh-manager` (e.g., the file `/var/wazuh-manager/etc/wazuh-manager.conf` must be mounted at `/wazuh-mount-point/etc/wazuh-manager.conf`) .
 
 ### 2. Wazuh Indexer Configuration
 
@@ -28,5 +28,20 @@
         docker compose up -d
         ```
 
+Consult the official Wazuh documentation for version 5.0.0 for detailed information on all possible configuration parameters for each component.
 
-Consult the official Wazuh documentation for version 4.14.5 for detailed information on all possible configuration parameters for each component.
+## Persistence configuration
+
+When customizing your Wazuh Docker deployment, certain files and directories must be persisted to retain your changes across container restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
+
+### Volumes and Bind Mounts
+
+Docker volumes allow you to persist data outside of container lifecycles. When a container is removed or recreated, data stored in volumes remains intact. This is essential for maintaining configuration files, user data, and other persistent state. While, bind mounts allow you to mount a file or directory from the host into the container.
+
+To persist files or directories in your Wazuh deployment, you can mount them as volumes or bind mounts in your `docker-compose.yml` file.
+
+> **Important**: Ensure that files exist on the host before starting the containers. If the file doesn't exist, Docker will create a directory instead, which may cause startup failures.
+
+For more information on Docker volumes and bind mounts, refer to the official Docker documentation:
+- [Use volumes](https://docs.docker.com/storage/volumes/)
+- [Bind mounts](https://docs.docker.com/storage/bind-mounts/)

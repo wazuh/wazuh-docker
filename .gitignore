@@ -1,5 +1,13 @@
-single-node/config/wazuh_indexer_ssl_certs/*.pem
-single-node/config/wazuh_indexer_ssl_certs/*.key
-multi-node/config/wazuh_indexer_ssl_certs/*.pem
-multi-node/config/wazuh_indexer_ssl_certs/*.key
 *.log
+build-docker-images/artifact_urls.yml
+build-docker-images/artifacts_env.txt
+single-node/wazuh-certificates
+single-node/wazuh-certificates/*
+single-node/wazuh-certificates-tool.log
+single-node/wazuh-certs-tool*.sh
+single-node/config*.yml
+multi-node/wazuh-certificates
+multi-node/wazuh-certificates/*
+multi-node/wazuh-certificates-tool.log
+multi-node/wazuh-certs-tool*.sh
+multi-node/config*.yml

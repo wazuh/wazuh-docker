@@ -1,6 +1,43 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [5.0.0]
+
+### Added
+
+- None
+
+### Changed
+
+- Move index documents test ([#2221](https://github.com/wazuh/wazuh-docker/pull/2221))
+- Separate Agent/Manager - Docker - Adapt image build process ([#2220](https://github.com/wazuh/wazuh-docker/pull/2220))
+- Remove revision input ([#2217](https://github.com/wazuh/wazuh-docker/pull/2217))
+- Improve build script and workflow component revisions handling ([#2212](https://github.com/wazuh/wazuh-docker/pull/2212))
+- Add missing documentation sections in the repository ([#2215](https://github.com/wazuh/wazuh-docker/pull/2215))
+- Add Wazuh version and revision into wazuh-certs-tool and config file ([#2195](https://github.com/wazuh/wazuh-docker/pull/2195))
+- Improve S3 artifact URLs handling ([#2183](https://github.com/wazuh/wazuh-docker/pull/2183))
+- Allow building separate targets ([#2177](https://github.com/wazuh/wazuh-docker/pull/2177))
+- Add developement option when tag name is only version without stage ([#2179](https://github.com/wazuh/wazuh-docker/pull/2179))
+- Add IMAGE_TAG stage reference ([#2178](https://github.com/wazuh/wazuh-docker/pull/2178))
+- Delete Wazuh agent configuration files ([#2173](https://github.com/wazuh/wazuh-docker/pull/2173))
+- Modify run_as parameter value - main ([#2158](https://github.com/wazuh/wazuh-docker/pull/2158))
+- Change macOS and Windows deployment documentation ([#2150](https://github.com/wazuh/wazuh-docker/issues/2150))
+- Modify docker build image process ([#2131](https://github.com/wazuh/wazuh-docker/issues/2131))
+- Update documentation for Wazuh Docker image builder and workflow usage ([#2136](https://github.com/wazuh/wazuh-docker/issues/2136))
+- Configure deployment with environment variables ([#2081](https://github.com/wazuh/wazuh-docker/pull/2081))
+- Modify Wazuh components install method ([#2058](https://github.com/wazuh/wazuh-docker/pull/2058))
+- Image builder Workflow Rebuild ([#2054](https://github.com/wazuh/wazuh-docker/pull/2054))
+- Wazuh server clean-up ([#2030](https://github.com/wazuh/wazuh-docker/pull/2030))
+- Fix OpenSearch deprecated settings ([#1899](https://github.com/wazuh/wazuh-docker/pull/1899))
+
+### Fixed
+
+- Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
+
+### Deleted
+
+- None
+
 ## [4.14.5]
 
 ### Added

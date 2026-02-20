@@ -1,32 +1,39 @@
 # Wazuh Docker Image Builder
 
-The creation of the images for the Wazuh stack deployment in Docker is done with the build-images.yml script
-
-To execute the process, the following must be executed in the root of the wazuh-docker repository:
-
-```
-$ build-docker-images/build-images.sh
-```
+The creation of the images for the Wazuh stack deployment in Docker is done with the `build-docker-images/build-images.sh` script
 
 This script initializes the environment variables needed to build each of the images.
 
-The script allows you to build images from other versions of Wazuh, to do this you must use the -v or --version argument:
+To execute it, make sure to be in the `build-docker-images` directory:
 
+```bash
+cd build-docker-images
 ```
-$ build-docker-images/build-images.sh -v 4.14.5
+
+Then execute:
+
+```bash
+./build-images.sh
 ```
 
-To get all the available script options use the -h or --help option:
+The script also allows to build images from other versions of Wazuh by using the `-v` or `--version` argument:
 
+```bash
+./build-images.sh -v 5.0.0
 ```
-$ build-docker-images/build-images.sh -h
 
-Usage: build-docker-images/build-images.sh [OPTIONS]
+To get all the available script options use the `-h` or `--help` option:
 
-    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default.
-    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.5.
-    -r, --revision <rev>         [Optional] Package revision. By default 1
-    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.5.
+```bash
+./build-images.sh -h
+
+Usage: build-images.sh [OPTIONS]
+
+    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default.
+    -refs, --references <ref>    [Optional] Set each Wazuh component reference to be build (indexer, manager, dasboard and agent). By default, using the latest release: ['latest', 'latest', 'latest', 'latest']
+    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.
+    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 5.0.0.
+    -m, --multiarch              [Optional] Enable multi-architecture builds.
     -h, --help                   Show this help.
 
 ```
