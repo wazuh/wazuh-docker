@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- INDEXER_URL substitution fix ([#2226](https://github.com/wazuh/wazuh-docker/pull/2226))
 
 ### Deleted
 
