@@ -1,5 +1,5 @@
 file:
-  /var/wazuh-manager/bin/wazuh-control:
+  /var/wazuh-manager/bin/wazuh-manager-control:
     exists: true
     mode: "0750"
     owner: root
@@ -15,14 +15,14 @@ file:
     contains: []
   /var/wazuh-manager/etc/sslmanager.cert:
     exists: true
-    mode: "0644"
+    mode: "0640"
     owner: root
     group: root
     filetype: file
     contains: []
   /var/wazuh-manager/etc/sslmanager.key:
     exists: true
-    mode: "0600"
+    mode: "0640"
     owner: root
     group: root
     filetype: file

@@ -108,8 +108,8 @@ function_entrypoint_scripts() {
 function_configure_vulnerability_detection() {
 if [ "$INDEXER_PASSWORD" != "" ]; then
   >&2 echo "Configuring password."
-    echo "$INDEXER_USERNAME" | /var/wazuh-manager/bin/wazuh-keystore -f indexer -k username
-    echo "$INDEXER_PASSWORD" | /var/wazuh-manager/bin/wazuh-keystore -f indexer -k password
+    echo "$INDEXER_USERNAME" | /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k username
+    echo "$INDEXER_PASSWORD" | /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password
 fi
 }
 
@@ -126,4 +126,4 @@ function_configure_vulnerability_detection
 function_entrypoint_scripts
 
 # Start Wazuh
-/var/wazuh-manager/bin/wazuh-control start
+/var/wazuh-manager/bin/wazuh-manager-control start
