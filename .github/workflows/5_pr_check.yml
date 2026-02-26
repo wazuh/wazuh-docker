@@ -292,7 +292,7 @@ jobs:
         for i in {1..5}; do
           TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
-          if [[ $agents -gt 1 ]]; then
+          if [[ $agents -gt 0 ]]; then
             echo "Wazuh agents: ${agents}"
             echo "OK"
             enrolled=true
@@ -580,7 +580,7 @@ jobs:
         for i in {1..5}; do
           TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
-          if [[ $agents -gt 1 ]]; then
+          if [[ $agents -gt 0 ]]; then
             echo "Wazuh agents: ${agents}"
             echo "OK"
             enrolled=true

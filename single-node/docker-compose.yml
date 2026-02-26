@@ -34,8 +34,8 @@ services:
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
       - wazuh_active_response:/var/wazuh-manager/active-response/bin
       - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/var/wazuh-manager/etc/certs/server.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/server-key.pem
+      - ./wazuh-certificates/wazuh.manager.pem:/var/wazuh-manager/etc/certs/manager.pem
+      - ./wazuh-certificates/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0

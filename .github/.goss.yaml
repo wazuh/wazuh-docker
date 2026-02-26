@@ -1,5 +1,5 @@
 file:
-  /var/wazuh-manager/bin/wazuh-control:
+  /var/wazuh-manager/bin/wazuh-manager-control:
     exists: true
     mode: "0750"
     owner: root

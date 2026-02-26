@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change Wazuh manager certificates names ([#2223](https://github.com/wazuh/wazuh-docker/pull/2223))
 - Move index documents test ([#2221](https://github.com/wazuh/wazuh-docker/pull/2221))
 - Separate Agent/Manager - Docker - Adapt image build process ([#2220](https://github.com/wazuh/wazuh-docker/pull/2220))
 - Remove revision input ([#2217](https://github.com/wazuh/wazuh-docker/pull/2217))
