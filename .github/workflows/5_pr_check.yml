@@ -2,7 +2,14 @@ name: Wazuh Docker pipeline
 permissions:
   contents: read
   id-token: write
-on: [pull_request]
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      docker_reference:
+        description: 'Branch or tag to build from'
+        required: true
+        type: string
 
 jobs:
 
@@ -36,7 +43,7 @@ jobs:
     secrets: inherit
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
-      docker_reference: ${{ github.head_ref }}
+      docker_reference: ${{ github.head_ref || inputs.docker_reference }}
       commit_list: '["latest", "latest", "latest", "latest"]'
       id: ${{ github.run_id }}
       dev: true
