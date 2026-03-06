@@ -23,6 +23,7 @@ RUN URL_VAR="wazuh_agent_${TARGETARCH}_rpm" && \
     rm -rf /wazuh-agent.rpm && \
     dnf clean all && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf && \
+    sed -i '/<agent_name>/a\      <groups>CHANGE_AGENT_GROUPS</groups>' /var/ossec/etc/ossec.conf && \
     S6_ARCH="amd64" && \
     if [ "${TARGETARCH}" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
     curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz \
