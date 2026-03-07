@@ -38,7 +38,7 @@ services:
       - ./wazuh-certificates/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
 
   wazuh.indexer:
-    image: docker.io/docker.io/wazuh/wazuh-indexer:5.0.0
+    image: docker.io/wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
     container_name: single-node-wazuh.indexer
     restart: always
