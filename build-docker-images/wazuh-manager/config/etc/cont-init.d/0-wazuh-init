@@ -252,9 +252,9 @@ configure_permissions() {
 ##############################################################################
 
 set_correct_permOwner() {
-  find / -group 997 -exec chown :999 {} +;
-  find / -group 101 -exec chown :999 {} +;
-  find / -user 101 -exec chown 999 {} +;
+  find /var/wazuh-manager/ -group 997 -exec chown :999 {} +;
+  find /var/wazuh-manager/ -group 101 -exec chown :999 {} +;
+  find /var/wazuh-manager/ -user 101 -exec chown 999 {} +;
 }
 
 ##############################################################################
