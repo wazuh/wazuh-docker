@@ -65,7 +65,8 @@ permissions:
 
 jobs:
   setup:
-    runs-on: ubuntu-22.04
+    runs-on:
+      group: wz-linux-amd64
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
@@ -135,7 +136,8 @@ jobs:
 
   package-urls:
     name: generate package urls
-    runs-on: ubuntu-22.04
+    runs-on:
+      group: wz-linux-amd64
     needs: setup
 
     env:
@@ -314,7 +316,8 @@ jobs:
           path: artifact_urls.yml
 
   build-and-push:
-    runs-on: ubuntu-22.04
+    runs-on:
+      group: wz-linux-amd64
 
     needs:
       - setup
