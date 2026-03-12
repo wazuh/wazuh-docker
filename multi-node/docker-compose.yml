@@ -5,6 +5,14 @@ services:
     hostname: wazuh.master
     container_name: multi-node-wazuh.master
     restart: always
+    depends_on:
+      wazuh1.indexer:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -I -u $$API_USERNAME:$$API_PASSWORD https://localhost:55000/security/user/authenticate > /dev/null || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     ulimits:
       memlock:
         soft: -1
@@ -36,11 +44,18 @@ services:
       - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./wazuh-certificates/wazuh.master.pem:/var/wazuh-manager/etc/certs/manager.pem
       - ./wazuh-certificates/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.worker
     container_name: multi-node-wazuh.worker
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/1514' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     ulimits:
       memlock:
         soft: -1
@@ -48,6 +63,9 @@ services:
       nofile:
         soft: 655360
         hard: 655360
+    depends_on:
+      wazuh.master:
+        condition: service_healthy
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=worker01
@@ -79,7 +97,7 @@ services:
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh1.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh1.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -93,6 +111,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - wazuh-indexer-data-1:/var/lib/wazuh-indexer
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
@@ -106,10 +130,14 @@ services:
     hostname: wazuh2.indexer
     container_name: multi-node-wazuh2.indexer
     restart: always
+    entrypoint: >
+      /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5; until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
+    depends_on:
+      - wazuh1.indexer
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh2.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh2.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -123,6 +151,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - wazuh-indexer-data-2:/var/lib/wazuh-indexer
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
@@ -134,10 +168,14 @@ services:
     hostname: wazuh3.indexer
     container_name: multi-node-wazuh3.indexer
     restart: always
+    entrypoint: >
+      /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5;until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
+    depends_on:
+      - wazuh1.indexer
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh3.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh3.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -151,6 +189,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - wazuh-indexer-data-3:/var/lib/wazuh-indexer
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
@@ -162,6 +206,12 @@ services:
     hostname: wazuh.dashboard
     container_name: multi-node-wazuh.dashboard
     restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/login" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     ports:
       - 443:5601
     environment:
@@ -185,11 +235,10 @@ services:
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
-      - wazuh1.indexer
-      - wazuh.master
-    links:
-      - wazuh1.indexer:wazuh1.indexer
-      - wazuh.master:wazuh.master
+      wazuh1.indexer:
+        condition: service_healthy
+      wazuh.master:
+        condition: service_healthy
 
   nginx:
     image: nginx:stable
@@ -202,10 +251,6 @@ services:
       - wazuh.master
       - wazuh.worker
       - wazuh.dashboard
-    links:
-      - wazuh.master:wazuh.master
-      - wazuh.worker:wazuh.worker
-      - wazuh.dashboard:wazuh.dashboard
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 
