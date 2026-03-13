@@ -208,6 +208,15 @@ services:
       - wazuh.dashboard:wazuh.dashboard
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-entrypoint-check.sh:/nginx-entrypoint-check.sh
+    command:
+      - /bin/sh
+      - -c
+      - |
+        apt update && \
+        apt install -y netcat-openbsd && \
+        chmod +x /nginx-entrypoint-check.sh && \
+        /nginx-entrypoint-check.sh
 
 volumes:
   master-wazuh-api-configuration:
