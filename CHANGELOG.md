@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add deployment healthchecks ([#2251](https://github.com/wazuh/wazuh-docker/pull/2251))
 - Update artifact generation jobs to use wz-linux dedicated runner group ([#2242](https://github.com/wazuh/wazuh-docker/pull/2242))
 - Fix set_correct_permOwner function ([#2238](https://github.com/wazuh/wazuh-docker/pull/2238))
 - Add workflow dispatch option ([#2231](https://github.com/wazuh/wazuh-docker/pull/2231))

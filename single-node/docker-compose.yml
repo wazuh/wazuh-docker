@@ -5,6 +5,14 @@ services:
     hostname: wazuh.manager
     container_name: single-node-wazuh.manager
     restart: always
+    depends_on:
+      wazuh.indexer:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -I -u $$API_USERNAME:$$API_PASSWORD https://localhost:55000/security/user/authenticate > /dev/null || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     ulimits:
       memlock:
         soft: -1
@@ -32,7 +40,6 @@ services:
       - wazuh_logs:/var/wazuh-manager/logs
       - wazuh_queue:/var/wazuh-manager/queue
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
-      - wazuh_active_response:/var/wazuh-manager/active-response/bin
       - ./wazuh-certificates/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./wazuh-certificates/wazuh.manager.pem:/var/wazuh-manager/etc/certs/manager.pem
       - ./wazuh-certificates/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
@@ -47,7 +54,7 @@ services:
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh.indexer
       - cluster.initial_cluster_manager_nodes=wazuh.indexer
       - node.max_local_storage_nodes=1
@@ -60,6 +67,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
@@ -73,6 +86,12 @@ services:
     hostname: wazuh.dashboard
     container_name: single-node-wazuh.dashboard
     restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/login" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     ports:
       - 443:5601
     environment:
@@ -96,10 +115,10 @@ services:
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
-      - wazuh.indexer
-    links:
-      - wazuh.indexer:wazuh.indexer
-      - wazuh.manager:wazuh.manager
+      wazuh.indexer:
+        condition: service_healthy
+      wazuh.manager:
+        condition: service_healthy
 
 volumes:
   wazuh_api_configuration:
