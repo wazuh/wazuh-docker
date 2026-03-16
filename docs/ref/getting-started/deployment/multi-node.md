@@ -27,31 +27,31 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
 4.  Edit the `config.yml` file with the configuration of the Wazuh components to be deployed
 
-    ```bash
+    ```yaml
     nodes:
       # Wazuh indexer server nodes
       indexer:
         - name: wazuh1.indexer
-          ip: wazuh1.indexer
+          dns: "wazuh1.indexer"
         - name: wazuh2.indexer
-          ip: wazuh2.indexer
+          dns: "wazuh2.indexer"
         - name: wazuh3.indexer
-          ip: wazuh3.indexer
+          dns: "wazuh3.indexer"
 
       # Wazuh manager nodes
       # Use node_type only with more than one Wazuh manager
       manager:
         - name: wazuh.master
-          ip: wazuh.master
+          dns: "wazuh.master"
           node_type: master
         - name: wazuh.worker
-          ip: wazuh.worker
+          dns: "wazuh.worker"
           node_type: worker
 
       # Wazuh dashboard node
       dashboard:
         - name: wazuh.dashboard
-          ip: wazuh.dashboard
+          dns: "wazuh.dashboard"
     ```
 
 5.  Run the certificate creation script:
