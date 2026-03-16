@@ -55,7 +55,7 @@ services:
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh.indexer
       - cluster.initial_cluster_manager_nodes=wazuh.indexer
       - node.max_local_storage_nodes=1
@@ -69,13 +69,11 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test:
-        - "CMD-SHELL"
-        - "curl -k -s -u $${INDEXER_USERNAME}:$${INDEXER_PASSWORD} https://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
       - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
