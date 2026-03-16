@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Add deployment healthchecks ([#2251](https://github.com/wazuh/wazuh-docker/pull/2251))
+- Update artifact generation jobs to use wz-linux dedicated runner group ([#2242](https://github.com/wazuh/wazuh-docker/pull/2242))
 - Fix set_correct_permOwner function ([#2238](https://github.com/wazuh/wazuh-docker/pull/2238))
 - Add workflow dispatch option ([#2231](https://github.com/wazuh/wazuh-docker/pull/2231))
 - Change Wazuh manager certificates names ([#2223](https://github.com/wazuh/wazuh-docker/pull/2223))
@@ -68,11 +69,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Backport from 5.0.0: Backport from 5.0.0: Allow building separate targets #2177 ([#2184](https://github.com/wazuh/wazuh-docker/pull/2184))
+- Backport from 5.0.0: Allow building separate targets #2177 ([#2184](https://github.com/wazuh/wazuh-docker/pull/2184))
 
 ### Fixed
 
-- None
+- INDEXER_URL substitution fix ([#2226](https://github.com/wazuh/wazuh-docker/pull/2226))
 
 ### Deleted
 
