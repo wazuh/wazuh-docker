@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add deployment healthchecks ([#2251](https://github.com/wazuh/wazuh-docker/pull/2251))
 - Fix set_correct_permOwner function ([#2238](https://github.com/wazuh/wazuh-docker/pull/2238))
 - Add workflow dispatch option ([#2231](https://github.com/wazuh/wazuh-docker/pull/2231))
 - Change Wazuh manager certificates names ([#2223](https://github.com/wazuh/wazuh-docker/pull/2223))
