@@ -27,7 +27,6 @@ services:
       - wazuh_logs:/var/wazuh-manager/logs
       - wazuh_queue:/var/wazuh-manager/queue
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
-      - wazuh_active_response:/var/wazuh-manager/active-response/bin
 
   wazuh.agent:
     build:

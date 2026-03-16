@@ -39,9 +39,6 @@ COPY config/permanent_data.env config/permanent_data.sh /
 RUN mkdir -p /var/wazuh-manager/var/multigroups && \
     chown root:wazuh-manager /var/wazuh-manager/var/multigroups && \
     chmod 770 /var/wazuh-manager/var/multigroups && \
-    mkdir -p /var/wazuh-manager/active-response/bin && \
-    chown root:wazuh-manager /var/wazuh-manager/active-response/bin && \
-    chmod 770 /var/wazuh-manager/active-response/bin && \
     chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
