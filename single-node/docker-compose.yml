@@ -68,7 +68,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      test: [ "CMD-SHELL", "curl -s -k -u test:test https://localhost:9200/_cluster/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -126,7 +126,6 @@ volumes:
   wazuh_logs:
   wazuh_queue:
   wazuh_var_multigroups:
-  wazuh_active_response:
   wazuh-indexer-data:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:

@@ -110,7 +110,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      test: [ "CMD-SHELL", "curl -s -k -u test:test https://localhost:9200/_cluster/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -150,7 +150,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      test: [ "CMD-SHELL", "curl -s -k -u test:test https://localhost:9200/_cluster/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -188,7 +188,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s -k -u $$INDEXER_USERNAME:$$INDEXER_PASSWORD https://localhost:9200/_cluster/health" ]
+      test: [ "CMD-SHELL", "curl -s -k -u test:test https://localhost:9200/_cluster/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -258,13 +258,11 @@ volumes:
   master-wazuh-logs:
   master-wazuh-queue:
   master-wazuh-var-multigroups:
-  master-wazuh-active-response:
   worker-wazuh-api-configuration:
   worker-wazuh-etc:
   worker-wazuh-logs:
   worker-wazuh-queue:
   worker-wazuh-var-multigroups:
-  worker-wazuh-active-response:
   wazuh-indexer-data-1:
   wazuh-indexer-data-2:
   wazuh-indexer-data-3:
