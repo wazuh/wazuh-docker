@@ -216,6 +216,7 @@ jobs:
       - name: Generate presigned URLs for artifacts for dev packages
         if: ${{ inputs.dev == true }}
         run: |
+          source ${{ env.WORKFLOW_VENV }}/bin/activate
           INDEXER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[0]')
           MANAGER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[1]')
           DASHBOARD_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[2]')
