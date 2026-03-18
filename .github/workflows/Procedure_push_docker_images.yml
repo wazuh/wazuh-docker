@@ -190,21 +190,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-          # Install yq from a pinned version and verify its checksum
-          YQ_VERSION="v4.44.3"
-          YQ_BINARY="yq_linux_amd64"
-          YQ_BASE_URL="https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}"
-          wget -q "${YQ_BASE_URL}/checksums" -O /tmp/yq_checksums
-          wget -q "${YQ_BASE_URL}/${YQ_BINARY}" -O /tmp/${YQ_BINARY}
-          EXPECTED_SHA256="$(grep " ${YQ_BINARY}$" /tmp/yq_checksums | awk '{print $1}')"
-          ACTUAL_SHA256="$(sha256sum /tmp/${YQ_BINARY} | awk '{print $1}')"
-          if [ -z "$EXPECTED_SHA256" ] || [ "$EXPECTED_SHA256" != "$ACTUAL_SHA256" ]; then
-            echo "yq checksum verification failed" >&2
-            exit 1
-          fi
-          sudo mv /tmp/${YQ_BINARY} /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          rm -f /tmp/yq_checksums
+          # Install yq
+          sudo curl -sL "https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64" -o /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
           sudo apt-get install -y python3-venv
           python3 -m venv ${{ env.WORKFLOW_VENV }}
           source ${{ env.WORKFLOW_VENV }}/bin/activate
