@@ -156,8 +156,14 @@ jobs:
       LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/artifact_urls.yml
 
     steps:
+      - name: Checkout repository
+        if: ${{ inputs.dev == true }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.docker_reference }}
 
       - name: Checkout wazuh/wazuh-automation repository
+        if: ${{ inputs.dev == true }}
         uses: actions/checkout@v4
         with:
           repository: wazuh/wazuh-automation
@@ -173,6 +179,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set up Python
+        if: ${{ inputs.dev == true }}
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
