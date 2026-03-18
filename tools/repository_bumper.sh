@@ -146,11 +146,6 @@ main() {
     # Get old version and stage
     get_old_version_and_stage
 
-    if [[ "${OLD_VERSION}" == "${VERSION}" && "${OLD_STAGE}" == "${STAGE}" ]]; then
-        echo "Version and stage are already up to date." | tee -a "${LOG_FILE}"
-        echo "No changes needed." | tee -a "${LOG_FILE}"
-        exit 0
-    fi
     if [[ "${OLD_VERSION}" != "${VERSION}" ]]; then
         echo "Updating version from ${OLD_VERSION} to ${VERSION}" | tee -a "${LOG_FILE}"
         update_version_in_files "${VERSION}"
