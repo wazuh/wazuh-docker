@@ -13,7 +13,7 @@ on:
         required: true
       wazuh_automation_reference:
         description: 'Branch or tag of the wazuh-automation repository'
-        required: true
+        required: false
         default: 'main'
       products:
         description: 'Comma-separated list of the image names to build and push'
@@ -46,7 +46,7 @@ on:
         type: string
       wazuh_automation_reference:
         description: 'Branch or tag of the wazuh-automation repository'
-        required: true
+        required: false
         default: 'main'
         type: string
       products:
@@ -185,6 +185,32 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install and configure python and workflow dependencies
+        if: ${{ inputs.dev == true }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          # Install yq from a pinned version and verify its checksum
+          YQ_VERSION="v4.44.3"
+          YQ_BINARY="yq_linux_amd64"
+          YQ_BASE_URL="https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}"
+          wget -q "${YQ_BASE_URL}/checksums" -O /tmp/yq_checksums
+          wget -q "${YQ_BASE_URL}/${YQ_BINARY}" -O /tmp/${YQ_BINARY}
+          EXPECTED_SHA256="$(grep " ${YQ_BINARY}$" /tmp/yq_checksums | awk '{print $1}')"
+          ACTUAL_SHA256="$(sha256sum /tmp/${YQ_BINARY} | awk '{print $1}')"
+          if [ -z "$EXPECTED_SHA256" ] || [ "$EXPECTED_SHA256" != "$ACTUAL_SHA256" ]; then
+            echo "yq checksum verification failed" >&2
+            exit 1
+          fi
+          sudo mv /tmp/${YQ_BINARY} /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          rm -f /tmp/yq_checksums
+          sudo apt-get install -y python3-venv
+          python3 -m venv ${{ env.WORKFLOW_VENV }}
+          source ${{ env.WORKFLOW_VENV }}/bin/activate
+          pip install --upgrade pip
+          pip install pyyaml
+
       - name: Get Wazuh version
         if: ${{ inputs.dev == true }}
         run: |
@@ -201,19 +227,6 @@ jobs:
           LOCAL_AWS_S3_BUCKET_DEV=${{ vars.AWS_S3_BUCKET_DEV }}
           echo LOCAL_AWS_S3_BUCKET_DEV=$LOCAL_AWS_S3_BUCKET_DEV >> $GITHUB_ENV
 
-      - name: Install and configure python and workflow dependencies
-        if: ${{ inputs.dev == true }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-          sudo wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          sudo apt-get install -y python3-venv
-          python3 -m venv ${{ env.WORKFLOW_VENV }}
-          source ${{ env.WORKFLOW_VENV }}/bin/activate
-          pip install --upgrade pip
-          pip install pyyaml
-
       - name: Generate presigned URLs for artifacts for dev packages
         if: ${{ inputs.dev == true }}
         run: |
@@ -224,6 +237,15 @@ jobs:
           # Parse components and their revisions
           COMPONENTS=($(echo "$WAZUH_COMPONENTS" | jq -r '.[]'))
           REVISIONS=($(echo "$COMMIT_LIST" | jq -r '.[]'))
+
+          # Ensure the number of components matches the number of revisions
+          if [[ ${#COMPONENTS[@]} -ne ${#REVISIONS[@]} ]]; then
+            echo "Error: WAZUH_COMPONENTS and COMMIT_LIST length mismatch." >&2
+            echo "       Components: ${#COMPONENTS[@]}, Revisions: ${#REVISIONS[@]}." >&2
+            echo "       WAZUH_COMPONENTS=${WAZUH_COMPONENTS}" >&2
+            echo "       COMMIT_LIST=${COMMIT_LIST}" >&2
+            exit 1
+          fi
 
           # Map revisions to component names
           for i in "${!COMPONENTS[@]}"; do
