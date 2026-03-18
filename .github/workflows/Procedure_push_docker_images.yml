@@ -154,6 +154,7 @@ jobs:
       GENERATE_PRESIGNED_URLS_SCRIPT_PATH: ${{ github.workspace }}/wazuh-automation/tools/sign_urls/generate_presigned_dev_urls.py
       PRESIGNED_URLS_SCRIPT_PROCESS: "build_docker"
       LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/artifact_urls.yml
+      COMMIT_LIST: ${{ inputs.commit_list }}
 
     steps:
       - name: Checkout repository
@@ -217,11 +218,10 @@ jobs:
         if: ${{ inputs.dev == true }}
         run: |
           source ${{ env.WORKFLOW_VENV }}/bin/activate
-          INDEXER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[0]')
-          MANAGER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[1]')
-          DASHBOARD_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[2]')
+          MANAGER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[0]')
+          DASHBOARD_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[1]')
+          INDEXER_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[2]')
           AGENT_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[3]')
-          ASSISTANT_REVISION=$(echo "$COMMIT_LIST" | jq -r '.[4]')
 
           python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} \
             --process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
@@ -230,8 +230,7 @@ jobs:
             --indexer-revision   $INDEXER_REVISION \
             --manager-revision   $MANAGER_REVISION \
             --dashboard-revision $DASHBOARD_REVISION \
-            --agent-revision     $AGENT_REVISION \
-            --assistant-revision $ASSISTANT_REVISION
+            --agent-revision     $AGENT_REVISION
 
       - name: Save presigned URLs file to artifact
         if: ${{ inputs.dev == true }}
