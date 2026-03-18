@@ -128,7 +128,7 @@ jobs:
 
     - name: Create single node certficates
       run: |
-        curl -o ./wazuh-certs-tool.sh ${{ env.wazuh_certs_tool }}
+        curl --output ./wazuh-certs-tool.sh "${{ env.wazuh_certs_tool }}"
         cat > config.yml <<EOF
         nodes:
           # Wazuh indexer server nodes
@@ -401,7 +401,7 @@ jobs:
 
     - name: Create multi node certficates
       run: |
-        curl -o ./wazuh-certs-tool.sh ${{ env.wazuh_certs_tool }}
+        curl --output ./wazuh-certs-tool.sh "${{ env.wazuh_certs_tool }}"
         cat > config.yml <<EOF
         nodes:
           # Wazuh indexer server nodes
