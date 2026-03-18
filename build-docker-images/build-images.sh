@@ -58,7 +58,7 @@ build() {
         fi
     fi
 
-    awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' $ARTIFACT_URLS_FILE > artifacts_env.txt
+    awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
 
     # Set component commit references for development builds
     if [ -n "${WAZUH_DEV_STAGE}" ]; then
