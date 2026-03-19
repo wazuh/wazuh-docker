@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Fix WAZUH_AGENT_GROUP variable ([#2262](https://github.com/wazuh/wazuh-docker/pull/2262))
 
 ### Deleted
 
