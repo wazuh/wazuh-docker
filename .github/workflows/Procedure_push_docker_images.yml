@@ -17,13 +17,13 @@ on:
         default: 'main'
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent,wazuh-assistant'
         required: false
         type: string
       commit_list:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
-        default: '["latest", "latest", "latest", "latest"]'
+        default: '["latest", "latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -51,13 +51,13 @@ on:
         type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent,wazuh-assistant'
         required: false
         type: string
       commit_list:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
-        default: '["latest", "latest", "latest", "latest"]'
+        default: '["latest", "latest", "latest", "latest", "latest"]'
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -117,7 +117,7 @@ jobs:
           done
           WC_JSON_ARRAY+="]"
         else
-          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent"]'
+          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent","wazuh-assistant"]'
         fi
         echo "Products to build: $WC_JSON_ARRAY"
         echo "WAZUH_COMPONENTS=$WC_JSON_ARRAY" >> $GITHUB_OUTPUT
@@ -249,6 +249,9 @@ jobs:
             ;;
             wazuh-agent)
             AGENT_REVISION="${REVISIONS[$i]}"
+            ;;
+            wazuh-assistant)
+            ASSISTANT_REVISION="${REVISIONS[$i]}"
             ;;
           esac
           done
