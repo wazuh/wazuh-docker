@@ -253,23 +253,14 @@ jobs:
           esac
           done
 
-          # Build dynamic arguments based on available components
-          SCRIPT_ARGS="--process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} --wazuh-version ${{ env.WAZUH_VERSION }} --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }}"
-
-          if [[ ! -z "$MANAGER_REVISION" ]]; then
-          SCRIPT_ARGS="$SCRIPT_ARGS --manager-revision $MANAGER_REVISION"
-          fi
-          if [[ ! -z "$DASHBOARD_REVISION" ]]; then
-          SCRIPT_ARGS="$SCRIPT_ARGS --dashboard-revision $DASHBOARD_REVISION"
-          fi
-          if [[ ! -z "$INDEXER_REVISION" ]]; then
-          SCRIPT_ARGS="$SCRIPT_ARGS --indexer-revision $INDEXER_REVISION"
-          fi
-          if [[ ! -z "$AGENT_REVISION" ]]; then
-          SCRIPT_ARGS="$SCRIPT_ARGS --agent-revision $AGENT_REVISION"
-          fi
-
-          python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} $SCRIPT_ARGS
+          python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} \
+              --process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
+              --wazuh-version ${{ env.WAZUH_VERSION }} \
+              --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }} \
+              --indexer-revision   $INDEXER_REVISION \
+              --manager-revision   $MANAGER_REVISION \
+              --dashboard-revision $DASHBOARD_REVISION \
+              --agent-revision     $AGENT_REVISION
 
       - name: Save presigned URLs file to artifact
         if: ${{ inputs.dev == true }}
