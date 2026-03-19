@@ -19,7 +19,7 @@ Install tools:
 ```bash
 cargo install mdbook --version 0.5.2
 cargo install mdbook-mermaid --version 0.17.0
-``
+```
 
 Verify installation:
 
@@ -82,10 +82,10 @@ failed to parse manifest ... feature `edition2024` is required
 The package requires the Cargo feature called `edition2024`, but that feature is not stabilized in this version of Cargo.
 ```
 
-This happens because one of mdBook's transitive dependencies has been updated to use Rust edition 2024, which is only
-supported on nightly Rust toolchains.
+This can happen when installing `mdbook` version 0.5.2 because one of its transitive dependencies has been updated to
+use Rust edition 2024, which is only supported on nightly Rust toolchains.
 
-To fix it install using nightly Rust:
+To fix it, install the required `mdbook` version (0.5.2) using nightly Rust:
 
 ```sh
 rustup install nightly
