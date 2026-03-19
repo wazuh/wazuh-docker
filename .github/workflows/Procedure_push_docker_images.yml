@@ -17,13 +17,18 @@ on:
         default: 'main'
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent,wazuh-assistant'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
         required: false
         type: string
       commit_list:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
-        default: '["latest", "latest", "latest", "latest", "latest"]'
+        default: '["latest", "latest", "latest", "latest"]'
+      assistant_revision:
+        description: 'Revision for Wazuh installation assistant tools like Wazuh password tool (only for dev)'
+        type: string
+        default: 'latest'
+        required: false
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -51,13 +56,18 @@ on:
         type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
-        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent,wazuh-assistant'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
         required: false
         type: string
       commit_list:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
-        default: '["latest", "latest", "latest", "latest", "latest"]'
+        default: '["latest", "latest", "latest", "latest"]'
+      assistant_revision:
+        description: 'Revision for Wazuh installation assistant tools like Wazuh password tool (only for dev)'
+        type: string
+        default: 'latest'
+        required: false
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -95,9 +105,11 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
+        echo "* wazuh_automation_reference: ${{ inputs.wazuh_automation_reference }}"
         echo "* products: ${{ inputs.products }}"
         echo "* dev: ${{ inputs.dev }}"
         echo "* commit_list: ${{ inputs.commit_list }}"
+        echo "* assistant_revision: ${{ inputs.assistant_revision }}"
         echo "---------------------------------------------"
 
     - name: Set up variables
@@ -117,7 +129,7 @@ jobs:
           done
           WC_JSON_ARRAY+="]"
         else
-          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent","wazuh-assistant"]'
+          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent"]'
         fi
         echo "Products to build: $WC_JSON_ARRAY"
         echo "WAZUH_COMPONENTS=$WC_JSON_ARRAY" >> $GITHUB_OUTPUT
@@ -155,6 +167,7 @@ jobs:
       PRESIGNED_URLS_SCRIPT_PROCESS: "build_docker"
       LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/artifact_urls.yml
       COMMIT_LIST: ${{ inputs.commit_list }}
+      ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
 
     steps:
       - name: Checkout repository
@@ -249,9 +262,6 @@ jobs:
             ;;
             wazuh-agent)
             AGENT_REVISION="${REVISIONS[$i]}"
-            ;;
-            wazuh-assistant)
-            ASSISTANT_REVISION="${REVISIONS[$i]}"
             ;;
           esac
           done
