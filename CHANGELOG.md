@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Updated wazuh-docker documentation config and tooling versions to meet new standards. ([#2264](https://github.com/wazuh/wazuh-docker/pull/2264))
 - Update certificate configuration to use separate IP and DNS fields ([#2253](https://github.com/wazuh/wazuh-docker/pull/2253))
 - Modify Healthchecks ([#2252](https://github.com/wazuh/wazuh-docker/pull/2252))
 - Add deployment healthchecks ([#2251](https://github.com/wazuh/wazuh-docker/pull/2251))
