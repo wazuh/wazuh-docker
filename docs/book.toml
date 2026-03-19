@@ -15,7 +15,7 @@ command = "mdbook-mermaid"
 [output.html]
 default-theme = "light"
 preferred-dark-theme = "navy"
-git-repository-url = "https://github.com/wazuh/wazuh-automation"
+git-repository-url = "https://github.com/wazuh/wazuh-docker"
 additional-js = ["mermaid.min.js", "mermaid-init.js"]
 
 [output.html.fold]

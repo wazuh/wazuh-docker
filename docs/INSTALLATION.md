@@ -89,7 +89,7 @@ To fix it, install the required `mdbook` version (0.5.2) using nightly Rust:
 
 ```sh
 rustup install nightly
-rustup run nightly cargo install mdbook --version 0.4.52
+rustup run nightly cargo install mdbook --version 0.5.2
 ```
 
 ### Mermaid diagrams not rendering
