@@ -273,7 +273,7 @@ jobs:
               --indexer-revision   $INDEXER_REVISION \
               --manager-revision   $MANAGER_REVISION \
               --dashboard-revision $DASHBOARD_REVISION \
-              --agent-revision     $AGENT_REVISION\
+              --agent-revision     $AGENT_REVISION \
               --assistant-revision $ASSISTANT_REVISION
 
       - name: Save presigned URLs file to artifact
