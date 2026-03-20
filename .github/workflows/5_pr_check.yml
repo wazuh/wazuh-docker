@@ -115,7 +115,7 @@ jobs:
     - name: Log in to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Download artifact_urls.yml
+    - name: Download artifact_urls.yaml
       uses: actions/download-artifact@v4
       with:
         name: presigned-artifact-urls-${{ github.run_id }}
@@ -124,7 +124,7 @@ jobs:
     - name: Add environment variables into GITHUB_ENV
       run: |
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yml >> "$GITHUB_ENV"
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yaml >> "$GITHUB_ENV"
       working-directory: ./single-node/
 
     - name: Create single node certficates
@@ -388,7 +388,7 @@ jobs:
     - name: Log in to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Download artifact_urls.yml
+    - name: Download artifact_urls.yaml
       uses: actions/download-artifact@v4
       with:
         name: presigned-artifact-urls-${{ github.run_id }}
@@ -397,7 +397,7 @@ jobs:
     - name: Add environment variables into GITHUB_ENV
       run: |
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yml >> "$GITHUB_ENV"
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yaml >> "$GITHUB_ENV"
       working-directory: ./multi-node/
 
     - name: Create multi node certficates

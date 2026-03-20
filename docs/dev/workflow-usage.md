@@ -18,7 +18,7 @@ The Procedure_push_docker_images.yml workflow builds and pushes multi-architectu
 
 - Pushes to AWS ECR (Elastic Container Registry)
 - Uses pre-signed S3 URLs for packages
-- Generates dynamic `artifact_urls.yml` from S3 bucket
+- Generates dynamic `artifact_urls.yaml` from S3 bucket
 - Adds development reference to image tags
 - Authenticates via AWS IAM role
 

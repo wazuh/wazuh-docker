@@ -1,5 +1,5 @@
 *.log
-build-docker-images/artifact_urls.yml
+build-docker-images/artifact_urls.yaml
 build-docker-images/artifacts_env.txt
 single-node/wazuh-certificates
 single-node/wazuh-certificates/*
