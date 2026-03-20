@@ -9,7 +9,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Use URL signing script to generate presigned internal package URLs. ([#2259](https://github.com/wazuh/wazuh-docker/pull/2259))
 - Updated wazuh-docker documentation config and tooling versions to meet new standards. ([#2264](https://github.com/wazuh/wazuh-docker/pull/2264))
 - Update certificate configuration to use separate IP and DNS fields ([#2253](https://github.com/wazuh/wazuh-docker/pull/2253))
@@ -42,6 +41,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
 
 ### Deleted
