@@ -41,6 +41,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
 
 ### Deleted
