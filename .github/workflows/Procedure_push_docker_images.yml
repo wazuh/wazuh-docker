@@ -11,6 +11,10 @@ on:
       docker_reference:
         description: 'wazuh-docker reference'
         required: true
+      wazuh_automation_reference:
+        description: 'Branch or tag of the wazuh-automation repository'
+        required: false
+        default: 'main'
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
@@ -20,6 +24,11 @@ on:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
         default: '["latest", "latest", "latest", "latest"]'
+      assistant_revision:
+        description: 'Revision for Wazuh installation assistant tools like Wazuh password tool (only for dev)'
+        type: string
+        default: 'latest'
+        required: false
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -40,6 +49,11 @@ on:
         description: 'wazuh-docker reference'
         required: false
         type: string
+      wazuh_automation_reference:
+        description: 'Branch or tag of the wazuh-automation repository'
+        required: false
+        default: 'main'
+        type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
@@ -49,6 +63,11 @@ on:
         description: 'Wazuh components revisions (only for dev): json array with commit-hash for each product'
         type: string
         default: '["latest", "latest", "latest", "latest"]'
+      assistant_revision:
+        description: 'Revision for Wazuh installation assistant tools like Wazuh password tool (only for dev)'
+        type: string
+        default: 'latest'
+        required: false
       id:
         description: "ID used to identify the workflow uniquely."
         type: string
@@ -86,9 +105,11 @@ jobs:
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
         echo "* docker_reference: ${{ inputs.docker_reference }}"
+        echo "* wazuh_automation_reference: ${{ inputs.wazuh_automation_reference }}"
         echo "* products: ${{ inputs.products }}"
         echo "* dev: ${{ inputs.dev }}"
         echo "* commit_list: ${{ inputs.commit_list }}"
+        echo "* assistant_revision: ${{ inputs.assistant_revision }}"
         echo "---------------------------------------------"
 
     - name: Set up variables
@@ -141,9 +162,29 @@ jobs:
     needs: setup
 
     env:
-      ARTIFACT_URLS_FILE_TEMP: "/tmp/wazuh-docker/artifact_urls.yml"
+      WORKFLOW_VENV: "${{ github.workspace }}/workflow_venv"
+      GENERATE_PRESIGNED_URLS_SCRIPT_PATH: ${{ github.workspace }}/wazuh-automation/tools/sign_urls/generate_presigned_dev_urls.py
+      PRESIGNED_URLS_SCRIPT_PROCESS: "build_docker"
+      LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/artifact_urls.yml
+      COMMIT_LIST: ${{ inputs.commit_list }}
+      ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
 
     steps:
+      - name: Checkout repository
+        if: ${{ inputs.dev == true }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.docker_reference }}
+
+      - name: Checkout wazuh/wazuh-automation repository
+        if: ${{ inputs.dev == true }}
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-automation
+          ref: ${{ inputs.wazuh_automation_reference }}
+          token: ${{ secrets.GH_CLONE_TOKEN }}
+          path: wazuh-automation
+
       - name: Configure AWS credentials
         if: ${{ inputs.dev == true }}
         uses: aws-actions/configure-aws-credentials@v4
@@ -151,169 +192,96 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download S3 package URIs file (if applicable)
+      - name: Set up Python
+        if: ${{ inputs.dev == true }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install and configure python and workflow dependencies
         if: ${{ inputs.dev == true }}
         run: |
-          mkdir -p "$(dirname "$ARTIFACT_URLS_FILE_TEMP")"
+          sudo apt-get update
+          sudo apt-get install -y jq
+          # Install yq
+          sudo curl -sL "https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64" -o /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+          sudo apt-get install -y python3-venv
+          python3 -m venv ${{ env.WORKFLOW_VENV }}
+          source ${{ env.WORKFLOW_VENV }}/bin/activate
+          pip install --upgrade pip
+          pip install pyyaml
 
-          # Download the S3 package URIs file
-          S3_BUCKET="${{ secrets.ARTIFACTS_S3_BUCKET }}"
-          S3_KEY="deployment/artifact_urls.yml"
-          aws s3 cp "s3://$S3_BUCKET/$S3_KEY" "$ARTIFACT_URLS_FILE_TEMP" --region us-west-1
-
-          # Verify the file was downloaded
-          if [ -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
-            echo "S3 package URIs file downloaded successfully."
-          else
-            echo "Failed to download S3 package URIs file." >&2
-            exit 1
-          fi
-
-      - name: Generate the variables file (signing each package URI)
+      - name: Get Wazuh version
         if: ${{ inputs.dev == true }}
         run: |
-          # Define necessary variables
-          WAZUH_VERSION_RAW="${{ inputs.image_tag }}"
-          WAZUH_VERSION="${WAZUH_VERSION_RAW%%-*}"
-          WAZUH_MAJOR="${WAZUH_VERSION%%.*}"
+          WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+          WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
+          WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
+          echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
+          echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
+          echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
+
+      - name: Get artifacts URLs file
+        if: ${{ inputs.dev == true }}
+        run: |
+          LOCAL_AWS_S3_BUCKET_DEV=${{ vars.AWS_S3_BUCKET_DEV }}
+          echo LOCAL_AWS_S3_BUCKET_DEV=$LOCAL_AWS_S3_BUCKET_DEV >> $GITHUB_ENV
+
+      - name: Generate presigned URLs for artifacts for dev packages
+        if: ${{ inputs.dev == true }}
+        run: |
+          source ${{ env.WORKFLOW_VENV }}/bin/activate
           WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
           COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
 
-          INDEXER_COMMIT=""
-          MANAGER_COMMIT=""
-          DASHBOARD_COMMIT=""
-          AGENT_COMMIT=""
+          # Parse components and their revisions
+          COMPONENTS=($(echo "$WAZUH_COMPONENTS" | jq -r '.[]'))
+          REVISIONS=($(echo "$COMMIT_LIST" | jq -r '.[]'))
 
-          OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_processed.yml"
-          PRESIGNED_OUTPUT_FILE="/tmp/wazuh-docker/artifact_urls_presigned.yml"
-          mkdir -p "$(dirname "$OUTPUT_FILE")"
-
-          : > "$OUTPUT_FILE"
-          : > "$PRESIGNED_OUTPUT_FILE"
-
-          # Validate WAZUH_COMPONENTS and COMMIT_LIST have the same length
-          if [ "$(jq length <<<"$WAZUH_COMPONENTS")" -ne "$(jq length <<<"$COMMIT_LIST")" ]; then
-            echo "WAZUH_COMPONENTS and COMMIT_LIST must have the same length." >&2
+          # Ensure the number of components matches the number of revisions
+          if [[ ${#COMPONENTS[@]} -ne ${#REVISIONS[@]} ]]; then
+            echo "Error: WAZUH_COMPONENTS and COMMIT_LIST length mismatch." >&2
+            echo "       Components: ${#COMPONENTS[@]}, Revisions: ${#REVISIONS[@]}." >&2
+            echo "       WAZUH_COMPONENTS=${WAZUH_COMPONENTS}" >&2
+            echo "       COMMIT_LIST=${COMMIT_LIST}" >&2
             exit 1
           fi
 
-          # Verify if the input file exists
-          if [ ! -f "$ARTIFACT_URLS_FILE_TEMP" ]; then
-            echo "The input file $ARTIFACT_URLS_FILE_TEMP does not exist." >&2
-            exit 1
-          fi
-
-          # Set each component's commit/revision based on the input lists
-          for i in $(seq 0 $(($(echo "$WAZUH_COMPONENTS" | jq length) - 1))); do
-            COMPONENT=$(echo "$WAZUH_COMPONENTS" | jq -r ".[$i]")
-            COMMIT=$(echo "$COMMIT_LIST" | jq -r ".[$i]")
-
-            case $COMPONENT in
-              "wazuh-indexer")
-                INDEXER_COMMIT="$COMMIT"
-                echo "Indexer commit set to: $COMMIT"
-                ;;
-              "wazuh-manager")
-                MANAGER_COMMIT="$COMMIT"
-                echo "Manager commit set to: $COMMIT"
-                ;;
-              "wazuh-dashboard")
-                DASHBOARD_COMMIT="$COMMIT"
-                echo "Dashboard commit set to: $COMMIT"
-                ;;
-              "wazuh-agent")
-                AGENT_COMMIT="$COMMIT"
-                echo "Agent commit set to: $COMMIT"
-                ;;
-              *)
-                echo "Unknown component: $COMPONENT."
-                exit 1
-                ;;
-            esac
+          # Map revisions to component names
+          for i in "${!COMPONENTS[@]}"; do
+          case "${COMPONENTS[$i]}" in
+            wazuh-manager)
+            MANAGER_REVISION="${REVISIONS[$i]}"
+            ;;
+            wazuh-dashboard)
+            DASHBOARD_REVISION="${REVISIONS[$i]}"
+            ;;
+            wazuh-indexer)
+            INDEXER_REVISION="${REVISIONS[$i]}"
+            ;;
+            wazuh-agent)
+            AGENT_REVISION="${REVISIONS[$i]}"
+            ;;
+          esac
           done
 
-          # Process the file line by line (replacing ocurrences)
-          while IFS= read -r line || [ -n "$line" ]; do
-            # Skip empty lines and comments
-            if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
-              continue
-            fi
-
-            # Replace variables with their actual values
-            line=${line//\$\{\{ vars.AWS_S3_BUCKET_DEV \}\}/${{ vars.AWS_S3_BUCKET_DEV }}}
-            line=${line//\$\{\{ env.MAJOR \}\}/$WAZUH_MAJOR}
-            line=${line//\$\{\{ env.WAZUH_VERSION \}\}/$WAZUH_VERSION}
-
-            # Replace component revisions
-            line=${line//\$\{\{ env.INDEXER_REVISION \}\}/$INDEXER_COMMIT}
-            line=${line//\$\{\{ env.MANAGER_REVISION \}\}/$MANAGER_COMMIT}
-            line=${line//\$\{\{ env.DASHBOARD_REVISION \}\}/$DASHBOARD_COMMIT}
-            line=${line//\$\{\{ env.AGENT_REVISION \}\}/$AGENT_COMMIT}
-            line=${line//\$\{\{ env.ASSISTANT_REVISION \}\}/latest}
-
-            # Append the processed line to the output file
-            echo "$line" >> "$OUTPUT_FILE"
-          done < "$ARTIFACT_URLS_FILE_TEMP"
-
-          # Verify the output file
-          if [ -f "$OUTPUT_FILE" ]; then
-            echo "The downloaded file artifact_urls.yml was successfully processed at $OUTPUT_FILE."
-          else
-            echo "Failed to create processed artifact_urls.yml file." >&2
-            exit 1
-          fi
-
-          # Generate the presigned URLs for each package
-          while IFS= read -r line || [ -n "$line" ]; do
-            # Skip empty lines and comments
-            if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
-              continue
-            fi
-
-            # Extract both package_name and package_s3_uri from the line
-            if [[ "$line" =~ ^([a-zA-Z0-9_]+):[[:space:]]*\"?s3://([^\"[:space:]]+) ]]; then
-              PACKAGE_NAME="${BASH_REMATCH[1]}"
-              PACKAGE_S3_URI="s3://${BASH_REMATCH[2]}"
-
-              # Check if the object exists in S3
-              BUCKET_NAME=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 3)
-              OBJ_KEY=$(echo "$PACKAGE_S3_URI" | cut -d '/' -f 4-)
-              if ! aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJ_KEY" --region us-west-1 > /dev/null 2>&1; then
-                echo "Object $PACKAGE_S3_URI does not exist. Skipping..." >&2
-                continue
-              fi
-
-              # Generate a pre-signed URL for the S3 URI
-              echo "Generating pre-signed URL for $PACKAGE_NAME..."
-              PRESIGNED_URL=$(aws s3 presign "$PACKAGE_S3_URI" --expires-in 43200 --region us-west-1)
-              presigned_url_line="$PACKAGE_NAME: \"$PRESIGNED_URL\""
-
-              # Append the processed line to the output file
-              echo "$presigned_url_line" >> "$PRESIGNED_OUTPUT_FILE"
-            else
-              echo "$line" >> "$PRESIGNED_OUTPUT_FILE"
-              echo "Skipping line for presigning (no S3 URI found):"
-              echo "$line"
-            fi
-          done < "$OUTPUT_FILE"
-
-          # Verify the presigned urls file
-          if [ -f "$PRESIGNED_OUTPUT_FILE" ]; then
-            echo "Presigned URLs file created successfully at $PRESIGNED_OUTPUT_FILE."
-          else
-            echo "Failed to create presigned artifact_urls.yml file." >&2
-            exit 1
-          fi
-
-          # Store file with the same name expected by build-images.sh
-          cp "$PRESIGNED_OUTPUT_FILE" artifact_urls.yml
+          python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} \
+              --process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
+              --wazuh-version ${{ env.WAZUH_VERSION }} \
+              --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }} \
+              --indexer-revision   $INDEXER_REVISION \
+              --manager-revision   $MANAGER_REVISION \
+              --dashboard-revision $DASHBOARD_REVISION \
+              --agent-revision     $AGENT_REVISION \
+              --assistant-revision $ASSISTANT_REVISION
 
       - name: Save presigned URLs file to artifact
         if: ${{ inputs.dev == true }}
         uses: actions/upload-artifact@v4
         with:
           name: presigned-artifact-urls-${{ github.run_id }}
-          path: artifact_urls.yml
+          path: ${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}
 
   build-and-push:
     runs-on:
