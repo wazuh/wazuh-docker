@@ -91,7 +91,7 @@ environment:
   - WAZUH_REGISTRATION_SERVER=wazuh.manager
   - WAZUH_REGISTRATION_PORT=1515
   - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_AGENT_GROUPS=default
+  - WAZUH_AGENT_GROUP=default
   - WAZUH_REGISTRATION_PASSWORD=StrongPassword
 ```
 
