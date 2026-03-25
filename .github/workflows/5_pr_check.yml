@@ -124,7 +124,7 @@ jobs:
     - name: Add environment variables into GITHUB_ENV
       run: |
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yaml >> "$GITHUB_ENV"
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' ${{ env.ARTIFACT_URL_FILE_NAME }} >> "$GITHUB_ENV"
       working-directory: ./single-node/
 
     - name: Create single node certficates
@@ -397,7 +397,7 @@ jobs:
     - name: Add environment variables into GITHUB_ENV
       run: |
         # Export variables to the environment
-        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' artifact_urls.yaml >> "$GITHUB_ENV"
+        awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=" val}' ${{ env.ARTIFACT_URL_FILE_NAME }} >> "$GITHUB_ENV"
       working-directory: ./multi-node/
 
     - name: Create multi node certficates
