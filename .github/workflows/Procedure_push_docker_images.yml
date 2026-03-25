@@ -165,7 +165,7 @@ jobs:
       WORKFLOW_VENV: "${{ github.workspace }}/workflow_venv"
       GENERATE_PRESIGNED_URLS_SCRIPT_PATH: ${{ github.workspace }}/wazuh-automation/tools/sign_urls/generate_presigned_dev_urls.py
       PRESIGNED_URLS_SCRIPT_PROCESS: "build_docker"
-      LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/${{ env.ARTIFACT_URL_FILE_NAME }}
+      LOCAL_ARTIFACT_URLS_FILEPATH: /tmp/${{ vars.ARTIFACT_URL_FILE_NAME }}
       COMMIT_LIST: ${{ inputs.commit_list }}
       ASSISTANT_REVISION: ${{ inputs.assistant_revision }}
 
