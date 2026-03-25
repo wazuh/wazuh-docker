@@ -10,7 +10,6 @@
 
 WAZUH_IMAGE_VERSION=5.0.0
 IMAGE_TAG=5.0.0
-WAZUH_VERSION=$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_REGISTRY=docker.io
@@ -38,24 +37,42 @@ ctrl_c() {
 
 build() {
 
-    WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
+    # WAZUH_MINOR_VERSION: Extracts major and minor version only (e.g., 5.0.0 -> 5.0)
     WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
+    # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.0.0 -> 5)
+    WAZUH_MAJOR_VERSION="${WAZUH_IMAGE_VERSION%%.*}"
+    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
+    # Note: This is primarily used for pre-release package naming.
+    WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+    # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
+    ARTIFACT_URLS_FILE="artifact_urls.yaml"
 
-    # Variables
-    ARTIFACT_URLS_FILE="artifact_urls.yml"
-
+    # Check if the artifact file already exists to prevent redundant downloads
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
         echo "$ARTIFACT_URLS_FILE exists. Using existing file."
     else
-        TAG="v${WAZUH_VERSION}"
+        # Prepare logic to fetch the artifact from Wazuh's infrastructure
+        TAG="v${WAZUH_IMAGE_VERSION}"
         REPO="wazuh/wazuh-docker"
         GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
 
+        # Use GitHub API to check if the tag exists publicly.
+        # This determines if we should look for production or staging artifacts.
         if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
-            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
+            # CASE: Production (Tag exists in the official repository)
+            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}.yaml
+            PACKAGE_URL=packages.wazuh.com
+            RELEASE_STAGE=production
         else
-            curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://packages-dev.wazuh.com/${WAZUH_MINOR_VERSION}/${ARTIFACT_URLS_FILE}"
+            # CASE: Pre-release/Staging (Tag not found, fall back to staging environment)
+            # Includes the WAZUH_STAGE suffix (e.g., artifact_urls_5.0.0-alpha0.yaml)
+            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml
+            PACKAGE_URL=packages-staging.xdrsiem.wazuh.info
+            RELEASE_STAGE=pre-release
         fi
+        # Final download using dynamic variables based on the release type.
+        # Pattern: server / stage / major_version.x / filename
+        curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
     fi
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
