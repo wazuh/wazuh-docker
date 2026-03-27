@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Change API query method. ([#2275](https://github.com/wazuh/wazuh-docker/pull/2275))
 - Change Wazuh manager Healthcheck. ([#2272](https://github.com/wazuh/wazuh-docker/pull/2272))
 - Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
