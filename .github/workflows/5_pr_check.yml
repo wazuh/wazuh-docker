@@ -149,7 +149,7 @@ jobs:
               dns: "wazuh.dashboard"
         EOF
         cat config.yml
-        bash ./wazuh-certs-tool.sh -A
+        sudo bash certificates-conf.sh --cert --copy --priv
         sudo sysctl -w vm.max_map_count=262144
       working-directory: ./single-node
 
@@ -430,7 +430,7 @@ jobs:
               dns: "wazuh.dashboard"
         EOF
         cat config.yml
-        bash ./wazuh-certs-tool.sh -A
+        sudo bash certificates-conf.sh --cert --copy --priv
         sudo sysctl -w vm.max_map_count=262144
       working-directory: ./multi-node
 
