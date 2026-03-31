@@ -29,30 +29,30 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 
     ```yaml
     nodes:
-    # Wazuh indexer server nodes
-    indexer:
+      # Wazuh indexer server nodes
+      indexer:
         - name: wazuh.indexer
-        dns: "wazuh.indexer"
+          dns: "wazuh.indexer"
 
-    # Wazuh manager nodes
-    # Use node_type only with more than one Wazuh manager
-    manager:
+      # Wazuh manager nodes
+      # Use node_type only with more than one Wazuh manager
+      manager:
         - name: wazuh.manager
-        dns: "wazuh.manager"
+          dns: "wazuh.manager"
 
-    # Wazuh dashboard node
-    dashboard:
+      # Wazuh dashboard node
+      dashboard:
         - name: wazuh.dashboard
-        dns: "wazuh.dashboard"
+          dns: "wazuh.dashboard"
     ```
 
 5.  Run the certificate creation script:
 
     ```bash
-    bash ./wazuh-certs-tool.sh -A
+    sudo bash certificates-conf.sh --cert --copy --priv
     ```
 
-5.  Start the Wazuh environment using `docker compose`:
+6.  Start the Wazuh environment using `docker compose`:
 
     * To run in the foreground (logs will be displayed in your current terminal; press `Ctrl+C` to stop):
 
