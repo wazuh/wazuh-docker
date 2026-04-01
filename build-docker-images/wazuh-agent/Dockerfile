@@ -11,10 +11,12 @@ ARG WAZUH_REGISTRATION_SERVER='CHANGE_ENROLL_IP'
 ARG WAZUH_REGISTRATION_PORT='CHANGE_ENROLL_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
-ARG wazuh_agent_amd64_rpm
-ARG wazuh_agent_arm64_rpm
+ARG wazuh_agent_x86_64_rpm
+ARG wazuh_agent_aarch64_rpm
 
-RUN URL_VAR="wazuh_agent_${TARGETARCH}_rpm" && \
+RUN RPM_ARCH="x86_64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
+    URL_VAR="wazuh_agent_${RPM_ARCH}_rpm" && \
     agent_url="${!URL_VAR}" && \
     dnf install curl-minimal tar gzip procps -y &&\
     curl -o /wazuh-agent.rpm "${agent_url}" && \

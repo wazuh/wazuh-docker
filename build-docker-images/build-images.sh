@@ -219,30 +219,30 @@ build() {
         case "${component}" in
             wazuh-indexer)
                 build_args+=(
-                    --build-arg wazuh_indexer_amd64_rpm="${wazuh_indexer_amd64_rpm}"
-                    --build-arg wazuh_indexer_arm64_rpm="${wazuh_indexer_arm64_rpm}"
+                    --build-arg wazuh_indexer_x86_64_rpm="${wazuh_indexer_x86_64_rpm}"
+                    --build-arg wazuh_indexer_aarch64_rpm="${wazuh_indexer_aarch64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-manager)
                 build_args+=(
-                    --build-arg wazuh_manager_amd64_rpm="${wazuh_manager_amd64_rpm}"
-                    --build-arg wazuh_manager_arm64_rpm="${wazuh_manager_arm64_rpm}"
+                    --build-arg wazuh_manager_x86_64_rpm="${wazuh_manager_x86_64_rpm}"
+                    --build-arg wazuh_manager_aarch64_rpm="${wazuh_manager_aarch64_rpm}"
                 )
                 ;;
             wazuh-dashboard)
                 build_args+=(
-                    --build-arg wazuh_dashboard_amd64_rpm="${wazuh_dashboard_amd64_rpm}"
-                    --build-arg wazuh_dashboard_arm64_rpm="${wazuh_dashboard_arm64_rpm}"
+                    --build-arg wazuh_dashboard_x86_64_rpm="${wazuh_dashboard_x86_64_rpm}"
+                    --build-arg wazuh_dashboard_aarch64_rpm="${wazuh_dashboard_aarch64_rpm}"
                     --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
                     --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-agent)
                 build_args+=(
-                    --build-arg wazuh_agent_amd64_rpm="${wazuh_agent_amd64_rpm}"
-                    --build-arg wazuh_agent_arm64_rpm="${wazuh_agent_arm64_rpm}"
+                    --build-arg wazuh_agent_x86_64_rpm="${wazuh_agent_x86_64_rpm}"
+                    --build-arg wazuh_agent_aarch64_rpm="${wazuh_agent_aarch64_rpm}"
                 )
                 ;;
         esac

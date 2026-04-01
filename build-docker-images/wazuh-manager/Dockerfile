@@ -6,10 +6,12 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 ARG WAZUH_VERSION
 ARG S6_VERSION="v2.2.0.3"
 ARG TARGETARCH
-ARG wazuh_manager_amd64_rpm
-ARG wazuh_manager_arm64_rpm
+ARG wazuh_manager_x86_64_rpm
+ARG wazuh_manager_aarch64_rpm
 
-RUN URL_VAR="wazuh_manager_${TARGETARCH}_rpm" && \
+RUN RPM_ARCH="x86_64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
+    URL_VAR="wazuh_manager_${RPM_ARCH}_rpm" && \
     manager_url="${!URL_VAR}" && \
     dnf install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
     dnf clean all && \
