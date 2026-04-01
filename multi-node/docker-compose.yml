@@ -40,9 +40,9 @@ services:
       - master-wazuh-logs:/var/wazuh-manager/logs
       - master-wazuh-queue:/var/wazuh-manager/queue
       - master-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
-      - ./config/wazuh_cluster_master/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_cluster_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/manager.pem
-      - ./config/wazuh_cluster_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+      - ./config/wazuh_master/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
+      - ./config/wazuh_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/manager.pem
+      - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
 
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
@@ -81,9 +81,9 @@ services:
       - worker-wazuh-logs:/var/wazuh-manager/logs
       - worker-wazuh-queue:/var/wazuh-manager/queue
       - worker-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
-      - ./config/wazuh_cluster_worker/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_cluster_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/manager.pem
-      - ./config/wazuh_cluster_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+      - ./config/wazuh_worker/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
+      - ./config/wazuh_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/manager.pem
+      - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -117,11 +117,11 @@ services:
       start_period: 60s
     volumes:
       - wazuh-indexer-data-1:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_1/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./config/wazuh_indexer_1/certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./config/wazuh_indexer_1/certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - ./config/wazuh_indexer_1/certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - ./config/wazuh_indexer_1/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+      - ./config/wazuh1_indexer/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - ./config/wazuh1_indexer/certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - ./config/wazuh1_indexer/certs/wazuh1.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - ./config/wazuh1_indexer/certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
+      - ./config/wazuh1_indexer/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh2.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -157,9 +157,9 @@ services:
       start_period: 60s
     volumes:
       - wazuh-indexer-data-2:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_2/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./config/wazuh_indexer_2/certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./config/wazuh_indexer_2/certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - ./config/wazuh2_indexer/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - ./config/wazuh2_indexer/certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - ./config/wazuh2_indexer/certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh3.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -195,9 +195,9 @@ services:
       start_period: 60s
     volumes:
       - wazuh-indexer-data-3:/var/lib/wazuh-indexer
-      - ./config/wazuh_indexer_3/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./config/wazuh_indexer_3/certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./config/wazuh_indexer_3/certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - ./config/wazuh3_indexer/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - ./config/wazuh3_indexer/certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - ./config/wazuh3_indexer/certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:5.0.0
