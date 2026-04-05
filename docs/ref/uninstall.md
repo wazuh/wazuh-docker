@@ -10,25 +10,19 @@ This section describes how to uninstall a Wazuh Docker deployment by stopping an
     cd <deployment-directory>
     ```
 
-2. Stop and remove the containers:
+2. Stop and remove the containers, persistent volumes and all stored data:
 
     ```bash
-    docker compose down --remove-orphans
+    docker compose down -v
     ```
 
-3. Remove persistent volumes and all stored data:
+3. Remove generated or downloaded files:
 
     ```bash
-    docker compose down --volumes --remove-orphans
+    rm -rf wazuh-certificates/ config.yml wazuh-certs-tool.sh config/*/certs
     ```
 
-4. Remove generated or downloaded files:
-
-    ```bash
-    rm -rf wazuh-certificates/ config.yml wazuh-certs-tool.sh
-    ```
-
-5. Verify that the deployment is removed:
+4. Verify that the deployment is removed:
 
     ```bash
     docker ps
@@ -45,7 +39,7 @@ This section describes how to uninstall a Wazuh Docker deployment by stopping an
 2. Stop and remove the container:
 
     ```bash
-    docker compose down --remove-orphans
+    docker compose down
     ```
 
 3. Verify that the deployment is removed:

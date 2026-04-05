@@ -57,7 +57,7 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 5.  Run the certificate creation script:
 
     ```bash
-    bash ./wazuh-certs-tool.sh -A
+    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
     ```
 
 6.  Start the Wazuh environment using `docker compose`:

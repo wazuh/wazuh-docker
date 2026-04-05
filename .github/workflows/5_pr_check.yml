@@ -149,7 +149,7 @@ jobs:
               dns: "wazuh.dashboard"
         EOF
         cat config.yml
-        bash ./wazuh-certs-tool.sh -A
+        sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
         sudo sysctl -w vm.max_map_count=262144
       working-directory: ./single-node
 
@@ -231,7 +231,7 @@ jobs:
         for NODE in "${{ env.MANAGER_NODES }}"; do
           ok=false
           for i in {1..20}; do
-            TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+            TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X POST "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
             if [[ $services -gt 7 ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
@@ -299,7 +299,7 @@ jobs:
       run: |
         enrolled=false
         for i in {1..5}; do
-          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X POST "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
           if [[ $agents -gt 0 ]]; then
             echo "Wazuh agents: ${agents}"
@@ -430,7 +430,7 @@ jobs:
               dns: "wazuh.dashboard"
         EOF
         cat config.yml
-        bash ./wazuh-certs-tool.sh -A
+        sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
         sudo sysctl -w vm.max_map_count=262144
       working-directory: ./multi-node
 
@@ -520,7 +520,7 @@ jobs:
           fi
           ok=false
           for i in {1..20}; do
-            TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+            TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X POST "https://127.0.0.1:55000/security/user/authenticate?raw=true")
             services="`curl -k -s -X GET "https://127.0.0.1:55000/cluster/$NODE/status?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep running | wc -l`"
             if [[ $services -ge $THRESHOLD ]]; then
               echo "Wazuh Manager $NODE Services: ${services}"
@@ -587,7 +587,7 @@ jobs:
       run: |
         enrolled=false
         for i in {1..5}; do
-          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X GET "https://127.0.0.1:55000/security/user/authenticate?raw=true")
+          TOKEN=$(curl -s -u ${{ env.API_USERNAME }}:${{ env.API_PASSWORD }} -k -X POST "https://127.0.0.1:55000/security/user/authenticate?raw=true")
           agents="`curl -k -s -X GET "https://127.0.0.1:55000/agents?pretty=true" -H  "Authorization: Bearer ${TOKEN}" | jq -r .data.affected_items | grep active | wc -l`"
           if [[ $agents -gt 0 ]]; then
             echo "Wazuh agents: ${agents}"

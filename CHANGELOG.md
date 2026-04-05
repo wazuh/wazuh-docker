@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Standarize Artifact URL keys ([#2286](https://github.com/wazuh/wazuh-docker/pull/2286))
+- Certificates configuration script. ([#2285](https://github.com/wazuh/wazuh-docker/pull/2285))
 - Modify artifact URLs file name. ([#2266](https://github.com/wazuh/wazuh-docker/pull/2266))
 - Use URL signing script to generate presigned internal package URLs. ([#2259](https://github.com/wazuh/wazuh-docker/pull/2259))
 - Updated wazuh-docker documentation config and tooling versions to meet new standards. ([#2264](https://github.com/wazuh/wazuh-docker/pull/2264))
@@ -43,6 +44,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Change API query method. ([#2275](https://github.com/wazuh/wazuh-docker/pull/2275))
 - Change Wazuh manager Healthcheck. ([#2272](https://github.com/wazuh/wazuh-docker/pull/2272))
 - Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
