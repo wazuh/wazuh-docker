@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Standarize Artifact URL keys ([#2286](https://github.com/wazuh/wazuh-docker/pull/2286))
 - Modify artifact URLs file name. ([#2266](https://github.com/wazuh/wazuh-docker/pull/2266))
 - Use URL signing script to generate presigned internal package URLs. ([#2259](https://github.com/wazuh/wazuh-docker/pull/2259))
 - Updated wazuh-docker documentation config and tooling versions to meet new standards. ([#2264](https://github.com/wazuh/wazuh-docker/pull/2264))
