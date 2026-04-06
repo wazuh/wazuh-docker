@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Create certificate directory with default user and group ([#2287](https://github.com/wazuh/wazuh-docker/pull/2287))
 - Standarize Artifact URL keys ([#2286](https://github.com/wazuh/wazuh-docker/pull/2286))
 - Certificates configuration script. ([#2285](https://github.com/wazuh/wazuh-docker/pull/2285))
 - Modify artifact URLs file name. ([#2266](https://github.com/wazuh/wazuh-docker/pull/2266))
