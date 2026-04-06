@@ -4,12 +4,14 @@ FROM amazonlinux:2023 AS builder
 ARG WAZUH_VERSION
 ARG INSTALL_DIR=/usr/share/wazuh-dashboard
 ARG TARGETARCH
-ARG wazuh_dashboard_amd64_rpm
-ARG wazuh_dashboard_arm64_rpm
+ARG wazuh_dashboard_x86_64_rpm
+ARG wazuh_dashboard_aarch64_rpm
 ARG wazuh_config_yml
 
 # Update and install dependencies
-RUN URL_VAR="wazuh_dashboard_${TARGETARCH}_rpm" && \
+RUN RPM_ARCH="x86_64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
+    URL_VAR="wazuh_dashboard_${RPM_ARCH}_rpm" && \
     dashboard_url="${!URL_VAR}" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \

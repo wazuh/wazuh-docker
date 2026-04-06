@@ -3,14 +3,16 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG TARGETARCH
-ARG wazuh_indexer_amd64_rpm
-ARG wazuh_indexer_arm64_rpm
+ARG wazuh_indexer_x86_64_rpm
+ARG wazuh_indexer_aarch64_rpm
 ARG wazuh_certs_tool
 ARG wazuh_config_yml
 
 COPY config/config.sh .
 
-RUN URL_VAR="wazuh_indexer_${TARGETARCH}_rpm" && \
+RUN RPM_ARCH="x86_64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
+    URL_VAR="wazuh_indexer_${RPM_ARCH}_rpm" && \
     indexer_url="${!URL_VAR}" && \
     dnf install curl-minimal openssl xz tar findutils shadow-utils -y &&\
     curl -o /wazuh-indexer.rpm "${indexer_url}" && \
