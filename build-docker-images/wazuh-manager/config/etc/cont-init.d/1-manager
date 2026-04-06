@@ -73,28 +73,6 @@ function_wazuh_migration(){
   fi
 }
 
-function_create_custom_user() {
-  if [[ ! -z $API_USERNAME ]] && [[ ! -z $API_PASSWORD ]]; then
-  cat << EOF > /var/wazuh-manager/api/configuration/admin.json
-{
-  "username": "$API_USERNAME",
-  "password": "$API_PASSWORD"
-}
-EOF
-
-    # create or customize API user
-    if /var/wazuh-manager/framework/python/bin/python3  /var/wazuh-manager/framework/scripts/create_user.py; then
-      # remove json if exit code is 0
-      rm /var/wazuh-manager/api/configuration/admin.json
-    else
-      echored "There was an error configuring the API user"
-      # terminate container to avoid unpredictable behavior
-      exec s6-svscanctl -t /var/run/s6/services
-      exit 1
-    fi
-  fi
-}
-
 function_entrypoint_scripts() {
   # It will run every .sh script located in entrypoint-scripts folder in lexicographical order
   if [ -d "/entrypoint-scripts/" ]
@@ -115,9 +93,6 @@ fi
 
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
-
-# create API custom user
-function_create_custom_user
 
 # configure Vulnerabilty detection
 function_configure_vulnerability_detection

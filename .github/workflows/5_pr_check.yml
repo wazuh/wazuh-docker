@@ -95,8 +95,6 @@ jobs:
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
-      API_USERNAME: wazuh-wui
-      API_PASSWORD: MyS3cr37P450r.*-
       MANAGER_NODES: "manager"
     steps:
 
@@ -368,8 +366,6 @@ jobs:
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
-      API_USERNAME: wazuh-wui
-      API_PASSWORD: MyS3cr37P450r.*-
       MANAGER_NODES: "master,worker01"
     steps:
 

@@ -32,8 +32,6 @@ services:
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - master-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - master-wazuh-etc:/var/wazuh-manager/etc
@@ -73,8 +71,6 @@ services:
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - worker-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - worker-wazuh-etc:/var/wazuh-manager/etc
@@ -221,8 +217,6 @@ services:
       - WAZUH_API_URL=https://wazuh.master
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem

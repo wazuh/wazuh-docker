@@ -26,8 +26,6 @@ environment:
   - WAZUH_API_URL=https://wazuh.manager
   - DASHBOARD_USERNAME=kibanaserver
   - DASHBOARD_PASSWORD=kibanaserver
-  - API_USERNAME=wazuh-wui
-  - API_PASSWORD=MyS3cr37P450r.*-
 ```
 
 **Variable Descriptions:**
@@ -65,8 +63,6 @@ environment:
   - WAZUH_API_URL=https://wazuh.manager
   - DASHBOARD_USERNAME=kibanaserver
   - DASHBOARD_PASSWORD=kibanaserver
-  - API_USERNAME=wazuh-wui
-  - API_PASSWORD=MyS3cr37P450r.*-
 ```
 
 **Variable Descriptions:**
