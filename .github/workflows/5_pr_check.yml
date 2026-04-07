@@ -96,6 +96,8 @@ jobs:
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       MANAGER_NODES: "manager"
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: wazuh-wui
     steps:
 
     - name: Check out code
@@ -367,6 +369,8 @@ jobs:
       INDEXER_USERNAME: admin
       INDEXER_PASSWORD: admin
       MANAGER_NODES: "master,worker01"
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: wazuh-wui
     steps:
 
     - name: Check out code
