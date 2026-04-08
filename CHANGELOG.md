@@ -62,11 +62,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Updated GitHub actions version for wazuh-docker workflows. ([#2290](https://github.com/wazuh/wazuh-docker/pull/2290))
 
 ### Fixed
 
-- None
+- Fix WAZUH_AGENT_GROUP variable ([#2262](https://github.com/wazuh/wazuh-docker/pull/2262))
+- Fix bumper script early exit ([#2261](https://github.com/wazuh/wazuh-docker/pull/2261))
 
 ### Deleted
 
