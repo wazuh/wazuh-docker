@@ -86,7 +86,7 @@ environment:
   - WAZUH_AGENT_NAME=my-agent
 ```
 
-These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf` and set the enrollment password.
+These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
 
 ---
 
