@@ -8,14 +8,15 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-IMAGE_TAG=4.14.5
+WAZUH_IMAGE_VERSION=5.0.0
+IMAGE_TAG=5.0.0
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
+IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_REGISTRY=docker.io
 
-WAZUH_IMAGE_VERSION="4.14.5"
-WAZUH_TAG_REVISION="1"
+WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_DEV_STAGE=""
-FILEBEAT_MODULE_VERSION="0.5"
+WAZUH_COMPONENTS_COMMIT_LIST=''
 
 # -----------------------------------------------------------------------------
 
@@ -36,42 +37,136 @@ ctrl_c() {
 
 build() {
 
-    WAZUH_VERSION="$(echo $WAZUH_IMAGE_VERSION | sed -e 's/\.//g')"
-    FILEBEAT_TEMPLATE_BRANCH="${WAZUH_IMAGE_VERSION}"
-    WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
-    WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
+    # WAZUH_MINOR_VERSION: Extracts major and minor version only (e.g., 5.0.0 -> 5.0)
+    WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
+    # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.0.0 -> 5)
+    WAZUH_MAJOR_VERSION="${WAZUH_IMAGE_VERSION%%.*}"
+    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
+    # Note: This is primarily used for pre-release package naming.
+    WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+    # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
+    ARTIFACT_URLS_FILE="artifact_urls.yaml"
 
-    if  [ "${WAZUH_DEV_STAGE}" ];then
-        FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
-        IMAGE_TAG="${WAZUH_IMAGE_VERSION}-${WAZUH_DEV_STAGE,,}"
-        if ! curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
-            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
-            clean 1
-        fi
+    # Check if the artifact file already exists to prevent redundant downloads
+    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
+        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
     else
-        if curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/v${FILEBEAT_TEMPLATE_BRANCH}"; then
-            FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}"
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
-        elif curl --output /dev/null --silent --head --fail "https://github.com/wazuh/wazuh/tree/${FILEBEAT_TEMPLATE_BRANCH}"; then
-            FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}"
+        # Prepare logic to fetch the artifact from Wazuh's infrastructure
+        TAG="v${WAZUH_IMAGE_VERSION}"
+        REPO="wazuh/wazuh-docker"
+        GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
+
+        # Use GitHub API to check if the tag exists publicly.
+        # This determines if we should look for production or staging artifacts.
+        if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
+            # CASE: Production (Tag exists in the official repository)
+            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}.yaml
+            PACKAGE_URL=packages.wazuh.com
+            RELEASE_STAGE=production
         else
-            echo "The indicated branch does not exist in the wazuh/wazuh repository: ${FILEBEAT_TEMPLATE_BRANCH}"
-            clean 1
+            # CASE: Pre-release/Staging (Tag not found, fall back to staging environment)
+            # Includes the WAZUH_STAGE suffix (e.g., artifact_urls_5.0.0-alpha0.yaml)
+            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml
+            PACKAGE_URL=packages-staging.xdrsiem.wazuh.info
+            RELEASE_STAGE=pre-release
+        fi
+        # Final download using dynamic variables based on the release type.
+        # Pattern: server / stage / major_version.x / filename
+        curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+    fi
+
+    awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
+
+    # Set component commit references for development builds
+    if [ -n "${WAZUH_DEV_STAGE}" ]; then
+        if [ -z "${WAZUH_COMPONENTS_COMMIT_LIST}" ]; then
+            # Set default to 'latest' for all components if no specific references are provided
+            INDEXER_COMMIT="latest"
+            MANAGER_COMMIT="latest"
+            DASHBOARD_COMMIT="latest"
+            AGENT_COMMIT="latest"
+        else
+            if ! printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" \
+                | jq -e 'type=="array" and (all(.[]; type=="string"))' >/dev/null 2>&1; then
+                echo 'Error: --references must be a JSON array of strings, e.g. ["ref1","ref2","ref3","ref4"]' >&2
+                clean 1
+            fi
+
+            refs_count="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r 'length')"
+            if [ -z "${WAZUH_COMPONENT}" ]; then
+                # No specific component to be build: require exactly 4 items
+                if [ "${refs_count}" -ne 4 ]; then
+                    echo "Error: --references must contain exactly 4 items when no --component is specified." >&2
+                    clean 1
+                fi
+
+                # Set all component commits
+
+                INDEXER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                MANAGER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[1]')"
+                DASHBOARD_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[2]')"
+                AGENT_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[3]')"
+            else
+                # Specific component to be build: allow 1 (component-only)
+                if [ "${refs_count}" -ne 1 ]; then
+                    echo "Error: --references must contain exactly 1 item when --component is specified." >&2
+                    clean 1
+                fi
+
+                # Set specific component commit
+                case "${WAZUH_COMPONENT}" in
+                    wazuh-indexer)
+                        INDEXER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-manager)
+                        MANAGER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-dashboard)
+                        DASHBOARD_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    wazuh-agent)
+                        AGENT_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
+                        ;;
+                    *)
+                        echo "Error: Unknown component '${WAZUH_COMPONENT}'" >&2
+                        clean 1
+                        ;;
+                esac
+            fi
         fi
     fi
 
+
+    # Function to get component-specific commit reference
+    get_component_commit() {
+        local component=$1
+        case "${component}" in
+            wazuh-indexer)
+                echo "${INDEXER_COMMIT}"
+                ;;
+            wazuh-manager)
+                echo "${MANAGER_COMMIT}"
+                ;;
+            wazuh-dashboard)
+                echo "${DASHBOARD_COMMIT}"
+                ;;
+            wazuh-agent)
+                echo "${AGENT_COMMIT}"
+                ;;
+            *)
+                echo ""
+                ;;
+        esac
+    }
+
+    # Global env file (without IMAGE_TAG - will be component-specific)
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
-    echo WAZUH_TAG_REVISION=$WAZUH_TAG_REVISION >> ../.env
-    echo FILEBEAT_TEMPLATE_BRANCH=$FILEBEAT_TEMPLATE_BRANCH >> ../.env
-    echo WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE >> ../.env
-    echo WAZUH_UI_REVISION=$WAZUH_UI_REVISION >> ../.env
     echo WAZUH_REGISTRY=$WAZUH_REGISTRY >> ../.env
-    echo IMAGE_TAG=$IMAGE_TAG >> ../.env
 
     set -a
     source ../.env
+    source ./artifacts_env.txt
     set +a
 
     # Define all available components
@@ -106,31 +201,49 @@ build() {
     for component in "${components_to_build[@]}"; do
         echo "Building ${component} image..."
 
+        # Get component-specific commit reference
+        COMPONENT_COMMIT=$(get_component_commit "${component}")
+
+        # Generate component-specific IMAGE_TAG
+        IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}-${COMPONENT_COMMIT}}"
+        echo "Using IMAGE_TAG: ${IMAGE_TAG} for ${component}"
+        export IMAGE_TAG="$IMAGE_TAG"
+
         # Build common args (used by all components)
         build_args=(
             -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
             --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
-            --build-arg WAZUH_TAG_REVISION="${WAZUH_TAG_REVISION}"
         )
 
         # Add component-specific args
         case "${component}" in
             wazuh-indexer)
-                # No additional args for wazuh-indexer
+                build_args+=(
+                    --build-arg wazuh_indexer_x86_64_rpm="${wazuh_indexer_x86_64_rpm}"
+                    --build-arg wazuh_indexer_aarch64_rpm="${wazuh_indexer_aarch64_rpm}"
+                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
+                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
+                )
                 ;;
             wazuh-manager)
                 build_args+=(
-                    --build-arg FILEBEAT_TEMPLATE_BRANCH="${FILEBEAT_TEMPLATE_BRANCH}"
-                    --build-arg WAZUH_FILEBEAT_MODULE="${WAZUH_FILEBEAT_MODULE}"
+                    --build-arg wazuh_manager_x86_64_rpm="${wazuh_manager_x86_64_rpm}"
+                    --build-arg wazuh_manager_aarch64_rpm="${wazuh_manager_aarch64_rpm}"
                 )
                 ;;
             wazuh-dashboard)
                 build_args+=(
-                    --build-arg WAZUH_UI_REVISION="${WAZUH_UI_REVISION}"
+                    --build-arg wazuh_dashboard_x86_64_rpm="${wazuh_dashboard_x86_64_rpm}"
+                    --build-arg wazuh_dashboard_aarch64_rpm="${wazuh_dashboard_aarch64_rpm}"
+                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
+                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
                 )
                 ;;
             wazuh-agent)
-                # No additional args for wazuh-agent
+                build_args+=(
+                    --build-arg wazuh_agent_x86_64_rpm="${wazuh_agent_x86_64_rpm}"
+                    --build-arg wazuh_agent_aarch64_rpm="${wazuh_agent_aarch64_rpm}"
+                )
                 ;;
         esac
 
@@ -151,9 +264,8 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default."
-    echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
-    echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
+    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
+    echo "    -refs, --references <refs>   [Optional] [Only for Dev] JSON array of commit refs for components to be build (indexer, manager, dashboard, agent) in order. Defaults to latest."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
@@ -180,21 +292,14 @@ main() {
                 help 1
             fi
             ;;
-        "-f"|"--filebeat-module")
-            if [ -n "${2}" ]; then
-                FILEBEAT_MODULE_VERSION="${2}"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
         "-m"|"--multiarch")
             MULTIARCH="true"
                 shift
             ;;
-        "-r"|"--revision")
+        "-refs"|"--references")
             if [ -n "${2}" ]; then
-                WAZUH_TAG_REVISION="${2}"
+                # Replace single quotes with double quotes to ensure it's valid JSON for jq processing
+                WAZUH_COMPONENTS_COMMIT_LIST="$(printf '%s' "${2}" | sed "s/'/\"/g")"
                 shift 2
             else
                 help 1
