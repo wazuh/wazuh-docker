@@ -67,10 +67,6 @@ set_manager_conn() {
   sed -i "s#<manager_address>CHANGE_ENROLL_IP</manager_address>#<manager_address>$WAZUH_REGISTRATION_SERVER</manager_address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
   sed -i "s#<port>CHANGE_ENROLL_PORT</port>#<port>$WAZUH_REGISTRATION_PORT</port>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
   sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-<<<<<<< HEAD
-  sed -i "s#<groups>CHANGE_AGENT_GROUP</groups>#<groups>$WAZUH_AGENT_GROUP</groups>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-=======
->>>>>>> 9de7fdc034e520e756696f964c8fd6c81acb020a
   [ -n "$WAZUH_REGISTRATION_PASSWORD" ] && \
   echo "$WAZUH_REGISTRATION_PASSWORD" > ${WAZUH_INSTALL_PATH}/etc/authd.pass && \
   chown root:wazuh ${WAZUH_INSTALL_PATH}/etc/authd.pass && \
