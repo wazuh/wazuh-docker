@@ -30,7 +30,6 @@ RUN RPM_ARCH="x86_64" && \
     rm -f /var/wazuh-manager/etc/sslmanager.cert
 
 COPY config/etc/ /etc/
-COPY --chown=root:wazuh-manager config/create_user.py /var/wazuh-manager/framework/scripts/create_user.py
 # Prepare permanent data
 # Sync calls are due to https://github.com/docker/docker/issues/9547
 

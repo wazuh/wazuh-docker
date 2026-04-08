@@ -9,7 +9,7 @@ services:
       wazuh.indexer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -u $$API_USERNAME:$$API_PASSWORD -k -s -f -X POST https://localhost:55000/security/user/authenticate?raw=true -o /dev/null || exit 1" ]
+      test: [ "CMD-SHELL", "curl -k -s -o /dev/null https://localhost:55000 || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -32,8 +32,6 @@ services:
       - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - wazuh_api_configuration:/var/wazuh-manager/api/configuration
       - wazuh_etc:/var/wazuh-manager/etc
@@ -103,8 +101,6 @@ services:
       - WAZUH_API_URL=https://wazuh.manager
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
