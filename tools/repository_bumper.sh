@@ -10,7 +10,7 @@ LOG_FILE="${DIR}/tools/repository_bumper_$(date +"%Y-%m-%d_%H-%M-%S-%3N").log"
 VERSION=""
 STAGE=""
 FILES_EDITED=()
-FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml"'
+FILES_EXCLUDED='--exclude="repository_bumper_*.log" --exclude="CHANGELOG.md" --exclude="repository_bumper.sh" --exclude="*_bumper_repository.yml" --exclude="mermaid-init.js" --exclude="mermaid.min.js"'
 
 get_old_version_and_stage() {
     local VERSION_FILE="${DIR}/VERSION.json"
@@ -25,7 +25,7 @@ grep_command() {
     # This function is used to search for a specific string in the specified directory.
     # It takes two arguments: the string to search for and the directory to search in.
     # Usage: grep_command <string> <directory>
-    eval grep -Rl "${1}" "${2}" --exclude-dir=".git" $FILES_EXCLUDED "${3}"
+    eval grep -Rl \"${1}\" \"${2}\" --exclude-dir=".git" $FILES_EXCLUDED "${3}"
 }
 
 update_version_in_files() {
@@ -74,6 +74,46 @@ update_stage_in_files() {
             FILES_EDITED+=("${file}")
         fi
     done
+
+    if [ $STAGE != "alpha0" ]; then
+        version_tag_string="default: 'v${VERSION}'"
+        files_tag=( $(grep_command "${version_tag_string}" "${DIR}") )
+        for file in "${files_tag[@]}"; do
+            sed -i "s/${version_tag_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
+            if [[ $(git diff --name-only "${file}") ]]; then
+                FILES_EDITED+=("${file}")
+            fi
+        done
+
+        version_number_string="default: '${VERSION}'"
+        files_version=( $(grep -RlE "default: '[0-9]\.[0-9]+\.[0-9]+'" "${DIR}") )
+        for file in "${files_version[@]}"; do
+            sed -i "s/${version_number_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
+            if [[ $(git diff --name-only "${file}") ]]; then
+                FILES_EDITED+=("${file}")
+            fi
+        done
+    fi
+}
+
+update_main_in_files() {
+    set -x
+    if [[ $STAGE == "alpha0" ]]; then
+            bump_string="default: '${VERSION}'"
+    else
+            bump_string="default: 'v${VERSION}'"
+    fi
+    main_string="default: 'main'"
+    files=( $(grep_command "${main_string}" "${DIR}") )
+    for file in "${files[@]}"; do
+        if [[ "$skip_urls" != "yes" ]]; then
+            sed -Ei "s/${main_string}/${bump_string}/g" ${file}
+        fi
+        if [[ $(git diff --name-only "${file}") ]]; then
+            FILES_EDITED+=("${file}")
+        fi
+    done
+    set +x
 }
 
 update_docker_images_tag() {
@@ -106,6 +146,10 @@ main() {
                 TAG="$2"
                 shift 2
                 ;;
+            --set-as-main)
+                set_as_main="yes"
+                shift 1
+                ;;
             *)
                 echo "Unknown argument: $1"
                 exit 1
@@ -137,6 +181,15 @@ main() {
         exit 1
     fi
 
+    # Set skip_urls variable based on set_as_main flag
+    if [[ -n "$set_as_main" ]]; then
+        skip_urls="yes"
+    else
+        skip_urls="no"
+    fi
+    echo "Updating version from main to $VERSION" | tee -a "${LOG_FILE}"
+    update_main_in_files "$VERSION" "$STAGE"
+
     # Validate if tag is true or false
     if [[ -n "${TAG}" && ! "${TAG}" =~ ^(true|false)$ ]]; then
         echo "Error: --tag must be either true or false." | tee -a "${LOG_FILE}"
@@ -150,9 +203,9 @@ main() {
         echo "Updating version from ${OLD_VERSION} to ${VERSION}" | tee -a "${LOG_FILE}"
         update_version_in_files "${VERSION}"
     fi
-    if [[ "${OLD_STAGE}" != "${STAGE}" ]]; then
+    if [[ -n "$STAGE" ]]; then
         echo "Updating stage from ${OLD_STAGE} to ${STAGE}" | tee -a "${LOG_FILE}"
-        update_stage_in_files "${STAGE}"
+        update_stage_in_files "$VERSION" "$STAGE"
     fi
 
     # Update Docker images tag if tag is true
