@@ -44,7 +44,7 @@ jobs:
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       docker_reference: ${{ github.head_ref || inputs.docker_reference }}
-      wazuh_automation_reference: '5.1.0'
+      wazuh_automation_reference: '5.2.0'
       commit_list: '["latest", "latest", "latest", "latest"]'
       assistant_revision: 'latest'
       id: ${{ github.run_id }}
