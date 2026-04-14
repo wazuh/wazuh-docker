@@ -76,19 +76,19 @@ update_stage_in_files() {
     done
 
     if [ $STAGE != "alpha0" ]; then
-        version_tag_string="default: 'v${VERSION}'"
+        version_tag_string=": 'v${VERSION}'"
         files_tag=( $(grep_command "${version_tag_string}" "${DIR}") )
         for file in "${files_tag[@]}"; do
-            sed -i "s/${version_tag_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
+            sed -i -E "s/(: )'v${VERSION}'/\1'v${VERSION}-${STAGE}'/g" "${file}"
             if [[ $(git diff --name-only "${file}") ]]; then
                 FILES_EDITED+=("${file}")
             fi
         done
 
-        version_number_string="default: '${VERSION}'"
-        files_version=( $(grep -RlE "default: '[0-9]\.[0-9]+\.[0-9]+'" "${DIR}") )
+        version_number_string=": '${VERSION}'"
+        files_version=( $(grep -RlE ": '[0-9]\.[0-9]+\.[0-9]+'" "${DIR}") )
         for file in "${files_version[@]}"; do
-            sed -i "s/${version_number_string}/default: 'v${VERSION}-${STAGE}'/g" "${file}"
+            sed -i -E "s/(: )'${VERSION}'/\1'v${VERSION}-${STAGE}'/g" "${file}"
             if [[ $(git diff --name-only "${file}") ]]; then
                 FILES_EDITED+=("${file}")
             fi
@@ -98,15 +98,15 @@ update_stage_in_files() {
 
 update_main_in_files() {
     if [[ $STAGE == "alpha0" ]]; then
-            bump_string="default: '${VERSION}'"
+            bump_value="${VERSION}"
     else
-            bump_string="default: 'v${VERSION}'"
+            bump_value="v${VERSION}"
     fi
-    main_string="default: 'main'"
+    main_string=": 'main'"
     files=( $(grep_command "${main_string}" "${DIR}") )
     for file in "${files[@]}"; do
         if [[ "$skip_urls" != "yes" ]]; then
-            sed -Ei "s/${main_string}/${bump_string}/g" ${file}
+            sed -Ei "s/(:[[:space:]])'main'/\1'${bump_value}'/g" "${file}"
         fi
         if [[ $(git diff --name-only "${file}") ]]; then
             FILES_EDITED+=("${file}")
