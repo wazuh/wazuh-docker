@@ -14,11 +14,6 @@ on:
         default: ''
         required: false
         type: string
-      tag:
-        description: 'Change branches references to tag-like references (e.g. v4.12.0-alpha7)'
-        default: false
-        required: false
-        type: boolean
       issue-link:
         description: 'Issue link in format https://github.com/wazuh/<REPO>/issues/<ISSUE-NUMBER>'
         required: true
@@ -81,18 +76,16 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           STAGE: ${{ inputs.stage }}
-          TAG: ${{ inputs.tag }}
         run: |
           script_params=""
           version=${{ env.VERSION }}
           stage=${{ env.STAGE }}
-          tag=${{ env.TAG }}
 
           # Both version and stage provided
-          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
+          if [[ -n "$version" && -n "$stage" ]]; then
             script_params="--version ${version} --stage ${stage}"
-          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
-            script_params="--version ${version} --stage ${stage} --tag ${tag}"
+          elif [[ -z "$version" && -n "$stage" ]]; then
+            script_params="--stage ${stage}"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
