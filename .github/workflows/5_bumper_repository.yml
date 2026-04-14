@@ -104,6 +104,7 @@ jobs:
             script_params="--version ${version} --stage ${stage}"
           elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
             script_params="--version ${version} --stage ${stage} --tag ${tag}"
+          fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
           BRANCH_NAME="enhancement/wqa${issue_number}-bump-${{ github.ref_name }}"
