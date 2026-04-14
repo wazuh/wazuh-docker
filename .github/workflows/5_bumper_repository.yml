@@ -1,4 +1,4 @@
-name: Repository bumper 4.x
+name: Repository bumper 5.x
 run-name: Bump ${{ github.ref_name }} (${{ inputs.id }})
 
 on:
@@ -14,6 +14,11 @@ on:
         default: ''
         required: false
         type: string
+      set_as_main:
+        description: "Enable main branch mode: bump version values only, keep branch references pointing to main"
+        required: false
+        type: boolean
+        default: false
       issue-link:
         description: 'Issue link in format https://github.com/wazuh/<REPO>/issues/<ISSUE-NUMBER>'
         required: true
@@ -25,7 +30,7 @@ on:
 
 jobs:
   bump:
-    name: Repository bumper 4.x
+    name: Repository bumper 5.x
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -81,11 +86,17 @@ jobs:
           version=${{ env.VERSION }}
           stage=${{ env.STAGE }}
 
+          set_as_main=${{ inputs.set_as_main }}
+
+          if [[ "$set_as_main" == "true" ]]; then
+            script_params="--set-as-main"
+          fi
+
           # Both version and stage provided
           if [[ -n "$version" && -n "$stage" ]]; then
-            script_params="--version ${version} --stage ${stage}"
+            script_params+=" --version ${version} --stage ${stage}"
           elif [[ -z "$version" && -n "$stage" ]]; then
-            script_params="--stage ${stage}"
+            script_params+=" --stage ${stage}"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
