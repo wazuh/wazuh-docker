@@ -101,9 +101,9 @@ jobs:
 
           # Both version and stage provided
           if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
-            script_params="--version ${version} --stage ${stage}"
+            script_params+=" --version ${version} --stage ${stage}"
           elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
-            script_params="--version ${version} --stage ${stage} --tag ${tag}"
+            script_params+=" --version ${version} --stage ${stage} --tag ${tag}"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
