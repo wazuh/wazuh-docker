@@ -48,6 +48,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Artifact URL download fix ([#2306](https://github.com/wazuh/wazuh-docker/pull/2306))
 - Change API query method. ([#2275](https://github.com/wazuh/wazuh-docker/pull/2275))
 - Change Wazuh manager Healthcheck. ([#2272](https://github.com/wazuh/wazuh-docker/pull/2272))
 - Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
