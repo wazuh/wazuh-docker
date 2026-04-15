@@ -54,7 +54,7 @@ build() {
         # Prepare logic to fetch the artifact from Wazuh's infrastructure
         TAG="v${WAZUH_IMAGE_VERSION}"
         REPO="wazuh/wazuh-docker"
-        GH_URL="https://api.github.com/repos/${REPO}/git/refs/tags/${TAG}"
+        GH_URL="https://api.github.com/repos/${REPO}/releases/tags/${TAG}"
 
         # Use GitHub API to check if the tag exists publicly.
         # This determines if we should look for production or staging artifacts.
@@ -70,6 +70,7 @@ build() {
             PACKAGE_URL=packages-staging.xdrsiem.wazuh.info
             RELEASE_STAGE=pre-release
         fi
+        echo "Attempting to download artifacts from: https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
         # Final download using dynamic variables based on the release type.
         # Pattern: server / stage / major_version.x / filename
         curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
