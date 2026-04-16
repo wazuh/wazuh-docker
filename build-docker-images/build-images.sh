@@ -17,6 +17,7 @@ WAZUH_REGISTRY=docker.io
 WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
+IS_DEV_BUILD=""
 
 # -----------------------------------------------------------------------------
 
@@ -78,10 +79,13 @@ build() {
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
 
-    # Set component commit references for development builds
-    if [ -n "${WAZUH_DEV_STAGE}" ]; then
+    # Set component commit references for development builds.
+    # Commits are only resolved (and later appended to the image tag) when --dev is
+    # explicitly passed. Production and stage builds (dev=false) never include a
+    # commit suffix even if -refs is provided. Manual local builds also omit it.
+    if [ -n "${IS_DEV_BUILD}" ]; then
         if [ -z "${WAZUH_COMPONENTS_COMMIT_LIST}" ]; then
-            # Set default to 'latest' for all components if no specific references are provided
+            # Default to 'latest' for all components if no specific references are provided
             INDEXER_COMMIT="latest"
             MANAGER_COMMIT="latest"
             DASHBOARD_COMMIT="latest"
@@ -102,7 +106,6 @@ build() {
                 fi
 
                 # Set all component commits
-
                 INDEXER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[0]')"
                 MANAGER_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[1]')"
                 DASHBOARD_COMMIT="$(printf '%s' "${WAZUH_COMPONENTS_COMMIT_LIST}" | jq -r '.[2]')"
@@ -205,8 +208,18 @@ build() {
         # Get component-specific commit reference
         COMPONENT_COMMIT=$(get_component_commit "${component}")
 
-        # Generate component-specific IMAGE_TAG
-        IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}-${COMPONENT_COMMIT}}"
+        # Generate component-specific IMAGE_TAG.
+        # The commit suffix is only appended when --dev was passed, which maps
+        # directly to inputs.dev=true in the workflow. This ensures:
+        #   dev=false, tag=5.0.0       → 5.0.0
+        #   dev=false, tag=5.0.0-beta1 → 5.0.0-beta1
+        #   dev=true,  tag=5.0.0       → 5.0.0-latest
+        #   dev=true,  tag=5.0.0-beta1 → 5.0.0-beta1-latest
+        if [ -n "${IS_DEV_BUILD}" ]; then
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}-${COMPONENT_COMMIT}"
+        else
+            IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}"
+        fi
         echo "Using IMAGE_TAG: ${IMAGE_TAG} for ${component}"
         export IMAGE_TAG="$IMAGE_TAG"
 
@@ -265,8 +278,9 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc2 or beta1, not used by default."
-    echo "    -refs, --references <refs>   [Optional] [Only for Dev] JSON array of commit refs for components to be build (indexer, manager, dashboard, agent) in order. Defaults to latest."
+    echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
+    echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
+    echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
@@ -285,13 +299,17 @@ main() {
         "-h"|"--help")
             help 0
             ;;
-        "-d"|"--dev")
+        "-d"|"--dev-stage")
             if [ -n "${2}" ]; then
                 WAZUH_DEV_STAGE="${2}"
                 shift 2
             else
                 help 1
             fi
+            ;;
+        "--dev")
+            IS_DEV_BUILD="true"
+            shift
             ;;
         "-m"|"--multiarch")
             MULTIARCH="true"
