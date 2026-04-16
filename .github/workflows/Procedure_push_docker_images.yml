@@ -366,6 +366,7 @@ jobs:
               -d $DEV_STAGE \
               -rg $IMAGE_REGISTRY \
               -m \
+              --dev \
               -refs "$COMPONENT_REFS_JSON" \
               -c ${{ matrix.wazuh_component }}
           else
@@ -382,6 +383,7 @@ jobs:
               -v $IMAGE_TAG \
               -rg $IMAGE_REGISTRY \
               -m \
+              --dev \
               -refs "$COMPONENT_REFS_JSON" \
               -c ${{ matrix.wazuh_component }}
           else
