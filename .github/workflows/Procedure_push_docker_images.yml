@@ -128,23 +128,10 @@ jobs:
           echo "ALL_PRODUCTS_SELECTED=false" >> $GITHUB_OUTPUT
         fi
         # Set WAZUH_COMPONENTS
-        WC_JSON_ARRAY=""
-        if [[ "${{ inputs.products }}" != "null" && "${{ inputs.products }}" != "" ]]; then
-          # Convert comma-separated list to JSON array format
-          IFS=',' read -ra COMPONENTS <<< "${{ inputs.products }}"
-          WC_JSON_ARRAY="["
-          for i in "${!COMPONENTS[@]}"; do
-            if [ $i -gt 0 ]; then
-              WC_JSON_ARRAY+=","
-            fi
-            WC_JSON_ARRAY+="\"${COMPONENTS[$i]}\""
-          done
-          WC_JSON_ARRAY+="]"
-        else
-          WC_JSON_ARRAY='["wazuh-manager","wazuh-dashboard","wazuh-indexer","wazuh-agent"]'
-        fi
-        echo "Products to build: $WC_JSON_ARRAY"
-        echo "WAZUH_COMPONENTS=$WC_JSON_ARRAY" >> $GITHUB_OUTPUT
+        # Convert to JSON for the matrix (Your existing logic)
+        IFS=',' read -ra COMPONENTS <<< "$PRODUCTS"
+        JSON_ARRAY=$(printf '%s\n' "${COMPONENTS[@]}" | jq -R . | jq -s -c .)
+        echo "WAZUH_COMPONENTS=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
         # Set COMMIT_LIST
         WC_COMMIT_LIST=""
