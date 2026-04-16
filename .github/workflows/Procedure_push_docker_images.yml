@@ -90,6 +90,7 @@ jobs:
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
       COMMIT_LIST: ${{ steps.compute-outputs.outputs.COMMIT_LIST }}
+      ALL_PRODUCTS_SELECTED: ${{ steps.compute-outputs.outputs.ALL_PRODUCTS_SELECTED }}
 
     steps:
     - name: Print inputs
@@ -115,6 +116,17 @@ jobs:
     - name: Set up variables
       id: compute-outputs
       run: |
+        # Use the default list if products is empty
+        PRODUCTS="${{ inputs.products }}"
+        if [[ -z "$PRODUCTS" || "$PRODUCTS" == "null" ]]; then
+          PRODUCTS="wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
+        fi
+        # Check if all 4 core components are present in the string
+        if [[ "$PRODUCTS" == *"wazuh-manager"* && "$PRODUCTS" == *"wazuh-dashboard"* && "$PRODUCTS" == *"wazuh-indexer"* && "$PRODUCTS" == *"wazuh-agent"* ]]; then
+          echo "ALL_PRODUCTS_SELECTED=true" >> $GITHUB_OUTPUT
+        else
+          echo "ALL_PRODUCTS_SELECTED=false" >> $GITHUB_OUTPUT
+        fi
         # Set WAZUH_COMPONENTS
         WC_JSON_ARRAY=""
         if [[ "${{ inputs.products }}" != "null" && "${{ inputs.products }}" != "" ]]; then
