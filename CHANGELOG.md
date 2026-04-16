@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- GH issue notification fix ([#2312](https://github.com/wazuh/wazuh-docker/pull/2312))
 
 ### Deleted
 
