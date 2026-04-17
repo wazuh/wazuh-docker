@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add checks for artifact_urls.yaml download ([#2315](https://github.com/wazuh/wazuh-docker/pull/2315))
 - Add set_as_main option ([#2293](https://github.com/wazuh/wazuh-docker/pull/2293))
 - Adapt bumper workflows to change main branch ([#2294](https://github.com/wazuh/wazuh-docker/pull/2294))
 - Delete all API user and password references and Wazuh agent references ([#2289](https://github.com/wazuh/wazuh-docker/pull/2289))
