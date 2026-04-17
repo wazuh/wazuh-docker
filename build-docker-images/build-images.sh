@@ -52,29 +52,52 @@ build() {
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
         echo "$ARTIFACT_URLS_FILE exists. Using existing file."
     else
-        # Prepare logic to fetch the artifact from Wazuh's infrastructure
+        # GitHub URL for exact Release Tag lookup
         TAG="v${WAZUH_IMAGE_VERSION}"
         REPO="wazuh/wazuh-docker"
         GH_URL="https://api.github.com/repos/${REPO}/releases/tags/${TAG}"
 
-        # Use GitHub API to check if the tag exists publicly.
-        # This determines if we should look for production or staging artifacts.
-        if curl -fsSL "$GH_URL" >/dev/null 2>&1; then
-            # CASE: Production (Tag exists in the official repository)
-            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}.yaml
-            PACKAGE_URL=packages.wazuh.com
-            RELEASE_STAGE=production
+        # Fetch the HTTP status code to determine release environment.
+        # Using -L to follow redirects (GitHub may return 301/302 for some endpoints).
+        HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "$GH_URL")
+
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+            # CASE: Production (Tag and Release exist)
+            echo "Release $TAG found. Setting Production environment."
+            ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+            PACKAGE_URL="packages.wazuh.com"
+            RELEASE_STAGE="production"
+        elif [ "$HTTP_STATUS" -eq 403 ]; then
+            # CASE: GitHub API rate limit hit — fall back to pre-release to avoid
+            # incorrectly skipping staging artifacts.
+            echo "Warning: GitHub API rate limit reached (403). Assuming pre-release environment." >&2
+            PACKAGE_URL="packages-staging.xdrsiem.wazuh.info"
+            RELEASE_STAGE="pre-release"
+            if [ -n "$WAZUH_STAGE" ] && [ "$WAZUH_STAGE" != "null" ]; then
+                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
+            else
+                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+            fi
         else
-            # CASE: Pre-release/Staging (Tag not found, fall back to staging environment)
-            # Includes the WAZUH_STAGE suffix (e.g., artifact_urls_5.0.0-alpha0.yaml)
-            ARTIFACT_URLS_DOWNLOAD=artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml
-            PACKAGE_URL=packages-staging.xdrsiem.wazuh.info
-            RELEASE_STAGE=pre-release
+            # CASE: Pre-release/Staging (404 Not Found or any other non-200 status)
+            echo "Release $TAG not found (HTTP status: $HTTP_STATUS). Setting Pre-release environment."
+            PACKAGE_URL="packages-staging.xdrsiem.wazuh.info"
+            RELEASE_STAGE="pre-release"
+            if [ -n "$WAZUH_STAGE" ] && [ "$WAZUH_STAGE" != "null" ]; then
+                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
+            else
+                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+            fi
         fi
-        echo "Attempting to download artifacts from: https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+
         # Final download using dynamic variables based on the release type.
         # Pattern: server / stage / major_version.x / filename
-        curl -fsSL -o "$ARTIFACT_URLS_FILE" "https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+        FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+        echo "Attempting to download: $FULL_URL"
+        curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
+            echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
+            clean 1
+        }
     fi
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
