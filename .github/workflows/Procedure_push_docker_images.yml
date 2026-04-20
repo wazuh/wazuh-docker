@@ -6,7 +6,7 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '5.0.1'
+        default: '5.9.9'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
@@ -42,7 +42,7 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: '5.0.1'
+        default: '5.9.9'
         required: true
         type: string
       docker_reference:
