@@ -42,7 +42,7 @@ build() {
     WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
     # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.0.0 -> 5)
     WAZUH_MAJOR_VERSION="${WAZUH_IMAGE_VERSION%%.*}"
-    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta2, rc2) from the local JSON metadata file.
+    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
@@ -235,9 +235,9 @@ build() {
         # The commit suffix is only appended when --dev was passed, which maps
         # directly to inputs.dev=true in the workflow. This ensures:
         #   dev=false, tag=5.0.0       → 5.0.0
-        #   dev=false, tag=5.0.0-beta2 → 5.0.0-beta2
+        #   dev=false, tag=5.0.0-beta1 → 5.0.0-beta1
         #   dev=true,  tag=5.0.0       → 5.0.0-latest
-        #   dev=true,  tag=5.0.0-beta2 → 5.0.0-beta2-latest
+        #   dev=true,  tag=5.0.0-beta1 → 5.0.0-beta1-latest
         if [ -n "${IS_DEV_BUILD}" ]; then
             IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}-${COMPONENT_COMMIT}"
         else
@@ -301,7 +301,7 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta2, rc2). Not used by default."
+    echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
