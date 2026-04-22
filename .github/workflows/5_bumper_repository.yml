@@ -84,6 +84,7 @@ jobs:
           # Using workflow-specific GITHUB_TOKEN because currently CI_WAZUHCI_BUMPER_TOKEN
           # doesn't have all the necessary permissions
           token: ${{ env.GH_TOKEN }}
+          fetch-depth: 0
 
       - name: Determine branch name
         id: vars
