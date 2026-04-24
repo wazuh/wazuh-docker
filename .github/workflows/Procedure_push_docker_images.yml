@@ -233,6 +233,11 @@ jobs:
           source ${{ env.WORKFLOW_VENV }}/bin/activate
           WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
           COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
+          SCRIPT_PARAMS="--process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
+                            --wazuh-version ${{ env.WAZUH_VERSION }} \
+                            --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }} \
+                            --assistant-revision $ASSISTANT_REVISION "
+
 
           # Parse components and their revisions
           COMPONENTS=($(echo "$WAZUH_COMPONENTS" | jq -r '.[]'))
@@ -251,29 +256,22 @@ jobs:
           for i in "${!COMPONENTS[@]}"; do
           case "${COMPONENTS[$i]}" in
             wazuh-manager)
-            MANAGER_REVISION="${REVISIONS[$i]}"
+            SCRIPT_PARAMS+="--manager-revision ${REVISIONS[$i]} "
             ;;
             wazuh-dashboard)
-            DASHBOARD_REVISION="${REVISIONS[$i]}"
+            SCRIPT_PARAMS+="--dashboard-revision ${REVISIONS[$i]} "
             ;;
             wazuh-indexer)
-            INDEXER_REVISION="${REVISIONS[$i]}"
+            SCRIPT_PARAMS+="--indexer-revision ${REVISIONS[$i]} "
             ;;
             wazuh-agent)
-            AGENT_REVISION="${REVISIONS[$i]}"
+            SCRIPT_PARAMS+="--agent-revision ${REVISIONS[$i]} "
             ;;
           esac
           done
 
           python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} \
-              --process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
-              --wazuh-version ${{ env.WAZUH_VERSION }} \
-              --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }} \
-              --indexer-revision   $INDEXER_REVISION \
-              --manager-revision   $MANAGER_REVISION \
-              --dashboard-revision $DASHBOARD_REVISION \
-              --agent-revision     $AGENT_REVISION \
-              --assistant-revision $ASSISTANT_REVISION
+              $SCRIPT_PARAMS
 
       - name: Save presigned URLs file to artifact
         if: ${{ inputs.dev == true }}
