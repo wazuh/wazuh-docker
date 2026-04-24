@@ -96,6 +96,16 @@ services:
       - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
 
+  ai-engine:
+    build: ./ai-engine
+    container_name: ai-engine
+    networks:
+      - single-node_default
+
+networks:
+  single-node_default:
+    external: true
+
 volumes:
   wazuh_api_configuration:
   wazuh_etc:

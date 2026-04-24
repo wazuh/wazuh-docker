@@ -1,0 +1,4 @@
+requests
+sentence-transformers
+scikit-learn
+urllib3
