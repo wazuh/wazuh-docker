@@ -45,8 +45,9 @@ build() {
     # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+    FILE_NAME_URLS="artifact_urls"
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
-    ARTIFACT_URLS_FILE="artifact_urls.yaml"
+    ARTIFACT_URLS_FILE="${FILE_NAME_URLS}.yaml"
 
     # Check if the artifact file already exists to prevent redundant downloads
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
@@ -64,7 +65,7 @@ build() {
         if [ "$HTTP_STATUS" -eq 200 ]; then
             # CASE: Production (Tag and Release exist)
             echo "Release $TAG found. Setting Production environment."
-            ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+            ARTIFACT_URLS_DOWNLOAD="${FILE_NAME_URLS}_${WAZUH_IMAGE_VERSION}.yaml"
             PACKAGE_URL="packages.wazuh.com"
             RELEASE_STAGE="production"
         elif [ "$HTTP_STATUS" -eq 403 ]; then
@@ -74,9 +75,9 @@ build() {
             PACKAGE_URL="packages-staging.xdrsiem.wazuh.info"
             RELEASE_STAGE="pre-release"
             if [ -n "$WAZUH_STAGE" ] && [ "$WAZUH_STAGE" != "null" ]; then
-                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
+                ARTIFACT_URLS_DOWNLOAD="${FILE_NAME_URLS}_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
             else
-                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+                ARTIFACT_URLS_DOWNLOAD="${FILE_NAME_URLS}_${WAZUH_IMAGE_VERSION}.yaml"
             fi
         else
             # CASE: Pre-release/Staging (404 Not Found or any other non-200 status)
@@ -84,15 +85,15 @@ build() {
             PACKAGE_URL="packages-staging.xdrsiem.wazuh.info"
             RELEASE_STAGE="pre-release"
             if [ -n "$WAZUH_STAGE" ] && [ "$WAZUH_STAGE" != "null" ]; then
-                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
+                ARTIFACT_URLS_DOWNLOAD="${FILE_NAME_URLS}_${WAZUH_IMAGE_VERSION}-${WAZUH_STAGE}.yaml"
             else
-                ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+                ARTIFACT_URLS_DOWNLOAD="${FILE_NAME_URLS}_${WAZUH_IMAGE_VERSION}.yaml"
             fi
         fi
 
         # Final download using dynamic variables based on the release type.
         # Pattern: server / stage / major_version.x / filename
-        FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+        FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${FILE_NAME_URLS}/${ARTIFACT_URLS_DOWNLOAD}"
         echo "Attempting to download: $FULL_URL"
         curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
             echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
