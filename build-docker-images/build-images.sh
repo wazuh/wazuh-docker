@@ -47,6 +47,8 @@ build() {
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
+    # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
+    ARTIFACT_URLS_DIR="artifact_urls"
 
     # Check if the artifact file already exists to prevent redundant downloads
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
@@ -92,7 +94,7 @@ build() {
 
         # Final download using dynamic variables based on the release type.
         # Pattern: server / stage / major_version.x / filename
-        FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DOWNLOAD}"
+        FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DIR}/${ARTIFACT_URLS_DOWNLOAD}"
         echo "Attempting to download: $FULL_URL"
         curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
             echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
