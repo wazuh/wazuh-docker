@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add new path on artifact_urls file ([#2344](https://github.com/wazuh/wazuh-docker/pull/2344))
 - Adapt bumper workflows to change main branch ([#2294](https://github.com/wazuh/wazuh-docker/pull/2294))
 - Delete all API user and password references and Wazuh agent references ([#2289](https://github.com/wazuh/wazuh-docker/pull/2289))
 - Create certificate directory with default user and group ([#2287](https://github.com/wazuh/wazuh-docker/pull/2287))
