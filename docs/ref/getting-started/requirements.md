@@ -1,6 +1,6 @@
 # Reference Manual - Requirements
 
-Before deploying Wazuh-Docker (version 5.1.0), it's essential to ensure your environment meets the necessary hardware and software requirements. Meeting these prerequisites will help ensure a stable and performant Wazuh deployment.
+Before deploying Wazuh-Docker (version 5.0.0), it's essential to ensure your environment meets the necessary hardware and software requirements. Meeting these prerequisites will help ensure a stable and performant Wazuh deployment.
 
 ## Host System Requirements
 
@@ -53,7 +53,7 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Docker Desktop**
     * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
 * **WSL Linux distribution**
-    * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not compatible with wazuh-certs-tool-5.1.0-1.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
+    * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not compatible with wazuh-certs-tool-5.0.0-1.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:
