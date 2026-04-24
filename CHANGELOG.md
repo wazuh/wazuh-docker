@@ -5,13 +5,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None
-
-### Changed
-
 - Add revert option into bumper workflow ([#2330](https://github.com/wazuh/wazuh-docker/pull/2330))
 - Add checks for artifact_urls.yaml download ([#2315](https://github.com/wazuh/wazuh-docker/pull/2315))
 - Add set_as_main option ([#2293](https://github.com/wazuh/wazuh-docker/pull/2293))
+
+### Changed
+
 - Adapt bumper workflows to change main branch ([#2294](https://github.com/wazuh/wazuh-docker/pull/2294))
 - Delete all API user and password references and Wazuh agent references ([#2289](https://github.com/wazuh/wazuh-docker/pull/2289))
 - Create certificate directory with default user and group ([#2287](https://github.com/wazuh/wazuh-docker/pull/2287))
