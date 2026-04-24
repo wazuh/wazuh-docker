@@ -24,7 +24,6 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
-RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/fallback/bin/node
 
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
@@ -63,13 +62,13 @@ RUN yum install shadow-utils -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g 1000 $GROUP && \
     useradd --system \
-            --uid 1000 \
-            --no-create-home \
-            --home-dir $INSTALL_DIR \
-            --gid $GROUP \
-            --shell /sbin/nologin \
-            --comment "$USER user" \
-            $USER && \
+    --uid 1000 \
+    --no-create-home \
+    --home-dir $INSTALL_DIR \
+    --gid $GROUP \
+    --shell /sbin/nologin \
+    --comment "$USER user" \
+    $USER && \
     chmod 700 /entrypoint.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \
