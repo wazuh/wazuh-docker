@@ -8,13 +8,13 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_IMAGE_VERSION=5.0.0
-IMAGE_TAG=5.0.0
+WAZUH_IMAGE_VERSION=5.1.0
+IMAGE_TAG=5.1.0
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_REGISTRY=docker.io
 
-WAZUH_IMAGE_VERSION="5.0.0"
+WAZUH_IMAGE_VERSION="5.1.0"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
@@ -38,9 +38,9 @@ ctrl_c() {
 
 build() {
 
-    # WAZUH_MINOR_VERSION: Extracts major and minor version only (e.g., 5.0.0 -> 5.0)
+    # WAZUH_MINOR_VERSION: Extracts major and minor version only (e.g., 5.1.0 -> 5.0)
     WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
-    # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.0.0 -> 5)
+    # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.1.0 -> 5)
     WAZUH_MAJOR_VERSION="${WAZUH_IMAGE_VERSION%%.*}"
     # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
@@ -234,10 +234,10 @@ build() {
         # Generate component-specific IMAGE_TAG.
         # The commit suffix is only appended when --dev was passed, which maps
         # directly to inputs.dev=true in the workflow. This ensures:
-        #   dev=false, tag=5.0.0       → 5.0.0
-        #   dev=false, tag=5.0.0-beta1 → 5.0.0-beta1
-        #   dev=true,  tag=5.0.0       → 5.0.0-latest
-        #   dev=true,  tag=5.0.0-beta1 → 5.0.0-beta1-latest
+        #   dev=false, tag=5.1.0       → 5.1.0
+        #   dev=false, tag=5.1.0-beta1 → 5.1.0-beta1
+        #   dev=true,  tag=5.1.0       → 5.1.0-latest
+        #   dev=true,  tag=5.1.0-beta1 → 5.1.0-beta1-latest
         if [ -n "${IS_DEV_BUILD}" ]; then
             IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}-${COMPONENT_COMMIT}"
         else
