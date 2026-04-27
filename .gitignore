@@ -3,3 +3,13 @@ single-node/config/wazuh_indexer_ssl_certs/*.key
 multi-node/config/wazuh_indexer_ssl_certs/*.pem
 multi-node/config/wazuh_indexer_ssl_certs/*.key
 *.log
+
+# Docker boilerplate directories and files
+.env
+bind-mounts
+env
+env-files
+secrets
+secret-env
+secret-env-files
+volume-archives
