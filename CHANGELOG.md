@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.14.6]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- GH issue notification fix ([#2312](https://github.com/wazuh/wazuh-docker/pull/2312))
+
+### Deleted
+
+- None
+
 ## [4.14.5]
 
 ### Added
