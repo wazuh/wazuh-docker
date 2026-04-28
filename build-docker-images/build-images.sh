@@ -206,6 +206,7 @@ build() {
     }
 
     export WAZUH_VERSION="$WAZUH_IMAGE_VERSION"
+    export MULTIARCH="${MULTIARCH}"
     export INDEXER_TAG=$(make_tag   "${INDEXER_COMMIT:-latest}")
     export MANAGER_TAG=$(make_tag   "${MANAGER_COMMIT:-latest}")
     export DASHBOARD_TAG=$(make_tag "${DASHBOARD_COMMIT:-latest}")
