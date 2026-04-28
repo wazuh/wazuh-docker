@@ -38,7 +38,7 @@ The Procedure_push_docker_images.yml workflow builds and pushes multi-architectu
 2. **Multi-architecture Build**:
    - Uses Docker Buildx with QEMU for cross-platform builds
    - Builds for `linux/amd64` and `linux/arm64`
-   - Leverages `build-images.yml` for build configuration
+   - Leverages `docker-bake.hcl` for parallel multi-arch build configuration
 
 3. **Image Publishing**:
    - Tags images appropriately based on mode
