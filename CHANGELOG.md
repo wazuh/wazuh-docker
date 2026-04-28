@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [5.0.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add revert option into bumper workflow ([#2330](https://github.com/wazuh/wazuh-docker/pull/2330))
 - Add checks for artifact_urls.yaml download ([#2315](https://github.com/wazuh/wazuh-docker/pull/2315))
@@ -66,6 +67,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.6]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -84,6 +86,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.5]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -103,6 +106,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.4]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -121,6 +125,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.3]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update indexer-certs-gen README.md for clarity on procedure ([#2132](https://github.com/wazuh/wazuh-docker/pull/2132))
 - Update certs generator image version to 0.0.4 ([#2130](https://github.com/wazuh/wazuh-docker/pull/2130))
@@ -144,6 +149,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Code improvements for 4.14.2 ([#2090](https://github.com/wazuh/wazuh-docker/pull/2090))
 - Artifactory vulnerabilities notification ([#2078](https://github.com/wazuh/wazuh-docker/pull/2078))
@@ -165,6 +171,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -183,6 +190,7 @@ All notable changes to this project will be documented in this file.
 ## [4.14.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -209,6 +217,7 @@ All notable changes to this project will be documented in this file.
 ## [4.13.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -227,6 +236,7 @@ All notable changes to this project will be documented in this file.
 ## [4.13.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add opensearch_dashboard.yml parameters. ([#1985](https://github.com/wazuh/wazuh-docker/pull/1985))
 - Set right ownership for malicious-ioc files on container start ([#1926](https://github.com/wazuh/wazuh-docker/pull/1926))
@@ -257,6 +267,7 @@ All notable changes to this project will be documented in this file.
 ## [4.12.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -276,6 +287,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -294,6 +306,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -312,6 +325,7 @@ All notable changes to this project will be documented in this file.
 ## [4.11.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -330,6 +344,7 @@ All notable changes to this project will be documented in this file.
 ## [4.10.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -348,6 +363,7 @@ All notable changes to this project will be documented in this file.
 ## [4.10.0]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Improve the push docker images workflow ([#1551](https://github.com/wazuh/wazuh-docker/pull/1551))
 - Update the Procedure push docker images workflow file ([#1524](https://github.com/wazuh/wazuh-docker/pull/1524))
@@ -369,12 +385,14 @@ All notable changes to this project will be documented in this file.
 ## [4.9.2]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.9.2](https://github.com/wazuh/wazuh/blob/v4.9.2/CHANGELOG.md#v492)
 
 ## [4.9.1]
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - None
 
@@ -392,244 +410,292 @@ All notable changes to this project will be documented in this file.
 
 ## Wazuh Docker v4.9.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.9.0](https://github.com/wazuh/wazuh/blob/v4.9.0/CHANGELOG.md#v490)
 
 ## Wazuh Docker v4.8.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.8.2](https://github.com/wazuh/wazuh/blob/v4.8.2/CHANGELOG.md#v482)
 
 ## Wazuh Docker v4.8.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.8.1](https://github.com/wazuh/wazuh/blob/v4.8.1/CHANGELOG.md#v481)
 
 ## Wazuh Docker v4.8.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.8.0](https://github.com/wazuh/wazuh/blob/v4.8.0/CHANGELOG.md#v480)
 
 ## Wazuh Docker v4.7.5
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.5](https://github.com/wazuh/wazuh/blob/v4.7.5/CHANGELOG.md#v475)
 
 ## Wazuh Docker v4.7.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.4](https://github.com/wazuh/wazuh/blob/v4.7.4/CHANGELOG.md#v474)
 
 ## Wazuh Docker v4.7.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.3](https://github.com/wazuh/wazuh/blob/v4.7.3/CHANGELOG.md#v473)
 
 ## Wazuh Docker v4.7.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.2](https://github.com/wazuh/wazuh/blob/v4.7.2/CHANGELOG.md#v472)
 
 ## Wazuh Docker v4.7.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.1](https://github.com/wazuh/wazuh/blob/v4.7.1/CHANGELOG.md#v471)
 
 ## Wazuh Docker v4.7.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.7.0](https://github.com/wazuh/wazuh/blob/v4.7.0/CHANGELOG.md#v470)
 
 ## Wazuh Docker v4.6.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.6.0](https://github.com/wazuh/wazuh/blob/v4.6.0/CHANGELOG.md#v460)
 
 ## Wazuh Docker v4.5.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.5.4](https://github.com/wazuh/wazuh/blob/v4.5.4/CHANGELOG.md#v454)
 
 ## Wazuh Docker v4.5.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.5.3](https://github.com/wazuh/wazuh/blob/v4.5.3/CHANGELOG.md#v453)
 
 ## Wazuh Docker v4.5.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.5.2](https://github.com/wazuh/wazuh/blob/v4.5.2/CHANGELOG.md#v452)
 
 ## Wazuh Docker v4.5.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.5.1](https://github.com/wazuh/wazuh/blob/v4.5.1/CHANGELOG.md#v451)
 
 ## Wazuh Docker v4.5.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.5.0](https://github.com/wazuh/wazuh/blob/v4.5.0/CHANGELOG.md#v450)
 
 ## Wazuh Docker v4.4.5
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.5](https://github.com/wazuh/wazuh/blob/v4.4.5/CHANGELOG.md#v445)
 
 ## Wazuh Docker v4.4.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.4](https://github.com/wazuh/wazuh/blob/v4.4.4/CHANGELOG.md#v444)
 
 ## Wazuh Docker v4.4.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.3](https://github.com/wazuh/wazuh/blob/v4.4.3/CHANGELOG.md#v443)
 
 ## Wazuh Docker v4.4.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.2](https://github.com/wazuh/wazuh/blob/v4.4.2/CHANGELOG.md#v442)
 
 ## Wazuh Docker v4.4.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.1](https://github.com/wazuh/wazuh/blob/v4.4.1/CHANGELOG.md#v441)
 
 ## Wazuh Docker v4.4.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.4.0](https://github.com/wazuh/wazuh/blob/v4.4.0/CHANGELOG.md#v440)
 
 ## Wazuh Docker v4.3.11
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.11](https://github.com/wazuh/wazuh/blob/v4.3.11/CHANGELOG.md#v4311)
 
 ## Wazuh Docker v4.3.10
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.10](https://github.com/wazuh/wazuh/blob/v4.3.10/CHANGELOG.md#v4310)
 
 
 ## Wazuh Docker v4.3.9
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.9](https://github.com/wazuh/wazuh/blob/v4.3.9/CHANGELOG.md#v439)
 
 
 ## Wazuh Docker v4.3.8
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.8](https://github.com/wazuh/wazuh/blob/v4.3.8/CHANGELOG.md#v438)
 
 ## Wazuh Docker v4.3.7
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.7](https://github.com/wazuh/wazuh/blob/v4.3.7/CHANGELOG.md#v437)
 
 ## Wazuh Docker v4.3.6
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.6](https://github.com/wazuh/wazuh/blob/v4.3.6/CHANGELOG.md#v436)
 
 ## Wazuh Docker v4.3.5
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.5](https://github.com/wazuh/wazuh/blob/v4.3.5/CHANGELOG.md#v435)
 
 ## Wazuh Docker v4.3.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.4](https://github.com/wazuh/wazuh/blob/v4.3.4/CHANGELOG.md#v434)
 
 ## Wazuh Docker v4.3.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.3](https://github.com/wazuh/wazuh/blob/v4.3.3/CHANGELOG.md#v433)
 
 ## Wazuh Docker v4.3.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.2](https://github.com/wazuh/wazuh/blob/v4.3.2/CHANGELOG.md#v432)
 
 ## Wazuh Docker v4.3.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.1](https://github.com/wazuh/wazuh/blob/v4.3.1/CHANGELOG.md#v431)
 
 ## Wazuh Docker v4.3.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.3.0](https://github.com/wazuh/wazuh/blob/v4.3.0/CHANGELOG.md#v430)
 
 ## Wazuh Docker v4.2.7
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.7](https://github.com/wazuh/wazuh/blob/v4.2.7/CHANGELOG.md#v427)
 
 ## Wazuh Docker v4.2.6
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.6](https://github.com/wazuh/wazuh/blob/v4.2.6/CHANGELOG.md#v426)
 
 ## Wazuh Docker v4.2.5
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.5](https://github.com/wazuh/wazuh/blob/v4.2.5/CHANGELOG.md#v425)
 
 ## Wazuh Docker v4.2.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.4](https://github.com/wazuh/wazuh/blob/v4.2.4/CHANGELOG.md#v424)
 
 ## Wazuh Docker v4.2.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.3](https://github.com/wazuh/wazuh/blob/v4.2.3/CHANGELOG.md#v423)
 
 ## Wazuh Docker v4.2.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.2](https://github.com/wazuh/wazuh/blob/v4.2.2/CHANGELOG.md#v422)
 
 ## Wazuh Docker v4.2.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.1](https://github.com/wazuh/wazuh/blob/v4.2.1/CHANGELOG.md#v421)
 
 ## Wazuh Docker v4.2.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.2.0](https://github.com/wazuh/wazuh/blob/v4.2.0/CHANGELOG.md#v420)
 
 ## Wazuh Docker v4.1.5
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.5](https://github.com/wazuh/wazuh/blob/v4.1.5/CHANGELOG.md#v415)
 - Update ODFE compatibility to version 1.13.2
 
 ## Wazuh Docker v4.1.4
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.4](https://github.com/wazuh/wazuh/blob/v4.1.4/CHANGELOG.md#v414)
 
 ## Wazuh Docker v4.1.3
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.3](https://github.com/wazuh/wazuh/blob/v4.1.3/CHANGELOG.md#v413)
 
 ## Wazuh Docker v4.1.2
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.2](https://github.com/wazuh/wazuh/blob/v4.1.2/CHANGELOG.md#v412)
 
 ## Wazuh Docker v4.1.1
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.1](https://github.com/wazuh/wazuh/blob/v4.1.1/CHANGELOG.md#v411)
 
 ## Wazuh Docker v4.1.0
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update Wazuh to version [4.1.0](https://github.com/wazuh/wazuh/blob/v4.1.0/CHANGELOG.md#v410)
 - Update ODFE compatibility to version 1.12.0
@@ -641,6 +707,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v4.0.4_1.11.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version [4.0.4](https://github.com/wazuh/wazuh/blob/v4.0.4/CHANGELOG.md#v404)
 
@@ -648,6 +715,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v4.0.3_1.11.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.3
 
@@ -655,12 +723,14 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v4.0.2_1.11.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.2
 
 ## Wazuh Docker v4.0.1_1.11.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.1
 - Opendistro 1.11.0 compatiblity
@@ -669,6 +739,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v4.0.0_1.10.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 4.0.0
 - Updating Wazuh cluster key dynamically ([@1stOfHisGame](https://github.com/1stOfHisGame))  [#393](https://github.com/wazuh/wazuh-docker/pull/393)
@@ -686,6 +757,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.13.2_7.9.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.2_7.9.1
 - Add CLUSTER_NETWORK_HOST environment variable ([@jfut](https://github.com/jfut)) [#372](https://github.com/wazuh/wazuh-docker/pull/372)
@@ -699,6 +771,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.13.1_7.8.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.1_7.8.0
 
@@ -706,6 +779,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.13.0_7.7.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.13.3_7.7.1
 
@@ -717,6 +791,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.12.3_7.6.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.3_7.6.2
 
@@ -724,12 +799,14 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.12.2_7.6.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.2_7.6.2
 
 ## Wazuh Docker v3.12.1_7.6.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.1_7.6.2
 
@@ -741,6 +818,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.12.0_7.6.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.12.0_7.6.1
 
@@ -748,6 +826,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.11.4_7.6.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.4_7.6.1
 
@@ -761,12 +840,14 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.11.3_7.5.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.3_7.5.2
 
 ## Wazuh Docker v3.11.2_7.5.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Bumped Node.js to version 10 ([@xr09](https://github.com/xr09)) [#8615cd4](https://github.com/wazuh/wazuh-docker/commit/8615cd4d2152601e55becc7c3675360938e74b6a)
 
@@ -777,6 +858,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.11.1_7.5.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.1_7.5.1
 - Filebeat configuration file updated to latest version ([@manuasir](https://github.com/manuasir)) [#271](https://github.com/wazuh/wazuh-docker/pull/271)
@@ -785,36 +867,42 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.11.0_7.5.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.11.0_7.5.1
 
 ## Wazuh Docker v3.10.2_7.5.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.10.2_7.5.0
 
 ## Wazuh Docker v3.10.2_7.3.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.10.2_7.3.2
 
 ## Wazuh Docker v3.10.0_7.3.2
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.10.0_7.3.2
 
 ## Wazuh Docker v3.9.5_7.2.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.5_7.2.1
 
 ## Wazuh Docker v3.9.4_7.2.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.4_7.2.0
 - Implemented Wazuh Filebeat Module ([jm404](https://www.github.com/jm404)) [#2a77c6a](https://github.com/wazuh/wazuh-docker/commit/2a77c6a6e6bf78f2492adeedbade7a507d9974b2)
@@ -827,18 +915,21 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.9.2_7.1.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.2_7.1.1
 
 ## Wazuh Docker v3.9.2_6.8.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.2_6.8.0
 
 ## Wazuh Docker v3.9.1_7.1.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Support for Elastic v7.1.0
 - New environment variables for Kibana ([@manuasir](https://github.com/manuasir)) [#22ad43](https://github.com/wazuh/wazuh-docker/commit/22ad4360f548e54bb0c5e929f8c84a186ad2ab88)
@@ -846,6 +937,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.9.1_6.8.0
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Update to Wazuh version 3.9.1_6.8.0 ([#181](https://github.com/wazuh/wazuh-docker/pull/181))
 
@@ -862,6 +954,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.9.0_6.7.1
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Support for xPACK authorized requests ([@manuasir](https://github.com/manuasir)) ([#119](https://github.com/wazuh/wazuh-docker/pull/119))
 - Add Elasticsearch cluster configuration ([@SitoRBJ](https://github.com/SitoRBJ)). ([#146](https://github.com/wazuh/wazuh-docker/pull/146))
@@ -899,6 +992,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.8.2_6.5.4
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Add Wazuh-Elasticsearch. ([#106](https://github.com/wazuh/wazuh-docker/pull/106))
 - Store Filebeat _/var/lib/filebeat/registry._ ([#109](https://github.com/wazuh/wazuh-docker/pull/109))
@@ -935,6 +1029,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.7.2_6.5.4
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Improvements to Kibana settings added. ([#91](https://github.com/wazuh/wazuh-docker/pull/91))
 - Add Kibana environmental variables for Wazuh APP config.yml. ([#89](https://github.com/wazuh/wazuh-docker/pull/89))
@@ -969,6 +1064,7 @@ All notable changes to this project will be documented in this file.
 ## Wazuh Docker v3.7.0_6.4.3
 
 ### Added
+- Test entry for automated merge test [5538]
 
 - Allow custom scripts or commands before service start ([#58](https://github.com/wazuh/wazuh-docker/pull/58))
 - Added description for wazuh-nginx ([#59](https://github.com/wazuh/wazuh-docker/pull/59))
