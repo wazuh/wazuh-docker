@@ -27,10 +27,8 @@ RUN RPM_ARCH="x86_64" && \
     sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf
 
 # Download tini static binary (no external library dependencies)
-RUN TINI_ARCH="amd64" && \
-    if [ "${TARGETARCH}" = "arm64" ]; then TINI_ARCH="arm64"; fi && \
-    curl --fail --silent -L \
-    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TINI_ARCH} \
+RUN curl --fail --silent -L \
+    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH} \
     -o /usr/local/bin/tini && \
     chmod +x /usr/local/bin/tini
 
