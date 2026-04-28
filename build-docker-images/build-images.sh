@@ -166,52 +166,23 @@ build() {
     fi
 
 
-    # Function to get component-specific commit reference
-    get_component_commit() {
-        local component=$1
-        case "${component}" in
-            wazuh-indexer)
-                echo "${INDEXER_COMMIT}"
-                ;;
-            wazuh-manager)
-                echo "${MANAGER_COMMIT}"
-                ;;
-            wazuh-dashboard)
-                echo "${DASHBOARD_COMMIT}"
-                ;;
-            wazuh-agent)
-                echo "${AGENT_COMMIT}"
-                ;;
-            *)
-                echo ""
-                ;;
-        esac
-    }
-
-    # Global env file (without IMAGE_TAG - will be component-specific)
+    # Write the global .env file used by deployment compose files.
+    # IMAGE_TAG here reflects a non-dev, non-per-component tag for reference.
+    local base_tag="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}"
     echo WAZUH_VERSION=$WAZUH_IMAGE_VERSION > ../.env
     echo WAZUH_IMAGE_VERSION=$WAZUH_IMAGE_VERSION >> ../.env
     echo WAZUH_REGISTRY=$WAZUH_REGISTRY >> ../.env
+    echo IMAGE_TAG=${base_tag} >> ../.env
 
     set -a
     source ../.env
     source ./artifacts_env.txt
     set +a
 
-    # Define all available components
-    local all_components=("wazuh-indexer" "wazuh-manager" "wazuh-dashboard" "wazuh-agent")
-    local components_to_build=()
-
-    # Determine which components to build
-    if [ -z "${WAZUH_COMPONENT}" ]; then
-        echo "No component specified. Building all components..."
-        components_to_build=("${all_components[@]}")
-    else
-        # Validate component
+    # Validate component if a specific one was requested.
+    if [ -n "${WAZUH_COMPONENT}" ]; then
         case "${WAZUH_COMPONENT}" in
-            wazuh-indexer|wazuh-manager|wazuh-dashboard|wazuh-agent)
-                components_to_build=("${WAZUH_COMPONENT}")
-                ;;
+            wazuh-indexer|wazuh-manager|wazuh-dashboard|wazuh-agent) ;;
             *)
                 echo "Error: Unknown component '${WAZUH_COMPONENT}'" >&2
                 clean 1
@@ -219,77 +190,50 @@ build() {
         esac
     fi
 
-    # Determine build command and base options
+    # Generate per-component image tags.
+    # The commit suffix is only appended when --dev is passed. This ensures:
+    #   dev=false, tag=5.0.0       → 5.0.0
+    #   dev=false, tag=5.0.0-beta1 → 5.0.0-beta1
+    #   dev=true,  tag=5.0.0       → 5.0.0-latest
+    #   dev=true,  tag=5.0.0-beta1 → 5.0.0-beta1-latest
+    make_tag() {
+        local commit=$1
+        if [ -n "${IS_DEV_BUILD}" ]; then
+            echo "${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}-${commit}"
+        else
+            echo "${base_tag}"
+        fi
+    }
+
+    export WAZUH_VERSION="$WAZUH_IMAGE_VERSION"
+    export INDEXER_TAG=$(make_tag   "${INDEXER_COMMIT:-latest}")
+    export MANAGER_TAG=$(make_tag   "${MANAGER_COMMIT:-latest}")
+    export DASHBOARD_TAG=$(make_tag "${DASHBOARD_COMMIT:-latest}")
+    export AGENT_TAG=$(make_tag     "${AGENT_COMMIT:-latest}")
+
+    echo "Image tags:"
+    echo "  wazuh-indexer:   ${WAZUH_REGISTRY}/wazuh/wazuh-indexer:${INDEXER_TAG}"
+    echo "  wazuh-manager:   ${WAZUH_REGISTRY}/wazuh/wazuh-manager:${MANAGER_TAG}"
+    echo "  wazuh-dashboard: ${WAZUH_REGISTRY}/wazuh/wazuh-dashboard:${DASHBOARD_TAG}"
+    echo "  wazuh-agent:     ${WAZUH_REGISTRY}/wazuh/wazuh-agent:${AGENT_TAG}"
+
+    # Bake options: --push for multi-arch (can't load multi-platform locally),
+    # --load for single-arch (stores image in local Docker daemon).
+    local bake_opts="--no-cache"
     if [ "${MULTIARCH}" ]; then
-        build_cmd="docker buildx build --platform linux/amd64,linux/arm64 --push --no-cache"
+        bake_opts="${bake_opts} --push"
     else
-        build_cmd="docker build --no-cache"
+        bake_opts="${bake_opts} --load"
     fi
 
-    # Build each component
-    for component in "${components_to_build[@]}"; do
-        echo "Building ${component} image..."
-
-        # Get component-specific commit reference
-        COMPONENT_COMMIT=$(get_component_commit "${component}")
-
-        # Generate component-specific IMAGE_TAG.
-        # The commit suffix is only appended when --dev was passed, which maps
-        # directly to inputs.dev=true in the workflow. This ensures:
-        #   dev=false, tag=5.0.0       → 5.0.0
-        #   dev=false, tag=5.0.0-beta1 → 5.0.0-beta1
-        #   dev=true,  tag=5.0.0       → 5.0.0-latest
-        #   dev=true,  tag=5.0.0-beta1 → 5.0.0-beta1-latest
-        if [ -n "${IS_DEV_BUILD}" ]; then
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}-${COMPONENT_COMMIT}"
-        else
-            IMAGE_TAG="${WAZUH_IMAGE_VERSION}${WAZUH_DEV_STAGE:+-${WAZUH_DEV_STAGE,,}}"
-        fi
-        echo "Using IMAGE_TAG: ${IMAGE_TAG} for ${component}"
-        export IMAGE_TAG="$IMAGE_TAG"
-
-        # Build common args (used by all components)
-        build_args=(
-            -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
-            --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
-        )
-
-        # Add component-specific args
-        case "${component}" in
-            wazuh-indexer)
-                build_args+=(
-                    --build-arg wazuh_indexer_x86_64_rpm="${wazuh_indexer_x86_64_rpm}"
-                    --build-arg wazuh_indexer_aarch64_rpm="${wazuh_indexer_aarch64_rpm}"
-                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
-                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
-                )
-                ;;
-            wazuh-manager)
-                build_args+=(
-                    --build-arg wazuh_manager_x86_64_rpm="${wazuh_manager_x86_64_rpm}"
-                    --build-arg wazuh_manager_aarch64_rpm="${wazuh_manager_aarch64_rpm}"
-                )
-                ;;
-            wazuh-dashboard)
-                build_args+=(
-                    --build-arg wazuh_dashboard_x86_64_rpm="${wazuh_dashboard_x86_64_rpm}"
-                    --build-arg wazuh_dashboard_aarch64_rpm="${wazuh_dashboard_aarch64_rpm}"
-                    --build-arg wazuh_certs_tool="${wazuh_certs_tool}"
-                    --build-arg wazuh_config_yml="${wazuh_config_yml}"
-                )
-                ;;
-            wazuh-agent)
-                build_args+=(
-                    --build-arg wazuh_agent_x86_64_rpm="${wazuh_agent_x86_64_rpm}"
-                    --build-arg wazuh_agent_aarch64_rpm="${wazuh_agent_aarch64_rpm}"
-                )
-                ;;
-        esac
-
-        # Execute build
-        $build_cmd "${build_args[@]}" ${component}/ || clean 1
-        echo "${component} image built successfully!"
-    done
+    # Build a specific component or the full default group (all 4 in parallel).
+    if [ -z "${WAZUH_COMPONENT}" ]; then
+        echo "Building all components in parallel..."
+        docker buildx bake ${bake_opts} -f docker-bake.hcl || clean 1
+    else
+        echo "Building ${WAZUH_COMPONENT}..."
+        docker buildx bake ${bake_opts} -f docker-bake.hcl "${WAZUH_COMPONENT}" || clean 1
+    fi
 
     echo ""
     echo "Image build process completed!"
