@@ -28,7 +28,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 
 	├── build-docker-images
 	│   ├── build-images.sh
-	│   ├── build-images.yml
+	│   ├── docker-bake.hcl
 	│   ├── README.md
 	│   ├── wazuh-agent
 	│   │   ├── config
