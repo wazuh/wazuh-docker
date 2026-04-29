@@ -53,7 +53,9 @@ group "default" {
 # All component targets inherit from here. Not built directly.
 
 target "_common" {
-  platforms = MULTIARCH != "" ? ["linux/amd64", "linux/arm64"] : ["linux/amd64"]
+  # MULTIARCH=true  → build linux/amd64 + linux/arm64 (requires --push, no --load for multi-platform)
+  # MULTIARCH unset → null means "native platform of the build host" (amd64 on x86, arm64 on ARM)
+  platforms = MULTIARCH != "" ? ["linux/amd64", "linux/arm64"] : null
   args = {
     WAZUH_VERSION = WAZUH_VERSION
   }
