@@ -96,7 +96,7 @@ build() {
         # Pattern: server / stage / major_version.x / filename
         FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DIR}/${ARTIFACT_URLS_DOWNLOAD}"
         echo "Attempting to download: $FULL_URL"
-        curl -so "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
+        curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
             echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
             clean 1
         }
