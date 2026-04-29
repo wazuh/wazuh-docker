@@ -48,7 +48,7 @@ build() {
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
-    ARTIFACT_URLS_DIR="artifact_urls"
+    ARTIFACT_URLS_DIR="artifact-urls"
 
     # Check if the artifact file already exists to prevent redundant downloads
     if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
