@@ -442,6 +442,7 @@ jobs:
         if [ -f "$TARGET_FILE" ]; then
           echo "Updating registry in $TARGET_FILE to: ${{ env.WAZUH_REGISTRY }}"
           sed -i "s|wazuh/wazuh-|${{ env.WAZUH_REGISTRY }}/wazuh/wazuh-|g" "$TARGET_FILE"
+          sed -i "s/\(.*wazuh\/wazuh-.*:\)${{ env.WAZUH_VERSION }}/\1${{ env.WAZUH_IMAGE_VERSION }}-latest/g" "$TARGET_FILE"
         else
           echo "File $TARGET_FILE not found"
           exit 1
