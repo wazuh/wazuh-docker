@@ -32,7 +32,8 @@ FROM amazonlinux:2023
 ENV USER="wazuh-indexer" \
     GROUP="wazuh-indexer" \
     NAME="wazuh-indexer" \
-    INSTALL_DIR="/usr/share/wazuh-indexer"
+    INSTALL_DIR="/usr/share/wazuh-indexer" 
+ENV ENGINE_DIR="$INSTALL_DIR/engine"
 
 
 COPY config/entrypoint.sh /
@@ -63,7 +64,14 @@ COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
 RUN chmod 700 $INSTALL_DIR && \
     chmod 700 $INSTALL_DIR/config && \
     chmod 600 $INSTALL_DIR/config/jvm.options && \
-    chmod 600 $INSTALL_DIR/config/opensearch.yml
+    chmod 600 $INSTALL_DIR/config/opensearch.yml && \
+    if [ -d "$ENGINE_DIR" ]; then \
+    find "$ENGINE_DIR" -type d -exec chmod 750 {} + && \
+    find "$ENGINE_DIR" -type f -exec chmod 640 {} + && \
+    { [ -f "$ENGINE_DIR/run_engine.sh" ] && chmod 750 "$ENGINE_DIR/run_engine.sh" || true; } && \
+    { [ -f "$ENGINE_DIR/bin/wazuh-engine" ] && chmod 750 "$ENGINE_DIR/bin/wazuh-engine" || true; } && \
+    { [ -d "$ENGINE_DIR/sockets" ] && chmod 777 "$ENGINE_DIR/sockets" || true; }; \
+    fi
 
 USER wazuh-indexer
 WORKDIR $INSTALL_DIR

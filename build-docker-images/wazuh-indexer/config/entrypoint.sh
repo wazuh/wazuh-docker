@@ -58,6 +58,12 @@ function runOpensearch {
         fi
     done < <(env)
 
+    # Start Wazuh Engine
+    if [ -x "$OPENSEARCH_HOME/engine/run_engine.sh" ]; then
+        nohup "$OPENSEARCH_HOME/engine/run_engine.sh" > /dev/null 2>&1 &
+        echo $! > /run/wazuh-indexer/wazuh-engine.pid
+    fi
+
     # Start opensearch
     exec "$@" "${opensearch_opts[@]}"
 
