@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Unification of user UID and GID ([#2393](https://github.com/wazuh/wazuh-docker/pull/2393))
 - Add Wazuh indexer engine start on entrypoint ([#2390](https://github.com/wazuh/wazuh-docker/pull/2390))
 - Image build process update ([#2358](https://github.com/wazuh/wazuh-docker/pull/2358))
 - Add new path on artifact_urls file ([#2344](https://github.com/wazuh/wazuh-docker/pull/2344))
