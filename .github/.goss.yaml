@@ -2,14 +2,14 @@ file:
   /var/wazuh-manager/bin/wazuh-manager-control:
     exists: true
     mode: "0750"
-    owner: root
-    group: root
+    owner: wazuh-manager
+    group: wazuh-manager
     filetype: file
     contains: []
   /var/wazuh-manager/etc/wazuh-manager.conf:
     exists: true
     mode: "0660"
-    owner: root
+    owner: wazuh-manager
     group: wazuh-manager
     filetype: file
     contains: []
