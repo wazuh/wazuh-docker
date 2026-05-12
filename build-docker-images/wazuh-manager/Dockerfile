@@ -53,25 +53,28 @@ RUN curl --fail --silent -L \
 ################################################################################
 FROM amazonlinux:2023
 
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
 RUN dnf install openssl findutils procps shadow-utils -y && \
     dnf clean all && \
-    getent group wazuh-manager || groupadd -r -g 999 wazuh-manager && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
-        --uid 999 \
         --no-create-home \
         --home-dir /var/wazuh-manager \
-        --gid wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
         wazuh-manager
 
 # Copy Wazuh Manager installation (includes permanent data snapshot)
-COPY --from=builder /var/wazuh-manager /var/wazuh-manager
+COPY --from=builder  --chown=${WAZUH_UID}:${WAZUH_GID} /var/wazuh-manager /var/wazuh-manager
 
 # Copy tini static binary
-COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
+COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} /usr/local/bin/tini /usr/local/bin/tini
 
 # Copy entrypoint, init scripts and runtime config
 COPY config/entrypoint.sh /entrypoint.sh

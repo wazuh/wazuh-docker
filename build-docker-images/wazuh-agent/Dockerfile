@@ -38,25 +38,28 @@ RUN curl --fail --silent -L \
 ################################################################################
 FROM amazonlinux:2023
 
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies
 RUN dnf install procps shadow-utils -y && \
     dnf clean all && \
-    getent group wazuh || groupadd -r -g 999 wazuh && \
+    getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
-        --uid 999 \
         --no-create-home \
         --home-dir /var/ossec \
-        --gid wazuh \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
         wazuh
 
 # Copy Wazuh Agent installation from builder
-COPY --from=builder /var/ossec /var/ossec
+COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} /var/ossec /var/ossec
 
 # Copy tini static binary
-COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
+COPY --from=builder  --chown=${WAZUH_UID}:${WAZUH_GID} /usr/local/bin/tini /usr/local/bin/tini
 
 # Copy entrypoint and init scripts
 COPY config/entrypoint.sh /entrypoint.sh

@@ -77,6 +77,8 @@ node_to_dir() {
 # ---------------------------------------------------------------------------
 
 # Parse config.yml
+export WAZUH_UID=101
+export WAZUH_GID=101
 if $DO_COPY || $DO_PRIV; then
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Configuration file $CONFIG_FILE not found."
@@ -102,7 +104,6 @@ if $DO_COPY; then
     echo "Copying certificates for indexer: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
-    cp "$OUTPUT_DIR"/root-ca* "./config/$dir_name/certs/"
     if $FIRST_INDEXER; then
       cp "$OUTPUT_DIR"/admin* "./config/$dir_name/certs/"
       FIRST_INDEXER=false
@@ -114,7 +115,6 @@ if $DO_COPY; then
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
-    cp "$OUTPUT_DIR"/root-ca* "./config/$dir_name/certs/"
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
@@ -122,32 +122,37 @@ if $DO_COPY; then
     echo "Copying certificates for dashboard: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
-    cp "$OUTPUT_DIR"/root-ca* "./config/$dir_name/certs/"
   done
+  echo "Copying root-ca certificates -> config/root-ca/certs/"
+  mkdir -p "./config/root-ca/certs"
+  cp "$OUTPUT_DIR"/root-ca* "./config/root-ca/certs/"
 fi
 
 # 3. Set ownership and permissions
 if $DO_PRIV; then
   for node in "${INDEXER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for indexer $node (1000:1000)"
-    chown -R 1000:1000 "./config/$dir_name/certs"
+    echo "Setting permissions for indexer $node (${WAZUH_UID}:${WAZUH_GID})"
+    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
     chmod 400 "./config/$dir_name/certs/"*
   done
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for manager $node (999:999)"
-    chown -R 999:999 "./config/$dir_name/certs"
+    echo "Setting permissions for manager $node (${WAZUH_UID}:${WAZUH_GID})"
+    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
     chmod 400 "./config/$dir_name/certs/"*
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for dashboard $node (1000:1000)"
-    chown -R 1000:1000 "./config/$dir_name/certs"
+    echo "Setting permissions for dashboard $node (${WAZUH_UID}:${WAZUH_GID})"
+    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
     chmod 400 "./config/$dir_name/certs/"*
   done
+  echo "Setting permissions for root-ca certificates (${WAZUH_UID}:${WAZUH_GID})"
+  chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/root-ca/certs"
+  chmod 400 "./config/root-ca/certs/"*
 fi
 
 echo "Process completed."

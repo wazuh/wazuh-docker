@@ -34,6 +34,9 @@ RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 ################################################################################
 FROM amazonlinux:2023
 
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
 # Set environment variables
 ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
@@ -60,9 +63,9 @@ COPY config/wazuh_dashboard_config.sh /
 # Update and install dependencies
 RUN yum install shadow-utils -y && \
     yum clean all && \
-    getent group $GROUP || groupadd -r -g 1000 $GROUP && \
+    getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
-    --uid 1000 \
+    --uid ${WAZUH_UID} \
     --no-create-home \
     --home-dir $INSTALL_DIR \
     --gid $GROUP \
@@ -72,13 +75,13 @@ RUN yum install shadow-utils -y && \
     chmod 700 /entrypoint.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \
-    chown 1000:1000 $INSTALL_DIR && \
-    chown 1000:1000 /*.sh && \
+    chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
+    chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
-COPY --from=builder --chown=1000:1000 $INSTALL_DIR $INSTALL_DIR
-COPY --from=builder --chown=1000:1000 /etc/wazuh-dashboard $INSTALL_DIR/config/
+COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} /etc/wazuh-dashboard $INSTALL_DIR/config/
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR
