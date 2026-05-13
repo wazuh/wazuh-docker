@@ -7,9 +7,28 @@ ARG TARGETARCH
 ARG wazuh_dashboard_x86_64_rpm
 ARG wazuh_dashboard_aarch64_rpm
 ARG wazuh_config_yml
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
+# Set environment variables
+ENV USER="wazuh-dashboard" \
+    GROUP="wazuh-dashboard" \
+    NAME="wazuh-dashboard" \
+    INSTALL_DIR="/usr/share/wazuh-dashboard" 
 
 # Update and install dependencies
-RUN RPM_ARCH="x86_64" && \
+RUN yum install shadow-utils -y && \
+    yum clean all && \
+    getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
+    useradd --system \
+    --uid ${WAZUH_UID} \
+    --no-create-home \
+    --home-dir $INSTALL_DIR \
+    --gid $GROUP \
+    --shell /sbin/nologin \
+    --comment "$USER user" \
+    $USER && \
+    RPM_ARCH="x86_64" && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_dashboard_${RPM_ARCH}_rpm" && \
     dashboard_url="${!URL_VAR}" && \
@@ -80,8 +99,8 @@ RUN yum install shadow-utils -y && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
-COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR $INSTALL_DIR
-COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} /etc/wazuh-dashboard $INSTALL_DIR/config/
+COPY --from=builder $INSTALL_DIR $INSTALL_DIR
+COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
 
 # Set workdir and user
 WORKDIR $INSTALL_DIR

@@ -12,15 +12,27 @@ ARG TINI_VERSION="v0.19.0"
 ARG TARGETARCH
 ARG wazuh_manager_x86_64_rpm
 ARG wazuh_manager_aarch64_rpm
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh /
 
-RUN RPM_ARCH="x86_64" && \
+RUN dnf install openssl findutils procps shadow-utils -y && \
+    dnf clean all && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
+    getent passwd wazuh-manager || useradd --system \
+        --no-create-home \
+        --home-dir /var/wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
+        --shell /sbin/nologin \
+        wazuh-manager && \
+    RPM_ARCH="x86_64" && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_manager_${RPM_ARCH}_rpm" && \
     manager_url="${!URL_VAR}" && \
-    dnf install curl-minimal xz gnupg tar gzip openssl findutils procps shadow-utils -y && \
+    dnf install curl-minimal xz gnupg tar gzip -y && \
     dnf clean all && \
     curl -o /wazuh-manager.rpm "${manager_url}" && \
     dnf install /wazuh-manager.rpm -y && \
@@ -71,10 +83,10 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
         wazuh-manager
 
 # Copy Wazuh Manager installation (includes permanent data snapshot)
-COPY --from=builder  --chown=${WAZUH_UID}:${WAZUH_GID} /var/wazuh-manager /var/wazuh-manager
+COPY --from=builder /var/wazuh-manager /var/wazuh-manager
 
 # Copy tini static binary
-COPY --from=builder --chown=${WAZUH_UID}:${WAZUH_GID} /usr/local/bin/tini /usr/local/bin/tini
+COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 
 # Copy entrypoint, init scripts and runtime config
 COPY config/entrypoint.sh /entrypoint.sh
