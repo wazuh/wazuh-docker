@@ -12,15 +12,27 @@ ARG TINI_VERSION="v0.19.0"
 ARG TARGETARCH
 ARG wazuh_manager_x86_64_rpm
 ARG wazuh_manager_aarch64_rpm
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh /
 
-RUN RPM_ARCH="x86_64" && \
+RUN dnf install openssl findutils procps shadow-utils -y && \
+    dnf clean all && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
+    getent passwd wazuh-manager || useradd --system \
+        --no-create-home \
+        --home-dir /var/wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
+        --shell /sbin/nologin \
+        wazuh-manager && \
+    RPM_ARCH="x86_64" && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_manager_${RPM_ARCH}_rpm" && \
     manager_url="${!URL_VAR}" && \
-    dnf install curl-minimal xz gnupg tar gzip openssl findutils procps shadow-utils -y && \
+    dnf install curl-minimal xz gnupg tar gzip -y && \
     dnf clean all && \
     curl -o /wazuh-manager.rpm "${manager_url}" && \
     dnf install /wazuh-manager.rpm -y && \
@@ -53,17 +65,20 @@ RUN curl --fail --silent -L \
 ################################################################################
 FROM amazonlinux:2023
 
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
 RUN dnf install openssl findutils procps shadow-utils -y && \
     dnf clean all && \
-    getent group wazuh-manager || groupadd -r -g 999 wazuh-manager && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
-        --uid 999 \
         --no-create-home \
         --home-dir /var/wazuh-manager \
-        --gid wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
         wazuh-manager
 

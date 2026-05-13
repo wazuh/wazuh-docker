@@ -14,8 +14,21 @@ ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
 ARG wazuh_agent_x86_64_rpm
 ARG wazuh_agent_aarch64_rpm
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
 
-RUN RPM_ARCH="x86_64" && \
+# Install only runtime dependencies
+RUN dnf install procps shadow-utils -y && \
+    dnf clean all && \
+    getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
+    getent passwd wazuh || useradd --system \
+        --no-create-home \
+        --home-dir /var/ossec \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
+        --shell /sbin/nologin \
+        wazuh && \
+    RPM_ARCH="x86_64" && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_agent_${RPM_ARCH}_rpm" && \
     agent_url="${!URL_VAR}" && \
@@ -38,17 +51,20 @@ RUN curl --fail --silent -L \
 ################################################################################
 FROM amazonlinux:2023
 
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies
 RUN dnf install procps shadow-utils -y && \
     dnf clean all && \
-    getent group wazuh || groupadd -r -g 999 wazuh && \
+    getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
-        --uid 999 \
         --no-create-home \
         --home-dir /var/ossec \
-        --gid wazuh \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
         wazuh
 

@@ -12,7 +12,7 @@ multi-node/wazuh-certificates/*
 multi-node/wazuh-certificates-tool.log
 multi-node/wazuh-certs-tool*.sh
 multi-node/config*.yml
-multi-node/config/wazuh*
+multi-node/config/*/certs
 
 # Documentation
 docs/book/
