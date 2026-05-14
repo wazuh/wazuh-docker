@@ -4,6 +4,7 @@ permissions:
   id-token: write
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       docker_reference:
@@ -14,6 +15,7 @@ on:
 jobs:
 
   prepare-variables:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     outputs:
       WAZUH_VERSION: ${{ steps.dotenv.outputs.WAZUH_VERSION }}
@@ -51,6 +53,7 @@ jobs:
       dev: true
 
   Execute-Goss-tests:
+    if: needs.build-images.result != 'skipped'
     needs: [prepare-variables, build-images]
     runs-on: ubuntu-22.04
     env:
@@ -83,12 +86,13 @@ jobs:
 
   check-single-node:
     name: Check single node on ${{ matrix.os }}
+    if: needs.Execute-Goss-tests.result != 'skipped'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-22.04-arm]
       fail-fast: false
-    needs: [prepare-variables, Execute-Goss-tests, build-images]
+    needs: [prepare-variables, Execute-Goss-tests]
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
@@ -358,12 +362,13 @@ jobs:
 
   check-multi-node:
     name: Check multi node on ${{ matrix.os }}
+    if: needs.Execute-Goss-tests.result != 'skipped'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-22.04-arm]
       fail-fast: false
-    needs: [prepare-variables, Execute-Goss-tests, build-images]
+    needs: [prepare-variables, Execute-Goss-tests]
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_MINOR_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_MINOR_VERSION }}
