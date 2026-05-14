@@ -53,7 +53,6 @@ jobs:
       dev: true
 
   Execute-Goss-tests:
-    if: needs.build-images.result != 'skipped'
     needs: [prepare-variables, build-images]
     runs-on: ubuntu-22.04
     env:
@@ -86,7 +85,6 @@ jobs:
 
   check-single-node:
     name: Check single node on ${{ matrix.os }}
-    if: needs.Execute-Goss-tests.result != 'skipped'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -362,7 +360,6 @@ jobs:
 
   check-multi-node:
     name: Check multi node on ${{ matrix.os }}
-    if: needs.Execute-Goss-tests.result != 'skipped'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
