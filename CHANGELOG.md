@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Forbid pr_check workflow execution in draft PRs ([#2399](https://github.com/wazuh/wazuh-docker/pull/2399))
 - Unification of user UID and GID ([#2393](https://github.com/wazuh/wazuh-docker/pull/2393))
 - Add Wazuh indexer engine start on entrypoint ([#2390](https://github.com/wazuh/wazuh-docker/pull/2390))
 - Image build process update ([#2358](https://github.com/wazuh/wazuh-docker/pull/2358))
