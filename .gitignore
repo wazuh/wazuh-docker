@@ -1,3 +1,6 @@
+# JSON alerts exported for Alloy → Loki (may contain sensitive data)
+single-node/wazuh-alerts-export/
+
 single-node/config/wazuh_indexer_ssl_certs/*.pem
 single-node/config/wazuh_indexer_ssl_certs/*.key
 multi-node/config/wazuh_indexer_ssl_certs/*.pem
