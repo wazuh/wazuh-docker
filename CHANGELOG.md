@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Changed update_user function from wazuh.security to wazuh.rbac.orm module ([#2405](https://github.com/wazuh/wazuh-docker/pull/2405))
 - Add wazuh-template.json into permanent data exception ([#1967](https://github.com/wazuh/wazuh-docker/pull/1967))
 
 ### Deleted
