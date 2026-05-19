@@ -13,13 +13,12 @@ SPECIAL_CHARS = "@$!%*?&-_"
 
 
 try:
-    from wazuh.rbac.orm import check_database_integrity
+    from wazuh.rbac.orm import check_database_integrity, AuthenticationManager
     from wazuh.security import (
         create_user,
         get_users,
         get_roles,
         set_user_role,
-        update_user,
     )
 except ModuleNotFoundError as e:
     logging.error("No module 'wazuh' found.")
@@ -54,12 +53,11 @@ def disable_user(uid):
     # assure there must be at least one character from each group
     random_pass = random_pass + ''.join([random.choice(chars) for chars in [string.ascii_lowercase, string.digits, string.ascii_uppercase, SPECIAL_CHARS]])
     random_pass = ''.join(random.sample(random_pass,len(random_pass)))
-    update_user(
-        user_id=[
-            str(uid),
-        ],
-        password=random_pass,
-    )
+    with AuthenticationManager() as auth:
+        auth.update_user(
+            user_id=uid,
+            password=random_pass,
+        )
 
 
 if __name__ == "__main__":
@@ -90,12 +88,11 @@ if __name__ == "__main__":
     else:
         # modify an existing user ("wazuh" or "wazuh-wui")
         uid = initial_users[username]
-        update_user(
-            user_id=[
-                str(uid),
-            ],
-            password=password,
-        )
+        with AuthenticationManager() as auth:
+            auth.update_user(
+                user_id=uid,
+                password=password,
+            )
     # disable unused default users
     for def_user in ['wazuh', 'wazuh-wui']:
         if def_user != username:
