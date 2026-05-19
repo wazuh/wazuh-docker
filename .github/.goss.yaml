@@ -34,20 +34,6 @@ file:
     group: wazuh
     filetype: file
     contains: []
-  /var/ossec/etc/sslmanager.cert:
-    exists: true
-    mode: "0640"
-    owner: root
-    group: root
-    filetype: file
-    contains: []
-  /var/ossec/etc/sslmanager.key:
-    exists: true
-    mode: "0640"
-    owner: root
-    group: root
-    filetype: file
-    contains: []
 package:
   filebeat:
     installed: true
