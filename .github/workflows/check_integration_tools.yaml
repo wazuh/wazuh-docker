@@ -97,13 +97,13 @@ jobs:
           COMMENT_BODY="${{ github.event.comment.body }}"
           # Check longest match first to avoid /test-docker matching /test-docker-single
           if echo "$COMMENT_BODY" | grep -q '/test-docker-single'; then
-            echo 'deployment_matrix=["single-node"]'               >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=["single-node"]'                >> $GITHUB_OUTPUT
             echo 'check_name=Docker Integration Check (Single-Node)' >> $GITHUB_OUTPUT
           elif echo "$COMMENT_BODY" | grep -q '/test-docker-multi'; then
-            echo 'deployment_matrix=["multi-node"]'                >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=["multi-node"]'                 >> $GITHUB_OUTPUT
             echo 'check_name=Docker Integration Check (Multi-Node)'  >> $GITHUB_OUTPUT
           elif echo "$COMMENT_BODY" | grep -q '/test-docker'; then
-            echo 'deployment_matrix=["single-node","multi-node"]'  >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=["single-node","multi-node"]'   >> $GITHUB_OUTPUT
             echo 'check_name=Docker Integration Check'               >> $GITHUB_OUTPUT
           fi
 
@@ -134,38 +134,53 @@ jobs:
             return check.id;
 
   # -------------------------------------------------------------------------
-  # Job 2: For each deployment type — provision VM, deploy Docker stack, test,
-  #         collect results, and clean up.
+  # Job 2: Resolve context (pr_head_ref + deployment matrix) for both triggers.
+  #         Mirrors the role of build_tools in check_integration_tools.yaml.
   # -------------------------------------------------------------------------
-  docker_test:
+  prepare:
     needs: [get_pr_info]
     if: |
       always() &&
       (needs.get_pr_info.result == 'success' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    outputs:
+      pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
+      deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
+
+    steps:
+      - name: Resolve context
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr_head_ref=${{ inputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            DEPLOY_TYPE="${{ inputs.deployment_type }}"
+            if [ "$DEPLOY_TYPE" = "both" ]; then
+              echo 'deployment_matrix=["single-node","multi-node"]' >> $GITHUB_OUTPUT
+            else
+              echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 3: For each deployment type — provision VM, deploy Docker stack, test,
+  #         collect results, and clean up.
+  # -------------------------------------------------------------------------
+  docker_test:
+    needs: [get_pr_info, prepare]
+    if: always() && needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        deployment_type: ${{ fromJSON(
-          github.event_name == 'workflow_dispatch'
-            && (inputs.deployment_type == 'both' && '["single-node","multi-node"]'
-                || format('["{0}"]', inputs.deployment_type))
-            || needs.get_pr_info.outputs.deployment_matrix
-        ) }}
+        deployment_type: ${{ fromJSON(needs.prepare.outputs.deployment_matrix) }}
 
     steps:
       # -----------------------------------------------------------------------
       # Setup
       # -----------------------------------------------------------------------
-      - name: Resolve PR head ref
-        id: ctx
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "pr_head_ref=${{ inputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-          else
-            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout wazuh-automation
         uses: actions/checkout@v4
         with:
@@ -177,7 +192,7 @@ jobs:
       - name: Checkout wazuh-docker PR branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.ctx.outputs.pr_head_ref }}
+          ref: ${{ needs.prepare.outputs.pr_head_ref }}
           path: wazuh-docker
 
       - name: Set up Python 3.12
@@ -208,7 +223,7 @@ jobs:
           python3 wazuh-automation/deployability/modules/allocation/main.py \
             --action create \
             --provider aws \
-            --size xlarge \
+            --size large \
             --composite-name ubuntu-24-amd64 \
             --working-dir ${{ env.ALLOCATOR_PATH }} \
             --track-output ${{ env.ALLOCATOR_PATH }}/track.yml \
@@ -271,23 +286,23 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
             echo 'Waiting for all containers to be healthy...'
             for i in \$(seq 1 90); do
-              TOTAL=\$(sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml ps -q 2>/dev/null | wc -l)
-              HEALTHY=\$(sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml ps 2>/dev/null \
-                | grep -E '(healthy|\(healthy\))' | wc -l)
-              NOT_HEALTHY=\$(sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml ps 2>/dev/null \
-                | grep -vE '(healthy|\(healthy\)|NAME|^$)' | grep -v 'nginx' | wc -l)
-
-              if [ \"\$NOT_HEALTHY\" -eq 0 ] && [ \"\$TOTAL\" -gt 0 ]; then
-                echo \"All containers healthy after \${i} x 10s attempts (total: \$TOTAL)\"
+              NOT_HEALTHY=\$(sudo docker compose ps 2>/dev/null \
+                | tail -n +2 \
+                | grep -v 'nginx' \
+                | grep -vcE '(healthy|\(healthy\))')
+              if [ \"\$NOT_HEALTHY\" -eq 0 ]; then
+                echo \"All containers healthy after \${i} x 10s attempts\"
+                sudo docker compose ps
                 exit 0
               fi
-              echo \"  attempt \$i: \$HEALTHY healthy, \$NOT_HEALTHY not yet healthy (total: \$TOTAL)\"
+              echo \"  attempt \$i: \$NOT_HEALTHY container(s) not yet healthy\"
               sleep 10
             done
             echo 'ERROR: containers not healthy after 15 minutes'
-            sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml ps
+            sudo docker compose ps
             exit 1
           "
 
@@ -318,7 +333,8 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
-            sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml logs --no-color 2>&1
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            sudo docker compose logs --no-color 2>&1
           " > docker-logs-${DEPLOYMENT}.txt || true
 
       - name: Upload Docker logs
@@ -415,7 +431,7 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
-            sudo docker compose -f /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml down -v || true
+            cd /tmp/wazuh-docker/${DEPLOYMENT} && sudo docker compose down -v || true
           " || true
 
       - name: Configure AWS credentials for cleanup
@@ -434,10 +450,10 @@ jobs:
             --track-output ${{ env.ALLOCATOR_PATH }}/track.yml
 
   # -------------------------------------------------------------------------
-  # Job 3: Update the GitHub check run (issue_comment trigger only)
+  # Job 4: Update the GitHub check run (issue_comment trigger only)
   # -------------------------------------------------------------------------
   update_check:
-    needs: [get_pr_info, docker_test]
+    needs: [get_pr_info, prepare, docker_test]
     if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
     runs-on: ubuntu-latest
     steps:
