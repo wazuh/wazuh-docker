@@ -393,7 +393,7 @@ jobs:
             set -e
             cd /tmp/wazuh-docker/${DEPLOYMENT}
             echo '=== Running certificate generation ==='
-            sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+            sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --cert --copy
             echo ''
             echo '=== Generated certificate files ==='
             find ./config -name '*.pem' | sort
@@ -403,6 +403,15 @@ jobs:
               echo -n \"\$pem: \"
               sudo openssl x509 -in \"\$pem\" -noout -subject -issuer 2>/dev/null || echo '(not a cert / key file)'
             done
+          "
+
+      - name: Verify certificate permissions
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            echo '=== Certificate permissions before compose up ==='
+            find /tmp/wazuh-docker/${DEPLOYMENT}/config -name '*.pem' \
+              -exec ls -la {} \; 2>/dev/null | sort || echo '(no .pem files found)'
           "
 
       - name: Start Docker Compose
