@@ -287,6 +287,83 @@ jobs:
             sudo docker version --format 'Client: {{.Client.Version}}  Server: {{.Server.Version}}'
           "
 
+      - name: Configure VM for Wazuh Indexer
+        run: |
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            sudo sysctl -w vm.max_map_count=262144
+            echo 'vm.max_map_count = '\$(cat /proc/sys/vm/max_map_count)
+          "
+
+      - name: Upload certificate config
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          if [ "$DEPLOYMENT" = "single-node" ]; then
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh.indexer' \
+              '      dns: wazuh.indexer' \
+              '  manager:' \
+              '    - name: wazuh.manager' \
+              '      dns: wazuh.manager' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > /tmp/wazuh-cert-config.yml
+          else
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh1.indexer' \
+              '      dns: wazuh1.indexer' \
+              '    - name: wazuh2.indexer' \
+              '      dns: wazuh2.indexer' \
+              '    - name: wazuh3.indexer' \
+              '      dns: wazuh3.indexer' \
+              '  manager:' \
+              '    - name: wazuh.master' \
+              '      dns: wazuh.master' \
+              '      node_type: master' \
+              '    - name: wazuh.worker' \
+              '      dns: wazuh.worker' \
+              '      node_type: worker' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > /tmp/wazuh-cert-config.yml
+          fi
+          echo "=== config.yml to upload ==="
+          cat /tmp/wazuh-cert-config.yml
+          scp ${{ env.SCP_OPTS }} /tmp/wazuh-cert-config.yml "${{ env.REMOTE }}:/tmp/wazuh-docker/${DEPLOYMENT}/config.yml"
+
+      - name: Generate SSL certificates
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -e
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+
+            echo '=== Extracting Wazuh version ==='
+            WAZUH_VERSION=\$(grep '^WAZUH_VERSION=' /tmp/wazuh-docker/.env | cut -d= -f2)
+            MAJOR_MINOR=\$(echo \"\$WAZUH_VERSION\" | cut -d. -f1-2)
+            echo \"Version: \$WAZUH_VERSION  (packages path: \$MAJOR_MINOR)\"
+
+            echo ''
+            echo '=== Downloading wazuh-certs-tool.sh ==='
+            curl -fsSL -o wazuh-certs-tool.sh \
+              \"https://packages.wazuh.com/\${MAJOR_MINOR}/wazuh-certs-tool-\${WAZUH_VERSION}-1.sh\"
+            chmod +x wazuh-certs-tool.sh
+            echo 'Downloaded OK'
+
+            echo ''
+            echo '=== Running certificate generation ==='
+            sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+
+            echo ''
+            echo '=== Generated certificate files ==='
+            find ./config -name '*.pem' | sort
+          "
+
       - name: Start Docker Compose
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
