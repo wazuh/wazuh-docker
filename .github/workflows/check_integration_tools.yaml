@@ -300,6 +300,67 @@ jobs:
           echo "=== Patched image lines ==="
           grep 'image:' "$COMPOSE"
 
+      - name: Prepare cert tool and config
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+
+          echo "Version: $VERSION  Stage: ${STAGE:-<release>}"
+
+          # Download cert tool once on the runner, copy to VM via the main SCP
+          if [ -n "$STAGE" ]; then
+            CERT_TOOL_URL="https://packages-staging.xdrsiem.wazuh.info/pre-release/${MAJOR}.x/installation-assistant/wazuh-certs-tool-${VERSION}-${STAGE}.sh"
+          else
+            CERT_TOOL_URL="https://packages.wazuh.com/${MAJOR}.$(echo "$VERSION" | cut -d. -f2)/wazuh-certs-tool-${VERSION}-1.sh"
+          fi
+          echo "Downloading cert tool: $CERT_TOOL_URL"
+          curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
+          chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
+          echo "Downloaded OK"
+
+          # Write config.yml directly into the deployment directory
+          if [ "$DEPLOYMENT" = "single-node" ]; then
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh.indexer' \
+              '      dns: wazuh.indexer' \
+              '  manager:' \
+              '    - name: wazuh.manager' \
+              '      dns: wazuh.manager' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > "wazuh-docker/${DEPLOYMENT}/config.yml"
+          else
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh1.indexer' \
+              '      dns: wazuh1.indexer' \
+              '    - name: wazuh2.indexer' \
+              '      dns: wazuh2.indexer' \
+              '    - name: wazuh3.indexer' \
+              '      dns: wazuh3.indexer' \
+              '  manager:' \
+              '    - name: wazuh.master' \
+              '      dns: wazuh.master' \
+              '      node_type: master' \
+              '    - name: wazuh.worker' \
+              '      dns: wazuh.worker' \
+              '      node_type: worker' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > "wazuh-docker/${DEPLOYMENT}/config.yml"
+          fi
+          echo "=== config.yml ==="
+          cat "wazuh-docker/${DEPLOYMENT}/config.yml"
+          echo "=== Files ready to copy ==="
+          ls -la "wazuh-docker/${DEPLOYMENT}/"
+
       - name: Copy wazuh-docker to VM
         run: |
           scp ${{ env.SCP_OPTS }} -r wazuh-docker "${{ env.REMOTE }}:/tmp/wazuh-docker"
@@ -325,77 +386,14 @@ jobs:
             echo 'vm.max_map_count = '\$(cat /proc/sys/vm/max_map_count)
           "
 
-      - name: Upload certificate config
-        run: |
-          DEPLOYMENT="${{ matrix.deployment_type }}"
-          if [ "$DEPLOYMENT" = "single-node" ]; then
-            printf '%s\n' \
-              'nodes:' \
-              '  indexer:' \
-              '    - name: wazuh.indexer' \
-              '      dns: wazuh.indexer' \
-              '  manager:' \
-              '    - name: wazuh.manager' \
-              '      dns: wazuh.manager' \
-              '  dashboard:' \
-              '    - name: wazuh.dashboard' \
-              '      dns: wazuh.dashboard' \
-              > /tmp/wazuh-cert-config.yml
-          else
-            printf '%s\n' \
-              'nodes:' \
-              '  indexer:' \
-              '    - name: wazuh1.indexer' \
-              '      dns: wazuh1.indexer' \
-              '    - name: wazuh2.indexer' \
-              '      dns: wazuh2.indexer' \
-              '    - name: wazuh3.indexer' \
-              '      dns: wazuh3.indexer' \
-              '  manager:' \
-              '    - name: wazuh.master' \
-              '      dns: wazuh.master' \
-              '      node_type: master' \
-              '    - name: wazuh.worker' \
-              '      dns: wazuh.worker' \
-              '      node_type: worker' \
-              '  dashboard:' \
-              '    - name: wazuh.dashboard' \
-              '      dns: wazuh.dashboard' \
-              > /tmp/wazuh-cert-config.yml
-          fi
-          echo "=== config.yml to upload ==="
-          cat /tmp/wazuh-cert-config.yml
-          scp ${{ env.SCP_OPTS }} /tmp/wazuh-cert-config.yml "${{ env.REMOTE }}:/tmp/wazuh-docker/${DEPLOYMENT}/config.yml"
-
       - name: Generate SSL certificates
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
             set -e
             cd /tmp/wazuh-docker/${DEPLOYMENT}
-
-            echo '=== Extracting Wazuh version and stage ==='
-            VERSION=\$(python3 -c \"import json; d=json.load(open('/tmp/wazuh-docker/VERSION.json')); print(d['version'])\")
-            STAGE=\$(python3 -c \"import json; d=json.load(open('/tmp/wazuh-docker/VERSION.json')); print(d.get('stage',''))\")
-            MAJOR_MINOR=\$(echo \"\$VERSION\" | cut -d. -f1-2)
-            echo \"Version: \$VERSION  Stage: \$STAGE\"
-
-            echo ''
-            echo '=== Downloading wazuh-certs-tool.sh ==='
-            if [ -n \"\$STAGE\" ]; then
-              CERT_TOOL_URL=\"https://packages-staging.xdrsiem.wazuh.info/pre-release/\${MAJOR_MINOR}.x/installation-assistant/wazuh-certs-tool-\${VERSION}-\${STAGE}.sh\"
-            else
-              CERT_TOOL_URL=\"https://packages.wazuh.com/\${MAJOR_MINOR}/wazuh-certs-tool-\${VERSION}-1.sh\"
-            fi
-            echo \"URL: \$CERT_TOOL_URL\"
-            curl -fsSL -o wazuh-certs-tool.sh \"\$CERT_TOOL_URL\"
-            chmod +x wazuh-certs-tool.sh
-            echo 'Downloaded OK'
-
-            echo ''
             echo '=== Running certificate generation ==='
             sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --cert --copy --priv
-
             echo ''
             echo '=== Generated certificate files ==='
             find ./config -name '*.pem' | sort
