@@ -26,6 +26,11 @@ on:
           - single-node
           - multi-node
           - both
+      patch_beta_images:
+        description: 'Patch image tags to use pre-release suffix (-beta1-latest). Disable once release images are published.'
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   id-token: write
@@ -267,8 +272,34 @@ jobs:
           "
 
       # -----------------------------------------------------------------------
-      # Deploy: copy wazuh-docker and start the stack
+      # Deploy: optionally patch image tags, copy wazuh-docker and start the stack
       # -----------------------------------------------------------------------
+      - name: Patch image tags for pre-release
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          # Use input when available; hardcoded true otherwise (e.g. dispatched from main
+          # which does not yet define patch_beta_images).
+          PATCH="${{ inputs.patch_beta_images }}"
+          [ -z "$PATCH" ] && PATCH=true
+          if [ "$PATCH" != "true" ]; then
+            echo "patch_beta_images=false — skipping image tag patching"
+            exit 0
+          fi
+
+          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
+          if [ -z "$STAGE" ]; then
+            echo "VERSION.json has no stage field — release image, no patching needed"
+            exit 0
+          fi
+
+          IMAGE_TAG="${VERSION}-${STAGE}-latest"
+          COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
+          echo "Patching ${COMPOSE}: image tag → ${IMAGE_TAG}"
+          sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${IMAGE_TAG}|g" "$COMPOSE"
+          echo "=== Patched image lines ==="
+          grep 'image:' "$COMPOSE"
+
       - name: Copy wazuh-docker to VM
         run: |
           scp ${{ env.SCP_OPTS }} -r wazuh-docker "${{ env.REMOTE }}:/tmp/wazuh-docker"
@@ -343,15 +374,21 @@ jobs:
             set -e
             cd /tmp/wazuh-docker/${DEPLOYMENT}
 
-            echo '=== Extracting Wazuh version ==='
-            WAZUH_VERSION=\$(grep '^WAZUH_VERSION=' /tmp/wazuh-docker/.env | cut -d= -f2)
-            MAJOR_MINOR=\$(echo \"\$WAZUH_VERSION\" | cut -d. -f1-2)
-            echo \"Version: \$WAZUH_VERSION  (packages path: \$MAJOR_MINOR)\"
+            echo '=== Extracting Wazuh version and stage ==='
+            VERSION=\$(python3 -c \"import json; d=json.load(open('/tmp/wazuh-docker/VERSION.json')); print(d['version'])\")
+            STAGE=\$(python3 -c \"import json; d=json.load(open('/tmp/wazuh-docker/VERSION.json')); print(d.get('stage',''))\")
+            MAJOR_MINOR=\$(echo \"\$VERSION\" | cut -d. -f1-2)
+            echo \"Version: \$VERSION  Stage: \$STAGE\"
 
             echo ''
             echo '=== Downloading wazuh-certs-tool.sh ==='
-            curl -fsSL -o wazuh-certs-tool.sh \
-              \"https://packages.wazuh.com/\${MAJOR_MINOR}/wazuh-certs-tool-\${WAZUH_VERSION}-1.sh\"
+            if [ -n \"\$STAGE\" ]; then
+              CERT_TOOL_URL=\"https://packages-staging.xdrsiem.wazuh.info/pre-release/\${MAJOR_MINOR}.x/installation-assistant/wazuh-certs-tool-\${VERSION}-\${STAGE}.sh\"
+            else
+              CERT_TOOL_URL=\"https://packages.wazuh.com/\${MAJOR_MINOR}/wazuh-certs-tool-\${VERSION}-1.sh\"
+            fi
+            echo \"URL: \$CERT_TOOL_URL\"
+            curl -fsSL -o wazuh-certs-tool.sh \"\$CERT_TOOL_URL\"
             chmod +x wazuh-certs-tool.sh
             echo 'Downloaded OK'
 
