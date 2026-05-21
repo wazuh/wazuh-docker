@@ -209,7 +209,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-test-${{ github.run_id }}-${{ matrix.deployment_type }}
           aws-region: ${{ env.REGION }}
 
@@ -438,7 +438,7 @@ jobs:
         if: always()
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-cleanup-${{ github.run_id }}-${{ matrix.deployment_type }}
           aws-region: ${{ env.REGION }}
 
