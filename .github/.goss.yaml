@@ -42,7 +42,7 @@ package:
   wazuh-manager:
     installed: true
     versions:
-    - 4.10.4
+    - 4.10.5
 port:
   tcp:1514:
     listening: true
