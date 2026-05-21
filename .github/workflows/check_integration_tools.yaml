@@ -273,12 +273,33 @@ jobs:
         run: |
           scp ${{ env.SCP_OPTS }} -r wazuh-docker "${{ env.REMOTE }}:/tmp/wazuh-docker"
 
+      - name: Show deployment config
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            echo '=== Files in deployment directory ==='
+            ls -la /tmp/wazuh-docker/${DEPLOYMENT}/
+            echo ''
+            echo '=== Images referenced in docker-compose.yml ==='
+            grep 'image:' /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml || echo '(none found)'
+            echo ''
+            echo '=== Docker version ==='
+            sudo docker version --format 'Client: {{.Client.Version}}  Server: {{.Server.Version}}'
+          "
+
       - name: Start Docker Compose
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -eo pipefail
             cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== Pulling images (docker compose pull) ==='
+            sudo docker compose pull 2>&1
+            echo '=== Starting stack (docker compose up -d) ==='
             sudo docker compose up -d 2>&1 | tee /tmp/docker-compose-up.log
+            echo ''
+            echo '=== Initial container status ==='
+            sudo docker compose ps
           "
 
       - name: Wait for containers healthy
@@ -287,7 +308,18 @@ jobs:
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
             cd /tmp/wazuh-docker/${DEPLOYMENT}
-            echo 'Waiting for all containers to be healthy...'
+
+            echo '=== Verifying containers started ==='
+            TOTAL=\$(sudo docker compose ps 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
+            if [ \"\$TOTAL\" -eq 0 ]; then
+              echo 'ERROR: No containers are running — docker compose up may have failed'
+              sudo docker compose ps
+              sudo docker compose logs --no-color 2>&1 | tail -50
+              exit 1
+            fi
+            echo \"Found \$TOTAL container(s), waiting for healthy status...\"
+            echo ''
+
             for i in \$(seq 1 90); do
               NOT_HEALTHY=\$(sudo docker compose ps 2>/dev/null \
                 | tail -n +2 \
@@ -298,11 +330,16 @@ jobs:
                 sudo docker compose ps
                 exit 0
               fi
-              echo \"  attempt \$i: \$NOT_HEALTHY container(s) not yet healthy\"
+              echo \"  attempt \$i/90: \$NOT_HEALTHY container(s) not yet healthy\"
+              if [ \"\$(( i % 6 ))\" -eq 0 ]; then
+                echo '  --- current status ---'
+                sudo docker compose ps
+              fi
               sleep 10
             done
             echo 'ERROR: containers not healthy after 15 minutes'
             sudo docker compose ps
+            sudo docker compose logs --no-color 2>&1 | tail -100
             exit 1
           "
 
@@ -328,6 +365,18 @@ jobs:
       # -----------------------------------------------------------------------
       # Collect logs on failure
       # -----------------------------------------------------------------------
+      - name: Show test outcome
+        if: always()
+        run: |
+          echo "Run tests outcome: ${{ steps.run_tests.outcome }}"
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          if [ -f "test-results-docker-${DEPLOYMENT}.github" ]; then
+            echo "=== Test results file ==="
+            cat "test-results-docker-${DEPLOYMENT}.github"
+          else
+            echo "WARNING: no test results file found (test_runner may have failed before writing output)"
+          fi
+
       - name: Collect Docker logs on failure
         if: failure() || steps.run_tests.outcome == 'failure'
         run: |
