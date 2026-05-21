@@ -397,6 +397,12 @@ jobs:
             echo ''
             echo '=== Generated certificate files ==='
             find ./config -name '*.pem' | sort
+            echo ''
+            echo '=== Certificate subjects ==='
+            for pem in \$(find ./config -name '*.pem' ! -name '*-key.pem' | sort); do
+              echo -n \"\$pem: \"
+              sudo openssl x509 -in \"\$pem\" -noout -subject -issuer 2>/dev/null || echo '(not a cert / key file)'
+            done
           "
 
       - name: Start Docker Compose
@@ -405,14 +411,24 @@ jobs:
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
             set -eo pipefail
             cd /tmp/wazuh-docker/${DEPLOYMENT}
-            echo '=== Pulling images (docker compose pull) ==='
-            sudo docker compose pull 2>&1
-            echo '=== Starting stack (docker compose up -d) ==='
             sudo docker compose up -d 2>&1 | tee /tmp/docker-compose-up.log
             echo ''
             echo '=== Initial container status ==='
             sudo docker compose ps
           "
+
+      - name: Show indexer logs on failure
+        if: failure()
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== docker compose ps ==='
+            sudo docker compose ps
+            echo ''
+            echo '=== wazuh.indexer logs ==='
+            sudo docker compose logs wazuh.indexer 2>&1
+          " || true
 
       - name: Wait for containers healthy
         timeout-minutes: 15
