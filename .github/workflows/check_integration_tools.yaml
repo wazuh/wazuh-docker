@@ -481,6 +481,18 @@ jobs:
             exit 1
           "
 
+      - name: Multi-node cluster warm-up wait
+        if: matrix.deployment_type == 'multi-node'
+        run: |
+          echo "Waiting 90s for multi-node OpenSearch cluster to reach steady state..."
+          sleep 90
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== Container status after warm-up ==='
+            sudo docker compose ps
+          "
+
       # -----------------------------------------------------------------------
       # Run integration tests
       # -----------------------------------------------------------------------
