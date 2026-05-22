@@ -319,6 +319,7 @@ jobs:
           curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
+          echo "WAZUH_VERSION=${VERSION}" >> $GITHUB_ENV
 
           # Write config.yml directly into the deployment directory
           if [ "$DEPLOYMENT" = "single-node" ]; then
@@ -495,6 +496,7 @@ jobs:
             --ssh-port "${{ env.SSH_PORT }}" \
             --ssh-key-path "${{ env.SSH_KEY }}" \
             --ssh-username "${{ env.SSH_USER }}" \
+            --version "${{ env.WAZUH_VERSION }}" \
             --log-level INFO \
             --output github \
             --output-file "test-results-docker-${DEPLOYMENT}.github"
