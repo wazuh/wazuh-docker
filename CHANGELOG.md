@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Adapt Wazuh manager healthcheck with local binaries ([#2422](https://github.com/wazuh/wazuh-docker/pull/2422))
 - Delete setcap command on deprecated file ([#2345](https://github.com/wazuh/wazuh-docker/pull/2345))
 - Modify the choice of a correct tag ([#2313](https://github.com/wazuh/wazuh-docker/pull/2313))
 - Artifact URL download fix ([#2306](https://github.com/wazuh/wazuh-docker/pull/2306))
@@ -62,6 +63,24 @@ All notable changes to this project will be documented in this file.
 - Change Wazuh manager Healthcheck. ([#2272](https://github.com/wazuh/wazuh-docker/pull/2272))
 - Delete WAZUH_AGENT_GROUP variable. ([#2263](https://github.com/wazuh/wazuh-docker/pull/2263))
 - Delete etc/lists references ([#2129](https://github.com/wazuh/wazuh-docker/pull/2129))
+
+### Deleted
+
+- None
+
+## [4.14.7]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
 
 ### Deleted
 
@@ -79,6 +98,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Changed update_user function from wazuh.security to wazuh.rbac.orm module ([#2406](https://github.com/wazuh/wazuh-docker/pull/2406))
 - GH issue notification fix ([#2312](https://github.com/wazuh/wazuh-docker/pull/2312))
 
 ### Deleted
