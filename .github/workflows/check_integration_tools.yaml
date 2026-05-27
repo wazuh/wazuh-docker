@@ -481,11 +481,15 @@ jobs:
             exit 1
           "
 
-      - name: Multi-node cluster warm-up wait
-        if: matrix.deployment_type == 'multi-node'
+      - name: Cluster warm-up wait
         run: |
-          echo "Waiting 90s for multi-node OpenSearch cluster to reach steady state..."
-          sleep 90
+          if [ "${{ matrix.deployment_type }}" = "multi-node" ]; then
+            WAIT=90
+          else
+            WAIT=60
+          fi
+          echo "Waiting ${WAIT}s for services to reach steady state..."
+          sleep $WAIT
           DEPLOYMENT="${{ matrix.deployment_type }}"
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
             cd /tmp/wazuh-docker/${DEPLOYMENT}
