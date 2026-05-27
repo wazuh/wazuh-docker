@@ -9,10 +9,11 @@ services:
       wazuh1.indexer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -k -s -o /dev/null https://localhost:55000 || exit 1" ]
+      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0" ]
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 60s
     ulimits:
       memlock:
         soft: -1
@@ -48,11 +49,11 @@ services:
     container_name: multi-node-wazuh.worker
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/1514' || exit 1" ]
-      interval: 5s
+      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -q 'not running' && exit 1 || exit 0" ]
+      interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 5
+      start_period: 60s
     ulimits:
       memlock:
         soft: -1

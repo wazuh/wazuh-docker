@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Adapt Wazuh manager healthcheck with local binaries ([#2422](https://github.com/wazuh/wazuh-docker/pull/2422))
 - Delete setcap command on deprecated file ([#2345](https://github.com/wazuh/wazuh-docker/pull/2345))
 - Modify the choice of a correct tag ([#2313](https://github.com/wazuh/wazuh-docker/pull/2313))
 - Artifact URL download fix ([#2306](https://github.com/wazuh/wazuh-docker/pull/2306))
