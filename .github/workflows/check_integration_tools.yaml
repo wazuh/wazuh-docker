@@ -26,11 +26,6 @@ on:
           - single-node
           - multi-node
           - both
-      patch_beta_images:
-        description: 'Patch image tags to use pre-release suffix (-beta1-latest). Disable once release images are published.'
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   id-token: write
@@ -200,6 +195,16 @@ jobs:
           ref: ${{ needs.prepare.outputs.pr_head_ref }}
           path: wazuh-docker
 
+      - name: Read version info from VERSION.json
+        run: |
+          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
+          REVISION="${STAGE:-1}"
+          echo "WAZUH_VERSION=${VERSION}"   >> $GITHUB_ENV
+          echo "WAZUH_REVISION=${REVISION}" >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${STAGE}"       >> $GITHUB_ENV
+          echo "Version: ${VERSION}  Revision: ${REVISION}"
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -277,23 +282,12 @@ jobs:
       - name: Patch image tags for pre-release
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
-          # Use input when available; hardcoded true otherwise (e.g. dispatched from main
-          # which does not yet define patch_beta_images).
-          PATCH="${{ inputs.patch_beta_images }}"
-          [ -z "$PATCH" ] && PATCH=true
-          if [ "$PATCH" != "true" ]; then
-            echo "patch_beta_images=false — skipping image tag patching"
-            exit 0
-          fi
-
-          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
-          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
+          STAGE="${{ env.WAZUH_STAGE }}"
           if [ -z "$STAGE" ]; then
-            echo "VERSION.json has no stage field — release image, no patching needed"
+            echo "No stage in VERSION.json — release image, no patching needed"
             exit 0
           fi
-
-          IMAGE_TAG="${VERSION}-${STAGE}-latest"
+          IMAGE_TAG="${{ env.WAZUH_VERSION }}-${STAGE}-latest"
           COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
           echo "Patching ${COMPOSE}: image tag → ${IMAGE_TAG}"
           sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${IMAGE_TAG}|g" "$COMPOSE"
@@ -303,11 +297,11 @@ jobs:
       - name: Prepare cert tool and config
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
-          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
-          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
+          VERSION="${{ env.WAZUH_VERSION }}"
+          STAGE="${{ env.WAZUH_STAGE }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-          echo "Version: $VERSION  Stage: ${STAGE:-<release>}"
+          echo "Version: ${VERSION}  Revision: ${{ env.WAZUH_REVISION }}"
 
           # Download cert tool once on the runner, copy to VM via the main SCP
           if [ -n "$STAGE" ]; then
@@ -319,7 +313,6 @@ jobs:
           curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
-          echo "WAZUH_VERSION=${VERSION}" >> $GITHUB_ENV
 
           # Write config.yml directly into the deployment directory
           if [ "$DEPLOYMENT" = "single-node" ]; then
@@ -513,6 +506,7 @@ jobs:
             --ssh-key-path "${{ env.SSH_KEY }}" \
             --ssh-username "${{ env.SSH_USER }}" \
             --version "${{ env.WAZUH_VERSION }}" \
+            --revision "${{ env.WAZUH_REVISION }}" \
             --log-level INFO \
             --output github \
             --output-file "test-results-docker-${DEPLOYMENT}.github"
