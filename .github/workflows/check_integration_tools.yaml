@@ -26,6 +26,18 @@ on:
           - single-node
           - multi-node
           - both
+      version:
+        description: 'Image version to test (e.g. 5.0.0). Leave empty to build images from VERSION.json.'
+        required: false
+        type: string
+      revision:
+        description: 'Image tag suffix (e.g. beta2-latest). Required when version is set.'
+        required: false
+        type: string
+      registry:
+        description: 'Docker registry prefix (e.g. ECR URL). Leave empty for DockerHub.'
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -146,6 +158,8 @@ jobs:
     outputs:
       pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
       deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
+      wazuh_version: ${{ steps.version.outputs.wazuh_version }}
+      wazuh_stage: ${{ steps.version.outputs.wazuh_stage }}
 
     steps:
       - name: Resolve context
@@ -164,13 +178,54 @@ jobs:
             echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Checkout wazuh-docker PR branch (VERSION.json only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ctx.outputs.pr_head_ref }}
+          sparse-checkout: |
+            VERSION.json
+          sparse-checkout-cone-mode: false
+
+      - name: Read version info from VERSION.json
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d.get('stage',''))")
+          echo "wazuh_version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "wazuh_stage=${STAGE}"     >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}  Stage: ${STAGE:-<release>}"
+
   # -------------------------------------------------------------------------
-  # Job 3: For each deployment type — provision VM, deploy Docker stack, test,
+  # Job 3: Build Docker images (only when no explicit version/revision provided).
+  #         Calls Procedure_push_docker_images.yml and pushes to the dev registry.
+  # -------------------------------------------------------------------------
+  build_images:
+    name: Build Docker images
+    needs: [prepare]
+    if: |
+      always() &&
+      needs.prepare.result == 'success' &&
+      inputs.version == ''
+    uses: ./.github/workflows/Procedure_push_docker_images.yml
+    with:
+      image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
+      docker_reference: ${{ needs.prepare.outputs.pr_head_ref }}
+      wazuh_automation_reference: ${{ inputs.automation_reference || 'main' }}
+      products: "wazuh-manager,wazuh-dashboard,wazuh-indexer"
+      dev: true
+      id: "docker-integration-${{ github.run_id }}"
+    secrets: inherit
+
+  # -------------------------------------------------------------------------
+  # Job 4: For each deployment type — provision VM, deploy Docker stack, test,
   #         collect results, and clean up.
   # -------------------------------------------------------------------------
   docker_test:
-    needs: [get_pr_info, prepare]
-    if: always() && needs.prepare.result == 'success'
+    needs: [get_pr_info, prepare, build_images]
+    if: |
+      always() &&
+      needs.prepare.result == 'success' &&
+      (needs.build_images.result == 'success' || needs.build_images.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -195,15 +250,31 @@ jobs:
           ref: ${{ needs.prepare.outputs.pr_head_ref }}
           path: wazuh-docker
 
-      - name: Read version info from VERSION.json
+      - name: Resolve image configuration
         run: |
-          VERSION=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d['version'])")
-          STAGE=$(python3 -c "import json; d=json.load(open('wazuh-docker/VERSION.json')); print(d.get('stage',''))")
-          REVISION="${STAGE:-1}"
-          echo "WAZUH_VERSION=${VERSION}"   >> $GITHUB_ENV
-          echo "WAZUH_REVISION=${REVISION}" >> $GITHUB_ENV
-          echo "WAZUH_STAGE=${STAGE}"       >> $GITHUB_ENV
-          echo "Version: ${VERSION}  Revision: ${REVISION}"
+          # Source of truth for cert tool is always VERSION.json (matches wazuh-docker branch)
+          WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
+
+          if [ -n "${{ inputs.version }}" ]; then
+            # Case 1a: pre-built images — test a specific set already in a registry
+            DOCKER_VERSION="${{ inputs.version }}"
+            DOCKER_REVISION="${{ inputs.revision }}"
+            DOCKER_REGISTRY="${{ inputs.registry }}"
+          else
+            # Case 1b/2: freshly built images pushed to dev registry by build_images job
+            DOCKER_VERSION="${WAZUH_VERSION}"
+            DOCKER_REVISION="${WAZUH_STAGE}"
+            DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+          fi
+
+          echo "WAZUH_VERSION=${WAZUH_VERSION}"     >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${WAZUH_STAGE}"         >> $GITHUB_ENV
+          echo "WAZUH_REVISION=${DOCKER_REVISION:-1}" >> $GITHUB_ENV
+          echo "DOCKER_VERSION=${DOCKER_VERSION}"   >> $GITHUB_ENV
+          echo "DOCKER_REVISION=${DOCKER_REVISION}" >> $GITHUB_ENV
+          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}" >> $GITHUB_ENV
+          echo "Image: ${DOCKER_REGISTRY:+${DOCKER_REGISTRY}/}wazuh/wazuh-*:${DOCKER_VERSION}-${DOCKER_REVISION}"
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -276,21 +347,32 @@ jobs:
             sudo systemctl enable --now docker
           "
 
+      - name: Login VM to ECR registry
+        if: env.DOCKER_REGISTRY != ''
+        run: |
+          ECR_PASS=$(aws ecr get-login-password --region ${{ env.REGION }})
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" \
+            "echo '${ECR_PASS}' | sudo docker login --username AWS --password-stdin ${{ env.DOCKER_REGISTRY }}"
+
       # -----------------------------------------------------------------------
-      # Deploy: optionally patch image tags, copy wazuh-docker and start the stack
+      # Deploy: patch image tags, copy wazuh-docker and start the stack
       # -----------------------------------------------------------------------
-      - name: Patch image tags for pre-release
+      - name: Patch image tags
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
-          STAGE="${{ env.WAZUH_STAGE }}"
-          if [ -z "$STAGE" ]; then
-            echo "No stage in VERSION.json — release image, no patching needed"
-            exit 0
-          fi
-          IMAGE_TAG="${{ env.WAZUH_VERSION }}-${STAGE}-latest"
           COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
-          echo "Patching ${COMPOSE}: image tag → ${IMAGE_TAG}"
-          sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${IMAGE_TAG}|g" "$COMPOSE"
+          VERSION="${{ env.DOCKER_VERSION }}"
+          REVISION="${{ env.DOCKER_REVISION }}"
+          REGISTRY="${{ env.DOCKER_REGISTRY }}"
+          TAG="${VERSION}-${REVISION}"
+
+          if [ -n "$REGISTRY" ]; then
+            echo "Patching ${COMPOSE}: ${REGISTRY}/wazuh/wazuh-*:${TAG}"
+            sed -i -E "s|image: (wazuh/wazuh-[^:]+):[^ ]+|image: ${REGISTRY}/\1:${TAG}|g" "$COMPOSE"
+          else
+            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG}"
+            sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
+          fi
           echo "=== Patched image lines ==="
           grep 'image:' "$COMPOSE"
 
@@ -301,7 +383,7 @@ jobs:
           STAGE="${{ env.WAZUH_STAGE }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-          echo "Version: ${VERSION}  Revision: ${{ env.WAZUH_REVISION }}"
+          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_VERSION }}-${{ env.DOCKER_REVISION }}"
 
           # Download cert tool once on the runner, copy to VM via the main SCP
           if [ -n "$STAGE" ]; then
@@ -505,8 +587,8 @@ jobs:
             --ssh-port "${{ env.SSH_PORT }}" \
             --ssh-key-path "${{ env.SSH_KEY }}" \
             --ssh-username "${{ env.SSH_USER }}" \
-            --version "${{ env.WAZUH_VERSION }}" \
-            --revision "${{ env.WAZUH_REVISION }}" \
+            --version "${{ env.DOCKER_VERSION }}" \
+            --revision "${{ env.DOCKER_REVISION }}" \
             --log-level INFO \
             --output github \
             --output-file "test-results-docker-${DEPLOYMENT}.github"
@@ -651,7 +733,7 @@ jobs:
   # Job 4: Update the GitHub check run (issue_comment trigger only)
   # -------------------------------------------------------------------------
   update_check:
-    needs: [get_pr_info, prepare, docker_test]
+    needs: [get_pr_info, prepare, build_images, docker_test]
     if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
     runs-on: ubuntu-latest
     steps:
