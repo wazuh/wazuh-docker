@@ -1,0 +1,34 @@
+nodes:
+  # Three indexer nodes
+  - name: wazuh1.indexer
+    ip:
+      - 127.0.0.1
+    roles:
+      - indexer
+  - name: wazuh2.indexer
+    ip:
+      - 127.0.0.1
+    roles:
+      - indexer
+  - name: wazuh3.indexer
+    ip:
+      - 127.0.0.1
+    roles:
+      - indexer
+  # Dashboard node
+  - name: wazuh.dashboard
+    ip:
+      - 127.0.0.1
+    roles:
+      - dashboard
+  # Manager nodes
+  - name: wazuh.master
+    ip:
+      - 127.0.0.1
+    roles:
+      - manager
+  - name: wazuh.worker
+    ip:
+      - 127.0.0.1
+    roles:
+      - manager

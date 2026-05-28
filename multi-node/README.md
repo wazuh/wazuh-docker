@@ -5,19 +5,19 @@ This setup replaces the original NGINX stream load balancer with **HAProxy 2.9**
 ## Architecture
 
 ```
-                        ┌─────────────────────────────────┐
-                        │          HAProxy 2.9             │
-                        │  port 443  → wazuh.dashboard     │
-                        │  port 1514 → master / worker LB  │
-                        │  port 1515 → master (enrollment) │
-                        └─────────────────────────────────┘
-                                       │
-           ┌───────────────────────────┼───────────────────┐
-           ▼                           ▼                   ▼
+                        +----------------------------------+
+                        |          HAProxy 2.9             |
+                        |  port 443  -> wazuh.dashboard    |
+                        |  port 1514 -> master / worker LB |
+                        |  port 1515 -> master (enrollment)|
+                        +----------------------------------+
+                                       |
+           +---------------------------+-------------------+
+           v                           v                   v
    wazuh.master               wazuh.worker         wazuh.dashboard
    (wazuh-manager)            (wazuh-manager)      (wazuh-dashboard)
-           │
-           └─── wazuh1.indexer / wazuh2.indexer / wazuh3.indexer
+           |
+           +--- wazuh1.indexer / wazuh2.indexer / wazuh3.indexer
 ```
 
 ## Changes from original
@@ -29,6 +29,7 @@ This setup replaces the original NGINX stream load balancer with **HAProxy 2.9**
 | Port 1515 | Not exposed | TCP passthrough to master |
 | Dashboard port | Exposed on host 443 | Internal only (expose) |
 | Manager ports | Exposed on host | Internal only (expose) |
+| Cert generation | Manual | `certgen` service (profile tools) |
 
 ## Execution order
 
@@ -36,6 +37,11 @@ This setup replaces the original NGINX stream load balancer with **HAProxy 2.9**
 ```bash
 docker compose --profile tools run --rm certgen
 ```
+
+Generated certs will be placed in `./config/certs/`. The `certs.yml` defines all six nodes:
+- `wazuh1.indexer`, `wazuh2.indexer`, `wazuh3.indexer`
+- `wazuh.dashboard`
+- `wazuh.master`, `wazuh.worker`
 
 ### 2) Start indexers
 ```bash
@@ -47,7 +53,7 @@ docker compose up -d wazuh1.indexer wazuh2.indexer wazuh3.indexer
 docker compose ps
 ```
 
-### 4) Start manager (master first)
+### 4) Start managers
 ```bash
 docker compose up -d wazuh.master
 docker compose up -d wazuh.worker
@@ -80,7 +86,8 @@ Point agents to HAProxy on port 1514 (events) and 1515 (enrollment):
 
 ## Notes
 
-- HAProxy runs in **TCP mode** — TLS is not terminated at the proxy level.
+- HAProxy runs in **TCP mode** - TLS is not terminated at the proxy level.
 - SNI inspection on port 443 routes traffic based on `req.ssl_sni`.
 - Port 1514 uses `leastconn` to distribute agent connections between master and worker.
 - Enrollment (1515) routes only to master.
+- All certs are generated to and read from `./config/certs/` (single directory, no per-service subdirs).
