@@ -1,5 +1,7 @@
+# Certificates for Wazuh multi-node PoC
+# Output directory mapped to ./config/wazuh_indexer_ssl_certs
 nodes:
-  # Three indexer nodes
+  # Indexer nodes
   - name: wazuh1.indexer
     ip:
       - 127.0.0.1
@@ -15,13 +17,13 @@ nodes:
       - 127.0.0.1
     roles:
       - indexer
-  # Dashboard node
+  # Dashboard
   - name: wazuh.dashboard
     ip:
       - 127.0.0.1
     roles:
       - dashboard
-  # Manager nodes
+  # Manager nodes (filebeat certs)
   - name: wazuh.master
     ip:
       - 127.0.0.1
