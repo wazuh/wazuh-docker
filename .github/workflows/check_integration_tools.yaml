@@ -31,11 +31,7 @@ on:
         required: false
         type: string
       revision:
-        description: 'Image tag suffix (e.g. beta2-latest). Required when version is set.'
-        required: false
-        type: string
-      registry:
-        description: 'Docker registry prefix (e.g. ECR URL). Leave empty for DockerHub.'
+        description: 'Image revision/stage (e.g. beta2). Required when version is set.'
         required: false
         type: string
 
@@ -252,15 +248,15 @@ jobs:
 
       - name: Resolve image configuration
         run: |
-          # Source of truth for cert tool is always VERSION.json (matches wazuh-docker branch)
+          # Source of truth for cert tool — always from VERSION.json (pr branch)
           WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
           WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
 
           if [ -n "${{ inputs.version }}" ]; then
-            # Case 1a: pre-built images — test a specific set already in a registry
+            # Case 1a: pre-built images already in the prod registry (DockerHub)
             DOCKER_VERSION="${{ inputs.version }}"
             DOCKER_REVISION="${{ inputs.revision }}"
-            DOCKER_REGISTRY="${{ inputs.registry }}"
+            DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
           else
             # Case 1b/2: freshly built images pushed to dev registry by build_images job
             DOCKER_VERSION="${WAZUH_VERSION}"
@@ -268,13 +264,13 @@ jobs:
             DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
           fi
 
-          echo "WAZUH_VERSION=${WAZUH_VERSION}"     >> $GITHUB_ENV
-          echo "WAZUH_STAGE=${WAZUH_STAGE}"         >> $GITHUB_ENV
+          echo "WAZUH_VERSION=${WAZUH_VERSION}"       >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${WAZUH_STAGE}"           >> $GITHUB_ENV
           echo "WAZUH_REVISION=${DOCKER_REVISION:-1}" >> $GITHUB_ENV
-          echo "DOCKER_VERSION=${DOCKER_VERSION}"   >> $GITHUB_ENV
-          echo "DOCKER_REVISION=${DOCKER_REVISION}" >> $GITHUB_ENV
-          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}" >> $GITHUB_ENV
-          echo "Image: ${DOCKER_REGISTRY:+${DOCKER_REGISTRY}/}wazuh/wazuh-*:${DOCKER_VERSION}-${DOCKER_REVISION}"
+          echo "DOCKER_VERSION=${DOCKER_VERSION}"     >> $GITHUB_ENV
+          echo "DOCKER_REVISION=${DOCKER_REVISION}"   >> $GITHUB_ENV
+          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}"   >> $GITHUB_ENV
+          echo "Image: ${DOCKER_REGISTRY}/wazuh/wazuh-*:${DOCKER_VERSION}-${DOCKER_REVISION}"
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -348,11 +344,13 @@ jobs:
           "
 
       - name: Login VM to ECR registry
-        if: env.DOCKER_REGISTRY != ''
+        if: inputs.version == ''
         run: |
-          ECR_PASS=$(aws ecr get-login-password --region ${{ env.REGION }})
+          ECR_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+          ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
+          ECR_PASS=$(aws ecr get-login-password --region "$ECR_REGION")
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" \
-            "echo '${ECR_PASS}' | sudo docker login --username AWS --password-stdin ${{ env.DOCKER_REGISTRY }}"
+            "echo '${ECR_PASS}' | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}"
 
       # -----------------------------------------------------------------------
       # Deploy: patch image tags, copy wazuh-docker and start the stack
@@ -361,17 +359,17 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
-          VERSION="${{ env.DOCKER_VERSION }}"
-          REVISION="${{ env.DOCKER_REVISION }}"
+          TAG="${{ env.DOCKER_VERSION }}-${{ env.DOCKER_REVISION }}"
           REGISTRY="${{ env.DOCKER_REGISTRY }}"
-          TAG="${VERSION}-${REVISION}"
 
-          if [ -n "$REGISTRY" ]; then
+          if [ "$REGISTRY" = "docker.io" ] || [ -z "$REGISTRY" ]; then
+            # DockerHub: no registry prefix needed
+            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub)"
+            sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
+          else
+            # Private registry (ECR): add registry prefix
             echo "Patching ${COMPOSE}: ${REGISTRY}/wazuh/wazuh-*:${TAG}"
             sed -i -E "s|image: (wazuh/wazuh-[^:]+):[^ ]+|image: ${REGISTRY}/\1:${TAG}|g" "$COMPOSE"
-          else
-            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG}"
-            sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
           fi
           echo "=== Patched image lines ==="
           grep 'image:' "$COMPOSE"
