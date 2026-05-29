@@ -27,11 +27,11 @@ on:
           - multi-node
           - both
       version:
-        description: 'Image version to test (e.g. 5.0.0). Leave empty to build images from PR.'
+        description: 'Image version to test (e.g. 5.0.0).'
         required: false
         type: string
-      revision:
-        description: 'Image revision/stage (e.g. beta2). Required when version is set.'
+      stage:
+        description: 'Image stage suffix (e.g. beta1, beta2-latest, beta2-<commit>). Required when version is set.'
         required: false
         type: string
       registry:
@@ -39,7 +39,7 @@ on:
         required: false
         type: choice
         options:
-          - ERC
+          - ECR
           - DockerHub
 
 permissions:
@@ -197,8 +197,80 @@ jobs:
           echo "wazuh_stage=${STAGE}"     >> $GITHUB_OUTPUT
           echo "Version: ${VERSION}  Stage: ${STAGE:-<release>}"
 
+      - name: Show test plan
+        run: |
+          WAZUH_VERSION="${{ steps.version.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ steps.version.outputs.wazuh_stage }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
+          INPUT_REGISTRY="${{ inputs.registry }}"
+
+          echo "============================================="
+          echo "  DOCKER INTEGRATION TEST PLAN"
+          echo "============================================="
+          echo ""
+          echo "Branch:           ${{ steps.ctx.outputs.pr_head_ref }}"
+          echo "Trigger:          ${{ github.event_name }}"
+          echo "Deployments:      ${{ steps.ctx.outputs.deployment_matrix }}"
+          echo ""
+          echo "--- Version info (VERSION.json) ---"
+          echo "wazuh_version:    ${WAZUH_VERSION}"
+          echo "wazuh_stage:      ${WAZUH_STAGE:-<release>}"
+          echo ""
+          echo "--- Workflow inputs ---"
+          echo "version:          ${INPUT_VERSION:-<not set>}"
+          echo "stage:            ${INPUT_STAGE:-<not set>}"
+          echo "registry:         ${INPUT_REGISTRY:-<not set>}"
+          echo ""
+
+          # Determine effective case
+          if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$WAZUH_VERSION"
+            DOCKER_STAGE_DISPLAY="${WAZUH_STAGE}"
+            if [ "$INPUT_REGISTRY" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+              echo "Case: a.1 — No version/stage → BUILD images from PR → push to ECR"
+              echo "Action: BUILD + push to ECR, then test"
+              EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}-latest"
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              echo "Case: a.2 — No version/stage → PULL from DockerHub"
+              echo "Action: PULL images (no build)"
+              EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}"
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$INPUT_VERSION"
+            echo "Action: PULL images (no build)"
+            if [ "$INPUT_REGISTRY" = "ECR" ]; then
+              echo "Case: b.1 — Version only, ECR → tag = version-latest"
+              EFFECTIVE_TAG="${DOCKER_VERSION}-latest"
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              echo "Case: b.2 — Version only, DockerHub → tag = version"
+              EFFECTIVE_TAG="${DOCKER_VERSION}"
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          else
+            echo "Case: c — Version + stage provided as-is (no -latest appended)"
+            echo "Action: PULL images (no build)"
+            DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+            EFFECTIVE_TAG="${DOCKER_VERSION}-${INPUT_STAGE}"
+            if [ "$INPUT_REGISTRY" = "ECR" ]; then
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          fi
+
+          echo ""
+          echo "--- Effective image configuration ---"
+          echo "Registry:         ${EFFECTIVE_REGISTRY}"
+          echo "Image tag:        ${EFFECTIVE_TAG}"
+          echo "Example image:    wazuh/wazuh-manager:${EFFECTIVE_TAG}"
+          echo "============================================="
+
   # -------------------------------------------------------------------------
-  # Job 3: Build Docker images (only when no explicit version/revision provided).
+  # Job 3: Build Docker images (only for ECR, when no explicit version/stage provided).
   #         Calls Procedure_push_docker_images.yml and pushes to the dev registry.
   # -------------------------------------------------------------------------
   build_images:
@@ -207,7 +279,9 @@ jobs:
     if: |
       always() &&
       needs.prepare.result == 'success' &&
-      inputs.version == ''
+      inputs.version == '' &&
+      inputs.stage == '' &&
+      (inputs.registry == 'ECR' || github.event_name == 'issue_comment')
     uses: ./.github/workflows/Procedure_push_docker_images.yml
     with:
       image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
@@ -254,36 +328,62 @@ jobs:
 
       - name: Resolve image configuration
         run: |
-          # Source of truth for cert tool — always from VERSION.json (pr branch)
           WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
           WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
 
           # Map registry choice to actual URL (defined once)
-          if [ "${{ inputs.registry }}" = "ERC" ]; then
+          if [ "${{ inputs.registry }}" = "ECR" ]; then
             SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
           else
             SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
           fi
 
-          if [ -n "${{ inputs.version }}" ]; then
-            # Explicit version/revision: use the registry choice mapped above
-            DOCKER_VERSION="${{ inputs.version }}"
-            DOCKER_REVISION="${{ inputs.revision }}"
+          if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            # Case a: no version, no stage — use VERSION.json
+            DOCKER_VERSION="$WAZUH_VERSION"
+            DOCKER_STAGE="$WAZUH_STAGE"
+            if [ "${{ inputs.registry }}" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+              # Case a.1: ECR / PR comment — images were built by build_images job → tag = version-stage-latest
+              DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+              DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}-latest"
+            else
+              # Case a.2: DockerHub — pull pre-built tag = version-stage
+              DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+              DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}"
+            fi
+          elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            # Case b: version only, no stage
+            DOCKER_VERSION="$INPUT_VERSION"
+            DOCKER_STAGE=""
             DOCKER_REGISTRY="$SELECTED_REGISTRY"
+            if [ "${{ inputs.registry }}" = "ECR" ]; then
+              # Case b.1: ECR — tag = version-latest
+              DOCKER_TAG="${DOCKER_VERSION}-latest"
+            else
+              # Case b.2: DockerHub — tag = version (no suffix)
+              DOCKER_TAG="${DOCKER_VERSION}"
+            fi
           else
-            # Build case: always dev registry (build_images job pushed there)
-            DOCKER_VERSION="${WAZUH_VERSION}"
-            DOCKER_REVISION="${WAZUH_STAGE}"
-            DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+            # Case c: version + stage provided as-is (no -latest appended)
+            DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+            DOCKER_STAGE="$INPUT_STAGE"
+            DOCKER_REGISTRY="$SELECTED_REGISTRY"
+            DOCKER_TAG="${DOCKER_VERSION}-${DOCKER_STAGE}"
           fi
 
-          echo "WAZUH_VERSION=${WAZUH_VERSION}"       >> $GITHUB_ENV
-          echo "WAZUH_STAGE=${WAZUH_STAGE}"           >> $GITHUB_ENV
-          echo "WAZUH_REVISION=${DOCKER_REVISION:-1}" >> $GITHUB_ENV
-          echo "DOCKER_VERSION=${DOCKER_VERSION}"     >> $GITHUB_ENV
-          echo "DOCKER_REVISION=${DOCKER_REVISION}"   >> $GITHUB_ENV
-          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}"   >> $GITHUB_ENV
-          echo "Image: ${DOCKER_REGISTRY}/wazuh/wazuh-*:${DOCKER_VERSION}-${DOCKER_REVISION}"
+          echo "WAZUH_VERSION=${WAZUH_VERSION}"     >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${WAZUH_STAGE}"         >> $GITHUB_ENV
+          echo "DOCKER_VERSION=${DOCKER_VERSION}"   >> $GITHUB_ENV
+          echo "DOCKER_STAGE=${DOCKER_STAGE}"       >> $GITHUB_ENV
+          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}" >> $GITHUB_ENV
+          echo "DOCKER_TAG=${DOCKER_TAG}"           >> $GITHUB_ENV
+
+          echo "=== Resolved image configuration ==="
+          echo "Registry: ${DOCKER_REGISTRY}"
+          echo "Tag:      ${DOCKER_TAG}"
+          echo "Example:  wazuh/wazuh-manager:${DOCKER_TAG}"
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -357,7 +457,7 @@ jobs:
           "
 
       - name: Login VM to ECR registry
-        if: inputs.version == '' || inputs.registry == 'ERC'
+        if: inputs.registry == 'ECR' || github.event_name == 'issue_comment'
         run: |
           ECR_REGISTRY="${{ env.DOCKER_REGISTRY }}"
           ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
@@ -372,18 +472,11 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
-          VERSION="${{ env.DOCKER_VERSION }}"
-          REVISION="${{ env.DOCKER_REVISION }}"
+          TAG="${{ env.DOCKER_TAG }}"
           REGISTRY="${{ env.DOCKER_REGISTRY }}"
 
-          if [ "$REGISTRY" = "${{ vars.IMAGE_REGISTRY_DEV }}" ]; then
-            TAG="${VERSION}${REVISION:+-${REVISION}}-latest"
-          else
-            TAG="${VERSION}${REVISION:+-${REVISION}}"
-          fi
-
           if [ "$REGISTRY" = "${{ vars.IMAGE_REGISTRY_PROD }}" ] || [ -z "$REGISTRY" ]; then
-            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub)"
+            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub, no registry prefix)"
             sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
           else
             echo "Patching ${COMPOSE}: ${REGISTRY}/wazuh/wazuh-*:${TAG}"
@@ -399,7 +492,7 @@ jobs:
           STAGE="${{ env.WAZUH_STAGE }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_VERSION }}-${{ env.DOCKER_REVISION }}"
+          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_TAG }}"
 
           # Download cert tool once on the runner
           if [ -n "$STAGE" ]; then
@@ -595,7 +688,6 @@ jobs:
             --ssh-key-path "${{ env.SSH_KEY }}" \
             --ssh-username "${{ env.SSH_USER }}" \
             --version "${{ env.DOCKER_VERSION }}" \
-            --revision "${{ env.DOCKER_REVISION }}" \
             --log-level INFO \
             --output github \
             --output-file "test-results-docker-${DEPLOYMENT}.github"
