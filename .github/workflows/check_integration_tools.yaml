@@ -376,13 +376,13 @@ jobs:
           REVISION="${{ env.DOCKER_REVISION }}"
           REGISTRY="${{ env.DOCKER_REGISTRY }}"
 
-          if [ -n "$REVISION" ]; then
-            TAG="${VERSION}-${REVISION}-latest"
+          if [ "$REGISTRY" = "${{ vars.IMAGE_REGISTRY_DEV }}" ]; then
+            TAG="${VERSION}${REVISION:+-${REVISION}}-latest"
           else
-            TAG="${VERSION}"
+            TAG="${VERSION}${REVISION:+-${REVISION}}"
           fi
 
-          if [ "$REGISTRY" = "docker.io" ] || [ -z "$REGISTRY" ]; then
+          if [ "$REGISTRY" = "${{ vars.IMAGE_REGISTRY_PROD }}" ] || [ -z "$REGISTRY" ]; then
             echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub)"
             sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
           else
