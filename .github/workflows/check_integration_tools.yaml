@@ -207,7 +207,7 @@ jobs:
       image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
       docker_reference: ${{ needs.prepare.outputs.pr_head_ref }}
       wazuh_automation_reference: ${{ inputs.automation_reference || 'main' }}
-      products: "wazuh-manager,wazuh-dashboard,wazuh-indexer"
+      products: "wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
       dev: true
       id: "docker-integration-${{ github.run_id }}"
     secrets: inherit
