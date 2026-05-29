@@ -35,9 +35,12 @@ on:
         required: false
         type: string
       registry:
-        description: 'Docker registry (e.g. ECR URL). Leave empty to use DockerHub. Only applies when version is set.'
+        description: 'Docker registry. ECR for dev versions, DockerHub for prod versions.'
         required: false
-        type: string
+        type: choice
+        options:
+          - ERC
+          - DockerHub
 
 permissions:
   id-token: write
@@ -251,17 +254,24 @@ jobs:
 
       - name: Resolve image configuration
         run: |
-          # Get from VERSION.json (for pr branch)
+          # Source of truth for cert tool — always from VERSION.json (pr branch)
           WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
           WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
 
+          # Map registry choice to actual URL (defined once)
+          if [ "${{ inputs.registry }}" = "ERC" ]; then
+            SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+          else
+            SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+          fi
+
           if [ -n "${{ inputs.version }}" ]; then
-            # Explicit version/revision: use provided registry or fall back to DockerHub prod
+            # Explicit version/revision: use the registry choice mapped above
             DOCKER_VERSION="${{ inputs.version }}"
             DOCKER_REVISION="${{ inputs.revision }}"
-            DOCKER_REGISTRY="${{ inputs.registry || vars.IMAGE_REGISTRY_PROD }}"
+            DOCKER_REGISTRY="$SELECTED_REGISTRY"
           else
-            # Use version from VERSION.json and assume images were built in the previous job and pushed to the dev registry
+            # Build case: always dev registry (build_images job pushed there)
             DOCKER_VERSION="${WAZUH_VERSION}"
             DOCKER_REVISION="${WAZUH_STAGE}"
             DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
@@ -347,7 +357,7 @@ jobs:
           "
 
       - name: Login VM to ECR registry
-        if: inputs.version == '' || inputs.registry != ''
+        if: inputs.version == '' || inputs.registry == 'ERC'
         run: |
           ECR_REGISTRY="${{ env.DOCKER_REGISTRY }}"
           ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
