@@ -101,8 +101,9 @@ jobs:
 
       - name: Parse command and set deployment metadata
         id: parse_command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          COMMENT_BODY="${{ github.event.comment.body }}"
           # Check longest match first to avoid /test-docker matching /test-docker-single
           if echo "$COMMENT_BODY" | grep -q '/test-docker-single'; then
             echo 'deployment_matrix=["single-node"]'                >> $GITHUB_OUTPUT
