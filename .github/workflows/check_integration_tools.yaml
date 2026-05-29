@@ -205,54 +205,36 @@ jobs:
           INPUT_STAGE="${{ inputs.stage }}"
           INPUT_REGISTRY="${{ inputs.registry }}"
 
-          echo "============================================="
-          echo "  DOCKER INTEGRATION TEST PLAN"
-          echo "============================================="
-          echo ""
-          echo "Branch:           ${{ steps.ctx.outputs.pr_head_ref }}"
-          echo "Trigger:          ${{ github.event_name }}"
-          echo "Deployments:      ${{ steps.ctx.outputs.deployment_matrix }}"
-          echo ""
-          echo "--- Version info (VERSION.json) ---"
-          echo "wazuh_version:    ${WAZUH_VERSION}"
-          echo "wazuh_stage:      ${WAZUH_STAGE:-<release>}"
-          echo ""
-          echo "--- Workflow inputs ---"
-          echo "version:          ${INPUT_VERSION:-<not set>}"
-          echo "stage:            ${INPUT_STAGE:-<not set>}"
-          echo "registry:         ${INPUT_REGISTRY:-<not set>}"
-          echo ""
-
           # Determine effective case
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             DOCKER_VERSION="$WAZUH_VERSION"
             DOCKER_STAGE_DISPLAY="${WAZUH_STAGE}"
             if [ "$INPUT_REGISTRY" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
-              echo "Case: a.1 — No version/stage → BUILD images from PR → push to ECR"
-              echo "Action: BUILD + push to ECR, then test"
+              CASE="a.1 — No version/stage → BUILD images from PR → push to ECR"
+              ACTION="BUILD + push to ECR"
               EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}-latest"
               EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
             else
-              echo "Case: a.2 — No version/stage → PULL from DockerHub"
-              echo "Action: PULL images (no build)"
+              CASE="a.2 — No version/stage → PULL from DockerHub"
+              ACTION="PULL (no build)"
               EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}"
               EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
             fi
           elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             DOCKER_VERSION="$INPUT_VERSION"
-            echo "Action: PULL images (no build)"
+            ACTION="PULL (no build)"
             if [ "$INPUT_REGISTRY" = "ECR" ]; then
-              echo "Case: b.1 — Version only, ECR → tag = version-latest"
+              CASE="b.1 — Version only, ECR → tag = version-latest"
               EFFECTIVE_TAG="${DOCKER_VERSION}-latest"
               EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
             else
-              echo "Case: b.2 — Version only, DockerHub → tag = version"
+              CASE="b.2 — Version only, DockerHub → tag = version"
               EFFECTIVE_TAG="${DOCKER_VERSION}"
               EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
             fi
           else
-            echo "Case: c — Version + stage provided as-is (no -latest appended)"
-            echo "Action: PULL images (no build)"
+            CASE="c — Version + stage provided as-is (no -latest appended)"
+            ACTION="PULL (no build)"
             DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
             EFFECTIVE_TAG="${DOCKER_VERSION}-${INPUT_STAGE}"
             if [ "$INPUT_REGISTRY" = "ECR" ]; then
@@ -262,12 +244,50 @@ jobs:
             fi
           fi
 
-          echo ""
-          echo "--- Effective image configuration ---"
-          echo "Registry:         ${EFFECTIVE_REGISTRY}"
-          echo "Image tag:        ${EFFECTIVE_TAG}"
-          echo "Example image:    wazuh/wazuh-manager:${EFFECTIVE_TAG}"
+          # Log to stdout
           echo "============================================="
+          echo "  DOCKER INTEGRATION TEST PLAN"
+          echo "============================================="
+          echo "Branch:        ${{ steps.ctx.outputs.pr_head_ref }}"
+          echo "Trigger:       ${{ github.event_name }}"
+          echo "Deployments:   ${{ steps.ctx.outputs.deployment_matrix }}"
+          echo "Case:          ${CASE}"
+          echo "Action:        ${ACTION}"
+          echo "Registry:      ${EFFECTIVE_REGISTRY}"
+          echo "Image tag:     ${EFFECTIVE_TAG}"
+          echo "Example:       wazuh/wazuh-manager:${EFFECTIVE_TAG}"
+          echo "============================================="
+
+          # Write to step summary
+          {
+            echo "## Docker Integration Test Plan"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Branch** | \`${{ steps.ctx.outputs.pr_head_ref }}\` |"
+            echo "| **Trigger** | \`${{ github.event_name }}\` |"
+            echo "| **Deployments** | \`${{ steps.ctx.outputs.deployment_matrix }}\` |"
+            echo "| **Case** | ${CASE} |"
+            echo "| **Action** | ${ACTION} |"
+            echo ""
+            echo "### Image configuration"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Registry** | ${EFFECTIVE_REGISTRY} |"
+            echo "| **Tag** | \`${EFFECTIVE_TAG}\` |"
+            echo "| **Example image** | \`wazuh/wazuh-manager:${EFFECTIVE_TAG}\` |"
+            echo ""
+            echo "### Parameters"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **VERSION.json version** | \`${WAZUH_VERSION}\` |"
+            echo "| **VERSION.json stage** | \`${WAZUH_STAGE:-<release>}\` |"
+            echo "| **Input version** | \`${INPUT_VERSION:-<not set>}\` |"
+            echo "| **Input stage** | \`${INPUT_STAGE:-<not set>}\` |"
+            echo "| **Input registry** | \`${INPUT_REGISTRY:-<not set>}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # -------------------------------------------------------------------------
   # Job 3: Build Docker images (only for ECR, when no explicit version/stage provided).
@@ -341,7 +361,6 @@ jobs:
           fi
 
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
-            # Case a: no version, no stage — use VERSION.json
             DOCKER_VERSION="$WAZUH_VERSION"
             DOCKER_STAGE="$WAZUH_STAGE"
             if [ "${{ inputs.registry }}" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
@@ -349,24 +368,19 @@ jobs:
               DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
               DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}-latest"
             else
-              # Case a.2: DockerHub — pull pre-built tag = version-stage
               DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
               DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}"
             fi
           elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
-            # Case b: version only, no stage
             DOCKER_VERSION="$INPUT_VERSION"
             DOCKER_STAGE=""
             DOCKER_REGISTRY="$SELECTED_REGISTRY"
             if [ "${{ inputs.registry }}" = "ECR" ]; then
-              # Case b.1: ECR — tag = version-latest
               DOCKER_TAG="${DOCKER_VERSION}-latest"
             else
-              # Case b.2: DockerHub — tag = version (no suffix)
               DOCKER_TAG="${DOCKER_VERSION}"
             fi
           else
-            # Case c: version + stage provided as-is (no -latest appended)
             DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
             DOCKER_STAGE="$INPUT_STAGE"
             DOCKER_REGISTRY="$SELECTED_REGISTRY"
