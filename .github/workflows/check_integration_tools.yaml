@@ -34,6 +34,10 @@ on:
         description: 'Image revision/stage (e.g. beta2). Required when version is set.'
         required: false
         type: string
+      registry:
+        description: 'Docker registry (e.g. ECR URL). Leave empty to use DockerHub. Only applies when version is set.'
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -252,10 +256,10 @@ jobs:
           WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
 
           if [ -n "${{ inputs.version }}" ]; then
-            # Use explicit version/revision provided via workflow_dispatch (e.g. for testing prod images or specific dev images)
+            # Explicit version/revision: use provided registry or fall back to DockerHub prod
             DOCKER_VERSION="${{ inputs.version }}"
             DOCKER_REVISION="${{ inputs.revision }}"
-            DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+            DOCKER_REGISTRY="${{ inputs.registry || vars.IMAGE_REGISTRY_PROD }}"
           else
             # Use version from VERSION.json and assume images were built in the previous job and pushed to the dev registry
             DOCKER_VERSION="${WAZUH_VERSION}"
@@ -343,9 +347,9 @@ jobs:
           "
 
       - name: Login VM to ECR registry
-        if: inputs.version == ''
+        if: inputs.version == '' || inputs.registry != ''
         run: |
-          ECR_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+          ECR_REGISTRY="${{ env.DOCKER_REGISTRY }}"
           ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
           ECR_PASS=$(aws ecr get-login-password --region "$ECR_REGION")
           ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" \
