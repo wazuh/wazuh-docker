@@ -359,15 +359,23 @@ jobs:
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
           COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
-          TAG="${{ env.DOCKER_VERSION }}-${{ env.DOCKER_REVISION }}"
+          VERSION="${{ env.DOCKER_VERSION }}"
+          REVISION="${{ env.DOCKER_REVISION }}"
           REGISTRY="${{ env.DOCKER_REGISTRY }}"
 
+          # build-images.sh appends -latest when dev=true + commit=latest:
+          #   dev=true,  5.0.0-beta2  → 5.0.0-beta2-latest
+          #   dev=false, 5.0.0        → 5.0.0
+          if [ -n "$REVISION" ]; then
+            TAG="${VERSION}-${REVISION}-latest"
+          else
+            TAG="${VERSION}"
+          fi
+
           if [ "$REGISTRY" = "docker.io" ] || [ -z "$REGISTRY" ]; then
-            # DockerHub: no registry prefix needed
             echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub)"
             sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
           else
-            # Private registry (ECR): add registry prefix
             echo "Patching ${COMPOSE}: ${REGISTRY}/wazuh/wazuh-*:${TAG}"
             sed -i -E "s|image: (wazuh/wazuh-[^:]+):[^ ]+|image: ${REGISTRY}/\1:${TAG}|g" "$COMPOSE"
           fi
