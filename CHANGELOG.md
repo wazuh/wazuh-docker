@@ -284,6 +284,80 @@ All notable changes to this project will be documented in this file.
 
 - None
 
+## [4.10.5]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.4]
+
+### Added
+
+- None
+
+### Changed
+
+- Removed sslmanager key from the docker manager image. ([#2092](https://github.com/wazuh/wazuh-docker/pull/2092))
+- Backport 4.13.0 changes: Modify wazuh-keystore use ([#2036](https://github.com/wazuh/wazuh-docker/pull/2036)) \- (wazuh-keystore)
+
+### Fixed
+
+- Changed update_user function from wazuh.security to wazuh.rbac.orm module ([#2405](https://github.com/wazuh/wazuh-docker/pull/2405))
+- Add wazuh-template.json into permanent data exception ([#1967](https://github.com/wazuh/wazuh-docker/pull/1967))
+
+### Deleted
+
+- None
+
+## [4.10.3]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.10.2]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- Updated docker/login-action module ([#1837](https://github.com/wazuh/wazuh-docker/pull/1837))
+
+### Deleted
+
+- None
+
 ## [4.10.1]
 
 ### Added
