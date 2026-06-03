@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Implement the wazuh-docker integration testing module ([#2428](https://github.com/wazuh/wazuh-docker/pull/2428))
 - Add revert option into bumper workflow ([#2330](https://github.com/wazuh/wazuh-docker/pull/2330))
 - Add checks for artifact_urls.yaml download ([#2315](https://github.com/wazuh/wazuh-docker/pull/2315))
 - Add set_as_main option ([#2293](https://github.com/wazuh/wazuh-docker/pull/2293))
