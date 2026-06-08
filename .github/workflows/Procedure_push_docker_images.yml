@@ -115,9 +115,13 @@ jobs:
 
     - name: Set up variables
       id: compute-outputs
+      env:
+        PRODUCTS_INPUT: ${{ inputs.products }}
+        DEV_INPUT: ${{ inputs.dev }}
+        COMMIT_LIST_INPUT: ${{ inputs.commit_list }}
       run: |
         # Use the default list if products is empty
-        PRODUCTS="${{ inputs.products }}"
+        PRODUCTS="$PRODUCTS_INPUT"
         if [[ -z "$PRODUCTS" || "$PRODUCTS" == "null" ]]; then
           PRODUCTS="wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
         fi
@@ -135,9 +139,9 @@ jobs:
 
         # Set COMMIT_LIST
         WC_COMMIT_LIST=""
-        if [[ "${{ inputs.dev }}" == "true" ]]; then
-          if [[ "${{ inputs.commit_list }}" != "null" && "${{ inputs.commit_list }}" != "" ]]; then
-            WC_COMMIT_LIST='${{ inputs.commit_list }}'
+        if [[ "$DEV_INPUT" == "true" ]]; then
+          if [[ "$COMMIT_LIST_INPUT" != "null" && "$COMMIT_LIST_INPUT" != "" ]]; then
+            WC_COMMIT_LIST="$COMMIT_LIST_INPUT"
           else
             # Set commit list to "latest" for all components using WAZUH_COMPONENTS
             COMPONENTS=($(echo "$WC_JSON_ARRAY" | jq -r '.[]'))
@@ -174,6 +178,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.docker_reference }}
+          persist-credentials: false
 
       - name: Checkout wazuh/wazuh-automation repository
         if: ${{ inputs.dev == true }}
@@ -183,6 +188,7 @@ jobs:
           ref: ${{ inputs.wazuh_automation_reference }}
           token: ${{ secrets.GH_CLONE_TOKEN }}
           path: wazuh-automation
+          persist-credentials: false
 
       - name: Configure AWS credentials
         if: ${{ inputs.dev == true }}
@@ -215,11 +221,15 @@ jobs:
         if: ${{ inputs.dev == true }}
         run: |
           WAZUH_VERSION=$(jq -r '.version' VERSION.json)
+          if ! [[ "$WAZUH_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $WAZUH_VERSION"
+            exit 1
+          fi
           WAZUH_MAJOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1)
           WAZUH_MINOR=$(echo "$WAZUH_VERSION" | cut -d '.' -f 1-2)
-          echo WAZUH_VERSION=$WAZUH_VERSION >> $GITHUB_ENV
-          echo WAZUH_MAJOR=$WAZUH_MAJOR >> $GITHUB_ENV
-          echo WAZUH_MINOR=$WAZUH_MINOR >> $GITHUB_ENV
+          echo "WAZUH_VERSION=$WAZUH_VERSION" >> $GITHUB_ENV
+          echo "WAZUH_MAJOR=$WAZUH_MAJOR" >> $GITHUB_ENV
+          echo "WAZUH_MINOR=$WAZUH_MINOR" >> $GITHUB_ENV
 
       - name: Get artifacts URLs file
         if: ${{ inputs.dev == true }}
@@ -229,13 +239,14 @@ jobs:
 
       - name: Generate presigned URLs for artifacts for dev packages
         if: ${{ inputs.dev == true }}
+        env:
+          WAZUH_COMPONENTS: ${{ needs.setup.outputs.WAZUH_COMPONENTS }}
+          COMMIT_LIST: ${{ needs.setup.outputs.COMMIT_LIST }}
         run: |
-          source ${{ env.WORKFLOW_VENV }}/bin/activate
-          WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
-          COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
-          SCRIPT_PARAMS="--process ${{ env.PRESIGNED_URLS_SCRIPT_PROCESS }} \
-                            --wazuh-version ${{ env.WAZUH_VERSION }} \
-                            --aws-s3-bucket-dev ${{ env.LOCAL_AWS_S3_BUCKET_DEV }} \
+          source "$WORKFLOW_VENV/bin/activate"
+          SCRIPT_PARAMS="--process $PRESIGNED_URLS_SCRIPT_PROCESS \
+                            --wazuh-version $WAZUH_VERSION \
+                            --aws-s3-bucket-dev $LOCAL_AWS_S3_BUCKET_DEV \
                             --assistant-revision $ASSISTANT_REVISION "
 
 
@@ -270,7 +281,7 @@ jobs:
           esac
           done
 
-          python ${{ env.GENERATE_PRESIGNED_URLS_SCRIPT_PATH }} \
+          python "$GENERATE_PRESIGNED_URLS_SCRIPT_PATH" \
               $SCRIPT_PARAMS
 
       - name: Save presigned URLs file to artifact
@@ -302,6 +313,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         ref: ${{ inputs.docker_reference }}
+        persist-credentials: false
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
@@ -336,11 +348,11 @@ jobs:
 
     - name: Compute component reference (dev)
       if: ${{ inputs.dev == true }}
+      env:
+        COMPONENT: ${{ matrix.wazuh_component }}
+        WAZUH_COMPONENTS: ${{ needs.setup.outputs.WAZUH_COMPONENTS }}
+        COMMIT_LIST: ${{ needs.setup.outputs.COMMIT_LIST }}
       run: |
-        COMPONENT='${{ matrix.wazuh_component }}'
-        WAZUH_COMPONENTS='${{ needs.setup.outputs.WAZUH_COMPONENTS }}'
-        COMMIT_LIST='${{ needs.setup.outputs.COMMIT_LIST }}'
-
         idx=$(jq -r --arg c "$COMPONENT" 'index($c)' <<<"$WAZUH_COMPONENTS")
         ref=$(jq -r --argjson i "$idx" '.[ $i ]' <<<"$COMMIT_LIST")
 
@@ -348,6 +360,9 @@ jobs:
         echo "Using component ref for $COMPONENT: $ref"
 
     - name: Build Wazuh images
+      env:
+        DEV: ${{ inputs.dev }}
+        WAZUH_COMPONENT: ${{ matrix.wazuh_component }}
       run: |
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
           IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
@@ -357,7 +372,7 @@ jobs:
           fi
           DEV_STAGE=${tokens[1]}
           WAZUH_VER=${tokens[0]}
-          if [ "${{ inputs.dev }}" = true ]; then
+          if [ "$DEV" = true ]; then
             ./build-images.sh \
               -v $WAZUH_VER \
               -d $DEV_STAGE \
@@ -365,30 +380,30 @@ jobs:
               -m \
               --dev \
               -refs "$COMPONENT_REFS_JSON" \
-              -c ${{ matrix.wazuh_component }}
+              -c $WAZUH_COMPONENT
           else
             ./build-images.sh \
               -v $WAZUH_VER \
               -d $DEV_STAGE \
               -rg $IMAGE_REGISTRY \
               -m \
-              -c ${{ matrix.wazuh_component }}
+              -c $WAZUH_COMPONENT
           fi
         else
-          if [ "${{ inputs.dev }}" = true ]; then
+          if [ "$DEV" = true ]; then
             ./build-images.sh \
               -v $IMAGE_TAG \
               -rg $IMAGE_REGISTRY \
               -m \
               --dev \
               -refs "$COMPONENT_REFS_JSON" \
-              -c ${{ matrix.wazuh_component }}
+              -c $WAZUH_COMPONENT
           else
             ./build-images.sh \
               -v $IMAGE_TAG \
               -rg $IMAGE_REGISTRY \
               -m \
-              -c ${{ matrix.wazuh_component }}
+              -c $WAZUH_COMPONENT
           fi
         fi
         # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
@@ -414,9 +429,10 @@ jobs:
     steps:
     - name: Image exists validation
       id: validation
+      env:
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY_PROD }}
       run: |
-        IMAGE_TAG=${{ inputs.image_tag }}
-        IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
         PURPOSE=""
 
         if [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -441,9 +457,9 @@ jobs:
       if: ${{ steps.validation.outputs.purpose != '' }}
       env:
         GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        PURPOSE: ${{ steps.validation.outputs.purpose }}
       run: |
-        IMAGE_TAG=${{ inputs.image_tag }}
-        PURPOSE="${{ steps.validation.outputs.purpose }}"
 
         GH_TITLE=""
         GH_MESSAGE=""
