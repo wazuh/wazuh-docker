@@ -1,5 +1,5 @@
-run-name: Launch Push Docker Images - ${{ inputs.id }}
-name: Push Docker Images
+run-name: Build and push images 5.x - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
+name: Build and push images 5.x
 
 on:
   workflow_dispatch:
@@ -96,7 +96,7 @@ jobs:
     - name: Print inputs
       run: |
         echo "---------------------------------------------"
-        echo "Running Procedure_push_docker_images workflow"
+        echo "Running 5_build_and_push_images workflow"
         echo "---------------------------------------------"
         echo "* BRANCH: ${{ github.ref }}"
         echo "* COMMIT: ${{ github.sha }}"
