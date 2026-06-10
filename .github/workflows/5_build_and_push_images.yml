@@ -1,5 +1,5 @@
 run-name: Build and push images 5.x - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
-name: Build and push images 5.x
+name: (5.x) Build and push images
 
 on:
   workflow_dispatch:
