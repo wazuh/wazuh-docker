@@ -2,6 +2,8 @@ name: (4.x) Wazuh Docker pipeline
 
 on:
   pull_request:
+    branches:
+      - 4.*
     paths:
       - 'build-docker-images/**'
       - 'multi-node/**'
