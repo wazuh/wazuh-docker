@@ -2,6 +2,7 @@ name: (4.x) Wazuh Docker pipeline
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - 4.*
     paths:
