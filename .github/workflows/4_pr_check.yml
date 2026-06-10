@@ -1,4 +1,4 @@
-name: Wazuh Docker pipeline 4.x
+name: (4.x) Wazuh Docker pipeline
 
 on:
   pull_request:
