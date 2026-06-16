@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- PR revamp modifications LTS ([#2449](https://github.com/wazuh/wazuh-docker/pull/2449))
 
 ### Fixed
 

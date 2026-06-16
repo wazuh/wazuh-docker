@@ -1,6 +1,16 @@
-name: Wazuh Docker pipeline
+name: (4.x) Docker PR check
 
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - 4.*
+    paths:
+      - 'build-docker-images/**'
+      - 'multi-node/**'
+      - 'single-node/**'
+      - 'wazuh-agent/**'
+      - '.github/**'
 
 jobs:
   build-docker-images:
@@ -8,7 +18,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install docker-compose
       run: |
@@ -29,21 +39,21 @@ jobs:
         docker save wazuh/wazuh-dashboard:${{env.WAZUH_IMAGE_VERSION}} -o /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
 
     - name: Temporarily save Wazuh manager Docker image
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: docker-artifact-manager
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-manager.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh indexer Docker image
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: docker-artifact-indexer
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-indexer.tar
         retention-days: 1
 
     - name: Temporarily save Wazuh dashboard Docker image
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: docker-artifact-dashboard
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-dashboard.tar
@@ -66,7 +76,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install docker-compose
       run: |
@@ -77,17 +87,17 @@ jobs:
       run: cat .env > $GITHUB_ENV
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-indexer
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-dashboard
 
@@ -194,7 +204,7 @@ jobs:
     steps:
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install docker-compose
       run: |
@@ -213,17 +223,17 @@ jobs:
         df -h
 
     - name: Retrieve saved Wazuh dashboard Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-dashboard
 
     - name: Retrieve saved Wazuh manager Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-manager
 
     - name: Retrieve saved Wazuh indexer Docker image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: docker-artifact-indexer
 
