@@ -1,6 +1,16 @@
-name: Wazuh Docker pipeline
+name: (4.x) Docker PR check
 
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - 4.*
+    paths:
+      - 'build-docker-images/**'
+      - 'multi-node/**'
+      - 'single-node/**'
+      - 'wazuh-agent/**'
+      - '.github/**'
 
 jobs:
   build-docker-images:
