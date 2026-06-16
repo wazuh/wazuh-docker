@@ -1,4 +1,4 @@
-run-name: (4.x) Build and push images - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
+run-name: Build and push images - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
 name: (4.x) Build and push images
 
 on:
