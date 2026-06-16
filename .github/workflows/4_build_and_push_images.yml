@@ -1,0 +1,309 @@
+run-name: (4.x) Build and push images - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
+name: (4.x) Build and push images
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag'
+        default: '4.14.7'
+        required: true
+      docker_reference:
+        description: 'wazuh-docker reference'
+        required: true
+      filebeat_module_version:
+        description: 'Filebeat module version'
+        default: '0.5'
+        required: true
+        type: string
+      products:
+        description: 'Comma-separated list of the image names to build and push'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
+        required: false
+        type: string
+      revision:
+        description: 'Package revision'
+        default: '1'
+        required: true
+      id:
+        description: "ID used to identify the workflow uniquely."
+        type: string
+        required: false
+      dev:
+        description: "Add tag suffix '-dev' to the image tag ?"
+        type: boolean
+        default: true
+        required: false
+  workflow_call:
+    inputs:
+      image_tag:
+        description: 'Docker image tag'
+        default: '4.14.7'
+        required: true
+        type: string
+      docker_reference:
+        description: 'wazuh-docker reference'
+        required: false
+        type: string
+      filebeat_module_version:
+        description: 'Filebeat module version'
+        default: '0.5'
+        required: true
+        type: string
+      products:
+        description: 'Comma-separated list of the image names to build and push'
+        default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
+        required: false
+        type: string
+      revision:
+        description: 'Package revision'
+        default: '1'
+        required: true
+        type: string
+      id:
+        description: "ID used to identify the workflow uniquely."
+        type: string
+        required: false
+      dev:
+        description: "Add tag suffix '-dev' to the image tag ?"
+        type: boolean
+        default: false
+        required: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      FILEBEAT_MODULE_VERSION: ${{ inputs.filebeat_module_version }}
+      REVISION: ${{ inputs.revision }}
+
+    outputs:
+      WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
+      ALL_PRODUCTS_SELECTED: ${{ steps.compute-outputs.outputs.ALL_PRODUCTS_SELECTED }}
+
+    steps:
+    - name: Print inputs
+      run: |
+        echo "---------------------------------------------"
+        echo "Running 4_build_and_push_images workflow"
+        echo "---------------------------------------------"
+        echo "* BRANCH: ${{ github.ref }}"
+        echo "* COMMIT: ${{ github.sha }}"
+        echo "---------------------------------------------"
+        echo "Inputs provided:"
+        echo "---------------------------------------------"
+        echo "* id: ${{ inputs.id }}"
+        echo "* image_tag: ${{ inputs.image_tag }}"
+        echo "* docker_reference: ${{ inputs.docker_reference }}"
+        echo "* filebeat_module_version: ${{ inputs.filebeat_module_version }}"
+        echo "* products: ${{ inputs.products }}"
+        echo "* revision: ${{ inputs.revision }}"
+        echo "* dev: ${{ inputs.dev }}"
+        echo "---------------------------------------------"
+
+    - name: Set up variables
+      id: compute-outputs
+      run: |
+        # Use the default list if products is empty
+        PRODUCTS="${{ inputs.products }}"
+        if [[ -z "$PRODUCTS" || "$PRODUCTS" == "null" ]]; then
+          PRODUCTS="wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
+        fi
+
+        # Check if all 4 core components are present in the string
+          if [[ "$PRODUCTS" == *"wazuh-manager"* && "$PRODUCTS" == *"wazuh-dashboard"* && "$PRODUCTS" == *"wazuh-indexer"* && "$PRODUCTS" == *"wazuh-agent"* ]]; then
+            echo "ALL_PRODUCTS_SELECTED=true" >> $GITHUB_OUTPUT
+          else
+            echo "ALL_PRODUCTS_SELECTED=false" >> $GITHUB_OUTPUT
+          fi
+
+        # Convert to JSON for the matrix (Your existing logic)
+        IFS=',' read -ra COMPONENTS <<< "$PRODUCTS"
+        JSON_ARRAY=$(printf '%s\n' "${COMPONENTS[@]}" | jq -R . | jq -s -c .)
+        echo "WAZUH_COMPONENTS=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      id-token: write
+      contents: read
+
+    needs:
+      - setup
+
+    strategy:
+      fail-fast: false # all jobs will run even if one fails
+      matrix:
+        wazuh_component: ${{ fromJson(needs.setup.outputs.WAZUH_COMPONENTS) }}
+
+    env:
+      IMAGE_REGISTRY: ${{ inputs.dev && vars.IMAGE_REGISTRY_DEV || vars.IMAGE_REGISTRY_PROD }}
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      REVISION: ${{ inputs.revision }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.docker_reference }}
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Configure aws credentials
+      if: ${{ inputs.dev == true }}
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: "${{ secrets.AWS_REGION }}"
+
+    - name: Log in to Amazon ECR
+      if: ${{ inputs.dev == true }}
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Log in to Docker Hub
+      if: ${{ inputs.dev == false }}
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Build Wazuh images
+      run: |
+        IMAGE_TAG="${{ inputs.image_tag }}"
+        FILEBEAT_MODULE_VERSION=${{ inputs.filebeat_module_version }}
+        REVISION=${{ inputs.revision }}
+
+        if [[ "$IMAGE_TAG" == *"-"* ]]; then
+          IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
+          if [ -z "${tokens[1]}" ]; then
+            echo "Invalid image tag: $IMAGE_TAG"
+            exit 1
+          fi
+          DEV_STAGE=${tokens[1]}
+          WAZUH_VER=${tokens[0]}
+          ./build-images.sh -v $WAZUH_VER -r $REVISION -d $DEV_STAGE -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+        else
+          ./build-images.sh -v $IMAGE_TAG -r $REVISION -f $FILEBEAT_MODULE_VERSION -rg $IMAGE_REGISTRY -m -c ${{ matrix.wazuh_component }}
+        fi
+
+        # Save .env file (generated by build-images.sh) contents to $GITHUB_ENV
+        ENV_FILE_PATH="../.env"
+
+        if [ -f $ENV_FILE_PATH ]; then
+          while IFS= read -r line || [ -n "$line" ]; do
+            echo "$line" >> $GITHUB_ENV
+          done < $ENV_FILE_PATH
+        else
+          echo "The environment file $ENV_FILE_PATH does not exist!"
+          exit 1
+        fi
+      working-directory: ./build-docker-images
+
+
+  notify:
+    runs-on: ubuntu-22.04
+    needs: [setup, build-and-push]
+    # Only run if NOT dev AND all products were selected
+    if: ${{ inputs.dev == false && needs.setup.outputs.ALL_PRODUCTS_SELECTED == 'true' }}
+
+    steps:
+    - name: Image exists validation
+      id: validation
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        IMAGE_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+        PURPOSE=""
+
+        if [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if docker manifest inspect $IMAGE_REGISTRY/wazuh/wazuh-manager:$IMAGE_TAG > /dev/null 2>&1; then
+            PURPOSE="regeneration"
+            echo "Image wazuh/wazuh-manager:$IMAGE_TAG exists. Setting PURPOSE to 'regeneration'"
+          else
+            PURPOSE="new release"
+            echo "Image wazuh/wazuh-manager:$IMAGE_TAG does NOT exist. Setting PURPOSE to 'new release'"
+          fi
+          echo "✅ Release tag: '$IMAGE_TAG'"
+        elif [[ "$IMAGE_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)[0-9]+$ ]]; then
+          PURPOSE="new stage"
+          echo "✅ Stage tag: '$IMAGE_TAG'. Setting PURPOSE to 'new stage'"
+        else
+          echo "❌ No release or stage tag ('$IMAGE_TAG'), the GH issue will not be created"
+        fi
+
+        echo "purpose=$PURPOSE" >> $GITHUB_OUTPUT
+
+    - name: GH issue notification
+      if: ${{ steps.validation.outputs.purpose != '' }}
+      env:
+        GH_TOKEN: ${{ secrets.NOTIFICATION_GH_ARTIFACT_TOKEN }}
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        PURPOSE="${{ steps.validation.outputs.purpose }}"
+
+        GH_TITLE=""
+        GH_MESSAGE=""
+
+        ## Setting GH issue title
+        GH_TITLE="Artifactory vulnerabilities update \`v$IMAGE_TAG\`"
+
+        ## Setting GH issue body
+        GH_MESSAGE=$(cat <<- EOF | tr -d '\r' | sed 's/^[[:space:]]*//'
+        ### Description
+        - [ ] Update the [Artifactory vulnerabilities](${{ secrets.NOTIFICATION_SHEET_URL }}) sheet with the \`v$IMAGE_TAG\` vulnerabilities.
+
+        **Purpose**: $PURPOSE
+        >[!NOTE]
+        >To update the \`Tentative Release\` column, follow these steps:
+        https://github.com/wazuh/${{ secrets.NOTIFICATION_REPO }}/issues/2049#issuecomment-2671590268
+        EOF
+        )
+
+        # Print the GH Variables content
+        echo "--- Variable Content ---"
+        echo "$GH_TITLE"
+        echo "------------------------"
+
+        echo "--- Variable Content ---"
+        echo "$GH_MESSAGE"
+        echo "------------------------"
+
+        ## GH issue creation
+        ISSUE_URL=$(gh issue create \
+          -R wazuh/${{ secrets.NOTIFICATION_REPO }} \
+          --title "$GH_TITLE" \
+          --body "$GH_MESSAGE" \
+          --label "level/task" \
+          --label "type/maintenance" \
+          --label "request/operational")
+
+        ## Adding the issue to the team project
+        PROJECT_ITEM_ID=$(gh project item-add \
+          ${{ secrets.NOTIFICATION_PROJECT_NUMBER }} \
+          --url $ISSUE_URL \
+          --owner wazuh \
+          --format json \
+          | jq -r '.id')
+
+          ## Setting Objective
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_OBJECTIVE_ID }} --text  "Security scans"
+          ## Setting Priority
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_PRIORITY_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_PRIORITY_OPTION_ID }}
+          ## Setting Size
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SIZE_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_SIZE_OPTION_ID }}
+          ## Setting Subteam
+          gh project item-edit --id $PROJECT_ITEM_ID --project-id ${{ secrets.NOTIFICATION_PROJECT_ID }} --field-id ${{ secrets.NOTIFICATION_PROJECT_SUBTEAM_ID }} --single-select-option-id ${{ secrets.NOTIFICATION_PROJECT_SUBTEAM_OPTION_ID }}

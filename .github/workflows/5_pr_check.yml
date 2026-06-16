@@ -1,10 +1,19 @@
-name: Wazuh Docker pipeline
+name: (5.x) Docker PR check
 permissions:
   contents: read
   id-token: write
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - 5.*
+      - main
+    paths:
+      - 'build-docker-images/**'
+      - 'multi-node/**'
+      - 'single-node/**'
+      - 'wazuh-agent/**'
+      - '.github/**'
   workflow_dispatch:
     inputs:
       docker_reference:
@@ -41,7 +50,7 @@ jobs:
 
   build-images:
     needs: prepare-variables
-    uses: ./.github/workflows/Procedure_push_docker_images.yml
+    uses: ./.github/workflows/5_build_and_push_images.yml
     secrets: inherit
     with:
       image_tag: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}

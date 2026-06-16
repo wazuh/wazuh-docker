@@ -2,7 +2,7 @@ run-name: >-
   ${{ github.event_name == 'workflow_dispatch'
     && format('Docker Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
     || format('Docker Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
-name: PR Check - Docker Integration Tests
+name: (5.x) PR Check - Docker Integration Tests
 
 on:
   issue_comment:
@@ -291,7 +291,7 @@ jobs:
 
   # -------------------------------------------------------------------------
   # Job 3: Build Docker images (only for ECR, when no explicit version/stage provided).
-  #         Calls Procedure_push_docker_images.yml and pushes to the dev registry.
+  #         Calls 5_build_and_push_images.yml and pushes to the dev registry.
   # -------------------------------------------------------------------------
   build_images:
     name: Build Docker images
@@ -302,7 +302,7 @@ jobs:
       inputs.version == '' &&
       inputs.stage == '' &&
       (inputs.registry == 'ECR' || github.event_name == 'issue_comment')
-    uses: ./.github/workflows/Procedure_push_docker_images.yml
+    uses: ./.github/workflows/5_build_and_push_images.yml
     with:
       image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
       docker_reference: ${{ needs.prepare.outputs.pr_head_ref }}
