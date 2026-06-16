@@ -1,4 +1,4 @@
-name: (5.x) Wazuh Docker pipeline
+name: (5.x) Docker PR check
 permissions:
   contents: read
   id-token: write
