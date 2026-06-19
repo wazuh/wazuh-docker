@@ -84,8 +84,7 @@ permissions:
 
 jobs:
   setup:
-    runs-on:
-      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
@@ -160,8 +159,7 @@ jobs:
 
   package-urls:
     name: generate package urls
-    runs-on:
-      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: setup
 
     env:
@@ -292,8 +290,7 @@ jobs:
           path: ${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}
 
   build-and-push:
-    runs-on:
-      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     needs:
       - setup
