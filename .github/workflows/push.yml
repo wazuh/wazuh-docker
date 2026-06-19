@@ -139,17 +139,6 @@ jobs:
         exit 1
        fi
 
-    - name: Check documents into wazuh-alerts index
-      run: |
-       sleep 120
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 0 ]]; then
-        echo "wazuh-alerts index documents: ${docs}"
-       else
-        echo "wazuh-alerts index documents: ${docs}"
-        exit 1
-       fi
-
     - name: Check Wazuh templates
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
@@ -203,6 +192,17 @@ jobs:
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
 
+    - name: Check documents into wazuh-alerts index
+      run: |
+       sleep 120
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+       if [[ $docs -gt 0 ]]; then
+        echo "wazuh-alerts index documents: ${docs}"
+       else
+        echo "wazuh-alerts index documents: ${docs}"
+        exit 1
+       fi
+
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/single-node-log-check.sh
 
@@ -222,9 +222,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-    - name: free disk space
-      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v8
@@ -295,23 +292,6 @@ jobs:
         exit 1
        fi
 
-    - name: Check documents into wazuh-alerts index
-      run: |
-       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"``)  -gt 0 ]]
-       do
-         echo 'Waiting for Wazuh indexer events'
-         free -m
-         df -h
-         sleep 10
-       done
-       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
-       if [[ $docs -gt 0 ]]; then
-        echo "wazuh-alerts index documents: ${docs}"
-       else
-        echo "wazuh-alerts index documents: ${docs}"
-        exit 1
-       fi
-
     - name: Check Wazuh templates
       run: |
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
@@ -371,6 +351,23 @@ jobs:
         curl -k -s -X GET "https://localhost:55000/agents?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}"
       env:
         TOKEN: $(curl -s -u wazuh-wui:MyS3cr37P450r.*- -k -X GET "https://0.0.0.0:55000/security/user/authenticate?raw=true")
+
+    - name: Check documents into wazuh-alerts index
+      run: |
+       until [[ $(``curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"``)  -gt 0 ]]
+       do
+         echo 'Waiting for Wazuh indexer events'
+         free -m
+         df -h
+         sleep 10
+       done
+       docs="`curl -XGET "https://0.0.0.0:9200/wazuh-alerts*/_count" -u admin:SecretPassword -k -s | jq -r ".count"`"
+       if [[ $docs -gt 0 ]]; then
+        echo "wazuh-alerts index documents: ${docs}"
+       else
+        echo "wazuh-alerts index documents: ${docs}"
+        exit 1
+       fi
 
     - name: Check errors in ossec.log for Wazuh manager
       run: ./.github/multi-node-log-check.sh
