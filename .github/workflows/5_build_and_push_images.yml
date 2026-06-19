@@ -85,7 +85,7 @@ permissions:
 jobs:
   setup:
     runs-on:
-      group: wz-linux-amd64
+      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
@@ -161,7 +161,7 @@ jobs:
   package-urls:
     name: generate package urls
     runs-on:
-      group: wz-linux-amd64
+      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: setup
 
     env:
@@ -293,7 +293,7 @@ jobs:
 
   build-and-push:
     runs-on:
-      group: wz-linux-amd64
+      group: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     needs:
       - setup
@@ -333,7 +333,6 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Log in to Docker Hub
-      if: ${{ inputs.dev == false }}
       uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -421,7 +420,7 @@ jobs:
 
 
   notify:
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: [setup, build-and-push]
     # Only run if NOT dev AND all products were selected
     if: ${{ inputs.dev == false && needs.setup.outputs.ALL_PRODUCTS_SELECTED == 'true' }}
