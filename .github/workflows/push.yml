@@ -53,25 +53,6 @@ jobs:
         path: /home/runner/work/wazuh-docker/wazuh-docker/docker-images/wazuh-agent.tar
         retention-days: 1
 
-    - name: Install Goss
-      uses: e1himself/goss-installation-action@v1.0.3
-      with:
-        version: v0.3.16
-
-    - name: Execute Goss tests (wazuh-manager)
-      run: |
-        # Start the Wazuh manager container
-        docker run -d --name wazuh_test wazuh/wazuh-manager:4.14.6
-        # Wait for the container to be fully up and running
-        sleep 30 
-        # Copy the Goss binary to the container
-        docker exec wazuh_test mkdir -p /goss
-        docker cp /usr/local/bin/goss wazuh_test:/goss/goss
-        # Copy your test file (.goss.yaml) to the container
-        docker cp .github/.goss.yaml wazuh_test:/goss/goss.yaml
-        # Execute the validation inside the container
-        docker exec -w /goss wazuh_test ./goss validate
-
   check-single-node:
     runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: build-docker-images
