@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
   build-docker-images:
-    runs-on: github-actions-codebuild-runner-devops-amd
+    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
 
     - name: Check out code
@@ -65,7 +65,7 @@ jobs:
         GOSS_FILE: .github/.goss.yaml
 
   check-single-node:
-    runs-on: github-actions-codebuild-runner-devops-amd
+    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: build-docker-images
     steps:
 
@@ -206,7 +206,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: github-actions-codebuild-runner-devops-amd
+    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: build-docker-images
     steps:
 

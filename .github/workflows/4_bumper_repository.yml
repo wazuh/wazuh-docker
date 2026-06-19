@@ -31,7 +31,7 @@ on:
 jobs:
   bump:
     name: Repository bumper
-    runs-on: github-actions-codebuild-runner-devops-amd
+    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
       pull-requests: write
