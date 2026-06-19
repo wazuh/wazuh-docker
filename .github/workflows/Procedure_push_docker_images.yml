@@ -72,7 +72,7 @@ on:
 
 jobs:
   setup:
-    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     permissions:
       id-token: write
@@ -130,7 +130,7 @@ jobs:
         echo "WAZUH_COMPONENTS=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
   build-and-push:
-    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     permissions:
       id-token: write
@@ -216,7 +216,7 @@ jobs:
 
 
   notify:
-    runs-on: github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: [setup, build-and-push]
     # Only run if NOT dev AND all products were selected
     if: ${{ inputs.dev == false && needs.setup.outputs.ALL_PRODUCTS_SELECTED == 'true' }}
