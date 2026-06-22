@@ -333,7 +333,7 @@ jobs:
       # Setup
       # -----------------------------------------------------------------------
       - name: Checkout wazuh-automation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: wazuh/wazuh-automation
           ref: ${{ env.AUTOMATION_REFERENCE }}
@@ -341,7 +341,7 @@ jobs:
           path: wazuh-automation
 
       - name: Checkout wazuh-docker PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.pr_head_ref }}
           path: wazuh-docker
