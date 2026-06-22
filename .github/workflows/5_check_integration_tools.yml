@@ -27,7 +27,7 @@ on:
           - multi-node
           - both
       version:
-        description: 'Image version to test (e.g. 5.0.0).'
+        description: 'Image version to test (e.g. 5.0.1).'
         required: false
         type: string
       stage:
