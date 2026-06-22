@@ -14,7 +14,7 @@ on:
 
 jobs:
   build-docker-images:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
 
     - name: Check out code
@@ -71,7 +71,7 @@ jobs:
         GOSS_FILE: .github/.goss.yaml
 
   check-single-node:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: build-docker-images
     steps:
 
@@ -199,7 +199,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: build-docker-images
     steps:
 
@@ -213,14 +213,6 @@ jobs:
 
     - name: Create enviroment variables
       run: cat .env > $GITHUB_ENV
-
-    - name: free disk space
-      run: |
-        sudo swapoff -a
-        sudo rm -f /swapfile
-        sudo apt clean
-        docker rmi $(docker image ls -aq)
-        df -h
 
     - name: Retrieve saved Wazuh dashboard Docker image
       uses: actions/download-artifact@v8
@@ -257,6 +249,7 @@ jobs:
          echo 'Waiting for Wazuh indexer start'
          free -m
          df -h
+         docker ps
          sleep 120
        done
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
