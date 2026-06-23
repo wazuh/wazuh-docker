@@ -1,74 +1,101 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
-FROM amazonlinux:2023
 
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+################################################################################
+# Build stage 0 (builder):
+# Install Wazuh Manager RPM, configure directories, prepare permanent data,
+# and download tini (static PID-1 init shim).
+################################################################################
+FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
-ARG WAZUH_TAG_REVISION
-ARG FILEBEAT_TEMPLATE_BRANCH
-ARG FILEBEAT_CHANNEL=filebeat-oss
-ARG FILEBEAT_VERSION=7.10.2
-ARG FILEBEAT_REVISION=2
-ARG WAZUH_FILEBEAT_MODULE
-ARG S6_VERSION="v2.2.0.3"
+ARG TINI_VERSION="v0.19.0"
 ARG TARGETARCH
+ARG wazuh_manager_x86_64_rpm
+ARG wazuh_manager_aarch64_rpm
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
 
-RUN yum install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
-    yum clean all
-
-COPY config/check_repository.sh /
-COPY config/filebeat_module.sh /
+# Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh /
 
-RUN chmod 775 /check_repository.sh
-RUN source /check_repository.sh
+RUN dnf install openssl findutils procps shadow-utils -y && \
+    dnf clean all && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
+    getent passwd wazuh-manager || useradd --system \
+        --no-create-home \
+        --home-dir /var/wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
+        --shell /sbin/nologin \
+        wazuh-manager && \
+    RPM_ARCH="x86_64" && \
+    if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
+    URL_VAR="wazuh_manager_${RPM_ARCH}_rpm" && \
+    manager_url="${!URL_VAR}" && \
+    dnf install curl-minimal xz gnupg tar gzip -y && \
+    dnf clean all && \
+    curl -o /wazuh-manager.rpm "${manager_url}" && \
+    dnf install /wazuh-manager.rpm -y && \
+    rm -rf /wazuh-manager.rpm && \
+    dnf clean all && \
+    # Set up required directories with correct ownership
+    mkdir -p /var/wazuh-manager/var/multigroups && \
+    chown root:wazuh-manager /var/wazuh-manager/var/multigroups && \
+    chmod 770 /var/wazuh-manager/var/multigroups && \
+    mkdir -p /var/wazuh-manager/etc/certs && \
+    chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/certs && \
+    chmod 500 /var/wazuh-manager/etc/certs && \
+    rm -f /var/wazuh-manager/etc/sslmanager.key && \
+    rm -f /var/wazuh-manager/etc/sslmanager.cert
 
-RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
-    yum clean all && \
-    chmod 775 /filebeat_module.sh && \
-    source /filebeat_module.sh && \
-    rm /filebeat_module.sh && \
-    S6_ARCH="amd64" && \
-    if [ "${TARGETARCH}" = "arm64" ]; then S6_ARCH="aarch64"; fi && \
-    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz \
-    -o /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
-    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C / --exclude="./bin" && \
-    tar xzf /tmp/s6-overlay-${S6_ARCH}.tar.gz -C /usr ./bin && \
-    rm  /tmp/s6-overlay-${S6_ARCH}.tar.gz && \
-    rm -f /var/ossec/etc/sslmanager.key && \
-    rm -f /var/ossec/etc/sslmanager.cert
-
-COPY config/etc/ /etc/
-COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
-
-COPY config/filebeat.yml /etc/filebeat/
-
-RUN chmod go-w /etc/filebeat/filebeat.yml
-
-ADD https://raw.githubusercontent.com/wazuh/wazuh/$FILEBEAT_TEMPLATE_BRANCH/extensions/elasticsearch/7.x/wazuh-template.json /etc/filebeat
-RUN chmod go-w /etc/filebeat/wazuh-template.json
-
-# Prepare permanent data
-# Sync calls are due to https://github.com/docker/docker/issues/9547
-
-#Make mount directories for keep permissions
-
-RUN mkdir -p /var/ossec/var/multigroups && \
-    chown root:wazuh /var/ossec/var/multigroups && \
-    chmod 770 /var/ossec/var/multigroups && \
-    mkdir -p /var/ossec/agentless && \
-    chown root:wazuh /var/ossec/agentless && \
-    chmod 770 /var/ossec/agentless && \
-    mkdir -p /var/ossec/active-response/bin && \
-    chown root:wazuh /var/ossec/active-response/bin && \
-    chmod 770 /var/ossec/active-response/bin && \
-    chmod 755 /permanent_data.sh && \
+# Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
+RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
 
-RUN rm /etc/yum.repos.d/wazuh.repo
+# Download tini static binary (no external library dependencies)
+RUN curl --fail --silent -L \
+    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH} \
+    -o /usr/local/bin/tini && \
+    chmod +x /usr/local/bin/tini
+
+################################################################################
+# Build stage 1 (the actual Wazuh Manager image):
+# Copy Wazuh Manager and tini from builder. Install only runtime dependencies.
+################################################################################
+FROM amazonlinux:2023
+
+ARG WAZUH_UID=101
+ARG WAZUH_GID=101
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
+RUN dnf install openssl findutils procps shadow-utils -y && \
+    dnf clean all && \
+    getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
+    getent passwd wazuh-manager || useradd --system \
+        --no-create-home \
+        --home-dir /var/wazuh-manager \
+        --uid ${WAZUH_UID} \
+        --gid ${WAZUH_GID} \
+        --shell /sbin/nologin \
+        wazuh-manager
+
+# Copy Wazuh Manager installation (includes permanent data snapshot)
+COPY --from=builder /var/wazuh-manager /var/wazuh-manager
+
+# Copy tini static binary
+COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
+
+# Copy entrypoint, init scripts and runtime config
+COPY config/entrypoint.sh /entrypoint.sh
+COPY config/etc/ /etc/
+COPY config/permanent_data.env /
+
+RUN chmod 755 /entrypoint.sh
 
 # Services ports
 EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
 
-ENTRYPOINT [ "/init" ]
+ENTRYPOINT ["/usr/local/bin/tini", "--", "/entrypoint.sh"]

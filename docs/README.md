@@ -7,7 +7,7 @@
 
 In this repository you will find the containers to run:
 
-* Wazuh manager: it runs the Wazuh manager, Wazuh API and Filebeat OSS
+* Wazuh manager: it runs the Wazuh manager, and Wazuh API
 * Wazuh dashboard: provides a web user interface to browse through alert data and allows you to visualize the agents configuration and status.
 * Wazuh indexer: Wazuh indexer container (working as a single-node cluster or as a multi-node cluster). **Be aware to increase the `vm.max_map_count` setting, as it's detailed in the [Wazuh documentation](https://documentation.wazuh.com/current/docker/wazuh-container.html#increase-max-map-count-on-your-host-linux).**
 * Wazuh agent: This container contains the Wazuh agent services. Current functionality is limited.
@@ -28,7 +28,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 
 	├── build-docker-images
 	│   ├── build-images.sh
-	│   ├── build-images.yml
+	│   ├── docker-bake.hcl
 	│   ├── README.md
 	│   ├── wazuh-agent
 	│   │   ├── config
@@ -43,43 +43,25 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │   └── Dockerfile
 	│   ├── wazuh-dashboard
 	│   │   ├── config
-	│   │   │   ├── check_repository.sh
-	│   │   │   ├── config.sh
-	│   │   │   ├── config.yml
 	│   │   │   ├── entrypoint.sh
-	│   │   │   ├── wazuh_app_config.sh
-	│   │   │   └── wazuh.yml
+	│   │   │   ├── wazuh_dashboard_config.sh
 	│   │   └── Dockerfile
 	│   ├── wazuh-indexer
 	│   │   ├── config
-	│   │   │   ├── action_groups.yml
-	│   │   │   ├── check_repository.sh
 	│   │   │   ├── config.sh
-	│   │   │   ├── config.yml
 	│   │   │   ├── entrypoint.sh
-	│   │   │   ├── internal_users.yml
-	│   │   │   ├── opensearch.yml
-	│   │   │   ├── roles_mapping.yml
-	│   │   │   ├── roles.yml
 	│   │   │   └── securityadmin.sh
 	│   │   └── Dockerfile
 	│   └── wazuh-manager
 	│       ├── config
-	│       │   ├── check_repository.sh
 	│       │   ├── create_user.py
 	│       │   ├── etc
 	│       │   │   ├── cont-init.d
 	│       │   │   │   ├── 0-wazuh-init
-	│       │   │   │   ├── 1-config-filebeat
 	│       │   │   │   └── 2-manager
 	│       │   │   └── services.d
-	│       │   │       ├── filebeat
-	│       │   │       │   ├── finish
-	│       │   │       │   └── run
-	│       │   │       └── ossec-logs
+	│       │   │       └── wazuh-manager-logs
 	│       │   │           └── run
-	│       │   ├── filebeat_module.sh
-	│       │   ├── filebeat.yml
 	│       │   ├── permanent_data.env
 	│       │   └── permanent_data.sh
 	│       └── Dockerfile
@@ -107,7 +89,7 @@ The folder `wazuh-agent` contains a README explaining how to run a container wit
 	│   │   │   ├── README.md
 	│   │   │   └── requirements.md
 	│   │   ├── glossary.md
-	│   │   ├── Introduction
+	│   │   ├── introduction
 	│   │   │   ├── compatibility.md
 	│   │   │   ├── description.md
 	│   │   │   └── README.md

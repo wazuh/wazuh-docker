@@ -1,0 +1,881 @@
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+    && format('Docker Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
+    || format('Docker Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
+name: (5.x) PR Check - Docker Integration Tests
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_head_ref:
+        description: 'Branch of wazuh-docker to test'
+        required: true
+        type: string
+      automation_reference:
+        description: 'Branch of wazuh-automation to use'
+        required: false
+        default: '5.0.0'
+        type: string
+      deployment_type:
+        description: 'Deployment type to test'
+        required: true
+        type: choice
+        options:
+          - single-node
+          - multi-node
+          - both
+      version:
+        description: 'Image version to test (e.g. 5.0.0).'
+        required: false
+        type: string
+      stage:
+        description: 'Image stage suffix (e.g. beta1, beta2-latest, beta2-<commit>). Required when version is set.'
+        required: false
+        type: string
+      registry:
+        description: 'Docker registry. ECR for dev versions, DockerHub for prod versions.'
+        required: false
+        type: choice
+        options:
+          - ECR
+          - DockerHub
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+env:
+  AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
+  ALLOCATOR_PATH: /tmp/allocator_instance
+  REGION: us-east-1
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Parse PR info and determine which deployment(s) to test
+  #
+  # Available commands:
+  #   /test-docker-single  — test single-node deployment
+  #   /test-docker-multi   — test multi-node deployment
+  #   /test-docker         — test both single-node and multi-node
+  # -------------------------------------------------------------------------
+  get_pr_info:
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      !github.event.issue.draft &&
+      (contains(github.event.comment.body, '/test-docker-single') ||
+       contains(github.event.comment.body, '/test-docker-multi') ||
+       contains(github.event.comment.body, '/test-docker'))
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    outputs:
+      pr_number: ${{ steps.pr_data.outputs.pr_number }}
+      pr_head_ref: ${{ steps.pr_data.outputs.pr_head_ref }}
+      pr_head_sha: ${{ steps.pr_data.outputs.pr_head_sha }}
+      check_run_id: ${{ steps.create_check.outputs.result }}
+      deployment_matrix: ${{ steps.parse_command.outputs.deployment_matrix }}
+      check_name: ${{ steps.parse_command.outputs.check_name }}
+
+    steps:
+      - name: React to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Extract PR data
+        id: pr_data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_HEAD_REF=$(echo "$PR_DATA" | jq -r '.head.ref')
+          PR_HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
+          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+          echo "pr_head_ref=${PR_HEAD_REF}" >> $GITHUB_OUTPUT
+          echo "pr_head_sha=${PR_HEAD_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Parse command and set deployment metadata
+        id: parse_command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          if echo "$COMMENT_BODY" | grep -q '/test-docker-single'; then
+            echo 'deployment_matrix=["single-node"]'                >> $GITHUB_OUTPUT
+            echo 'check_name=Docker Integration Check (Single-Node)' >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q '/test-docker-multi'; then
+            echo 'deployment_matrix=["multi-node"]'                 >> $GITHUB_OUTPUT
+            echo 'check_name=Docker Integration Check (Multi-Node)'  >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q '/test-docker'; then
+            echo 'deployment_matrix=["single-node","multi-node"]'   >> $GITHUB_OUTPUT
+            echo 'check_name=Docker Integration Check'               >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create check run
+        id: create_check
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ steps.pr_data.outputs.pr_head_sha }}
+          CHECK_NAME: ${{ steps.parse_command.outputs.check_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const { data: check } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: process.env.CHECK_NAME,
+              head_sha: process.env.HEAD_SHA,
+              status: 'in_progress',
+              started_at: new Date().toISOString(),
+              details_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              output: {
+                title: `🔨 Running ${process.env.CHECK_NAME}...`,
+                summary: `Triggered by comment: \`${process.env.COMMENT_BODY}\``,
+                text: 'Allocating instance and running Docker integration tests'
+              }
+            });
+            console.log('Check run created:', check.id);
+            return check.id;
+
+  # -------------------------------------------------------------------------
+  # Job 2: Prepare context (pr_head_ref + deployment matrix) for both triggers.
+  # -------------------------------------------------------------------------
+  prepare:
+    needs: [get_pr_info]
+    if: |
+      always() &&
+      (needs.get_pr_info.result == 'success' || github.event_name == 'workflow_dispatch')
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    outputs:
+      pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
+      deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
+      wazuh_version: ${{ steps.version.outputs.wazuh_version }}
+      wazuh_stage: ${{ steps.version.outputs.wazuh_stage }}
+
+    steps:
+      - name: Resolve context
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr_head_ref=${{ inputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            DEPLOY_TYPE="${{ inputs.deployment_type }}"
+            if [ "$DEPLOY_TYPE" = "both" ]; then
+              echo 'deployment_matrix=["single-node","multi-node"]' >> $GITHUB_OUTPUT
+            else
+              echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
+            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout wazuh-docker PR branch (VERSION.json only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ctx.outputs.pr_head_ref }}
+          sparse-checkout: |
+            VERSION.json
+          sparse-checkout-cone-mode: false
+
+      - name: Read version info from VERSION.json
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d['version'])")
+          STAGE=$(python3 -c "import json; d=json.load(open('VERSION.json')); print(d.get('stage',''))")
+          echo "wazuh_version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "wazuh_stage=${STAGE}"     >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}  Stage: ${STAGE:-<release>}"
+
+      - name: Show test plan
+        run: |
+          WAZUH_VERSION="${{ steps.version.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ steps.version.outputs.wazuh_stage }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
+          INPUT_REGISTRY="${{ inputs.registry }}"
+
+          # Determine effective case
+          if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$WAZUH_VERSION"
+            DOCKER_STAGE_DISPLAY="${WAZUH_STAGE}"
+            if [ "$INPUT_REGISTRY" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+              CASE="a.1 — No version/stage → BUILD images from PR → push to ECR"
+              ACTION="BUILD + push to ECR"
+              EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}-latest"
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              CASE="a.2 — No version/stage → PULL from DockerHub"
+              ACTION="PULL (no build)"
+              EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}"
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$INPUT_VERSION"
+            ACTION="PULL (no build)"
+            if [ "$INPUT_REGISTRY" = "ECR" ]; then
+              CASE="b.1 — Version only, ECR → tag = version-latest"
+              EFFECTIVE_TAG="${DOCKER_VERSION}-latest"
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              CASE="b.2 — Version only, DockerHub → tag = version"
+              EFFECTIVE_TAG="${DOCKER_VERSION}"
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          else
+            CASE="c — Version + stage provided as-is (no -latest appended)"
+            ACTION="PULL (no build)"
+            DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+            EFFECTIVE_TAG="${DOCKER_VERSION}-${INPUT_STAGE}"
+            if [ "$INPUT_REGISTRY" = "ECR" ]; then
+              EFFECTIVE_REGISTRY="ECR (${{ vars.IMAGE_REGISTRY_DEV }})"
+            else
+              EFFECTIVE_REGISTRY="DockerHub (${{ vars.IMAGE_REGISTRY_PROD }})"
+            fi
+          fi
+
+          # Log to stdout
+          echo "============================================="
+          echo "  DOCKER INTEGRATION TEST PLAN"
+          echo "============================================="
+          echo "Branch:        ${{ steps.ctx.outputs.pr_head_ref }}"
+          echo "Trigger:       ${{ github.event_name }}"
+          echo "Deployments:   ${{ steps.ctx.outputs.deployment_matrix }}"
+          echo "Case:          ${CASE}"
+          echo "Action:        ${ACTION}"
+          echo "Registry:      ${EFFECTIVE_REGISTRY}"
+          echo "Image tag:     ${EFFECTIVE_TAG}"
+          echo "Example:       wazuh/wazuh-manager:${EFFECTIVE_TAG}"
+          echo "============================================="
+
+          # Write to step summary
+          {
+            echo "## Docker Integration Test Plan"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Branch** | \`${{ steps.ctx.outputs.pr_head_ref }}\` |"
+            echo "| **Trigger** | \`${{ github.event_name }}\` |"
+            echo "| **Deployments** | \`${{ steps.ctx.outputs.deployment_matrix }}\` |"
+            echo "| **Case** | ${CASE} |"
+            echo "| **Action** | ${ACTION} |"
+            echo ""
+            echo "### Image configuration"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Registry** | ${EFFECTIVE_REGISTRY} |"
+            echo "| **Tag** | \`${EFFECTIVE_TAG}\` |"
+            echo "| **Example image** | \`wazuh/wazuh-manager:${EFFECTIVE_TAG}\` |"
+            echo ""
+            echo "### Parameters"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **VERSION.json version** | \`${WAZUH_VERSION}\` |"
+            echo "| **VERSION.json stage** | \`${WAZUH_STAGE:-<release>}\` |"
+            echo "| **Input version** | \`${INPUT_VERSION:-<not set>}\` |"
+            echo "| **Input stage** | \`${INPUT_STAGE:-<not set>}\` |"
+            echo "| **Input registry** | \`${INPUT_REGISTRY:-<not set>}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # -------------------------------------------------------------------------
+  # Job 3: Build Docker images (only for ECR, when no explicit version/stage provided).
+  #         Calls 5_build_and_push_images.yml and pushes to the dev registry.
+  # -------------------------------------------------------------------------
+  build_images:
+    name: Build Docker images
+    needs: [prepare]
+    if: |
+      always() &&
+      needs.prepare.result == 'success' &&
+      inputs.version == '' &&
+      inputs.stage == '' &&
+      (inputs.registry == 'ECR' || github.event_name == 'issue_comment')
+    uses: ./.github/workflows/5_build_and_push_images.yml
+    with:
+      image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
+      docker_reference: ${{ needs.prepare.outputs.pr_head_ref }}
+      wazuh_automation_reference: ${{ inputs.automation_reference || 'main' }}
+      products: "wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
+      dev: true
+      id: "docker-integration-${{ github.run_id }}"
+    secrets: inherit
+
+  # -------------------------------------------------------------------------
+  # Job 4: For each deployment type — provision VM, deploy Docker stack, test,
+  #         collect results, and clean up.
+  # -------------------------------------------------------------------------
+  docker_test:
+    needs: [get_pr_info, prepare, build_images]
+    if: |
+      always() &&
+      needs.prepare.result == 'success' &&
+      (needs.build_images.result == 'success' || needs.build_images.result == 'skipped')
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    strategy:
+      fail-fast: false
+      matrix:
+        deployment_type: ${{ fromJSON(needs.prepare.outputs.deployment_matrix) }}
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Setup
+      # -----------------------------------------------------------------------
+      - name: Checkout wazuh-automation
+        uses: actions/checkout@v6
+        with:
+          repository: wazuh/wazuh-automation
+          ref: ${{ env.AUTOMATION_REFERENCE }}
+          token: ${{ secrets.GH_CLONE_TOKEN }}
+          path: wazuh-automation
+
+      - name: Checkout wazuh-docker PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.pr_head_ref }}
+          path: wazuh-docker
+
+      - name: Resolve image configuration
+        run: |
+          WAZUH_VERSION="${{ needs.prepare.outputs.wazuh_version }}"
+          WAZUH_STAGE="${{ needs.prepare.outputs.wazuh_stage }}"
+          INPUT_VERSION="${{ inputs.version }}"
+          INPUT_STAGE="${{ inputs.stage }}"
+
+          # Map registry choice to actual URL (defined once)
+          if [ "${{ inputs.registry }}" = "ECR" ]; then
+            SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+          else
+            SELECTED_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+          fi
+
+          if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$WAZUH_VERSION"
+            DOCKER_STAGE="$WAZUH_STAGE"
+            if [ "${{ inputs.registry }}" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+              # Case a.1: ECR / PR comment — images were built by build_images job → tag = version-stage-latest
+              DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
+              DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}-latest"
+            else
+              DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_PROD }}"
+              DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}"
+            fi
+          elif [ -n "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
+            DOCKER_VERSION="$INPUT_VERSION"
+            DOCKER_STAGE=""
+            DOCKER_REGISTRY="$SELECTED_REGISTRY"
+            if [ "${{ inputs.registry }}" = "ECR" ]; then
+              DOCKER_TAG="${DOCKER_VERSION}-latest"
+            else
+              DOCKER_TAG="${DOCKER_VERSION}"
+            fi
+          else
+            DOCKER_VERSION="${INPUT_VERSION:-${WAZUH_VERSION}}"
+            DOCKER_STAGE="$INPUT_STAGE"
+            DOCKER_REGISTRY="$SELECTED_REGISTRY"
+            DOCKER_TAG="${DOCKER_VERSION}-${DOCKER_STAGE}"
+          fi
+
+          echo "WAZUH_VERSION=${WAZUH_VERSION}"     >> $GITHUB_ENV
+          echo "WAZUH_STAGE=${WAZUH_STAGE}"         >> $GITHUB_ENV
+          echo "DOCKER_VERSION=${DOCKER_VERSION}"   >> $GITHUB_ENV
+          echo "DOCKER_STAGE=${DOCKER_STAGE}"       >> $GITHUB_ENV
+          echo "DOCKER_REGISTRY=${DOCKER_REGISTRY}" >> $GITHUB_ENV
+          echo "DOCKER_TAG=${DOCKER_TAG}"           >> $GITHUB_ENV
+
+          echo "=== Resolved image configuration ==="
+          echo "Registry: ${DOCKER_REGISTRY}"
+          echo "Tag:      ${DOCKER_TAG}"
+          echo "Example:  wazuh/wazuh-manager:${DOCKER_TAG}"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install requirements
+        run: |
+          pip install -r wazuh-automation/deployability/deps/requirements.txt
+          pip install -r wazuh-automation/integration-test-module/requirements.txt
+          pip install -e wazuh-automation/integration-test-module/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+          role-session-name: docker-test-${{ github.run_id }}-${{ matrix.deployment_type }}
+          aws-region: ${{ env.REGION }}
+
+      # -----------------------------------------------------------------------
+      # Provision: allocate VM and extract SSH credentials
+      # -----------------------------------------------------------------------
+      - name: Allocate instance
+        id: allocate
+        run: |
+          mkdir -p ${{ env.ALLOCATOR_PATH }}
+          python3 wazuh-automation/deployability/modules/allocation/main.py \
+            --action create \
+            --provider aws \
+            --size large \
+            --composite-name ubuntu-24-amd64 \
+            --working-dir ${{ env.ALLOCATOR_PATH }} \
+            --track-output ${{ env.ALLOCATOR_PATH }}/track.yml \
+            --inventory-output ${{ env.ALLOCATOR_PATH }}/inventory.yml \
+            --instance-name gha_${{ github.run_id }}_docker_${{ matrix.deployment_type }} \
+            --label-team devops \
+            --label-termination-date 1d
+
+          sed -n '/hosts:/,/^[^ ]/p' ${{ env.ALLOCATOR_PATH }}/inventory.yml \
+            | grep "ansible_" \
+            | sed 's/^[ ]*//g' \
+            > ${{ env.ALLOCATOR_PATH }}/inventory_vars_raw.yml
+          sed 's/: */=/g' ${{ env.ALLOCATOR_PATH }}/inventory_vars_raw.yml \
+            > ${{ env.ALLOCATOR_PATH }}/inventory_vars.yml
+          sed -i 's/-o StrictHostKeyChecking=no/"-o StrictHostKeyChecking=no"/g' \
+            ${{ env.ALLOCATOR_PATH }}/inventory_vars.yml
+
+      - name: Set SSH credentials from inventory
+        run: |
+          find ${{ env.ALLOCATOR_PATH }} -name '*-key-*' -exec chmod 600 {} \;
+          source ${{ env.ALLOCATOR_PATH }}/inventory_vars.yml
+          echo "SSH_HOST=$ansible_host"                >> $GITHUB_ENV
+          echo "SSH_PORT=$ansible_port"                >> $GITHUB_ENV
+          echo "SSH_USER=$ansible_user"                >> $GITHUB_ENV
+          echo "SSH_KEY=$ansible_ssh_private_key_file" >> $GITHUB_ENV
+
+      - name: Set SSH/SCP helper env vars
+        run: |
+          echo "SSH_OPTS=-o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=20 -p ${{ env.SSH_PORT }} -i ${{ env.SSH_KEY }}" >> $GITHUB_ENV
+          echo "SCP_OPTS=-o StrictHostKeyChecking=no -P ${{ env.SSH_PORT }} -i ${{ env.SSH_KEY }}"                                                      >> $GITHUB_ENV
+          echo "REMOTE=${{ env.SSH_USER }}@${{ env.SSH_HOST }}"                                                                                          >> $GITHUB_ENV
+
+      # -----------------------------------------------------------------------
+      # Install Docker CE on the remote VM
+      # -----------------------------------------------------------------------
+      - name: Install Docker CE
+        run: |
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            curl -fsSL https://get.docker.com | sudo sh
+            sudo systemctl enable --now docker
+          "
+
+      - name: Login VM to ECR registry
+        if: inputs.registry == 'ECR' || github.event_name == 'issue_comment'
+        run: |
+          ECR_REGISTRY="${{ env.DOCKER_REGISTRY }}"
+          ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
+          ECR_PASS=$(aws ecr get-login-password --region "$ECR_REGION")
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" \
+            "echo '${ECR_PASS}' | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+
+      # -----------------------------------------------------------------------
+      # Deploy: patch image tags, copy wazuh-docker and start the stack
+      # -----------------------------------------------------------------------
+      - name: Patch image tags
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          COMPOSE="wazuh-docker/${DEPLOYMENT}/docker-compose.yml"
+          TAG="${{ env.DOCKER_TAG }}"
+          REGISTRY="${{ env.DOCKER_REGISTRY }}"
+
+          if [ "$REGISTRY" = "${{ vars.IMAGE_REGISTRY_PROD }}" ] || [ -z "$REGISTRY" ]; then
+            echo "Patching ${COMPOSE}: wazuh/wazuh-*:${TAG} (DockerHub, no registry prefix)"
+            sed -i -E "s|(image: wazuh/wazuh-[^:]+:)[^ ]+|\1${TAG}|g" "$COMPOSE"
+          else
+            echo "Patching ${COMPOSE}: ${REGISTRY}/wazuh/wazuh-*:${TAG}"
+            sed -i -E "s|image: (wazuh/wazuh-[^:]+):[^ ]+|image: ${REGISTRY}/\1:${TAG}|g" "$COMPOSE"
+          fi
+          echo "=== Patched image lines ==="
+          grep 'image:' "$COMPOSE"
+
+      - name: Prepare cert tool and config
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          VERSION="${{ env.WAZUH_VERSION }}"
+          STAGE="${{ env.WAZUH_STAGE }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+
+          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_TAG }}"
+
+          # Download cert tool once on the runner
+          if [ -n "$STAGE" ]; then
+            CERT_TOOL_URL="https://packages-staging.xdrsiem.wazuh.info/pre-release/${MAJOR}.x/installation-assistant/wazuh-certs-tool-${VERSION}-${STAGE}.sh"
+          else
+            CERT_TOOL_URL="https://packages.wazuh.com/${MAJOR}.$(echo "$VERSION" | cut -d. -f2)/wazuh-certs-tool-${VERSION}-1.sh"
+          fi
+          echo "Downloading cert tool: $CERT_TOOL_URL"
+          curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
+          chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
+          echo "Downloaded OK"
+
+          # Write config.yml directly into the deployment directory
+          if [ "$DEPLOYMENT" = "single-node" ]; then
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh.indexer' \
+              '      dns: wazuh.indexer' \
+              '  manager:' \
+              '    - name: wazuh.manager' \
+              '      dns: wazuh.manager' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > "wazuh-docker/${DEPLOYMENT}/config.yml"
+          else
+            printf '%s\n' \
+              'nodes:' \
+              '  indexer:' \
+              '    - name: wazuh1.indexer' \
+              '      dns: wazuh1.indexer' \
+              '    - name: wazuh2.indexer' \
+              '      dns: wazuh2.indexer' \
+              '    - name: wazuh3.indexer' \
+              '      dns: wazuh3.indexer' \
+              '  manager:' \
+              '    - name: wazuh.master' \
+              '      dns: wazuh.master' \
+              '      node_type: master' \
+              '    - name: wazuh.worker' \
+              '      dns: wazuh.worker' \
+              '      node_type: worker' \
+              '  dashboard:' \
+              '    - name: wazuh.dashboard' \
+              '      dns: wazuh.dashboard' \
+              > "wazuh-docker/${DEPLOYMENT}/config.yml"
+          fi
+          echo "=== config.yml ==="
+          cat "wazuh-docker/${DEPLOYMENT}/config.yml"
+          echo "=== Files ready to copy ==="
+          ls -la "wazuh-docker/${DEPLOYMENT}/"
+
+      - name: Copy wazuh-docker to VM
+        run: |
+          scp ${{ env.SCP_OPTS }} -r wazuh-docker "${{ env.REMOTE }}:/tmp/wazuh-docker"
+
+      - name: Show deployment config
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            echo '=== Files in deployment directory ==='
+            ls -la /tmp/wazuh-docker/${DEPLOYMENT}/
+            echo ''
+            echo '=== Images referenced in docker-compose.yml ==='
+            grep 'image:' /tmp/wazuh-docker/${DEPLOYMENT}/docker-compose.yml || echo '(none found)'
+            echo ''
+            echo '=== Docker version ==='
+            sudo docker version --format 'Client: {{.Client.Version}}  Server: {{.Server.Version}}'
+          "
+
+      - name: Configure VM for Wazuh Indexer
+        run: |
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            sudo sysctl -w vm.max_map_count=262144
+            echo 'vm.max_map_count = '\$(cat /proc/sys/vm/max_map_count)
+          "
+
+      - name: Generate SSL certificates
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -e
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== Running certificate generation ==='
+            sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --cert --copy
+            echo ''
+            echo '=== Generated certificate files ==='
+            find ./config -name '*.pem' | sort
+            echo ''
+            echo '=== Certificate subjects ==='
+            for pem in \$(find ./config -name '*.pem' ! -name '*-key.pem' | sort); do
+              echo -n \"\$pem: \"
+              sudo openssl x509 -in \"\$pem\" -noout -subject -issuer 2>/dev/null || echo '(not a cert / key file)'
+            done
+          "
+
+      - name: Start Docker Compose
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -eo pipefail
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            sudo docker compose up -d 2>&1 | tee /tmp/docker-compose-up.log
+            echo ''
+            echo '=== Initial container status ==='
+            sudo docker compose ps
+          "
+
+      - name: Show indexer logs on failure
+        if: failure()
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== docker compose ps ==='
+            sudo docker compose ps
+            echo ''
+            echo '=== wazuh.indexer logs ==='
+            sudo docker compose logs wazuh.indexer 2>&1
+          " || true
+
+      - name: Wait for containers healthy
+        timeout-minutes: 15
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+
+            echo '=== Verifying containers started ==='
+            TOTAL=\$(sudo docker compose ps 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
+            if [ \"\$TOTAL\" -eq 0 ]; then
+              echo 'ERROR: No containers are running — docker compose up may have failed'
+              sudo docker compose ps
+              sudo docker compose logs --no-color 2>&1 | tail -50
+              exit 1
+            fi
+            echo \"Found \$TOTAL container(s), waiting for healthy status...\"
+            echo ''
+
+            for i in \$(seq 1 90); do
+              NOT_HEALTHY=\$(sudo docker compose ps 2>/dev/null \
+                | tail -n +2 \
+                | grep -v 'nginx' \
+                | grep -vcE '(healthy|\(healthy\))')
+              if [ \"\$NOT_HEALTHY\" -eq 0 ]; then
+                echo \"All containers healthy after \${i} x 10s attempts\"
+                sudo docker compose ps
+                exit 0
+              fi
+              echo \"  attempt \$i/90: \$NOT_HEALTHY container(s) not yet healthy\"
+              if [ \"\$(( i % 6 ))\" -eq 0 ]; then
+                echo '  --- current status ---'
+                sudo docker compose ps
+              fi
+              sleep 10
+            done
+            echo 'ERROR: containers not healthy after 15 minutes'
+            sudo docker compose ps
+            sudo docker compose logs --no-color 2>&1 | tail -100
+            exit 1
+          "
+
+      - name: Cluster warm-up wait
+        run: |
+          if [ "${{ matrix.deployment_type }}" = "multi-node" ]; then
+            WAIT=90
+          else
+            WAIT=60
+          fi
+          echo "Waiting ${WAIT}s for services to reach steady state..."
+          sleep $WAIT
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            echo '=== Container status after warm-up ==='
+            sudo docker compose ps
+          "
+
+      # -----------------------------------------------------------------------
+      # Run integration tests
+      # -----------------------------------------------------------------------
+      - name: Run tests
+        id: run_tests
+        continue-on-error: true
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          test_runner \
+            --test-type "docker-${DEPLOYMENT}" \
+            --deployment-type "docker-${DEPLOYMENT}" \
+            --ssh-host "${{ env.SSH_HOST }}" \
+            --ssh-port "${{ env.SSH_PORT }}" \
+            --ssh-key-path "${{ env.SSH_KEY }}" \
+            --ssh-username "${{ env.SSH_USER }}" \
+            --version "${{ env.DOCKER_VERSION }}" \
+            --log-level INFO \
+            --output github \
+            --output-file "test-results-docker-${DEPLOYMENT}.github"
+
+      # -----------------------------------------------------------------------
+      # Collect logs on failure
+      # -----------------------------------------------------------------------
+      - name: Show test outcome
+        if: always()
+        run: |
+          echo "Run tests outcome: ${{ steps.run_tests.outcome }}"
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          if [ -f "test-results-docker-${DEPLOYMENT}.github" ]; then
+            echo "=== Test results file ==="
+            cat "test-results-docker-${DEPLOYMENT}.github"
+          else
+            echo "WARNING: no test results file found (test_runner may have failed before writing output)"
+          fi
+
+      - name: Collect Docker logs on failure
+        if: failure() || steps.run_tests.outcome == 'failure'
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            sudo docker compose logs --no-color 2>&1
+          " > docker-logs-${DEPLOYMENT}.txt || true
+
+      - name: Upload Docker logs
+        if: failure() || steps.run_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs-${{ matrix.deployment_type }}-${{ github.run_id }}
+          path: docker-logs-*.txt
+          retention-days: 7
+
+      # -----------------------------------------------------------------------
+      # Reporting
+      # -----------------------------------------------------------------------
+      - name: Create step summary
+        if: always()
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          echo "## Docker Integration Test Results — ${DEPLOYMENT}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "test-results-docker-${DEPLOYMENT}.github" ]; then
+            cat "test-results-docker-${DEPLOYMENT}.github" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No test results file found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Post PR comment with results
+        if: always() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        env:
+          DEPLOYMENT: ${{ matrix.deployment_type }}
+          RUN_OUTCOME: ${{ steps.run_tests.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const deployment = process.env.DEPLOYMENT;
+            const outcome = process.env.RUN_OUTCOME;
+            const marker = `<!-- docker-integration-check-${deployment} -->`;
+
+            let body = `${marker}\n## Docker Integration Tests — \`${deployment}\`\n\n`;
+            body += outcome === 'success'
+              ? '✅ **All tests passed!**\n\n'
+              : '❌ **Some tests failed**\n\n';
+
+            const resultsFile = `test-results-docker-${deployment}.github`;
+            try {
+              if (fs.existsSync(resultsFile)) {
+                body += '### Results\n\n' + fs.readFileSync(resultsFile, 'utf8') + '\n\n';
+              }
+            } catch (e) {
+              console.log('Could not read results file:', e.message);
+            }
+            body += `- **Workflow:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-docker-${{ matrix.deployment_type }}-${{ github.run_id }}
+          path: test-results-docker-${{ matrix.deployment_type }}.github
+          retention-days: 7
+
+      # -----------------------------------------------------------------------
+      # Cleanup: always stop stack and deallocate VM
+      # -----------------------------------------------------------------------
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            cd /tmp/wazuh-docker/${DEPLOYMENT} && sudo docker compose down -v || true
+          " || true
+
+      - name: Configure AWS credentials for cleanup
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+          role-session-name: docker-cleanup-${{ github.run_id }}-${{ matrix.deployment_type }}
+          aws-region: ${{ env.REGION }}
+
+      - name: Deallocate instance
+        if: always()
+        run: |
+          python3 wazuh-automation/deployability/modules/allocation/main.py \
+            --action delete \
+            --track-output ${{ env.ALLOCATOR_PATH }}/track.yml
+
+  # -------------------------------------------------------------------------
+  # Job 4: Update the GitHub check run (issue_comment trigger only)
+  # -------------------------------------------------------------------------
+  update_check:
+    needs: [get_pr_info, prepare, build_images, docker_test]
+    if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Update check run
+        uses: actions/github-script@v7
+        env:
+          DOCKER_RESULT: ${{ needs.docker_test.result }}
+          CHECK_NAME: ${{ needs.get_pr_info.outputs.check_name }}
+          CHECK_RUN_ID: ${{ needs.get_pr_info.outputs.check_run_id }}
+        with:
+          script: |
+            const result = process.env.DOCKER_RESULT;
+            const conclusionMap = {
+              success:   { conclusion: 'success',   icon: '✅', summary: 'All Docker integration tests passed.' },
+              failure:   { conclusion: 'failure',   icon: '❌', summary: 'One or more Docker integration tests failed.' },
+              cancelled: { conclusion: 'cancelled', icon: '⏹️', summary: 'Workflow was cancelled.' },
+            };
+            const { conclusion, icon, summary } = conclusionMap[result] ?? conclusionMap.failure;
+            const label = conclusion.charAt(0).toUpperCase() + conclusion.slice(1);
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: parseInt(process.env.CHECK_RUN_ID),
+              status: 'completed',
+              conclusion,
+              completed_at: new Date().toISOString(),
+              output: {
+                title: `${icon} ${process.env.CHECK_NAME} — ${label}`,
+                summary,
+                text: `[View workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+              }
+            });
