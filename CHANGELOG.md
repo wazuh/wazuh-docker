@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change runners on repository workflows ([#2470](https://github.com/wazuh/wazuh-docker/pull/2470))
 
 ### Fixed
 
