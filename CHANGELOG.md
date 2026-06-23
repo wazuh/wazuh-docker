@@ -292,7 +292,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change runner name for Codebuild ([#2474](https://github.com/wazuh/wazuh-docker/pull/2474))
+- PR revamp modifications LTS ([#2449](https://github.com/wazuh/wazuh-docker/pull/2449))
 
 ### Fixed
 
