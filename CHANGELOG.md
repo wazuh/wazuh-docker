@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change runners on repository workflows 5.x ([#2471](https://github.com/wazuh/wazuh-docker/pull/2471))
 - PR revamp modifications 5.x ([#2446](https://github.com/wazuh/wazuh-docker/pull/2446))
 - Forbid pr_check workflow execution in draft PRs ([#2399](https://github.com/wazuh/wazuh-docker/pull/2399))
 - Unification of user UID and GID ([#2393](https://github.com/wazuh/wazuh-docker/pull/2393))

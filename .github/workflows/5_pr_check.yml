@@ -25,7 +25,7 @@ jobs:
 
   prepare-variables:
     if: ${{ !github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       WAZUH_VERSION: ${{ steps.dotenv.outputs.WAZUH_VERSION }}
       WAZUH_IMAGE_VERSION: ${{ steps.dotenv.outputs.WAZUH_IMAGE_VERSION }}
@@ -63,7 +63,7 @@ jobs:
 
   Execute-Goss-tests:
     needs: [prepare-variables, build-images]
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     env:
       WAZUH_IMAGE_VERSION: ${{ needs.prepare-variables.outputs.WAZUH_IMAGE_VERSION }}
       WAZUH_REGISTRY: ${{ needs.prepare-variables.outputs.WAZUH_REGISTRY }}
@@ -97,7 +97,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm]
+        os: ["codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}", "codebuild-github-actions-codebuild-runner-devops-arm-${{ github.run_id }}-${{ github.run_attempt }}"]
       fail-fast: false
     needs: [prepare-variables, Execute-Goss-tests]
     env:
@@ -114,9 +114,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: free disk space
-      uses: ./.github/free-disk-space
-
     - name: Configure aws credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -131,6 +128,12 @@ jobs:
       with:
         name: presigned-artifact-urls-${{ github.run_id }}
         path: ./single-node/
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Add environment variables into GITHUB_ENV
       run: |
@@ -372,7 +375,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm]
+        os: ["codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}", "codebuild-github-actions-codebuild-runner-devops-arm-${{ github.run_id }}-${{ github.run_attempt }}"]
       fail-fast: false
     needs: [prepare-variables, Execute-Goss-tests]
     env:
@@ -389,9 +392,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: free disk space
-      uses: ./.github/free-disk-space
-
     - name: Configure aws credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -406,6 +406,12 @@ jobs:
       with:
         name: presigned-artifact-urls-${{ github.run_id }}
         path: ./multi-node/
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Add environment variables into GITHUB_ENV
       run: |

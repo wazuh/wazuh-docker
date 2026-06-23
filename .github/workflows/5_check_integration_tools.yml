@@ -72,7 +72,7 @@ jobs:
       (contains(github.event.comment.body, '/test-docker-single') ||
        contains(github.event.comment.body, '/test-docker-multi') ||
        contains(github.event.comment.body, '/test-docker'))
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       pr_number: ${{ steps.pr_data.outputs.pr_number }}
       pr_head_ref: ${{ steps.pr_data.outputs.pr_head_ref }}
@@ -156,7 +156,7 @@ jobs:
     if: |
       always() &&
       (needs.get_pr_info.result == 'success' || github.event_name == 'workflow_dispatch')
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
       deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
@@ -322,7 +322,7 @@ jobs:
       always() &&
       needs.prepare.result == 'success' &&
       (needs.build_images.result == 'success' || needs.build_images.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
@@ -333,7 +333,7 @@ jobs:
       # Setup
       # -----------------------------------------------------------------------
       - name: Checkout wazuh-automation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: wazuh/wazuh-automation
           ref: ${{ env.AUTOMATION_REFERENCE }}
@@ -341,7 +341,7 @@ jobs:
           path: wazuh-automation
 
       - name: Checkout wazuh-docker PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.pr_head_ref }}
           path: wazuh-docker
@@ -848,7 +848,7 @@ jobs:
   update_check:
     needs: [get_pr_info, prepare, build_images, docker_test]
     if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Update check run
         uses: actions/github-script@v7
