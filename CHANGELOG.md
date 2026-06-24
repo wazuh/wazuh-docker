@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change runners on repository workflows 5.x ([#2471](https://github.com/wazuh/wazuh-docker/pull/2471))
 - PR revamp modifications 5.x ([#2446](https://github.com/wazuh/wazuh-docker/pull/2446))
 - Forbid pr_check workflow execution in draft PRs ([#2399](https://github.com/wazuh/wazuh-docker/pull/2399))
 - Unification of user UID and GID ([#2393](https://github.com/wazuh/wazuh-docker/pull/2393))
@@ -97,7 +98,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- PR revamp modifications 4.x ([#2445](https://github.com/wazuh/wazuh-docker/pull/2445))
 
 ### Fixed
 
@@ -115,7 +116,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change runners on repository workflows ([#2470](https://github.com/wazuh/wazuh-docker/pull/2470))
 
 ### Fixed
 
@@ -380,7 +381,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change runner name for Codebuild ([#2474](https://github.com/wazuh/wazuh-docker/pull/2474))
+- PR revamp modifications LTS ([#2449](https://github.com/wazuh/wazuh-docker/pull/2449))
 
 ### Fixed
 

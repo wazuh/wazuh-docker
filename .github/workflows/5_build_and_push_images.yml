@@ -84,8 +84,7 @@ permissions:
 
 jobs:
   setup:
-    runs-on:
-      group: wz-linux-amd64
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     outputs:
       WAZUH_COMPONENTS: ${{ steps.compute-outputs.outputs.WAZUH_COMPONENTS }}
@@ -160,8 +159,7 @@ jobs:
 
   package-urls:
     name: generate package urls
-    runs-on:
-      group: wz-linux-amd64
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: setup
 
     env:
@@ -292,8 +290,7 @@ jobs:
           path: ${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}
 
   build-and-push:
-    runs-on:
-      group: wz-linux-amd64
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
 
     needs:
       - setup
@@ -315,6 +312,12 @@ jobs:
         ref: ${{ inputs.docker_reference }}
         persist-credentials: false
 
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
 
@@ -331,13 +334,6 @@ jobs:
     - name: Log in to Amazon ECR
       if: ${{ inputs.dev == true }}
       uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Log in to Docker Hub
-      if: ${{ inputs.dev == false }}
-      uses: docker/login-action@v4
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Download artifact_urls.yaml (dev)
       if: ${{ inputs.dev == true }}
@@ -421,7 +417,7 @@ jobs:
 
 
   notify:
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
     needs: [setup, build-and-push]
     # Only run if NOT dev AND all products were selected
     if: ${{ inputs.dev == false && needs.setup.outputs.ALL_PRODUCTS_SELECTED == 'true' }}
