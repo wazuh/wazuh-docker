@@ -20,6 +20,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2391](https://github.com/wazuh/wazuh-docker/issues/2391) | Pinned the compose deployment images to the published 5.0.0-beta2 tag |
 
 ## Prior versions
 
