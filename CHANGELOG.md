@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add integration test module docs ([#2491](https://github.com/wazuh/wazuh-docker/pull/2491))
 - Implement the wazuh-docker integration testing module ([#2188](https://github.com/wazuh/wazuh-docker/issues/2188))
 - Support Revert bump functionality in wazuh-docker ([#2320](https://github.com/wazuh/wazuh-docker/issues/2320))
 - Docker and AMI workflows failing during stage release (v5.0.0-beta1) ([#35457](https://github.com/wazuh/wazuh/issues/35457))
