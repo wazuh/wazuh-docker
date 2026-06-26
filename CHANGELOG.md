@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed login in Docker Hub before triggering the QEMU action ([#2494](https://github.com/wazuh/wazuh-docker/pull/2494))
 - Changed update_user function from wazuh.security to wazuh.rbac.orm module ([#2406](https://github.com/wazuh/wazuh-docker/pull/2406))
 - GH issue notification fix ([#2312](https://github.com/wazuh/wazuh-docker/pull/2312))
 
