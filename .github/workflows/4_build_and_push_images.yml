@@ -155,6 +155,12 @@ jobs:
       with:
         ref: ${{ inputs.docker_reference }}
 
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
 
@@ -171,12 +177,6 @@ jobs:
     - name: Log in to Amazon ECR
       if: ${{ inputs.dev == true }}
       uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v4
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Build Wazuh images
       run: |
