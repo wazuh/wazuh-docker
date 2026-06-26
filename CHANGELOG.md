@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.14.7]
+
+### Added
+
+- None
+
+### Changed
+
+- PR revamp modifications 4.x ([#2445](https://github.com/wazuh/wazuh-docker/pull/2445))
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
 ## [4.14.6]
 
 ### Added
@@ -275,7 +293,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change runner name for Codebuild ([#2474](https://github.com/wazuh/wazuh-docker/pull/2474))
+- PR revamp modifications LTS ([#2449](https://github.com/wazuh/wazuh-docker/pull/2449))
 
 ### Fixed
 
