@@ -1,12 +1,12 @@
-run-name: Build and push images 1.x - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
-name: (1.x) Build and push images
+run-name: Build and push images 5.x - ${{ inputs.dev && 'dev' || 'release' }} - ${{ inputs.id }}
+name: (5.x) Build and push images
 
 on:
   workflow_dispatch:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: 'v1.2.3-alpha8'
+        default: '5.0.0'
         required: true
       docker_reference:
         description: 'wazuh-docker reference'
@@ -14,7 +14,7 @@ on:
       wazuh_automation_reference:
         description: 'Branch or tag of the wazuh-automation repository'
         required: false
-        default: 'v1.2.3-alpha8'
+        default: '5.0.0'
       products:
         description: 'Comma-separated list of the image names to build and push'
         default: 'wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent'
@@ -42,7 +42,7 @@ on:
     inputs:
       image_tag:
         description: 'Docker image tag'
-        default: 'v1.2.3-alpha8'
+        default: '5.0.0'
         required: true
         type: string
       docker_reference:
@@ -52,7 +52,7 @@ on:
       wazuh_automation_reference:
         description: 'Branch or tag of the wazuh-automation repository'
         required: false
-        default: 'v1.2.3-alpha8'
+        default: '5.0.0'
         type: string
       products:
         description: 'Comma-separated list of the image names to build and push'
