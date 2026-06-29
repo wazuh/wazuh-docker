@@ -1,28 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.2.3]
-
-### Added
-
-- None
-
-### Changed
-
-- None
-
-### Fixed
-
-- None
-
-### Deleted
-
-- None
-
 ## [v5.0.0]
 
 ### Added
 
+- Added bump-issue-link support for Revert Stage Bump. ([#2505](https://github.com/wazuh/wazuh-docker/pull/2505))
 - Add integration test module docs ([#2491](https://github.com/wazuh/wazuh-docker/pull/2491))
 - Implement the wazuh-docker integration testing module ([#2188](https://github.com/wazuh/wazuh-docker/issues/2188))
 - Support Revert bump functionality in wazuh-docker ([#2320](https://github.com/wazuh/wazuh-docker/issues/2320))
