@@ -228,13 +228,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       until [[ `curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`  -eq 1 ]]
-       do
-         echo 'Waiting for Wazuh indexer start'
-         free -m
-         df -h
-         sleep 120
-       done
+       sleep 60
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
@@ -243,7 +237,7 @@ jobs:
         exit 1
        fi
        status_index="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | wc -l`"
-       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep -E "green" | wc -l`"
+       status_index_green="`curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s | grep "green" | wc -l`"
        if [[ $status_index_green -eq $status_index ]]; then
         curl -XGET "https://0.0.0.0:9200/_cat/indices" -u admin:SecretPassword -k -s
        else
