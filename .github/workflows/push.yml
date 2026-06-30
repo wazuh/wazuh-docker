@@ -92,7 +92,11 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 60
+       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s > /dev/null; do sleep 5; done'
+       if [ $? -ne 0 ]; then
+         docker ps -a
+         exit 1
+       fi
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
@@ -203,6 +207,9 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    
+    - name: Set vm.max_map_count
+      run: sysctl -w vm.max_map_count=262144
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
@@ -228,7 +235,11 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       sleep 60
+       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s > /dev/null; do sleep 5; done'
+       if [ $? -ne 0 ]; then
+         docker ps -a
+         exit 1
+       fi
        status_green="`curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s | grep green | wc -l`"
        if [[ $status_green -eq 1 ]]; then
         curl -XGET "https://0.0.0.0:9200/_cluster/health" -u admin:SecretPassword -k -s
