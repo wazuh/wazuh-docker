@@ -41,7 +41,7 @@ jobs:
 
     - name: Temporarily save Wazuh Docker images
       env:
-        S3_ARTIFACTS_PATH: ${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
+        S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
       run: |
         echo "Uploading Docker image artifacts to S3..."
         while IFS= read -r artifact; do
@@ -70,7 +70,7 @@ jobs:
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
-        S3_ARTIFACTS_PATH: ${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
+        S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
         ARTIFACTS_LOCAL_DIR: /home/runner/work/wazuh-docker/wazuh-docker/docker-images
       run: |
         mkdir -p "${ARTIFACTS_LOCAL_DIR}"
@@ -206,7 +206,7 @@ jobs:
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
-        S3_ARTIFACTS_PATH: ${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
+        S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
         ARTIFACTS_LOCAL_DIR: /home/runner/work/wazuh-docker/wazuh-docker/docker-images
       run: |
         mkdir -p "${ARTIFACTS_LOCAL_DIR}"
