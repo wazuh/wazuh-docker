@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Change upload and download methods ([#2504](https://github.com/wazuh/wazuh-docker/pull/2504))
 - PR revamp modifications 4.x ([#2445](https://github.com/wazuh/wazuh-docker/pull/2445))
 
 ### Fixed
