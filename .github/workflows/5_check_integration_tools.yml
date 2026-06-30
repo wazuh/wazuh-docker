@@ -177,8 +177,8 @@ jobs:
               echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
             fi
           else
-            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+            echo 'pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}' >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}' >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout wazuh-docker PR branch (VERSION.json only)
