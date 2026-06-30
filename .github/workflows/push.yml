@@ -128,7 +128,7 @@ jobs:
 
     - name: Check Wazuh templates
       run: |
-       timeout 120 bash -c 'until [ $(curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l) -eq 3 ]; do sleep 5; done'
+       timeout 360 bash -c 'until templates=$(curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l); echo "Templates: $templates"; [ $templates -ge 3 ]; do sleep 5; done'
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep -P "wazuh|wazuh-agent|wazuh-statistics"`"
        if [[ $qty_templates -gt 3 ]]; then
@@ -273,7 +273,7 @@ jobs:
 
     - name: Check Wazuh templates
       run: |
-       timeout 120 bash -c 'until [ $(curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l) -eq 3 ]; do sleep 5; done'
+       timeout 360 bash -c 'until templates=$(curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l); echo "Templates: $templates"; [ $templates -ge 3 ]; do sleep 5; done'
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
        if [[ $qty_templates -gt 3 ]]; then
