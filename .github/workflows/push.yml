@@ -258,6 +258,11 @@ jobs:
 
     - name: Check Wazuh indexer nodes
       run: |
+       timeout 600 bash -c 'until curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer"; do sleep 5; done'
+       if [ $? -ne 0 ]; then
+         docker ps -a
+         exit 1
+       fi
        nodes="`curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer" | wc -l`"
        if [[ $nodes -eq 3 ]]; then
         echo "Wazuh indexer nodes: ${nodes}"
@@ -268,6 +273,11 @@ jobs:
 
     - name: Check Wazuh templates
       run: |
+       timeout 600 bash -c 'until curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"; do sleep 5; done'
+       if [ $? -ne 0 ]; then
+         docker ps -a
+         exit 1
+       fi
        qty_templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh" | wc -l`"
        templates="`curl -XGET "https://0.0.0.0:9200/_cat/templates" -u admin:SecretPassword -k -s | grep "wazuh"`"
        if [[ $qty_templates -gt 3 ]]; then
@@ -281,12 +291,17 @@ jobs:
 
     - name: Check Wazuh manager start
       run: |
+        timeout 600 bash -c 'until curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running; do sleep 5; done'
+        if [ $? -ne 0 ]; then
+          docker ps -a
+          exit 1
+        fi
         services="`curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items | grep running | wc -l`"
         if [[ $services -gt 10 ]]; then
           echo "Wazuh Manager Services: ${services}"
           echo "OK"
         else
-          echo "Wazuh indexer nodes: ${nodes}"
+          echo "Wazuh Manager Services: ${services}"
           curl -k -s -X GET "https://0.0.0.0:55000/manager/status?pretty=true" -H  "Authorization: Bearer ${{env.TOKEN}}" | jq -r .data.affected_items
           exit 1
         fi
@@ -305,6 +320,11 @@ jobs:
 
     - name: Check Wazuh dashboard service URL
       run: |
+       timeout 600 bash -c 'until curl -XGET "https://0.0.0.0:9200/_cat/nodes" -u admin:SecretPassword -k -s | grep -E "indexer"; do sleep 5; done'
+       if [ $? -ne 0 ]; then
+         docker ps -a
+         exit 1
+       fi        
        status=$(curl -XGET --silent  https://0.0.0.0:443/app/status -k -u admin:SecretPassword -I | grep -E "^HTTP" | awk  '{print $2}')
        if [[ $status -eq 200 ]]; then
         echo "Wazuh dashboard status: ${status}"
