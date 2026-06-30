@@ -286,7 +286,7 @@ jobs:
         if: ${{ inputs.dev == true }}
         run: |
           echo "Uploading presigned URLs artifact..."
-          aws s3 cp "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
+          aws s3 cp "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "s3://${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
 
   build-and-push:
     runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
@@ -338,7 +338,7 @@ jobs:
       if: ${{ inputs.dev == true }}
       run: |
         echo "Downloading presigned URLs artifact..."
-        aws s3 cp "${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
+        aws s3 cp "s3://${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
         mv "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" ./build-docker-images/${{ vars.ARTIFACT_URL_FILE_NAME }}
 
     - name: Compute component reference (dev)
