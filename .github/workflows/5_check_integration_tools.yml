@@ -811,11 +811,15 @@ jobs:
       - name: Upload test results
         if: always()
         env:
-          S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
+          S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
           LOCAL_RESULTS_PATH: test-results-docker-${{ matrix.deployment_type }}.github
         run: |
-          echo "Uploading test results to S3..."
-          aws s3 cp "${LOCAL_RESULTS_PATH}" "${S3_ARTIFACTS_PATH}/test-results-docker-${{ matrix.deployment_type }}/" --recursive
+          if [ -f "${LOCAL_RESULTS_PATH}" ]; then
+            echo "Uploading test results to S3..."
+            aws s3 cp "${LOCAL_RESULTS_PATH}" "${S3_ARTIFACTS_PATH}/test-results-docker-${{ matrix.deployment_type }}/" --recursive
+          else
+            echo "::warning::No test results file found - skipping upload (an earlier step likely failed before test_runner produced output)."
+          fi
 
       # -----------------------------------------------------------------------
       # Cleanup: always stop stack and deallocate VM
