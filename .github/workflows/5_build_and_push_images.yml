@@ -284,10 +284,9 @@ jobs:
 
       - name: Save presigned URLs file to artifact
         if: ${{ inputs.dev == true }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: presigned-artifact-urls-${{ github.run_id }}
-          path: ${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}
+        run: |
+          echo "Uploading presigned URLs artifact..."
+          aws s3 cp "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
 
   build-and-push:
     runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
@@ -337,10 +336,10 @@ jobs:
 
     - name: Download artifact_urls.yaml (dev)
       if: ${{ inputs.dev == true }}
-      uses: actions/download-artifact@v4
-      with:
-        name: presigned-artifact-urls-${{ github.run_id }}
-        path: ./build-docker-images
+      run: |
+        echo "Downloading presigned URLs artifact..."
+        aws s3 cp "${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_build_and_push_images/${{ github.run_id }}/${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}"
+        mv "${{ env.LOCAL_ARTIFACT_URLS_FILEPATH }}" ./build-docker-images/${{ vars.ARTIFACT_URL_FILE_NAME }}
 
     - name: Compute component reference (dev)
       if: ${{ inputs.dev == true }}

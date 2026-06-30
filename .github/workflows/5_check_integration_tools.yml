@@ -53,6 +53,7 @@ env:
   AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
   ALLOCATOR_PATH: /tmp/allocator_instance
   REGION: us-east-1
+  LOGS_ARTIFACT_ZIP_FILE: "docker_logs_artifacts_${{ github.run_id }}.zip"
 
 jobs:
   # -------------------------------------------------------------------------
@@ -732,11 +733,10 @@ jobs:
 
       - name: Upload Docker logs
         if: failure() || steps.run_tests.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-${{ matrix.deployment_type }}-${{ github.run_id }}
-          path: docker-logs-*.txt
-          retention-days: 7
+        run: |
+          echo "Uploading Docker logs artifact..."
+          zip "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" docker-logs-*.txt
+          aws s3 cp "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" "${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}/${{ env.LOGS_ARTIFACT_ZIP_FILE }}"
 
       # -----------------------------------------------------------------------
       # Reporting
@@ -810,11 +810,12 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-docker-${{ matrix.deployment_type }}-${{ github.run_id }}
-          path: test-results-docker-${{ matrix.deployment_type }}.github
-          retention-days: 7
+        env:
+          S3_ARTIFACTS_PATH: ${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
+          LOCAL_RESULTS_PATH: test-results-docker-${{ matrix.deployment_type }}.github
+        run: |
+          echo "Uploading test results to S3..."
+          aws s3 cp "${LOCAL_RESULTS_PATH}" "${S3_ARTIFACTS_PATH}/test-results-docker-${{ matrix.deployment_type }}/" --recursive
 
       # -----------------------------------------------------------------------
       # Cleanup: always stop stack and deallocate VM
