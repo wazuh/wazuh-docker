@@ -92,7 +92,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s > /dev/null; do sleep 5; done'
+       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s | grep -q "green"; do sleep 5; done'
        if [ $? -ne 0 ]; then
          docker ps -a
          exit 1
@@ -235,7 +235,7 @@ jobs:
 
     - name: Check Wazuh indexer start
       run: |
-       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s > /dev/null; do sleep 5; done'
+       timeout 600 bash -c 'until curl -XGET "https://localhost:9200/_cluster/health" -u admin:SecretPassword -k -s | grep -q "green"; do sleep 5; done'
        if [ $? -ne 0 ]; then
          docker ps -a
          exit 1
