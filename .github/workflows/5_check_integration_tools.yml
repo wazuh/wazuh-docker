@@ -410,6 +410,7 @@ jobs:
           pip install -r wazuh-automation/deployability/deps/requirements.txt
           pip install -r wazuh-automation/integration-test-module/requirements.txt
           pip install -e wazuh-automation/integration-test-module/
+          pip install pyyaml
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -417,6 +418,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-test-${{ github.run_id }}-${{ matrix.deployment_type }}
           aws-region: ${{ env.REGION }}
+
+      - name: Generate presigned cert tool URL
+        run: |
+          python wazuh-automation/tools/sign_urls/generate_presigned_dev_urls.py \
+            --process build_docker \
+            --wazuh-version "${{ env.DOCKER_VERSION }}" \
+            --aws-s3-bucket-dev "${{ vars.AWS_S3_BUCKET_DEV }}"
+
+          python3 -c "
+          import yaml
+          data = yaml.safe_load(open('/tmp/artifact_urls.yaml'))
+          print(f'wazuh_certs_tool={data[\"wazuh_certs_tool\"]}')
+          " >> "$GITHUB_ENV"
 
       # -----------------------------------------------------------------------
       # Provision: allocate VM and extract SSH credentials
@@ -503,20 +517,10 @@ jobs:
       - name: Prepare cert tool and config
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
-          VERSION="${{ env.WAZUH_VERSION }}"
-          STAGE="${{ env.WAZUH_STAGE }}"
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_TAG }}"
+          echo "Cert tool: ${{ env.wazuh_certs_tool }}  Docker image: ${{ env.DOCKER_TAG }}"
 
-          # Download cert tool once on the runner
-          if [ -n "$STAGE" ]; then
-            CERT_TOOL_URL="https://packages-staging.xdrsiem.wazuh.info/pre-release/${MAJOR}.x/installation-assistant/wazuh-certs-tool-${VERSION}-${STAGE}.sh"
-          else
-            CERT_TOOL_URL="https://packages.wazuh.com/${MAJOR}.$(echo "$VERSION" | cut -d. -f2)/wazuh-certs-tool-${VERSION}-1.sh"
-          fi
-          echo "Downloading cert tool: $CERT_TOOL_URL"
-          curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
+          curl --output "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "${{ env.wazuh_certs_tool }}"
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
 
