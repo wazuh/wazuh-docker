@@ -736,7 +736,7 @@ jobs:
         run: |
           echo "Uploading Docker logs artifact..."
           zip "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" docker-logs-*.txt
-          aws s3 cp "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" "s3://${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}/${{ env.LOGS_ARTIFACT_ZIP_FILE }}"
+          aws s3 cp "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" "s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}/${{ env.LOGS_ARTIFACT_ZIP_FILE }}"
 
       # -----------------------------------------------------------------------
       # Reporting
@@ -811,7 +811,7 @@ jobs:
       - name: Upload test results
         if: always()
         env:
-          S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
+          S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
           LOCAL_RESULTS_PATH: test-results-docker-${{ matrix.deployment_type }}.github
         run: |
           echo "Uploading test results to S3..."
