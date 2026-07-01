@@ -2,7 +2,7 @@ run-name: >-
   ${{ github.event_name == 'workflow_dispatch'
     && format('Docker Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
     || format('Docker Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
-name: (5.x) PR Check - Docker Integration Tests
+name: (8.x) PR Check - Docker Integration Tests
 
 on:
   issue_comment:
