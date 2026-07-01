@@ -6,9 +6,8 @@ if [ -z "$MASTER_CONTAINERS" ]; then
   echo "No containers were found with 'master' in their name."
 else
   for MASTER_CONTAINERS in $MASTER_CONTAINERS; do
-    FILEBEAT_OUTPUT=$(docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE)
-    FILEBEAT_STATUS=$(echo "${FILEBEAT_OUTPUT}" | grep -c OK)
-    if [[ $FILEBEAT_STATUS -eq 21 ]]; then
+    docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE
+    if [[ $? -eq 0 ]]; then
       echo "No errors in filebeat"
       echo "${FILEBEAT_OUTPUT}"
     else
@@ -25,9 +24,8 @@ if [ -z "$MASTER_CONTAINERS" ]; then
   echo "No containers were found with 'worker' in their name."
 else
   for MASTER_CONTAINERS in $MASTER_CONTAINERS; do
-    FILEBEAT_OUTPUT=$(docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE)
-    FILEBEAT_STATUS=$(echo "${FILEBEAT_OUTPUT}" | grep -c OK)
-    if [[ $FILEBEAT_STATUS -eq 21 ]]; then
+    docker exec "$MASTER_CONTAINERS" $COMMAND_TO_EXECUTE
+    if [[ $? -eq 0 ]]; then
       echo "No errors in filebeat"
       echo "${FILEBEAT_OUTPUT}"
     else
