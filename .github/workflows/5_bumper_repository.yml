@@ -100,6 +100,8 @@ jobs:
 
           if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
             script_params="--version ${version} --stage ${stage}"
+          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--version ${version} --stage ${stage} --tag"
           elif [[ -z "$version" && -n "$stage" && "$tag" == "true" ]]; then
             script_params="--stage ${stage} --tag"
           elif [[ -z "$version" && -z "$stage" && "$tag" == "true" ]]; then
