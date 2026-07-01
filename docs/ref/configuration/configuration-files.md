@@ -28,7 +28,7 @@
         docker compose up -d
         ```
 
-Consult the official Wazuh documentation for version 5.0.0 for detailed information on all possible configuration parameters for each component.
+Consult the official Wazuh documentation for version 5.9.9 for detailed information on all possible configuration parameters for each component.
 
 ## Persistence configuration
 
