@@ -64,6 +64,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Bumper script issue when the tag is set to false ([#2477](https://github.com/wazuh/wazuh-docker/issues/2477))
 - Fix reported WF vulnerabilities ([#2443](https://github.com/wazuh/wazuh-docker/issues/2443))
 - Adapt Wazuh manager healthcheck with local binaries ([#2422](https://github.com/wazuh/wazuh-docker/issues/2422))
 - The Wazuh Docker image cannot be built during the Nightly ([#2337](https://github.com/wazuh/wazuh-docker/issues/2337))

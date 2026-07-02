@@ -101,18 +101,24 @@ jobs:
           version=${{ env.VERSION }}
           stage=${{ env.STAGE }}
           tag=${{ env.TAG }}
-
           set_as_main=${{ inputs.set_as_main }}
 
-          if [[ "$set_as_main" == "true" ]]; then
-            script_params="--set-as-main"
+          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
+            script_params="--version ${version} --stage ${stage}"
+          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--version ${version} --stage ${stage} --tag"
+          elif [[ -z "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--stage ${stage} --tag"
+          elif [[ -z "$version" && -z "$stage" && "$tag" == "true" ]]; then
+            script_params="--tag"
           fi
 
-          # Both version and stage provided
-          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
-            script_params+=" --version ${version} --stage ${stage}"
-          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
-            script_params+=" --version ${version} --stage ${stage} --tag ${tag}"
+          if [[ "$set_as_main" == "true" ]]; then
+            if [[ -z "$version" || -z "$stage" ]]; then
+              echo "Error: set_as_main requires both version and stage inputs."
+              exit 1
+            fi
+            script_params="${script_params} --set-as-main"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
