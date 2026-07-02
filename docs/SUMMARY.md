@@ -30,3 +30,9 @@
 - [Security](ref/security.md)
 - [Performance](ref/performance.md)
 - [Glossary](ref/glossary.md)
+
+---
+
+# Integration Tests
+
+- [Docker Integration Tests](ref/integration_test/docker_integration_tests.md)

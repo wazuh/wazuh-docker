@@ -53,6 +53,7 @@ env:
   AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
   ALLOCATOR_PATH: /tmp/allocator_instance
   REGION: us-east-1
+  LOGS_ARTIFACT_ZIP_FILE: "docker_logs_artifacts_${{ github.run_id }}.zip"
 
 jobs:
   # -------------------------------------------------------------------------
@@ -176,8 +177,8 @@ jobs:
               echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
             fi
           else
-            echo "pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-            echo "deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}" >> $GITHUB_OUTPUT
+            echo 'pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}' >> $GITHUB_OUTPUT
+            echo 'deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}' >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout wazuh-docker PR branch (VERSION.json only)
@@ -409,6 +410,7 @@ jobs:
           pip install -r wazuh-automation/deployability/deps/requirements.txt
           pip install -r wazuh-automation/integration-test-module/requirements.txt
           pip install -e wazuh-automation/integration-test-module/
+          pip install pyyaml
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -416,6 +418,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-test-${{ github.run_id }}-${{ matrix.deployment_type }}
           aws-region: ${{ env.REGION }}
+
+      - name: Generate presigned cert tool URL
+        run: |
+          python wazuh-automation/tools/sign_urls/generate_presigned_dev_urls.py \
+            --process build_docker \
+            --wazuh-version "${{ env.DOCKER_VERSION }}" \
+            --aws-s3-bucket-dev "${{ vars.AWS_S3_BUCKET_DEV }}"
+
+          python3 -c "
+          import yaml
+          data = yaml.safe_load(open('/tmp/artifact_urls.yaml'))
+          print(f'wazuh_certs_tool={data[\"wazuh_certs_tool\"]}')
+          " >> "$GITHUB_ENV"
 
       # -----------------------------------------------------------------------
       # Provision: allocate VM and extract SSH credentials
@@ -502,20 +517,10 @@ jobs:
       - name: Prepare cert tool and config
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"
-          VERSION="${{ env.WAZUH_VERSION }}"
-          STAGE="${{ env.WAZUH_STAGE }}"
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-          echo "Cert tool: ${VERSION}-${STAGE}  Docker image: ${{ env.DOCKER_TAG }}"
+          echo "Cert tool: ${{ env.wazuh_certs_tool }}  Docker image: ${{ env.DOCKER_TAG }}"
 
-          # Download cert tool once on the runner
-          if [ -n "$STAGE" ]; then
-            CERT_TOOL_URL="https://packages-staging.xdrsiem.wazuh.info/pre-release/${MAJOR}.x/installation-assistant/wazuh-certs-tool-${VERSION}-${STAGE}.sh"
-          else
-            CERT_TOOL_URL="https://packages.wazuh.com/${MAJOR}.$(echo "$VERSION" | cut -d. -f2)/wazuh-certs-tool-${VERSION}-1.sh"
-          fi
-          echo "Downloading cert tool: $CERT_TOOL_URL"
-          curl -fsSL -o "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "$CERT_TOOL_URL"
+          curl --output "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh" "${{ env.wazuh_certs_tool }}"
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
 
@@ -732,11 +737,10 @@ jobs:
 
       - name: Upload Docker logs
         if: failure() || steps.run_tests.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-${{ matrix.deployment_type }}-${{ github.run_id }}
-          path: docker-logs-*.txt
-          retention-days: 7
+        run: |
+          echo "Uploading Docker logs artifact..."
+          zip "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" docker-logs-*.txt
+          aws s3 cp "${{ env.LOGS_ARTIFACT_ZIP_FILE }}" "s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}/${{ env.LOGS_ARTIFACT_ZIP_FILE }}"
 
       # -----------------------------------------------------------------------
       # Reporting
@@ -810,11 +814,16 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-docker-${{ matrix.deployment_type }}-${{ github.run_id }}
-          path: test-results-docker-${{ matrix.deployment_type }}.github
-          retention-days: 7
+        env:
+          S3_ARTIFACTS_PATH: s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/5_check_integration_tools/${{ github.run_id }}
+          LOCAL_RESULTS_PATH: test-results-docker-${{ matrix.deployment_type }}.github
+        run: |
+          if [ -f "${LOCAL_RESULTS_PATH}" ]; then
+            echo "Uploading test results to S3..."
+            aws s3 cp "${LOCAL_RESULTS_PATH}" "${S3_ARTIFACTS_PATH}/test-results-docker-${{ matrix.deployment_type }}/"
+          else
+            echo "::warning::No test results file found - skipping upload (an earlier step likely failed before test_runner produced output)."
+          fi
 
       # -----------------------------------------------------------------------
       # Cleanup: always stop stack and deallocate VM
