@@ -37,6 +37,11 @@ on:
         default: false
         required: false
         type: boolean
+      bump-issue-link:
+          description: 'Issue link used in the original bump (required for revert if different from issue-link)'
+          required: false
+          type: string
+
 jobs:
   bump:
     name: Repository bumper 5.x
@@ -96,18 +101,24 @@ jobs:
           version=${{ env.VERSION }}
           stage=${{ env.STAGE }}
           tag=${{ env.TAG }}
-
           set_as_main=${{ inputs.set_as_main }}
 
-          if [[ "$set_as_main" == "true" ]]; then
-            script_params="--set-as-main"
+          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
+            script_params="--version ${version} --stage ${stage}"
+          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--version ${version} --stage ${stage} --tag"
+          elif [[ -z "$version" && -n "$stage" && "$tag" == "true" ]]; then
+            script_params="--stage ${stage} --tag"
+          elif [[ -z "$version" && -z "$stage" && "$tag" == "true" ]]; then
+            script_params="--tag"
           fi
 
-          # Both version and stage provided
-          if [[ -n "$version" && -n "$stage" && "$tag" != "true" ]]; then
-            script_params+=" --version ${version} --stage ${stage}"
-          elif [[ -n "$version" && -n "$stage" && "$tag" == "true" ]]; then
-            script_params+=" --version ${version} --stage ${stage} --tag ${tag}"
+          if [[ "$set_as_main" == "true" ]]; then
+            if [[ -z "$version" || -z "$stage" ]]; then
+              echo "Error: set_as_main requires both version and stage inputs."
+              exit 1
+            fi
+            script_params="${script_params} --set-as-main"
           fi
 
           issue_number=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
@@ -146,9 +157,18 @@ jobs:
         id: revert_step
         if: inputs.revert == true
         run: |
+          # 1. Get the current issue number (for the new revert branch/PR)
           ISSUE_NUMBER=$(echo "${{ inputs.issue-link }}" | awk -F'/' '{print $NF}')
 
-          BUMP_BRANCH="enhancement/wqa${ISSUE_NUMBER}-bump-${{ github.ref_name }}"
+          # 2. Get the issue number from the original bump (if provided; otherwise, defaults to the current one)
+          if [ -n "${{ inputs.bump-issue-link }}" ]; then
+            BUMP_ISSUE_NUMBER=$(echo "${{ inputs.bump-issue-link }}" | awk -F'/' '{print $NF}')
+          else
+            BUMP_ISSUE_NUMBER=$ISSUE_NUMBER
+          fi
+
+          # 3. Search for the original bump branch using the obtained BUMP ISSUE number
+          BUMP_BRANCH="enhancement/wqa${BUMP_ISSUE_NUMBER}-bump-${{ github.ref_name }}"
 
           PR_NUMBER=$(gh pr list --head "$BUMP_BRANCH" --base "${{ github.ref_name }}" --state merged --json number --jq '.[0].number')
 
@@ -167,7 +187,7 @@ jobs:
           # Remove the files to prevent them from being included in the revert commit
           git checkout HEAD -- VERSION.json 2>/dev/null || true
           git checkout HEAD -- CHANGELOG.md 2>/dev/null || true
-          # Add any other repository-specific version files here
+          # [!] ADD ANY OTHER REPOSITORY-SPECIFIC VERSION FILES HERE [!]
 
           if git diff --staged --quiet; then
             echo "No references to revert. Skipping commit."
