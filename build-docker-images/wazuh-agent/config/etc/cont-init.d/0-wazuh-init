@@ -62,6 +62,15 @@ set_manager_conn() {
   sed -i "s#<address>CHANGE_MANAGER_IP</address>#<address>$WAZUH_MANAGER_SERVER</address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
   sed -i "s#<manager_address>CHANGE_ENROLL_IP</manager_address>#<manager_address>$WAZUH_REGISTRATION_SERVER</manager_address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
   sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+  if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
+    set +x
+    cat << EOF > /var/ossec/etc/authd.pass
+$WAZUH_REGISTRATION_PASSWORD
+EOF
+    set -x
+  else
+    echo "WAZUH_REGISTRATION_PASSWORD is not set; the authd.pass configuration is omitted."
+  fi
 }
 
 ##############################################################################
