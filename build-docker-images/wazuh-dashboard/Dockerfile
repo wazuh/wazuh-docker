@@ -46,8 +46,7 @@ RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
-#
-# Copy wazuh-dashboard from stage 0
+# Copy wazuh-dashboard from builder
 # Add entrypoint
 # Add wazuh_dashboard_config
 ################################################################################

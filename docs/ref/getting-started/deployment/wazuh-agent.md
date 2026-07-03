@@ -19,9 +19,11 @@ Follow these steps to deploy the Wazuh agent using Docker.
     #     ...
     environment:
       - WAZUH_MANAGER_SERVER=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>
+      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
     #     ...
     ```
-    **Note:** Replace `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` with the actual IP address or hostname of your Wazuh manager.
+    **Note:** Replaces `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` with the actual IP address or hostname of your Wazuh manager.
+    **Note:** Replaces `<authd.pass-PASSWORD>` with the password configured in the `/var/wazuh-manager/etc/authd.pass` file of the Wazuh manager server where you will connect.
 
 3.  Start the environment using `docker compose`:
 
