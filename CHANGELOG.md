@@ -65,6 +65,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fix bumper workflow failure when bump produces no changes ([#2533](https://github.com/wazuh/wazuh-docker/pull/2533))
 - Bumper script issue when the tag is set to false ([#2477](https://github.com/wazuh/wazuh-docker/issues/2477))
 - Fix reported WF vulnerabilities ([#2443](https://github.com/wazuh/wazuh-docker/issues/2443))
 - Adapt Wazuh manager healthcheck with local binaries ([#2422](https://github.com/wazuh/wazuh-docker/issues/2422))
