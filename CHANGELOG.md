@@ -1,6 +1,3 @@
-# Change Log
-All notable changes to this project will be documented in this file.
-
 ## [v5.0.0]
 
 ### Added
@@ -15,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Add new WF for changelog check ([#2539](https://github.com/wazuh/wazuh-docker/pull/2539))
 - Change artifact upload and download ([#2502](https://github.com/wazuh/wazuh-docker/issues/2502))
 - Change runners on repository workflows 5.x ([#2471](https://github.com/wazuh/wazuh-docker/issues/2471))
 - PR revamp modifications 5.x ([#2446](https://github.com/wazuh/wazuh-docker/issues/2446))
