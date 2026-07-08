@@ -1,0 +1,62 @@
+name: 5.x Changelog check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+jobs:
+  changelog_check:
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate CHANGELOG.md changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          UPDATED="✅" FORMAT="—" INVALID=""
+
+          ADDED=$(git diff -U0 "origin/${BASE_REF}...HEAD" -- CHANGELOG.md | grep -E '^\+[^+]' | sed 's/^+//' || true)
+          if [ -z "$ADDED" ]; then
+            UPDATED="❌"
+            echo "::error::CHANGELOG.md was not updated with new entries. Add one or add the 'no-changelog' label to skip this check."
+          else
+            FORMAT="✅"
+
+            ENTRY_REGEX='^- .+ \(\[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\)\)$'
+            INVALID=$(echo "$ADDED" | grep -E '^- ' | grep -vx -- '- None' | grep -vE "$ENTRY_REGEX" || true)
+            if [ -n "$INVALID" ]; then
+              FORMAT="❌"
+              echo "::error::Invalid CHANGELOG.md entries. Expected format: '- Description ([#123](https://github.com/<org>/<repo>/issues/123))'. Offending lines:"
+              echo "$INVALID"
+            fi
+          fi
+
+          {
+            echo "## Changelog check"
+            echo ""
+            echo "| Check | Result |"
+            echo "|---|---|"
+            echo "| CHANGELOG.md has new entries | $UPDATED |"
+            echo "| Entry format | $FORMAT |"
+            if [ -n "$INVALID" ]; then
+              echo ""
+              echo "Offending lines:"
+              echo '```'
+              echo "$INVALID"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$UPDATED" != "✅" ] || [ "$FORMAT" != "✅" ]; then
+            exit 1
+          fi
+          echo "CHANGELOG.md update is valid."
