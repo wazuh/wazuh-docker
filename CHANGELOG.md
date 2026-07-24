@@ -19,4 +19,7 @@ All notable changes to this project will be documented in this file.
 
 - None
 
+## Prior version
+
 - [v5.0.1](https://github.com/wazuh/wazuh-docker/blob/v5.0.1/CHANGELOG.md)
+- [v5.0.0](https://github.com/wazuh/wazuh-docker/blob/v5.0.0/CHANGELOG.md)
