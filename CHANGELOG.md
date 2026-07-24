@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Fix bumper workflow failure when bump produces no changes ([#2534](https://github.com/wazuh/wazuh-docker/pull/2534))
 
 ### Deleted
 
