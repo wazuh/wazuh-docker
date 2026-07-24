@@ -110,13 +110,21 @@ jobs:
           bash ${{ env.BUMP_SCRIPT_PATH }} ${{ steps.vars.outputs.script_params }}
 
       - name: Commit and push changes
+        id: bump_commit
         run: |
           git add .
-          git commit -m "feat: bump ${{ github.ref_name }}"
-          git push origin ${{ steps.vars.outputs.branch_name }}
+          if git diff --staged --quiet; then
+            echo "Nothing to bump: the repository is already at the requested version/stage. Skipping commit."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "feat: bump ${{ github.ref_name }}"
+            git push origin ${{ steps.vars.outputs.branch_name }}
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create pull request
         id: create_pr
+        if: steps.bump_commit.outputs.has_changes == 'true'
         run: |
           gh auth setup-git
           PR_URL=$(gh pr create \
@@ -129,14 +137,19 @@ jobs:
           echo "pull_request_url=${PR_URL}" >> $GITHUB_OUTPUT
 
       - name: Merge pull request
+        if: steps.bump_commit.outputs.has_changes == 'true'
         run: |
           # Any checks for the PR are bypassed since the branch is expected to be functional (i.e. the bump process does not introduce any bugs)
           gh pr merge "${{ steps.create_pr.outputs.pull_request_url }}" --merge --admin
 
       - name: Show logs
         run: |
-          echo "Bump complete."
-          echo "Branch: ${{ steps.vars.outputs.branch_name }}"
-          echo "PR: ${{ steps.create_pr.outputs.pull_request_url }}"
+          if [[ "${{ steps.bump_commit.outputs.has_changes }}" == "true" ]]; then
+            echo "Bump complete."
+            echo "Branch: ${{ steps.vars.outputs.branch_name }}"
+            echo "PR: ${{ steps.create_pr.outputs.pull_request_url }}"
+          else
+            echo "Bump skipped: the repository is already at the requested version/stage."
+          fi
           echo "Bumper scripts logs:"
           cat ${BUMP_LOG_PATH}/repository_bumper*log
