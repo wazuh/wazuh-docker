@@ -1,10 +1,79 @@
 # Upgrading Wazuh in Docker
 
-To upgrade your Wazuh deployment when using Docker, we recommend following the official Wazuh documentation. It contains the most accurate and up-to-date information for upgrading from previous versions to the current one.
+To upgrade your Wazuh deployment when using Docker, the process primarily involves updating the image tags in your `docker-compose.yml` file to the desired version.
 
-> 📘 Please refer to the official guide:
-> [Upgrading Wazuh Docker](https://documentation.wazuh.com/current/deployment-options/docker/upgrading-wazuh-docker.html)
+Below is a step-by-step example of how to perform this update:
 
-This external guide provides detailed upgrade instructions that cover multiple scenarios and configurations.
+1. **Stop the current deployment**:
+   Stop and remove the existing containers.
+   ```bash
+   docker-compose down
+   ```
 
-Following the official documentation ensures a smoother and safer upgrade process, with fewer risks of data loss or configuration issues.
+2. **Update the image tags**:
+   Edit your `docker-compose.yml` file and update the `image` field for all Wazuh services to the desired version.
+
+   ### Single-node configuration
+   Update the image tag for the following services in `single-node/docker-compose.yml`:
+   - `wazuh.manager`
+   - `wazuh.indexer`
+   - `wazuh.dashboard`
+
+   Example (update to 5.0.0):
+
+   ```yaml
+   services:
+     wazuh.manager:
+       image: wazuh/wazuh-manager:5.0.0
+       ...
+
+     wazuh.indexer:
+       image: wazuh/wazuh-indexer:5.0.0
+       ...
+
+     wazuh.dashboard:
+       image: wazuh/wazuh-dashboard:5.0.0
+       ...
+   ```
+
+   ### Multi-node configuration
+   Update the image tag for the following services in `multi-node/docker-compose.yml`:
+   - `wazuh.master`
+   - `wazuh.worker`
+   - `wazuh1.indexer`, `wazuh2.indexer`, and `wazuh3.indexer`
+   - `wazuh.dashboard`
+
+   Example (update to 5.0.0):
+
+   ```yaml
+   services:
+     wazuh.master:
+       image: wazuh/wazuh-manager:5.0.0
+       ...
+
+     wazuh.worker:
+       image: wazuh/wazuh-manager:5.0.0
+       ...
+
+     wazuh1.indexer:
+       image: wazuh/wazuh-indexer:5.0.0
+       ...
+
+     wazuh2.indexer:
+       image: wazuh/wazuh-indexer:5.0.0
+       ...
+
+     wazuh3.indexer:
+       image: wazuh/wazuh-indexer:5.0.0
+       ...
+
+     wazuh.dashboard:
+       image: wazuh/wazuh-dashboard:5.0.0
+       ...
+   ```
+
+3. **Start the updated deployment**:
+   Start the containers again. Docker will automatically pull the new images.
+   ```bash
+   docker-compose up -d
+   ```
