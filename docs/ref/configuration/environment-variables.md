@@ -21,8 +21,8 @@ The Wazuh Manager container accepts the following environment variables, which c
 
 ```yaml
 environment:
-  - INDEXER_USERNAME=admin
-  - INDEXER_PASSWORD=SecretPassword
+  - INDEXER_USERNAME=wazuh-manager
+  - INDEXER_PASSWORD=wazuh-manager
   - WAZUH_API_URL=https://wazuh.manager
   - DASHBOARD_USERNAME=kibanaserver
   - DASHBOARD_PASSWORD=kibanaserver
@@ -30,7 +30,7 @@ environment:
 
 **Variable Descriptions:**
 
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `admin` user or a user with the same permissions.
+- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions.
 - `WAZUH_API_URL`: URL of the Wazuh API, used by other services for communication.
 - `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: Credentials for the Wazuh Dashboard to authenticate with the Indexer.
 
@@ -57,8 +57,8 @@ The Wazuh Dashboard container accepts the following environment variables, which
 
 ```yaml
 environment:
-  - INDEXER_USERNAME=admin
-  - INDEXER_PASSWORD=SecretPassword
+  - INDEXER_USERNAME=wazuh-manager
+  - INDEXER_PASSWORD=wazuh-manager
   - WAZUH_API_URL=https://wazuh.manager
   - DASHBOARD_USERNAME=kibanaserver
   - DASHBOARD_PASSWORD=kibanaserver

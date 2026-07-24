@@ -31,8 +31,8 @@ services:
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
       - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_USERNAME=wazuh-manager
+      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - wazuh_api_configuration:/var/wazuh-manager/api/configuration
       - wazuh_etc:/var/wazuh-manager/etc
@@ -97,8 +97,6 @@ services:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
       - WAZUH_API_URL=https://wazuh.manager
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver

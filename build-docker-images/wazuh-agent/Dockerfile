@@ -36,8 +36,7 @@ RUN dnf install procps shadow-utils -y && \
     curl -o /wazuh-agent.rpm "${agent_url}" && \
     dnf install /wazuh-agent.rpm -y && \
     rm -rf /wazuh-agent.rpm && \
-    dnf clean all && \
-    sed -i '/<authorization_pass_path>/d' /var/ossec/etc/ossec.conf
+    dnf clean all
 
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \

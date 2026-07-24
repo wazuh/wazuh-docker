@@ -41,8 +41,7 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
 
 ################################################################################
 # Build stage 1 (the actual Wazuh indexer image):
-#
-# Copy wazuh-indexer from stage 0
+# Copy wazuh-indexer from builder
 # Add entrypoint
 ################################################################################
 FROM amazonlinux:2023

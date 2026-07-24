@@ -31,8 +31,8 @@ services:
       - WAZUH_NODE_TYPE=master
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_USERNAME=wazuh-manager
+      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - master-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - master-wazuh-etc:/var/wazuh-manager/etc
@@ -70,8 +70,8 @@ services:
       - WAZUH_NODE_TYPE=worker
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_USERNAME=wazuh-manager
+      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - worker-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - worker-wazuh-etc:/var/wazuh-manager/etc
@@ -213,8 +213,6 @@ services:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=["https://wazuh1.indexer:9200","https://wazuh2.indexer:9200","https://wazuh3.indexer:9200"]
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
       - WAZUH_API_URL=https://wazuh.master
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
