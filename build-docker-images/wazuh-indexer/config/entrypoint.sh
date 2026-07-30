@@ -64,9 +64,40 @@ function runOpensearch {
         echo $! > /run/wazuh-indexer/wazuh-engine.pid
     fi
 
+    # Index State Management (ISM) creates its audit history index
+    # (.opendistro-ism-managed-index-history-*) with 1 replica by default,
+    # regardless of cluster.default_number_of_replicas. On a single-node
+    # cluster that replica shard can never be assigned, leaving the cluster
+    # permanently yellow. Set the ISM-specific default to 0 in the
+    # background once the API is reachable, before ISM's first sweep runs.
+    applyIsmHistoryReplicaDefault > /dev/null 2>&1 &
+
     # Start opensearch
     exec "$@" "${opensearch_opts[@]}"
 
+}
+
+function applyIsmHistoryReplicaDefault {
+    local admin_cert="$OPENSEARCH_PATH_CONF/certs/admin.pem"
+    local admin_key="$OPENSEARCH_PATH_CONF/certs/admin-key.pem"
+
+    if [ ! -f "$admin_cert" ] || [ ! -f "$admin_key" ]; then
+        return 0
+    fi
+
+    # -k: the server cert's SAN matches the node DNS name, not "localhost"
+    # (same reason the wazuh.indexer healthcheck in docker-compose uses -k).
+    local attempt=0
+    until curl -sk -o /dev/null --cert "$admin_cert" --key "$admin_key" "https://localhost:9200" \
+       || [ "$attempt" -ge 60 ]; do
+        attempt=$((attempt + 1))
+        sleep 5
+    done
+
+    curl -sk -o /dev/null --cert "$admin_cert" --key "$admin_key" \
+        -X PUT "https://localhost:9200/_cluster/settings" \
+        -H 'Content-Type: application/json' \
+        -d '{"persistent":{"plugins.index_state_management.history.number_of_replicas":0}}'
 }
 
 function configureOpensearch {
