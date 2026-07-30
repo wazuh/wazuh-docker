@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Add ISM plugin configuration after opensearch start ([#2559](https://github.com/wazuh/wazuh-docker/issues/2559))
 - Update deployment for Wazuh Indexer 5.0.0 RBAC ([#2537](https://github.com/wazuh/wazuh-docker/issues/2537))
 - Add new WF for changelog check ([#2539](https://github.com/wazuh/wazuh-docker/pull/2539))
 - Change artifact upload and download ([#2502](https://github.com/wazuh/wazuh-docker/issues/2502))
