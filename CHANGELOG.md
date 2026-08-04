@@ -74,6 +74,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#9999](https://github.com/wazuh/wazuh-docker/issues/9999) | Test entry to validate changelog check regex (standard entry) |
 | [#2563](https://github.com/wazuh/wazuh-docker/issues/2563) | Fixed changelog check workflow to accept Prior versions entries |
 | [#2533](https://github.com/wazuh/wazuh-docker/pull/2533) | Fix bumper workflow failure when bump produces no changes |
 | [#2477](https://github.com/wazuh/wazuh-docker/issues/2477) | Bumper script issue when the tag is set to false |
