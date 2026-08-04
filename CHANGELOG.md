@@ -88,3 +88,4 @@
 
 ## Prior versions
 - []()
+- [v4.14.99](https://github.com/wazuh/wazuh-docker/blob/v4.14.99/CHANGELOG.md)
