@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: read
-  
+
 env:
   ARTIFACTS_LOCAL_DIR: /home/runner/work/wazuh-docker/wazuh-docker/docker-images
   ARTIFACT_NAMES: |

@@ -9,7 +9,8 @@
 
 | Issue | Comment |
 | - | - |
-- Added explicit `permissions` blocks to the 4.x workflows to restrict the `GITHUB_TOKEN` scope ([#2461](https://github.com/wazuh/wazuh-docker/issues/2461))
+| [#2461](https://github.com/wazuh/wazuh-docker/issues/2461) | Added explicit `permissions` blocks to the 4.x workflows to restrict the `GITHUB_TOKEN` scope |
+
 ### Removed
 
 | Issue | Comment |
