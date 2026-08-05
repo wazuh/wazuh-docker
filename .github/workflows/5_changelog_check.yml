@@ -31,9 +31,10 @@ jobs:
           else
             FORMAT="✅"
 
-            ENTRY_REGEX='^- .+ \(\[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\)\)$'
-            PRIOR_VERSION_REGEX='^- \[v[0-9]+\.[0-9]+\.[0-9]+\]\(https://github\.com/[^)]+/blob/v[0-9]+\.[0-9]+\.[0-9]+/CHANGELOG\.md\)$'
-            INVALID=$(echo "$ADDED" | grep -E '^- ' | grep -vx -- '- None' | grep -vE "$ENTRY_REGEX" | grep -vE "$PRIOR_VERSION_REGEX" || true)
+            TABLE_ENTRY_REGEX='^\| \[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\) \| .+ \|$'
+            TABLE_HEADER_REGEX='^\| Issue \| Comment \|$|^\| - \| - \|$'
+            PRIOR_VERSION_REGEX='^- \[v?[0-9]+\.[0-9]+\.[0-9]+\]\(https://github\.com/[^)]+/blob/[^)]+/CHANGELOG\.md\)$|^- \[\]\(\)$'
+            INVALID=$(echo "$ADDED" | grep -E '^(\||-)' | grep -vx -- '- None' | grep -vE "$TABLE_HEADER_REGEX" | grep -vE "$TABLE_ENTRY_REGEX" | grep -vE "$PRIOR_VERSION_REGEX" || true)
             if [ -n "$INVALID" ]; then
               FORMAT="❌"
               echo "::error::Invalid CHANGELOG.md entries. Expected format: '- Description ([#123](https://github.com/<org>/<repo>/issues/123))' or, for the Prior versions section, '- [vX.X.X](https://github.com/<org>/<repo>/blob/vX.X.X/CHANGELOG.md)'. Offending lines:"
