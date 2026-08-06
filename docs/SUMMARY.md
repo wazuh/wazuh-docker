@@ -20,6 +20,7 @@
   - [Deployment](ref/getting-started/deployment/deployment.md)
     - [Single Node Wazuh Stack](ref/getting-started/deployment/single-node.md)
     - [Multi Node Wazuh Stack](ref/getting-started/deployment/multi-node.md)
+    - [Rootless Podman with SELinux](ref/getting-started/deployment/rootless-podman.md)
     - [Wazuh Agent](ref/getting-started/deployment/wazuh-agent.md)
 - [Configuration](ref/configuration/configuration.md)
   - [Environment Variabless](ref/configuration/environment-variables.md)
