@@ -70,7 +70,7 @@ flowchart TD
 | `pr_head_ref` | Yes | — | Branch of `wazuh-docker` to test |
 | `automation_reference` | No | `main` | Branch of `wazuh-automation` to use |
 | `deployment_type` | Yes | — | `single-node`, `multi-node`, or `both` |
-| `version` | No | — | Override image version (e.g. `5.0.1`). If empty, reads from `VERSION.json` |
+| `version` | No | — | Override image version (e.g. `5.1.0`). If empty, reads from `VERSION.json` |
 | `stage` | No | — | Image stage suffix (e.g. `beta1`, `beta2-latest`). Required when `version` is set |
 | `registry` | No | `ECR` | `ECR` (dev/built images) or `DockerHub` (released images) |
 
