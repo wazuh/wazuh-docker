@@ -2,6 +2,8 @@
 
 This repository includes automated tests designed to validate the correct deployment of Wazuh using Docker. These tests are executed on every pull request (PR) to ensure the integrity and stability of the system when changes are introduced.
 
+Check more information on the [Workflow usage](workflow-usage.md) page.
+
 ## Purpose
 
 The main objective of the tests is to verify that the Wazuh Docker environment can be successfully deployed and that all its core components (Wazuh Manager, Indexer, Dashboard, and Agents) operate as expected after any modification in the codebase.
