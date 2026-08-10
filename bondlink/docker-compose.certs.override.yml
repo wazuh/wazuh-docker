@@ -1,0 +1,17 @@
+# Points the stock cert generator at bondlink/config/certs.yml (which adds
+# wazuh-warm1.indexer to the node list) instead of multi-node/config/certs.yml.
+#
+# Usage (from the repo root):
+#   docker compose \
+#     -f multi-node/generate-indexer-certs.yml \
+#     -f bondlink/docker-compose.certs.override.yml \
+#     run --rm generator
+#
+# Output still lands in multi-node/config/wazuh_indexer_ssl_certs/, which is
+# where multi-node/docker-compose.yml (hot cluster) already expects it, and
+# where bondlink/docker-compose-warm.yml expects it when copied to the warm host.
+services:
+  generator:
+    volumes: !override
+      - ../bondlink/config/certs.yml:/config/certs.yml
+      - ./config/wazuh_indexer_ssl_certs/:/certificates/

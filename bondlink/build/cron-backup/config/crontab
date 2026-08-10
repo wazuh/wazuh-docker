@@ -1,0 +1,1 @@
+@daily /usr/bin/aws s3 sync /var/ossec/logs/alerts s3://__S3_ENV_PATH__ --only-show-errors

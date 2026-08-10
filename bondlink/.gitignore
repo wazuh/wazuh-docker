@@ -1,0 +1,8 @@
+# Cert-generator output -- runtime artifacts, not source
+/../multi-node/config/wazuh_indexer_ssl_certs/*.pem
+/../multi-node/config/wazuh_indexer_ssl_certs/*.key
+
+# Note: config/wazuh_cluster/*.conf and config/wazuh_indexer/*.yml here DO
+# currently carry real plaintext secrets (cluster key, dashboard password),
+# carried forward from production as agreed -- see README.md "Not ported"
+# section on secrets rotation before this branch is used long-term.

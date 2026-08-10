@@ -1,0 +1,24 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "region": "us-east-1",
+    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+    "debug": false
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/ossec/logs/alerts/alerts.json",
+            "log_group_name": "ProductionOSSEC",
+            "log_stream_name": "prodops02",
+            "timezone": "UTC",
+            "timestamp_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+            "retention_in_days": 14
+          }
+        ]
+      }
+    }
+  }
+}
