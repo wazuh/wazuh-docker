@@ -18,6 +18,13 @@ Wazuh-Docker offers flexibility in how you can deploy the Wazuh stack. The prima
     * **Pros**: Improved fault tolerance (for clustered components like the Indexer), better performance distribution.
     * **Cons**: More complex to set up and manage than a single-node deployment.
 
+### Alternative container engine
+
+-   **[Rootless Podman with SELinux](rootless-podman.md)**: Both the single-node and
+    multi-node compose files also run under rootless Podman on SELinux-enforcing
+    hosts. This guide covers the additional host preparation required. The standard
+    `docker compose` workflow remains the officially supported method.
+
 ## Before You Begin Deployment
 
 Ensure you have:

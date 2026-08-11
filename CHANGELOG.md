@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1824](https://github.com/wazuh/wazuh-docker/issues/1824) | Added SELinux relabel options to the compose bind mounts and a rootless Podman deployment guide |
 
 ### Changed
 
