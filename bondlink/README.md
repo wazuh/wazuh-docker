@@ -85,3 +85,22 @@ needed there, redeclaring a key just replaces its value. Verified live via
 ## Warm-host deployment note
 
 `docker-compose-warm.yml` expects `./config/wazuh_indexer_ssl_certs/{root-ca,wazuh-warm1.indexer,wazuh-warm1.indexer-key,admin,admin-key}.pem`, `./config/wazuh_indexer/wazuh-warm1.indexer.yml`, and `./config/wazuh_indexer/internal_users.yml` relative to wherever it's run. Since the warm node deploys on a separate host, copy those specific files there alongside this compose file — the cert-generator step above produces the `.pem` files on the main host under `multi-node/config/wazuh_indexer_ssl_certs/`.
+
+## Live validation results (real `v4.14.0` containers)
+
+Brought the full stack up against real `wazuh/wazuh-manager`, `wazuh/wazuh-indexer`, and `wazuh/wazuh-dashboard` `4.14.0` images (not just `docker compose config`). Findings:
+
+**Confirmed working, end to end:**
+- 3-node hot indexer cluster reaches `"status": "green"`, all 3 nodes joined (`_cluster/health`, `_cat/nodes`).
+- `node.attr.temp: hot` present on all 3 nodes (`_cat/nodeattrs`).
+- TLS 1.2 transport pin actually takes effect (`Enabled TLS protocols for Transport layer : [TLSv1.2]` in indexer logs, vs. both 1.2/1.3 on the HTTP layer, which we didn't restrict).
+- `OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g` override reflected in the actual JVM args and reported heap size.
+- Manager's mounted `ossec.conf` contains our email alerting, cluster key, and CIDR whitelist exactly as authored (`grep`-verified inside the running container).
+- `cron-backup`'s `ENTRYPOINT` fix confirmed live — container runs `crond -f -d 8` and stays up, rather than crash-looping.
+- Dashboard serves HTTP on port 80 (302 redirect to login, as expected for an unauthenticated request) — confirms the port/SSL-disable change works.
+
+**Found and fixed one real bug during testing**: our ported `ossec.conf` carried forward `<wodle name="cis-cat"><disabled>no</disabled>` from the source fork, but the stock `wazuh-manager:4.14.0` image ships neither the CIS-CAT benchmark content (`wodles/ciscat`) nor a JRE (`wodles/java`) — confirmed both paths don't exist in the image. Disabled it in `config/wazuh_cluster/wazuh_manager.conf` (see the comment there) until those dependencies are actually provisioned (custom image layer or mounted volume) and re-verified.
+
+**Could not fully validate here — environment limitation, not a port defect**: even with CIS-CAT disabled, `wazuh-modulesd` segfaults under this Mac's QEMU x86_64-on-arm64 emulation during its own pre-flight config self-test (`wazuh-modulesd -t`), which blocks `wazuh-control` from starting *any* manager daemon (analysisd, remoted, etc. — confirmed via `wazuh-control status`). Isolated this by testing `wazuh-modulesd -t` against a bare-minimum config with no wodles at all — it segfaults identically, so this is unrelated to our config content or the CIS-CAT fix. `wazuh-analysisd -t` and `wazuh-logcollector -t` both pass cleanly against our real config. `wazuh/wazuh-manager:4.14.0` is a single-platform (amd64-only) image (`docker manifest inspect` confirms no arm64 variant), so this emulation path is unavoidable on Apple Silicon and would very likely not reproduce on real x86_64 hardware (the actual production target). If you need to validate manager-daemon startup locally, do it on an amd64 host/VM rather than under QEMU emulation.
+
+**Local-only test scaffolding** (not part of the actual port, kept for future testers on similar hardware): `bondlink/docker-compose.local-test-only.yml` + `bondlink/local-test-only/wazuh{1,2,3}.indexer.yml` disable `bootstrap.system_call_filter` for the indexer, working around this same host's kernel lacking `CONFIG_SECCOMP` (OrbStack's Linux VM). Also environment-only: `bootstrap.system_call_filter` is read directly from `opensearch.yml` at native bootstrap time, *before* the entrypoint's generic env-var-to-`-E`-flag passthrough runs — setting it as a plain `environment:` var reaches the container but has no effect, which is why this needed its own yml copy rather than a compose override.
