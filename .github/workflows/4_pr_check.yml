@@ -22,7 +22,7 @@ env:
 
 jobs:
   build-docker-images:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Check out code
@@ -62,7 +62,7 @@ jobs:
         echo "All artifacts uploaded successfully."
 
   check-single-node:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     needs: build-docker-images
     steps:
 
@@ -77,6 +77,9 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
@@ -198,7 +201,7 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     needs: build-docker-images
     steps:
 
@@ -213,6 +216,9 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
