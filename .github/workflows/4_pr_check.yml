@@ -23,6 +23,11 @@ env:
 jobs:
   build-docker-images:
     runs-on: ubuntu-24.04
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -35,7 +40,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
@@ -57,7 +62,7 @@ jobs:
 
     - name: Temporarily save Wazuh Docker images
       env:
-        S3_ARTIFACTS_PATH: "S3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}"
+        S3_ARTIFACTS_PATH: "s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}"
       run: |
         echo "Uploading Docker image artifacts to S3..."
         while IFS= read -r artifact; do
@@ -70,6 +75,11 @@ jobs:
   check-single-node:
     runs-on: ubuntu-24.04
     needs: build-docker-images
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -85,7 +95,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
@@ -212,6 +222,11 @@ jobs:
   check-multi-node:
     runs-on: ubuntu-24.04
     needs: build-docker-images
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -227,7 +242,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
