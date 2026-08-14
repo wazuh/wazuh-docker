@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Change Codebuild runners to Github runners ([#2580](https://github.com/wazuh/wazuh-docker/pull/2580))
 
 ### Fixed
 
