@@ -34,6 +34,12 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Build Wazuh images
       run: ./build-images.sh
       working-directory: ./build-docker-images
@@ -77,6 +83,12 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
@@ -213,6 +225,12 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
