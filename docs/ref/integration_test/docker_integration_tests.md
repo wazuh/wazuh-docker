@@ -162,7 +162,7 @@ Runs once per entry in `deployment_matrix`. Each instance provisions its own VM.
 Provisions a dedicated AWS VM using the `deployability` allocator module:
 
 ```bash
-python3 wazuh-automation/deployability/modules/allocation/main.py \
+wazuh-allocator \
   --action create \
   --provider aws \
   --size large \
@@ -271,7 +271,7 @@ For details on what `docker-single-node` and `docker-multi-node` test types vali
 1. `docker compose down -v` on the VM (stops containers and removes volumes)
 2. Deallocate the VM:
    ```bash
-   python3 wazuh-automation/deployability/modules/allocation/main.py \
+   wazuh-allocator \
      --action delete \
      --track-output {ALLOCATOR_PATH}/track.yml
    ```
