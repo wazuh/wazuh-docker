@@ -691,31 +691,6 @@ jobs:
             sudo docker compose ps
           "
 
-      - name: Apply certificate ownership/permissions (--priv) for #2584 evidence
-        run: |
-          DEPLOYMENT="${{ matrix.deployment_type }}"
-          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
-            cd /tmp/wazuh-docker/${DEPLOYMENT}
-            sudo bash /tmp/wazuh-docker/tools/utils/deployment/certificates-conf.sh --priv
-          "
-
-      - name: Verify certificate ownership and modes (evidence for #2584)
-        run: |
-          DEPLOYMENT="${{ matrix.deployment_type }}"
-          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
-            cd /tmp/wazuh-docker/${DEPLOYMENT}
-            echo '=== Manager certificate ownership and modes (issue #2584 evidence) ==='
-            for SERVICE in wazuh.manager wazuh.master wazuh.worker; do
-              if sudo docker compose ps --services 2>/dev/null | grep -qx \"\$SERVICE\"; then
-                echo \"--- Service: \$SERVICE ---\"
-                echo '[Directory etc/certs]'
-                sudo docker compose exec -T \"\$SERVICE\" ls -ld /var/wazuh-manager/etc/certs
-                echo '[Certificate files]'
-                sudo docker compose exec -T \"\$SERVICE\" ls -la /var/wazuh-manager/etc/certs
-              fi
-            done
-          "
-
       # -----------------------------------------------------------------------
       # Run integration tests
       # -----------------------------------------------------------------------
