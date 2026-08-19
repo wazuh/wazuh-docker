@@ -43,8 +43,8 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
     chown root:wazuh-manager /var/wazuh-manager/var/multigroups && \
     chmod 770 /var/wazuh-manager/var/multigroups && \
     mkdir -p /var/wazuh-manager/etc/certs && \
-    chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/certs && \
-    chmod 500 /var/wazuh-manager/etc/certs && \
+    chown root:wazuh-manager /var/wazuh-manager/etc/certs && \
+    chmod 1770 /var/wazuh-manager/etc/certs && \
     rm -f /var/wazuh-manager/etc/sslmanager.key && \
     rm -f /var/wazuh-manager/etc/sslmanager.cert
 

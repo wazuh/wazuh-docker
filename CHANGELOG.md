@@ -75,6 +75,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2584](https://github.com/wazuh/wazuh-docker/issues/2584) | Adapt certificate deployment to the unified manager certificate layout (root:wazuh-manager 0640, dir 1770) |
 | [#2533](https://github.com/wazuh/wazuh-docker/pull/2533) | Fix bumper workflow failure when bump produces no changes |
 | [#2477](https://github.com/wazuh/wazuh-docker/issues/2477) | Bumper script issue when the tag is set to false |
 | [#2443](https://github.com/wazuh/wazuh-docker/issues/2443) | Fix reported WF vulnerabilities |
