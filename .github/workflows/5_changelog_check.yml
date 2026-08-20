@@ -1,4 +1,4 @@
-name: 5.x Changelog check
+name: 9.x Changelog check
 
 on:
   pull_request:

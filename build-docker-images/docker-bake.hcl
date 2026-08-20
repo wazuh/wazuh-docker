@@ -12,7 +12,7 @@
 
 # ── Global variables ──────────────────────────────────────────────────────────
 
-variable "WAZUH_VERSION"  { default = "5.0.0" }
+variable "WAZUH_VERSION"  { default = "9.9.9" }
 variable "WAZUH_REGISTRY" { default = "docker.io" }
 
 # Set IMAGE_TAG externally to override; defaults to WAZUH_VERSION.
@@ -23,7 +23,7 @@ variable "MULTIARCH" { default = "" }
 
 # Per-component tags — all default to IMAGE_TAG.
 # In dev builds the shell script sets each one independently to append the
-# per-component commit ref (e.g. MANAGER_TAG=5.0.0-beta1-abc1234).
+# per-component commit ref (e.g. MANAGER_TAG=9.9.9-beta1-abc1234).
 variable "INDEXER_TAG"   { default = IMAGE_TAG }
 variable "MANAGER_TAG"   { default = IMAGE_TAG }
 variable "DASHBOARD_TAG" { default = IMAGE_TAG }
