@@ -10,6 +10,8 @@ Below is a step-by-step example of how to perform this update:
    docker-compose down
    ```
 
+   > **Important**: Do not add the `-v` flag. It removes the named volumes, including `wazuh-dashboard-config`, which holds the Wazuh dashboard keystore. Losing that keystore regenerates the `wazuh_ai_assistant.encryptionKey` on the next start and makes the data previously encrypted by the AI assistant unreadable.
+
 2. **Update the image tags**:
    Edit your `docker-compose.yml` file and update the `image` field for all Wazuh services to the desired version.
 
