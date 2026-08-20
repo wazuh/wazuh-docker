@@ -31,12 +31,18 @@ jobs:
           else
             FORMAT="✅"
 
-            ENTRY_REGEX='^- .+ \(\[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\)\)$'
-            INVALID=$(echo "$ADDED" | grep -E '^- ' | grep -vx -- '- None' | grep -vE "$ENTRY_REGEX" || true)
+            TABLE_ENTRY_REGEX='^\| \[#[0-9]+\]\(https://github\.com/[^)]+/(issues|pull)/[0-9]+\) \| .+ \|$'
+            TABLE_HEADER_REGEX='^\| Issue \| Comment \|$|^\| - \| - \|$'
+            PRIOR_VERSION_REGEX='^- \[v?[0-9]+\.[0-9]+\.[0-9]+\]\(https://github\.com/[^)]+/blob/[^)]+/CHANGELOG\.md\)$|^- \[\]\(\)$'
+            INVALID=$(echo "$ADDED" | grep -E '^(\||-)' | grep -vx -- '- None' | grep -vE "$TABLE_HEADER_REGEX" | grep -vE "$TABLE_ENTRY_REGEX" | grep -vE "$PRIOR_VERSION_REGEX" || true)
             if [ -n "$INVALID" ]; then
               FORMAT="❌"
-              echo "::error::Invalid CHANGELOG.md entries. Expected format: '- Description ([#123](https://github.com/<org>/<repo>/issues/123))'. Offending lines:"
+              echo "::error::Invalid CHANGELOG.md entries. Offending lines:"
               echo "$INVALID"
+              echo "::error::Expected formats:"
+              echo "::error::  - Table entry: '| [#123](https://github.com/<org>/<repo>/issues/123) | Description |'"
+              echo "::error::  - Prior versions entry: '- [vX.Y.Z](https://github.com/<org>/<repo>/blob/vX.Y.Z/CHANGELOG.md)'"
+              echo "::error::  - Prior versions placeholder (no prior version): '- []()'"
             fi
           fi
 
