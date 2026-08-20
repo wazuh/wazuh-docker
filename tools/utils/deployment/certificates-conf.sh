@@ -139,9 +139,9 @@ if $DO_PRIV; then
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for manager $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
+    echo "Setting permissions for manager $node (0:${WAZUH_GID})"
+    chown -R 0:${WAZUH_GID} "./config/$dir_name/certs"
+    chmod 640 "./config/$dir_name/certs/"*
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
@@ -150,9 +150,9 @@ if $DO_PRIV; then
     chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
     chmod 400 "./config/$dir_name/certs/"*
   done
-  echo "Setting permissions for root-ca certificates (${WAZUH_UID}:${WAZUH_GID})"
-  chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/root-ca/certs"
-  chmod 400 "./config/root-ca/certs/"*
+  echo "Setting permissions for root-ca certificates (0:${WAZUH_GID})"
+  chown -R 0:${WAZUH_GID} "./config/root-ca/certs"
+  chmod 640 "./config/root-ca/certs/"*
 fi
 
 echo "Process completed."
