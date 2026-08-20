@@ -75,6 +75,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2578](https://github.com/wazuh/wazuh-docker/issues/2578) | Report skipped bumps in the repository bumper workflow |
 | [#2584](https://github.com/wazuh/wazuh-docker/issues/2584) | Adapt certificate deployment to the unified manager certificate layout (root:wazuh-manager 0640, dir 1770) |
 | [#2533](https://github.com/wazuh/wazuh-docker/pull/2533) | Fix bumper workflow failure when bump produces no changes |
 | [#2477](https://github.com/wazuh/wazuh-docker/issues/2477) | Bumper script issue when the tag is set to false |
