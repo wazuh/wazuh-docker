@@ -37,8 +37,12 @@ jobs:
             INVALID=$(echo "$ADDED" | grep -E '^(\||-)' | grep -vx -- '- None' | grep -vE "$TABLE_HEADER_REGEX" | grep -vE "$TABLE_ENTRY_REGEX" | grep -vE "$PRIOR_VERSION_REGEX" || true)
             if [ -n "$INVALID" ]; then
               FORMAT="❌"
-              echo "::error::Invalid CHANGELOG.md entries. Expected format: '- Description ([#123](https://github.com/<org>/<repo>/issues/123))' or, for the Prior versions section, '- [vX.X.X](https://github.com/<org>/<repo>/blob/vX.X.X/CHANGELOG.md)'. Offending lines:"
+              echo "::error::Invalid CHANGELOG.md entries. Offending lines:"
               echo "$INVALID"
+              echo "::error::Expected formats:"
+              echo "::error::  - Table entry: '| [#123](https://github.com/<org>/<repo>/issues/123) | Description |'"
+              echo "::error::  - Prior versions entry: '- [vX.Y.Z](https://github.com/<org>/<repo>/blob/vX.Y.Z/CHANGELOG.md)'"
+              echo "::error::  - Prior versions placeholder (no prior version): '- []()'"
             fi
           fi
 
