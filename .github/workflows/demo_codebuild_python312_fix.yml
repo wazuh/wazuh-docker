@@ -1,0 +1,39 @@
+name: "[DEMO] CodeBuild Python 3.12 runtime-versions fix"
+run-name: Demo - Allocator install with buildspec-override + runtime-versions
+
+on:
+  push:
+    branches:
+      - demo/codebuild-python312-runtime-fix
+
+jobs:
+  check:
+    runs-on:
+      - codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+      - buildspec-override:true
+    steps:
+      - name: Show Python version and pip status after runtime-versions override
+        run: |
+          echo "--- python3 --version ---"
+          python3 --version
+          echo "--- which python3 ---"
+          which python3
+          echo "--- python3 -m pip --version ---"
+          python3 -m pip --version || echo "pip still not available"
+
+      - name: Checkout wazuh/wazuh-automation
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-automation
+          ref: 'enhancement/2842-refactor-allocator-as-a-python-package-for-improved-dependency-management'
+          token: ${{ secrets.GH_CLONE_TOKEN }}
+          path: wazuh-automation
+
+      - name: Install the Allocator package using runtime-versions Python
+        run: |
+          python3 -m pip install --break-system-packages ./wazuh-automation/deployability/modules/allocation
+
+      - name: Verify wazuh-allocator entry point exists
+        run: |
+          which wazuh-allocator || echo "wazuh-allocator entry point NOT found on PATH"
+          wazuh-allocator --help || echo "wazuh-allocator did not run successfully"
