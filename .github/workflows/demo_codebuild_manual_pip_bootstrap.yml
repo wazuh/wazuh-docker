@@ -1,0 +1,39 @@
+name: "[DEMO] Manual pip bootstrap on CodeBuild (Option 4)"
+run-name: Demo - Allocator install via manual pip bootstrap
+
+on:
+  push:
+    branches:
+      - demo/codebuild-python312-runtime-fix
+
+jobs:
+  check:
+    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout wazuh/wazuh-automation
+        uses: actions/checkout@v4
+        with:
+          repository: wazuh/wazuh-automation
+          ref: 'enhancement/2842-refactor-allocator-as-a-python-package-for-improved-dependency-management'
+          token: ${{ secrets.GH_CLONE_TOKEN }}
+          path: wazuh-automation
+
+      - name: Manually bootstrap pip on the default (incomplete) python3.12
+        run: |
+          echo "--- default python3.12 --version ---"
+          python3.12 --version
+          echo "--- trying ensurepip (expected to fail, module missing) ---"
+          python3.12 -m ensurepip --upgrade || echo "ensurepip failed as expected"
+          echo "--- falling back to get-pip.py ---"
+          curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+          python3.12 /tmp/get-pip.py --break-system-packages
+          python3.12 -m pip --version
+
+      - name: Install the Allocator package with the manually bootstrapped pip
+        run: |
+          python3.12 -m pip install --break-system-packages ./wazuh-automation/deployability/modules/allocation
+
+      - name: Verify wazuh-allocator entry point exists
+        run: |
+          which wazuh-allocator || echo "wazuh-allocator entry point NOT found on PATH"
+          wazuh-allocator --help || echo "wazuh-allocator did not run successfully"
