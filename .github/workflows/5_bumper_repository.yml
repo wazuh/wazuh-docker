@@ -180,12 +180,15 @@ jobs:
           PR_NUMBER=$(gh pr list --head "$BUMP_BRANCH" --base "${{ github.ref_name }}" --state merged --json number --jq '.[0].number')
 
           if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
-            echo "Error: The original PR for the bump was not found"
+            echo "The original PR for the bump was not found"
             echo "Searching merged PR from: $BUMP_BRANCH to ${{ github.ref_name }}"
-            exit 1
+            echo "pr_found=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
           echo "Original PR found: #$PR_NUMBER"
+          echo "pr_found=true" >> $GITHUB_OUTPUT
 
           MERGE_COMMIT=$(gh pr view $PR_NUMBER --json mergeCommit --jq '.mergeCommit.oid')
 
@@ -203,6 +206,17 @@ jobs:
             git commit -m "feat: revert ${{ github.ref_name }} references"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: "Result: original bump pull request not found"
+        if: inputs.revert == true && steps.revert_step.outputs.pr_found == 'false'
+        run: echo "There is no original bump pull request to revert, nothing to do."
+
+      - name: "Result: no changes to commit"
+        if: >-
+          (inputs.revert != true && steps.bump_commit.outputs.has_changes == 'false') ||
+          (inputs.revert == true && steps.revert_step.outputs.pr_found == 'true' &&
+          steps.revert_step.outputs.has_changes == 'false')
+        run: echo "The bump produced no changes, no pull request was created."
 
       - name: Push changes
         if: (inputs.revert != true && steps.bump_commit.outputs.has_changes == 'true') || (inputs.revert == true && steps.revert_step.outputs.has_changes == 'true')
