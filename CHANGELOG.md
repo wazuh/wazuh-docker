@@ -20,6 +20,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2594](https://github.com/wazuh/wazuh-docker/issues/2594) | Added `diffutils` to the Wazuh agent image so FIM `report_changes` can generate content diffs |
 
 ## Prior versions
 
