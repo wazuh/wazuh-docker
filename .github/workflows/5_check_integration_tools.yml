@@ -73,7 +73,7 @@ jobs:
       (contains(github.event.comment.body, '/test-docker-single') ||
        contains(github.event.comment.body, '/test-docker-multi') ||
        contains(github.event.comment.body, '/test-docker'))
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     outputs:
       pr_number: ${{ steps.pr_data.outputs.pr_number }}
       pr_head_ref: ${{ steps.pr_data.outputs.pr_head_ref }}
@@ -157,7 +157,7 @@ jobs:
     if: |
       always() &&
       (needs.get_pr_info.result == 'success' || github.event_name == 'workflow_dispatch')
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     outputs:
       pr_head_ref: ${{ steps.ctx.outputs.pr_head_ref }}
       deployment_matrix: ${{ steps.ctx.outputs.deployment_matrix }}
@@ -323,7 +323,7 @@ jobs:
       always() &&
       needs.prepare.result == 'success' &&
       (needs.build_images.result == 'success' || needs.build_images.result == 'skipped')
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -413,7 +413,7 @@ jobs:
           pip install pyyaml
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-test-${{ github.run_id }}-${{ matrix.deployment_type }}
@@ -838,7 +838,7 @@ jobs:
 
       - name: Configure AWS credentials for cleanup
         if: always()
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
           role-session-name: docker-cleanup-${{ github.run_id }}-${{ matrix.deployment_type }}
@@ -857,7 +857,7 @@ jobs:
   update_check:
     needs: [get_pr_info, prepare, build_images, docker_test]
     if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     steps:
       - name: Update check run
         uses: actions/github-script@v7
