@@ -22,7 +22,12 @@ env:
 
 jobs:
   build-docker-images:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -33,6 +38,12 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Build Wazuh images
       run: ./build-images.sh
@@ -51,7 +62,7 @@ jobs:
 
     - name: Temporarily save Wazuh Docker images
       env:
-        S3_ARTIFACTS_PATH: ${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}
+        S3_ARTIFACTS_PATH: "s3://${{ secrets.CI_DEV_INTERNAL_S3_BUCKET }}/wazuh-docker/4_pr_check/${{ github.run_id }}"
       run: |
         echo "Uploading Docker image artifacts to S3..."
         while IFS= read -r artifact; do
@@ -62,8 +73,13 @@ jobs:
         echo "All artifacts uploaded successfully."
 
   check-single-node:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     needs: build-docker-images
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -77,6 +93,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
@@ -198,8 +223,13 @@ jobs:
       run: ./.github/single-node-log-check.sh
 
   check-multi-node:
-    runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-24.04
     needs: build-docker-images
+
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
 
     - name: Check out code
@@ -213,6 +243,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
