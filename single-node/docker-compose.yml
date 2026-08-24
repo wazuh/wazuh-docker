@@ -40,8 +40,8 @@ services:
       - wazuh_queue:/var/wazuh-manager/queue
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_manager/certs/wazuh.manager.pem:/var/wazuh-manager/etc/certs/manager.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+      - ./config/wazuh_manager/certs/wazuh.manager.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.1.0

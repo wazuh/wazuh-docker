@@ -40,8 +40,8 @@ services:
       - master-wazuh-queue:/var/wazuh-manager/queue
       - master-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/manager.pem
-      - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+      - ./config/wazuh_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
+      - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
 
   wazuh.worker:
     image: wazuh/wazuh-manager:5.1.0
@@ -79,8 +79,8 @@ services:
       - worker-wazuh-queue:/var/wazuh-manager/queue
       - worker-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/manager.pem
-      - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/manager-key.pem
+      - ./config/wazuh_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
+      - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
 
   wazuh1.indexer:
     image: wazuh/wazuh-indexer:5.1.0

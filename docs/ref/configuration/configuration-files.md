@@ -17,6 +17,14 @@
 * **`opensearch_dashboards.yml`**: The main configuration file for OpenSearch Dashboards. Controls server host/port, OpenSearch connection URL, SSL settings, and Wazuh plugin settings.
     * **Customization**: Mount a custom `opensearch_dashboards.yml` into the dashboard container at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml` and custom `wazuh.yml` into the dashboard container at `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` .
 * **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, often within `opensearch_dashboards.yml` or managed through environment variables, specifying the Wazuh API URL and credentials.
+* **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore; the container entrypoint creates it on the first start and adds a randomly generated `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data. The `opensearch.username` and `opensearch.password` entries are set on every start from the `DASHBOARD_USERNAME` and `DASHBOARD_PASSWORD` environment variables.
+    * **Customization**: To set your own key, add it through the keystore tool inside the dashboard container and restart the service:
+        ```bash
+        echo "<your-encryption-key>" | docker compose exec -T wazuh.dashboard \
+          /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add wazuh_ai_assistant.encryptionKey --stdin --allow-root -f
+        docker compose restart wazuh.dashboard
+        ```
+    * **Important**: The keystore is created only when it does not already exist, so the encryption key stays stable across restarts as long as the `/usr/share/wazuh-dashboard/config` volume is kept. If the keystore is deleted, the entrypoint generates a new key on the next start and any data encrypted with the previous one becomes unreadable.
 
 ## Applying Configuration Changes
 
@@ -41,6 +49,12 @@ Docker volumes allow you to persist data outside of container lifecycles. When a
 To persist files or directories in your Wazuh deployment, you can mount them as volumes or bind mounts in your `docker-compose.yml` file.
 
 > **Important**: Ensure that files exist on the host before starting the containers. If the file doesn't exist, Docker will create a directory instead, which may cause startup failures.
+
+### Wazuh Dashboard keystore
+
+The `docker-compose.yml` files mount the named volume `wazuh-dashboard-config` on `/usr/share/wazuh-dashboard/config`, which is where `opensearch_dashboards.keystore` is stored. Keeping this volume preserves the `wazuh_ai_assistant.encryptionKey` generated on the first start.
+
+Removing the volume (for example, with `docker compose down -v`) deletes the keystore. The next start creates a new one with a different encryption key, and data encrypted by the AI assistant with the previous key can no longer be decrypted.
 
 For more information on Docker volumes and bind mounts, refer to the official Docker documentation:
 - [Use volumes](https://docs.docker.com/storage/volumes/)

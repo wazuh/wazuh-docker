@@ -7,6 +7,7 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 - Do not use default credentials. The Compose examples include placeholder values for the Wazuh API, Dashboard, and Indexer access.
 - Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of hardcoding them in `docker-compose.yml`.
 - Rotate credentials regularly and after any suspected exposure.
+- The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
 
 ## Certificates and TLS
 
