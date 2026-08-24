@@ -44,6 +44,9 @@ RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wa
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
 RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 
+# Delete default keystore
+RUN if [ -f /etc/wazuh-dashboard/opensearch_dashboards.keystore ]; then rm -f /etc/wazuh-dashboard/opensearch_dashboards.keystore; fi
+
 ################################################################################
 # Build stage 1 (the current Wazuh dashboard image):
 # Copy wazuh-dashboard from builder
