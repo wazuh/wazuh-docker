@@ -66,22 +66,6 @@
 
 | Issue | Comment |
 | - | - |
-<<<<<<< HEAD
-=======
-| [#2578](https://github.com/wazuh/wazuh-docker/issues/2578) | Report skipped bumps in the repository bumper workflow |
-| [#2584](https://github.com/wazuh/wazuh-docker/issues/2584) | Adapt certificate deployment to the unified manager certificate layout (root:wazuh-manager 0640, dir 1770) |
-| [#2563](https://github.com/wazuh/wazuh-docker/issues/2563) | Fixed changelog check workflow to accept Prior versions entries |
-| [#2533](https://github.com/wazuh/wazuh-docker/pull/2533) | Fix bumper workflow failure when bump produces no changes |
-| [#2477](https://github.com/wazuh/wazuh-docker/issues/2477) | Bumper script issue when the tag is set to false |
-| [#2443](https://github.com/wazuh/wazuh-docker/issues/2443) | Fix reported WF vulnerabilities |
-| [#2422](https://github.com/wazuh/wazuh-docker/issues/2422) | Adapt Wazuh manager healthcheck with local binaries |
-| [#2337](https://github.com/wazuh/wazuh-docker/issues/2337) | The Wazuh Docker image cannot be built during the Nightly |
-| [#35457](https://github.com/wazuh/wazuh/issues/35457) | Docker and AMI workflows failing during stage release (v5.0.0-beta1) |
-| [#2274](https://github.com/wazuh/wazuh-docker/issues/2274) | PR check issues |
-| [#2271](https://github.com/wazuh/wazuh-docker/issues/2271) | Wazuh manager Healthcheck |
-| [#2258](https://github.com/wazuh/wazuh-docker/issues/2258) | Delete WAZUH_AGENT_GROUPS of Wazuh 5.0.0 images build |
-| [#2128](https://github.com/wazuh/wazuh-docker/issues/2128) | Development - DevOps 5.0 adaptation - Docker - Delete lists directory references |
->>>>>>> 5.0.0
 
 ## Prior versions
 
