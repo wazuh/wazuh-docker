@@ -102,6 +102,9 @@ jobs:
       with:
         role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
@@ -249,6 +252,9 @@ jobs:
       with:
         role-to-assume: ${{ secrets.AWS_IAM_DOCKER_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: free disk space
+      uses: ./.github/free-disk-space
 
     - name: Retrieve saved Wazuh Docker images and load them into Docker
       env:
