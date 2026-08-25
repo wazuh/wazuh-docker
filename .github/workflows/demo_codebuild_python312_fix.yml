@@ -23,6 +23,16 @@ jobs:
           echo "--- all pyenv versions available on this image ---"
           pyenv versions || echo "pyenv command not found"
 
+      - name: Check if switching to another pre-installed version also has working pip
+        run: |
+          echo "--- switching to 3.10.20 via pyenv ---"
+          pyenv global 3.10.20
+          python3 --version
+          python3 -m pip --version || echo "pip NOT available on 3.10.20"
+          echo "--- switching back to 3.12.13 ---"
+          pyenv global 3.12.13
+          python3 --version
+
       - name: Checkout wazuh/wazuh-automation
         uses: actions/checkout@v4
         with:
