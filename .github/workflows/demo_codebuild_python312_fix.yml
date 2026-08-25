@@ -20,6 +20,8 @@ jobs:
           which python3
           echo "--- python3 -m pip --version ---"
           python3 -m pip --version || echo "pip still not available"
+          echo "--- all pyenv versions available on this image ---"
+          pyenv versions || echo "pyenv command not found"
 
       - name: Checkout wazuh/wazuh-automation
         uses: actions/checkout@v4
