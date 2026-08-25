@@ -45,8 +45,13 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
     mkdir -p /var/wazuh-manager/etc/certs && \
     chown root:wazuh-manager /var/wazuh-manager/etc/certs && \
     chmod 1770 /var/wazuh-manager/etc/certs && \
-    rm -f /var/wazuh-manager/etc/sslmanager.key && \
-    rm -f /var/wazuh-manager/etc/sslmanager.cert
+    # Remove manager self-signed certificate/key
+    rm -f /var/wazuh-manager/etc/certs/remoted.pem \
+          /var/wazuh-manager/etc/certs/remoted-key.pem \
+          /var/wazuh-manager/etc/certs/authd.pem \
+          /var/wazuh-manager/etc/certs/authd-key.pem \
+          /var/wazuh-manager/etc/certs/apid.pem \
+          /var/wazuh-manager/etc/certs/apid-key.pem
 
 # Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
 RUN chmod 755 /permanent_data.sh && \

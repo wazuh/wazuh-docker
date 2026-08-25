@@ -13,20 +13,11 @@ file:
     group: wazuh-manager
     filetype: file
     contains: []
-  /var/wazuh-manager/etc/sslmanager.cert:
+  /var/wazuh-manager/etc/certs:
     exists: true
-    mode: "0644"
     owner: root
-    group: root
-    filetype: file
-    contains: []
-  /var/wazuh-manager/etc/sslmanager.key:
-    exists: true
-    mode: "0600"
-    owner: root
-    group: root
-    filetype: file
-    contains: []
+    group: wazuh-manager
+    filetype: directory
 user:
   wazuh-manager:
     exists: true
