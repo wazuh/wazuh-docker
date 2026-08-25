@@ -48,8 +48,6 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
     # Remove manager self-signed certificate/key
     rm -f /var/wazuh-manager/etc/certs/remoted.pem \
           /var/wazuh-manager/etc/certs/remoted-key.pem \
-          /var/wazuh-manager/etc/certs/authd.pem \
-          /var/wazuh-manager/etc/certs/authd-key.pem \
           /var/wazuh-manager/etc/certs/apid.pem \
           /var/wazuh-manager/etc/certs/apid-key.pem
 
