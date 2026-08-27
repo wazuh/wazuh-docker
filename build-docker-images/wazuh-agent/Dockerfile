@@ -8,6 +8,16 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG TINI_VERSION="v0.19.0"
+# These reach the package post-install as environment variables, and their values
+# are what it writes into the packaged ossec.conf. They are therefore the
+# placeholders the runtime init script substitutes, not real configuration.
+#
+# Both generations are declared on purpose while wazuh/wazuh#38624 is in flight:
+# the current package understands WAZUH_MANAGER/WAZUH_MANAGER_PORT and ignores
+# WAZUH_MANAGER_ENDPOINT, and the new one does the opposite. Passing both keeps a
+# single Dockerfile building against either package. Drop the two legacy ones
+# once #38624 has landed everywhere this image is built from.
+ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
 ARG WAZUH_MANAGER='CHANGE_MANAGER_IP'
 ARG WAZUH_MANAGER_PORT='CHANGE_MANAGER_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
@@ -43,14 +53,15 @@ RUN dnf install procps shadow-utils -y && \
 # name are silently ignored at container start, which is how the port support was
 # lost once already (#2590).
 #
-# Only these two are required. CHANGE_MANAGER_PORT lives in its own <port> tag
-# while the package ships the split <address>/<port> grammar, and moves inside
-# <endpoint> once wazuh/wazuh#38624 collapses them; the init script handles both,
-# so its presence is not something to assert on.
-RUN for placeholder in CHANGE_MANAGER_IP CHANGE_AGENT_NAME; do \
-        grep -q "${placeholder}" /var/ossec/etc/ossec.conf || \
-        { echo "ERROR: ${placeholder} is missing from the packaged ossec.conf"; exit 1; }; \
-    done
+# The manager placeholder is satisfied by either generation, since which one the
+# package writes is exactly what is in flux. CHANGE_MANAGER_PORT is not asserted
+# on: it has a tag of its own only under the split grammar, and disappears into
+# CHANGE_MANAGER_ENDPOINT under the unified one.
+RUN conf=/var/ossec/etc/ossec.conf; \
+    grep -q 'CHANGE_MANAGER_ENDPOINT\|CHANGE_MANAGER_IP' "$conf" || \
+        { echo "ERROR: no manager placeholder found in the packaged ossec.conf"; exit 1; }; \
+    grep -q 'CHANGE_AGENT_NAME' "$conf" || \
+        { echo "ERROR: CHANGE_AGENT_NAME is missing from the packaged ossec.conf"; exit 1; }
 
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \

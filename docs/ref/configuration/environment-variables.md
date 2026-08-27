@@ -82,17 +82,6 @@ The Wazuh Agent container uses the following environment variables to dynamicall
 
 ```yaml
 environment:
-  - WAZUH_MANAGER_SERVER=wazuh.manager
-  - WAZUH_MANAGER_PORT=1517
-  - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
-```
-
-The manager connection can also be given as a single value instead of a host and
-a port:
-
-```yaml
-environment:
   - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
   - WAZUH_AGENT_NAME=my-agent
   - WAZUH_REGISTRATION_PASSWORD=my-authd-password
@@ -100,15 +89,47 @@ environment:
 
 **Variable Descriptions:**
 
-- `WAZUH_MANAGER_ENDPOINT`: Full manager endpoint, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. Takes precedence over `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT`. The port defaults to `1517` and the path prefix to `/wazuh-manager/` when left out, so `wazuh.manager` and `wazuh.manager:1517/wazuh-manager/` describe the same connection. A `https://` scheme is accepted and dropped. An IPv6 literal must be bracketed when a port follows it, as in `[fd00::1]:1517`.
-- `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager. Used as the host of the endpoint when `WAZUH_MANAGER_ENDPOINT` is not set.
-- `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`. Since 5.0.0 enrollment runs over the same connection, so this is also the registration port.
+- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. Components left out fall back to port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` and `wazuh.manager:1517/wazuh-manager/` describe the same connection. A `https://` scheme is accepted and dropped.
 - `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
 - `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
 
+`host` is an IPv4 literal, a hostname, or a bracketed IPv6 literal. An IPv6
+literal must be bracketed whenever a port follows it, as in `[fd00::1]:1517`, and
+may carry a zone id naming the outgoing interface:
+
+```yaml
+environment:
+  - WAZUH_MANAGER_ENDPOINT=[fe80::1%25eth0]:1517/wazuh-manager/
+```
+
+The `%` separating the zone id is percent-encoded as `%25`, which is what makes
+the endpoint a valid URL. The container also accepts the plain `fe80::1%eth0`
+form the system itself reports, encoding it on start and logging that it did so.
+This zone id replaces the separate `<interface_index>` option used before.
+
 These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
 
-`WAZUH_REGISTRATION_SERVER` and `WAZUH_REGISTRATION_PORT` are no longer honored: since 5.0.0 the agent enrolls through the manager connection it already has instead of opening a separate connection to `authd`, so `<enrollment>` carries neither an address nor a port of its own. The container logs a warning when either variable is set.
+`WAZUH_MANAGER_ENDPOINT` is required. Without it the container has no manager to
+connect to, so it logs the reason and exits instead of starting an agent that
+could only retry against a placeholder. The one case where it may be omitted is
+a deployment mounting its own `ossec.conf` at
+`/wazuh-config-mount/etc/ossec.conf`, which already carries a manager of its own.
+
+**Variables that are not supported:**
+
+| Variable | Replaced by |
+| - | - |
+| `WAZUH_MANAGER_SERVER` | The host component of `WAZUH_MANAGER_ENDPOINT` |
+| `WAZUH_MANAGER_PORT` | The port component of `WAZUH_MANAGER_ENDPOINT` |
+| `WAZUH_REGISTRATION_SERVER` | `WAZUH_MANAGER_ENDPOINT`, enrollment reuses the agent connection |
+| `WAZUH_REGISTRATION_PORT` | `WAZUH_MANAGER_ENDPOINT`, enrollment reuses the agent connection |
+
+None of these configure anything, and the container logs a warning naming the
+replacement when one of them is set. The first two split a connection that
+wazuh/wazuh#38624 turned into a single value. The last two pointed enrollment at
+`authd` separately, which since 5.0.0 no longer happens: the agent enrolls
+through the manager connection it already has, so `<enrollment>` carries neither
+an address nor a port of its own.
 
 ---
 

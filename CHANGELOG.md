@@ -5,7 +5,7 @@
 
 | Issue | Comment |
 | - | - |
-| [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified agent connection URL through `WAZUH_MANAGER_ENDPOINT` |
+| [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Configure the Wazuh agent connection with the unified `WAZUH_MANAGER_ENDPOINT` URL |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
 | [#2505](https://github.com/wazuh/wazuh-docker/pull/2505) | Added bump-issue-link support for Revert Stage Bump. |
 | [#2491](https://github.com/wazuh/wazuh-docker/pull/2491) | Add integration test module docs |
@@ -71,6 +71,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Removed the legacy `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` agent variables, superseded by `WAZUH_MANAGER_ENDPOINT` |
 
 ### Fixed
 
