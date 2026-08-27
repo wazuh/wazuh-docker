@@ -415,6 +415,20 @@ jobs:
         fi
       working-directory: ./build-docker-images
 
+    - name: Report image size (evidence for #2594)
+      if: ${{ inputs.dev == true }}
+      run: |
+        TAG_VAR_NAME="$(echo ${{ matrix.wazuh_component }} | sed -E 's/^wazuh-//' | tr '[:lower:]' '[:upper:]')_TAG"
+        COMPONENT_TAG="${!TAG_VAR_NAME}"
+        echo "=== Image size report for ${{ matrix.wazuh_component }}:${COMPONENT_TAG} ==="
+        aws ecr describe-images \
+          --repository-name "wazuh/${{ matrix.wazuh_component }}" \
+          --image-ids imageTag="${COMPONENT_TAG}" \
+          --query 'imageDetails[*].[imageDigest,imageSizeInBytes]' \
+          --output text | while read -r digest size; do
+            echo "Digest: ${digest} -> $(( size / 1024 / 1024 )) MB (${size} bytes)"
+          done
+
 
   notify:
     runs-on: codebuild-github-actions-codebuild-runner-devops-amd-${{ github.run_id }}-${{ github.run_attempt }}
