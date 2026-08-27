@@ -418,14 +418,14 @@ jobs:
     - name: Report image size (evidence for #2594)
       if: ${{ inputs.dev == true }}
       run: |
-        echo "=== Image size report for ${{ matrix.wazuh_component }}:${IMAGE_TAG} ==="
-        aws ecr describe-images \
-          --repository-name "wazuh/${{ matrix.wazuh_component }}" \
-          --image-ids imageTag="${IMAGE_TAG}" \
-          --query 'imageDetails[*].[imageDigest,imageSizeInBytes]' \
-          --output text | while read -r digest size; do
-            echo "Digest: ${digest} -> $(( size / 1024 / 1024 )) MB (${size} bytes)"
-          done
+        IMAGE_REF="${IMAGE_REGISTRY}/wazuh/${{ matrix.wazuh_component }}:${IMAGE_TAG}"
+        echo "=== Image size report for ${IMAGE_REF} ==="
+        for PLATFORM in linux/amd64 linux/arm64; do
+          docker pull --platform "$PLATFORM" "$IMAGE_REF"
+          SIZE=$(docker inspect "$IMAGE_REF" --format='{{.Size}}')
+          echo "${PLATFORM}: $(( SIZE / 1024 / 1024 )) MB (${SIZE} bytes)"
+          docker rmi "$IMAGE_REF" || true
+        done
 
 
   notify:
