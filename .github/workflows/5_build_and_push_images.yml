@@ -418,7 +418,10 @@ jobs:
     - name: Report image size (evidence for #2594)
       if: ${{ inputs.dev == true }}
       run: |
-        IMAGE_REF="${IMAGE_REGISTRY}/wazuh/${{ matrix.wazuh_component }}:${IMAGE_TAG}"
+        # build-images.sh appends the component commit ref to IMAGE_TAG for dev
+        # builds; our test runs always use "latest" as the ref (see
+        # COMPONENT_REFS_JSON), so the real published tag is IMAGE_TAG-latest.
+        IMAGE_REF="${IMAGE_REGISTRY}/wazuh/${{ matrix.wazuh_component }}:${IMAGE_TAG}-latest"
         echo "=== Image size report for ${IMAGE_REF} ==="
         for PLATFORM in linux/amd64 linux/arm64; do
           docker pull --platform "$PLATFORM" "$IMAGE_REF"
