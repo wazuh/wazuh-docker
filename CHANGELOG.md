@@ -71,7 +71,6 @@
 
 | Issue | Comment |
 | - | - |
-| [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Removed the legacy `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` agent variables, superseded by `WAZUH_MANAGER_ENDPOINT` |
 
 ### Fixed
 
