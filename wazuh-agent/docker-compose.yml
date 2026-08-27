@@ -7,6 +7,6 @@ services:
       # The whole manager connection as one host[:port][/prefix] value. Required.
       # The port and the prefix may be left out, defaulting to 1517 and
       # /wazuh-manager/.
-      - WAZUH_MANAGER_ENDPOINT=<WAZUH_MANAGER_IP>:1517/wazuh-manager/
+      - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
       #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
       - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
