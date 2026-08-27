@@ -9,7 +9,7 @@ FROM amazonlinux:2023 AS builder
 ARG WAZUH_VERSION
 ARG TINI_VERSION="v0.19.0"
 ARG WAZUH_MANAGER='CHANGE_MANAGER_IP'
-ARG WAZUH_REGISTRATION_SERVER='CHANGE_ENROLL_IP'
+ARG WAZUH_MANAGER_PORT='CHANGE_MANAGER_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
 ARG wazuh_agent_x86_64_rpm
@@ -37,6 +37,20 @@ RUN dnf install procps shadow-utils -y && \
     dnf install /wazuh-agent.rpm -y && \
     rm -rf /wazuh-agent.rpm && \
     dnf clean all
+
+# Fail the build if the package installer stops writing the placeholders that the
+# runtime init script substitutes: without them the manager endpoint and the agent
+# name are silently ignored at container start, which is how the port support was
+# lost once already (#2590).
+#
+# Only these two are required. CHANGE_MANAGER_PORT lives in its own <port> tag
+# while the package ships the split <address>/<port> grammar, and moves inside
+# <endpoint> once wazuh/wazuh#38624 collapses them; the init script handles both,
+# so its presence is not something to assert on.
+RUN for placeholder in CHANGE_MANAGER_IP CHANGE_AGENT_NAME; do \
+        grep -q "${placeholder}" /var/ossec/etc/ossec.conf || \
+        { echo "ERROR: ${placeholder} is missing from the packaged ossec.conf"; exit 1; }; \
+    done
 
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \

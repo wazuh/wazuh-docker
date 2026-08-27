@@ -33,6 +33,7 @@ environment:
 - `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions.
 - `WAZUH_API_URL`: URL of the Wazuh API, used by other services for communication.
 - `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: Credentials for the Wazuh Dashboard to authenticate with the Indexer.
+- `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
 
 ---
 
@@ -82,11 +83,32 @@ The Wazuh Agent container uses the following environment variables to dynamicall
 ```yaml
 environment:
   - WAZUH_MANAGER_SERVER=wazuh.manager
-  - WAZUH_REGISTRATION_SERVER=wazuh.manager
+  - WAZUH_MANAGER_PORT=1517
   - WAZUH_AGENT_NAME=my-agent
+  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
+The manager connection can also be given as a single value instead of a host and
+a port:
+
+```yaml
+environment:
+  - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
+  - WAZUH_AGENT_NAME=my-agent
+  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
+```
+
+**Variable Descriptions:**
+
+- `WAZUH_MANAGER_ENDPOINT`: Full manager endpoint, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. Takes precedence over `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT`. The port defaults to `1517` and the path prefix to `/wazuh-manager/` when left out, so `wazuh.manager` and `wazuh.manager:1517/wazuh-manager/` describe the same connection. A `https://` scheme is accepted and dropped. An IPv6 literal must be bracketed when a port follows it, as in `[fd00::1]:1517`.
+- `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager. Used as the host of the endpoint when `WAZUH_MANAGER_ENDPOINT` is not set.
+- `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`. Since 5.0.0 enrollment runs over the same connection, so this is also the registration port.
+- `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
+- `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
+
 These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
+
+`WAZUH_REGISTRATION_SERVER` and `WAZUH_REGISTRATION_PORT` are no longer honored: since 5.0.0 the agent enrolls through the manager connection it already has instead of opening a separate connection to `authd`, so `<enrollment>` carries neither an address nor a port of its own. The container logs a warning when either variable is set.
 
 ---
 

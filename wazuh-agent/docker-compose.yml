@@ -5,4 +5,9 @@ services:
     restart: always
     environment:
       - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
+      - WAZUH_MANAGER_PORT=1517
+      # Alternatively, set the whole connection as a single host[:port][/prefix]
+      # value, which takes precedence over the two variables above:
+      #- WAZUH_MANAGER_ENDPOINT=<WAZUH_MANAGER_IP>:1517/wazuh-manager/
+      #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
       - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
