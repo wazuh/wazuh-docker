@@ -43,11 +43,6 @@ function_wazuh_migration(){
       chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/client.keys
       chmod 640 /var/wazuh-manager/etc/client.keys
 
-      \cp -f /wazuh-migration/data/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.cert
-      \cp -f /wazuh-migration/data/etc/sslmanager.key /var/wazuh-manager/etc/sslmanager.key
-      chown root:root /var/wazuh-manager/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.key
-      chmod 640 /var/wazuh-manager/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.key
-
       \cp -f /wazuh-migration/data/etc/shared/default/agent.conf /var/wazuh-manager/etc/shared/default/agent.conf
       chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/shared/default/agent.conf
       chmod 660 /var/wazuh-manager/etc/shared/default/agent.conf

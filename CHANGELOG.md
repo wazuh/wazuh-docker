@@ -10,6 +10,7 @@
 | Issue | Comment |
 | - | - |
 | [#2461](https://github.com/wazuh/wazuh-docker/issues/2461) | Added explicit `permissions` blocks to the 4.x workflows to restrict the `GITHUB_TOKEN` scope |
+| [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 
 ### Removed
 
