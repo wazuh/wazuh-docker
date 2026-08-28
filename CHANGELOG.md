@@ -9,6 +9,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 
 ### Removed
 
