@@ -215,7 +215,7 @@ Runs on the **runner** (not the VM):
 
 3. **Copy `wazuh-docker/` to VM** via SCP: `scp -r wazuh-docker {remote}:/tmp/wazuh-docker`
 
-4. **Generate certificates on VM**: runs `tools/utils/deployment/certificates-conf.sh --cert --copy` inside `/tmp/wazuh-docker/{deployment}/`
+4. **Generate certificates on VM**: runs `tools/utils/deployment/certificates-conf.sh --cert --copy --priv` inside `/tmp/wazuh-docker/{deployment}/`
 
 #### Deployment
 

@@ -79,3 +79,17 @@ Below is a step-by-step example of how to perform this update:
    ```bash
    docker-compose up -d
    ```
+
+## Manager self-signed certificate on existing deployments
+
+Manager images built before the per-container certificate change shipped `etc/certs/remoted.pem` and `etc/certs/remoted-key.pem` inside the image, so the pair was copied into the manager `etc` volume the first time the deployment started and is the same in every deployment created from that image.
+
+Upgrading the image tag does not replace it: the volume already holds a pair, and the container never overwrites an existing one. To move an existing deployment onto a certificate of its own, remove both files and restart the manager after the upgrade:
+
+```bash
+docker compose exec wazuh.manager rm -f /var/wazuh-manager/etc/certs/remoted.pem \
+                                        /var/wazuh-manager/etc/certs/remoted-key.pem
+docker compose restart wazuh.manager
+```
+
+In multi-node, repeat it for `wazuh.master` and `wazuh.worker`. Agents do not validate this certificate by default, so the rotation does not require any change on the agents.
