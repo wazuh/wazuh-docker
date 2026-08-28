@@ -50,6 +50,12 @@ To persist files or directories in your Wazuh deployment, you can mount them as 
 
 > **Important**: Ensure that files exist on the host before starting the containers. If the file doesn't exist, Docker will create a directory instead, which may cause startup failures.
 
+### Wazuh manager self-signed certificate
+
+The `docker-compose.yml` files mount a named volume on `/var/wazuh-manager/etc` (`wazuh_etc` in single-node; `master-wazuh-etc` and `worker-wazuh-etc` in multi-node). That volume holds `certs/remoted.pem` and `certs/remoted-key.pem`, the self-signed pair each manager container generates on its first start and reuses on every later start. It is used by the HTTPS agent listener and by agent enrollment (`authd`), and it is unique per deployment and per cluster node.
+
+Removing the volume (for example, with `docker compose down -v`) deletes the pair, and the next start generates a new one. Agents do not validate this certificate by default, so a new pair does not break already enrolled agents. Do not copy the volume between deployments: that reuses the same private key in both. See [Security](../security.md) for rotation and for using your own certificate.
+
 ### Wazuh Dashboard keystore
 
 The `docker-compose.yml` files mount the named volume `wazuh-dashboard-config` on `/usr/share/wazuh-dashboard/config`, which is where `opensearch_dashboards.keystore` is stored. Keeping this volume preserves the `wazuh_ai_assistant.encryptionKey` generated on the first start.
