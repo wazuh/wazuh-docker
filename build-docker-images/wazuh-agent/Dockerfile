@@ -51,12 +51,11 @@ RUN dnf install procps shadow-utils -y && \
 # name are silently ignored at container start, which is how the port support was
 # lost once already (#2590).
 #
-# CHANGE_MANAGER_IP is accepted as well so that a package still writing the older
-# split <address>/<port> grammar is reported by the runtime script rather than by
-# a build failure, which the init handles.
+# CHANGE_MANAGER_ENDPOINT is the only manager placeholder the init substitutes,
+# since <endpoint> is the only tag it configures.
 RUN conf=/var/ossec/etc/ossec.conf; \
-    grep -q 'CHANGE_MANAGER_ENDPOINT\|CHANGE_MANAGER_IP' "$conf" || \
-        { echo "ERROR: no manager placeholder found in the packaged ossec.conf"; exit 1; }; \
+    grep -q 'CHANGE_MANAGER_ENDPOINT' "$conf" || \
+        { echo "ERROR: CHANGE_MANAGER_ENDPOINT is missing from the packaged ossec.conf"; exit 1; }; \
     grep -q 'CHANGE_AGENT_NAME' "$conf" || \
         { echo "ERROR: CHANGE_AGENT_NAME is missing from the packaged ossec.conf"; exit 1; }
 

@@ -89,7 +89,7 @@ environment:
 
 **Variable Descriptions:**
 
-- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. Components left out fall back to port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` and `wazuh.manager:1517/wazuh-manager/` describe the same connection. A `https://` scheme is accepted and dropped.
+- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped.
 - `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
 - `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
 
@@ -121,8 +121,10 @@ environment:
   - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
-- `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager.
-- `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`.
+- `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager. Becomes the host of `<endpoint>`.
+- `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`. Becomes the port of `<endpoint>`.
+
+Whichever form is used, `<agent><manager><endpoint>` is the only configuration written: since wazuh/wazuh#38624 it holds the whole connection, and the `<address>` and `<port>` tags it replaced are never touched. It is always written in full, as `host:port/prefix`, with the defaults spelled out rather than left for the agent to infer.
 
 `WAZUH_MANAGER_ENDPOINT` takes precedence over both. When it is set, they are not
 read at all, not even to supply a component it left out: an endpoint without a

@@ -31,17 +31,18 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     | Variable | Default | Configuration set |
     | - | - | - |
-    | `WAZUH_MANAGER_ENDPOINT` | None | The whole manager connection |
-    | `WAZUH_MANAGER_SERVER` | None | Address of the manager connection |
-    | `WAZUH_MANAGER_PORT` | `1517` | Port of the manager connection |
+    | `WAZUH_MANAGER_ENDPOINT` | None | `<agent><manager><endpoint>`, whole |
+    | `WAZUH_MANAGER_SERVER` | None | Host of `<agent><manager><endpoint>` |
+    | `WAZUH_MANAGER_PORT` | `1517` | Port of `<agent><manager><endpoint>` |
     | `WAZUH_AGENT_NAME` | `wazuh-agent-<container hostname>` | `<agent><enrollment><agent_name>` |
     | `WAZUH_REGISTRATION_PASSWORD` | None | `/var/ossec/etc/authd.pass` |
 
     **Note:** The agent addresses the manager through a single endpoint,
-    `host[:port][/prefix]`. Components left out fall back to port `1517` and
-    prefix `/wazuh-manager/`, which is what the dockerized manager serves, so
-    `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` on its own describes the same
-    connection as the full form above.
+    `host[:port][/prefix]`. A component left out is filled in with its default,
+    port `1517` and prefix `/wazuh-manager/`, which is what the dockerized
+    manager serves, so `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` on its own is
+    written out as the full form above. The endpoint always lands in
+    `ossec.conf` complete, as `host:port/prefix`.
 
     **Note:** The port must match the `<remote><https><port>` of your Wazuh
     manager, `1517` in the default configuration. Since 5.0.0 the agent enrolls
@@ -63,6 +64,11 @@ Follow these steps to deploy the Wazuh agent using Docker.
     not read at all. One of the two forms is required: with neither, the
     container logs the reason and exits rather than starting an agent that
     could only retry against an unconfigured manager.
+
+    Either way the single `<endpoint>` is the only configuration written, and it
+    is written in full. The `<address>` and `<port>` tags it replaced are never
+    touched, so a package that still ships them predates the change and the
+    container says so on start.
 
     **Note:** For an IPv6 manager, bracket the literal whenever a port follows
     it, and percent-encode the `%` of a zone id as `%25`:

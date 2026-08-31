@@ -8,10 +8,11 @@ WAZUH_MANAGER_SERVER=$WAZUH_MANAGER_SERVER
 WAZUH_MANAGER_PORT=$WAZUH_MANAGER_PORT
 WAZUH_AGENT_NAME=${WAZUH_AGENT_NAME:-"wazuh-agent-$HOSTNAME"}
 
-# Applied whenever the component is not stated, by either set of variables. They
-# mirror the agent's own defaults, so stating them or omitting them describes the
-# same connection. The prefix is only ever written out under the split grammar,
-# where the agent has no default of its own to fall back on.
+# Applied when the component is not stated, by either set of variables. They
+# mirror the agent's own defaults, and are written out rather than left implicit
+# so that <endpoint> always shows the whole connection: host, port and path
+# prefix. What the file says is then what the agent uses, with nothing to infer
+# when reading it back.
 WAZUH_MANAGER_DEFAULT_PORT="1517"
 WAZUH_MANAGER_DEFAULT_PREFIX="/wazuh-manager/"
 
@@ -80,7 +81,9 @@ warn_unsupported_vars() {
 #
 # Since wazuh/wazuh#38624 the agent takes one <endpoint> holding
 # host[:port][/prefix], with 1517 and /wazuh-manager/ as the defaults for the
-# components left out. Two sets of variables fill it in:
+# components left out. Those defaults are applied here rather than left to the
+# agent, so the value written is always the complete host:port/prefix form. Two
+# sets of variables fill it in:
 #
 #   WAZUH_MANAGER_ENDPOINT                     the whole value at once
 #   WAZUH_MANAGER_SERVER + WAZUH_MANAGER_PORT  address and port separately
@@ -94,9 +97,9 @@ warn_unsupported_vars() {
 # carrying a zone id: [<ipv6-literal>%25<ifname>]. That zone replaces the
 # <interface_index> option the agent used to take separately.
 #
-# The components are kept apart as well because the packaged ossec.conf may
-# still use the previous <address>/<port> grammar, and both layouts are filled
-# in from the same input.
+# Only MANAGER_ENDPOINT is written to ossec.conf. The components are kept apart
+# because assembling the value means normalizing them first: defaulting the port,
+# percent-encoding a zone id and bracketing an IPv6 literal.
 ##############################################################################
 
 resolve_manager_endpoint() {
@@ -133,6 +136,7 @@ resolve_manager_endpoint() {
   fi
 
   MANAGER_PORT="${MANAGER_PORT:-${WAZUH_MANAGER_DEFAULT_PORT:-1517}}"
+  MANAGER_PREFIX="${MANAGER_PREFIX:-${WAZUH_MANAGER_DEFAULT_PREFIX:-/wazuh-manager/}}"
 
   host="$MANAGER_ADDRESS"
 
@@ -153,12 +157,9 @@ resolve_manager_endpoint() {
     *:*) host="[$host]" ;;
   esac
 
-  # Append each component only when it has a value: an endpoint left as "host:"
-  # or "host:/prefix" is malformed, whereas simply omitting the port lets the
-  # agent apply its own default and still describes the same connection.
-  MANAGER_ENDPOINT="$host"
-  [ -n "$MANAGER_PORT" ] && MANAGER_ENDPOINT="${MANAGER_ENDPOINT}:${MANAGER_PORT}"
-  MANAGER_ENDPOINT="${MANAGER_ENDPOINT}${MANAGER_PREFIX}"
+  # Every component has a value by now, defaulted above where one was not given,
+  # so the endpoint is always the complete host:port/prefix form.
+  MANAGER_ENDPOINT="${host}:${MANAGER_PORT}${MANAGER_PREFIX}"
 }
 
 ##############################################################################
@@ -183,7 +184,7 @@ set_manager_conn() {
   # A configuration with no manager placeholder left is a mounted one, already
   # carrying a manager of its own. mount_files() has copied it in by now, so
   # this is what keeps it from being rewritten.
-  if ! grep -q "CHANGE_MANAGER_ENDPOINT\|CHANGE_MANAGER_IP" "$config"; then
+  if ! grep -q "CHANGE_MANAGER_ENDPOINT" "$config"; then
     print "No manager placeholder in ossec.conf, keeping the configuration as it is."
     set_agent_name_and_password "$config"
     return
@@ -203,24 +204,16 @@ set_manager_conn() {
 
   resolve_manager_endpoint
 
-  # Which grammar the packaged ossec.conf uses is decided by the tags the package
-  # wrote, not by the placeholders in them: <endpoint> exists in both generations
-  # and means something different in each, so it cannot tell them apart on its
-  # own. The presence of <address> can, and it is what disappears when
-  # wazuh/wazuh#38624 collapses the three fields into one.
+  # <endpoint> is the only tag configured here, whichever variables supplied the
+  # value. <address> and <port> are never written: wazuh/wazuh#38624 folded them
+  # into the endpoint, so a package that still ships them predates the change and
+  # cannot use what this writes anyway.
   if sed -n '/<manager>/,/<\/manager>/p' "$config" | grep -q "<address>"; then
-    # Split grammar: <address> and <port> carry the connection, and <endpoint>
-    # holds only the path prefix, which the agent validates as such and rejects
-    # if it is given a host or a port.
-    print "Manager address: $MANAGER_ADDRESS, port: $MANAGER_PORT, path prefix: ${MANAGER_PREFIX:-$WAZUH_MANAGER_DEFAULT_PREFIX}"
-    sed -i "/<manager>/,/<\/manager>/ s#<address>.*</address>#<address>$MANAGER_ADDRESS</address>#" "$config"
-    sed -i "/<manager>/,/<\/manager>/ s#<port>.*</port>#<port>$MANAGER_PORT</port>#" "$config"
-    sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>${MANAGER_PREFIX:-$WAZUH_MANAGER_DEFAULT_PREFIX}</endpoint>#" "$config"
-  else
-    # Unified grammar: one <endpoint> carrying host, port and prefix together.
-    print "Manager endpoint: $MANAGER_ENDPOINT"
-    sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$MANAGER_ENDPOINT</endpoint>#" "$config"
+    print "WARNING: ossec.conf still has <address> and <port> in <manager>, so this package predates the unified endpoint (wazuh/wazuh#38624) and will not read what is written below. Rebuild the image once the package ships the single <endpoint>."
   fi
+
+  print "Manager endpoint: $MANAGER_ENDPOINT"
+  sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$MANAGER_ENDPOINT</endpoint>#" "$config"
 
   set_agent_name_and_password "$config"
 }
