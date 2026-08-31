@@ -12,14 +12,12 @@ ARG TINI_VERSION="v0.19.0"
 # are what it writes into the packaged ossec.conf. They are therefore the
 # placeholders the runtime init script substitutes, not real configuration.
 #
-# Both generations are declared on purpose while wazuh/wazuh#38624 is in flight:
-# the current package understands WAZUH_MANAGER/WAZUH_MANAGER_PORT and ignores
-# WAZUH_MANAGER_ENDPOINT, and the new one does the opposite. Passing both keeps a
-# single Dockerfile building against either package. Drop the two legacy ones
-# once #38624 has landed everywhere this image is built from.
+# The package accepts either WAZUH_MANAGER_ENDPOINT or the WAZUH_MANAGER and
+# WAZUH_MANAGER_PORT pair, and only the endpoint is set here: one placeholder for
+# one <endpoint> tag, whichever pair the deployment then uses to fill it in. The
+# image therefore needs a package that understands WAZUH_MANAGER_ENDPOINT
+# (wazuh/wazuh#38624); against an older one the placeholder check below fails.
 ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
-ARG WAZUH_MANAGER='CHANGE_MANAGER_IP'
-ARG WAZUH_MANAGER_PORT='CHANGE_MANAGER_PORT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
 ARG wazuh_agent_x86_64_rpm
@@ -53,10 +51,9 @@ RUN dnf install procps shadow-utils -y && \
 # name are silently ignored at container start, which is how the port support was
 # lost once already (#2590).
 #
-# The manager placeholder is satisfied by either generation, since which one the
-# package writes is exactly what is in flux. CHANGE_MANAGER_PORT is not asserted
-# on: it has a tag of its own only under the split grammar, and disappears into
-# CHANGE_MANAGER_ENDPOINT under the unified one.
+# CHANGE_MANAGER_IP is accepted as well so that a package still writing the older
+# split <address>/<port> grammar is reported by the runtime script rather than by
+# a build failure, which the init handles.
 RUN conf=/var/ossec/etc/ossec.conf; \
     grep -q 'CHANGE_MANAGER_ENDPOINT\|CHANGE_MANAGER_IP' "$conf" || \
         { echo "ERROR: no manager placeholder found in the packaged ossec.conf"; exit 1; }; \

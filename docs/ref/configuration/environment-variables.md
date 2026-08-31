@@ -109,9 +109,29 @@ This zone id replaces the separate `<interface_index>` option used before.
 
 These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
 
-`WAZUH_MANAGER_ENDPOINT` is required. Without it the container has no manager to
+**Setting the connection with separate address and port:**
+
+The connection may also be given as an address and a port instead of one value:
+
+```yaml
+environment:
+  - WAZUH_MANAGER_SERVER=wazuh.manager
+  - WAZUH_MANAGER_PORT=1517
+  - WAZUH_AGENT_NAME=my-agent
+  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
+```
+
+- `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager.
+- `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`.
+
+`WAZUH_MANAGER_ENDPOINT` takes precedence over both. When it is set, they are not
+read at all, not even to supply a component it left out: an endpoint without a
+port falls back to `1517`, never to `WAZUH_MANAGER_PORT`. The container logs a
+warning when both forms are set at once.
+
+One of the two forms is required. With neither, the container has no manager to
 connect to, so it logs the reason and exits instead of starting an agent that
-could only retry against a placeholder. The one case where it may be omitted is
+could only retry against a placeholder. The one case where both may be omitted is
 a deployment mounting its own `ossec.conf` at
 `/wazuh-config-mount/etc/ossec.conf`, which already carries a manager of its own.
 
@@ -119,17 +139,13 @@ a deployment mounting its own `ossec.conf` at
 
 | Variable | Replaced by |
 | - | - |
-| `WAZUH_MANAGER_SERVER` | The host component of `WAZUH_MANAGER_ENDPOINT` |
-| `WAZUH_MANAGER_PORT` | The port component of `WAZUH_MANAGER_ENDPOINT` |
-| `WAZUH_REGISTRATION_SERVER` | `WAZUH_MANAGER_ENDPOINT`, enrollment reuses the agent connection |
-| `WAZUH_REGISTRATION_PORT` | `WAZUH_MANAGER_ENDPOINT`, enrollment reuses the agent connection |
+| `WAZUH_REGISTRATION_SERVER` | The manager variables, enrollment reuses the agent connection |
+| `WAZUH_REGISTRATION_PORT` | The manager variables, enrollment reuses the agent connection |
 
-None of these configure anything, and the container logs a warning naming the
-replacement when one of them is set. The first two split a connection that
-wazuh/wazuh#38624 turned into a single value. The last two pointed enrollment at
-`authd` separately, which since 5.0.0 no longer happens: the agent enrolls
-through the manager connection it already has, so `<enrollment>` carries neither
-an address nor a port of its own.
+Neither configures anything, and the container logs a warning when one is set.
+They pointed enrollment at `authd` separately, which since 5.0.0 no longer
+happens: the agent enrolls through the manager connection it already has, so
+`<enrollment>` carries neither an address nor a port of its own.
 
 ---
 

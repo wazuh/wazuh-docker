@@ -31,7 +31,9 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     | Variable | Default | Configuration set |
     | - | - | - |
-    | `WAZUH_MANAGER_ENDPOINT` | None | `<agent><manager><endpoint>` |
+    | `WAZUH_MANAGER_ENDPOINT` | None | The whole manager connection |
+    | `WAZUH_MANAGER_SERVER` | None | Address of the manager connection |
+    | `WAZUH_MANAGER_PORT` | `1517` | Port of the manager connection |
     | `WAZUH_AGENT_NAME` | `wazuh-agent-<container hostname>` | `<agent><enrollment><agent_name>` |
     | `WAZUH_REGISTRATION_PASSWORD` | None | `/var/ossec/etc/authd.pass` |
 
@@ -46,9 +48,21 @@ Follow these steps to deploy the Wazuh agent using Docker.
     over that same HTTPS connection, so this port covers both agent
     communication and registration: there is no separate enrollment port.
 
-    **Note:** `WAZUH_MANAGER_ENDPOINT` is required. Without it the container
-    logs the reason and exits, rather than starting an agent that could only
-    retry against an unconfigured manager.
+    **Note:** The connection may be given either way. `WAZUH_MANAGER_ENDPOINT`
+    carries it as one value, and `WAZUH_MANAGER_SERVER` with
+    `WAZUH_MANAGER_PORT` split it into an address and a port:
+
+    ```yaml
+    environment:
+      - WAZUH_MANAGER_SERVER=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>
+      - WAZUH_MANAGER_PORT=1517
+      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
+    ```
+
+    `WAZUH_MANAGER_ENDPOINT` wins when both are set, and the other two are then
+    not read at all. One of the two forms is required: with neither, the
+    container logs the reason and exits rather than starting an agent that
+    could only retry against an unconfigured manager.
 
     **Note:** For an IPv6 manager, bracket the literal whenever a port follows
     it, and percent-encode the `%` of a zone id as `%25`:
@@ -58,12 +72,10 @@ Follow these steps to deploy the Wazuh agent using Docker.
       - WAZUH_MANAGER_ENDPOINT=[fe80::1%25eth0]:1517/wazuh-manager/
     ```
 
-    **Note:** `WAZUH_MANAGER_SERVER`, `WAZUH_MANAGER_PORT`,
-    `WAZUH_REGISTRATION_SERVER` and `WAZUH_REGISTRATION_PORT` are not supported
-    and configure nothing. A deployment carried over from an earlier version
-    has to move them into `WAZUH_MANAGER_ENDPOINT`, which carries the address,
-    the port and the path prefix as one value. The container logs a warning
-    naming the replacement when one of them is set.
+    **Note:** `WAZUH_REGISTRATION_SERVER` and `WAZUH_REGISTRATION_PORT` are not
+    supported and configure nothing, because enrollment reuses the agent
+    connection instead of reaching `authd` separately. The container logs a
+    warning when either is set.
 
     **Note:** To use a configuration of your own instead of these variables,
     mount your `ossec.conf` at `/wazuh-config-mount/etc/ossec.conf`. It is
