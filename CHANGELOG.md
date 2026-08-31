@@ -5,6 +5,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
 | [#2505](https://github.com/wazuh/wazuh-docker/pull/2505) | Added bump-issue-link support for Revert Stage Bump. |
 | [#2491](https://github.com/wazuh/wazuh-docker/pull/2491) | Add integration test module docs |
@@ -77,6 +78,8 @@
 
 | Issue | Comment |
 | - | - |
+| [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt Wazuh manager image to new enroll process |
+| [#2590](https://github.com/wazuh/wazuh-docker/issues/2590) | Restore `WAZUH_MANAGER_PORT` support in the Wazuh agent image and document the enrollment variables removed in 5.0.0 |
 | [#2578](https://github.com/wazuh/wazuh-docker/issues/2578) | Report skipped bumps in the repository bumper workflow |
 | [#2584](https://github.com/wazuh/wazuh-docker/issues/2584) | Adapt certificate deployment to the unified manager certificate layout (root:wazuh-manager 0640, dir 1770) |
 | [#2563](https://github.com/wazuh/wazuh-docker/issues/2563) | Fixed changelog check workflow to accept Prior versions entries |
