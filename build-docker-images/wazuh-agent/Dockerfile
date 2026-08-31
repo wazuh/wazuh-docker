@@ -77,7 +77,7 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies
-RUN dnf install procps shadow-utils -y && \
+RUN dnf install diffutils procps shadow-utils -y && \
     dnf clean all && \
     getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
