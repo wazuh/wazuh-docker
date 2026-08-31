@@ -19,6 +19,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 | [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
 | [#2581](https://github.com/wazuh/wazuh-docker/issues/2581) | Change Codebuild runners to Github runners |
 | [#2537](https://github.com/wazuh/wazuh-docker/issues/2537) | Update deployment for Wazuh Indexer 5.0.0 RBAC |
