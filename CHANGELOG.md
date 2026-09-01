@@ -19,6 +19,7 @@
 | Issue | Comment |
 | - | - |
 | [#2585](https://github.com/wazuh/wazuh-docker/pull/2585) | Adapt Allocator invocation to the new installable Python package |
+| [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
 | [#2581](https://github.com/wazuh/wazuh-docker/issues/2581) | Change Codebuild runners to Github runners |
 | [#2537](https://github.com/wazuh/wazuh-docker/issues/2537) | Update deployment for Wazuh Indexer 5.0.0 RBAC |
 | [#2539](https://github.com/wazuh/wazuh-docker/pull/2539) | Add new WF for changelog check |
