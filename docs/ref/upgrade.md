@@ -26,15 +26,15 @@ Below is a step-by-step example of how to perform this update:
    ```yaml
    services:
      wazuh.manager:
-       image: wazuh/wazuh-manager:5.0.0-beta5
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-beta5
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0-beta5
+       image: wazuh/wazuh-dashboard:5.0.0
        ...
    ```
 
@@ -50,27 +50,27 @@ Below is a step-by-step example of how to perform this update:
    ```yaml
    services:
      wazuh.master:
-       image: wazuh/wazuh-manager:5.0.0-beta5
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh.worker:
-       image: wazuh/wazuh-manager:5.0.0-beta5
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh1.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-beta5
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh2.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-beta5
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh3.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-beta5
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0-beta5
+       image: wazuh/wazuh-dashboard:5.0.0
        ...
    ```
 
