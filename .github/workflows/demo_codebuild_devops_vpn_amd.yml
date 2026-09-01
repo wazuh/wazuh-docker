@@ -1,0 +1,20 @@
+name: "[DEMO] CodeBuild VPN-AMD Python 3.12 check"
+run-name: Demo - Check if devops-vpn-amd also has working Python 3.12 via runtime-versions
+
+on:
+  push:
+    branches:
+      - demo/codebuild-python312-runtime-fix
+
+jobs:
+  check:
+    runs-on:
+      - codebuild-github-actions-codebuild-runner-devops-vpn-amd-${{ github.run_id }}-${{ github.run_attempt }}
+      - buildspec-override:true
+    steps:
+      - name: Show Python version and pip status after runtime-versions override
+        run: |
+          echo "--- python3 --version ---"
+          python3 --version
+          echo "--- python3 -m pip --version ---"
+          python3 -m pip --version || echo "pip still not available"
