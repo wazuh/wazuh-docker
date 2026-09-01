@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.agent:
-    image: wazuh/wazuh-agent:5.0.0
+    image: wazuh/wazuh-agent:5.0.0-beta5
     restart: always
     environment:
       # The whole manager connection as one host[:port][/prefix] value. Required.
