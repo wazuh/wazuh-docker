@@ -19,7 +19,7 @@
 
 | Issue | Comment |
 | - | - |
-| [#6070](https://github.com/wazuh/internal-devel-requests/issues/6070) | Stop publishing the manager cluster key in the image: each container generates its own at first boot, and the multi-node manager nodes agree on one through a shared volume |
+| [#2621](https://github.com/wazuh/wazuh-docker/pull/2621) | Change cluster key assigment |
 | [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 | [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
 | [#2581](https://github.com/wazuh/wazuh-docker/issues/2581) | Change Codebuild runners to Github runners |
