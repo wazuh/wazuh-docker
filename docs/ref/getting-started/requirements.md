@@ -80,10 +80,16 @@ These are general recommendations. Actual needs may vary based on the number of 
 Ensure that the necessary network ports are open and available on the Docker host and any firewalls:
 
 * **Wazuh Manager**:
-    * `1514/UDP`: For agent communication (syslog).
-    * `1514/TCP`: For agent communication (if using TCP).
-    * `1515/TCP`: For agent enrollment.
+    * `1517/TCP`: For agent communication and enrollment. Wazuh 5.x agents use a
+      single HTTPS channel for both, so this is the only port they need.
+    * `1514/TCP`: For agent communication with Wazuh 4.x agents (legacy
+      `remoted`). Kept for backward compatibility, not used by 5.x agents.
+    * `1515/TCP`: For agent enrollment with Wazuh 4.x agents (`wazuh-authd`).
+      Kept for backward compatibility, not used by 5.x agents.
+    * `514/UDP`: For syslog event collection.
     * `55000/TCP`: For Wazuh API (default).
+    * `1516/TCP`: For cluster communication between manager nodes. Only needed
+      between the manager containers, not on the Docker host.
 * **Wazuh Indexer**:
     * `9200/TCP`: For HTTP REST API.
     * `9300/TCP`: For inter-node communication (if clustered).
@@ -91,6 +97,12 @@ Ensure that the necessary network ports are open and available on the Docker hos
     * `5601/TCP` (or `443/TCP` if HTTPS is configured via a reverse proxy): For web access.
 
 Port mappings in `docker-compose.yml` will expose these container ports on the host. Adjust host ports if defaults cause conflicts.
+
+In the `single-node` deployment the manager publishes these ports directly. In
+the `multi-node` deployment the agent ports are published by the `nginx`
+service, which balances `1517` (and the legacy `1514`) across the master and
+worker nodes; enrollment travels over `1517` together with the agent traffic,
+so it is balanced the same way.
 
 ## Important Considerations
 
