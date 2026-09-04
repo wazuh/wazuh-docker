@@ -1,10 +1,12 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
-# Run initialization and configuration
-bash /etc/cont-init.d/0-wazuh-init
+# Run initialization and configuration. A failure here means the agent has no
+# usable manager endpoint, so stop instead of starting an agent that can only
+# retry against a placeholder.
+bash /etc/cont-init.d/0-wazuh-init || exit 1
 
-# Start Wazuh Agent (may log warnings if manager address is not configured)
+# Start Wazuh Agent
 bash /etc/cont-init.d/1-agent
 
 # Tail the main log to stdout so Docker captures it

@@ -282,6 +282,20 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
 fi
 
 # --------------------------
+# Remote: listen address
+#
+# The packaged configuration binds remoted to 127.0.0.1, which inside a
+# container leaves it reachable only from the container itself: the published
+# 1517 (and the legacy 1514) would refuse every agent connection. Binding on
+# all interfaces is scoped to the container network namespace, so what is
+# actually reachable from outside stays governed by the published ports.
+# --------------------------
+WAZUH_REMOTE_BIND_ADDR="${WAZUH_REMOTE_BIND_ADDR:-0.0.0.0}"
+
+sed -i "/<https>/,/<\/https>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_REMOTE_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<legacy>/,/<\/legacy>/ s|<local_ip>.*</local_ip>|<local_ip>$WAZUH_REMOTE_BIND_ADDR</local_ip>|" "$WAZUH_MANAGER_CONF"
+
+# --------------------------
 # Cluster: node_name
 # --------------------------
 sed -i "/<cluster>/,/<\/cluster>/ s|<node_name>.*</node_name>|<node_name>$WAZUH_NODE_NAME</node_name>|" "$WAZUH_MANAGER_CONF"

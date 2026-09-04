@@ -3,9 +3,18 @@
 
 WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
+WAZUH_MANAGER_ENDPOINT=$WAZUH_MANAGER_ENDPOINT
 WAZUH_MANAGER_SERVER=$WAZUH_MANAGER_SERVER
-WAZUH_REGISTRATION_SERVER=${WAZUH_REGISTRATION_SERVER:-$WAZUH_MANAGER_SERVER}
+WAZUH_MANAGER_PORT=$WAZUH_MANAGER_PORT
 WAZUH_AGENT_NAME=${WAZUH_AGENT_NAME:-"wazuh-agent-$HOSTNAME"}
+
+# Applied when the component is not stated, by either set of variables. They
+# mirror the agent's own defaults, and are written out rather than left implicit
+# so that <endpoint> always shows the whole connection: host, port and path
+# prefix. What the file says is then what the agent uses, with nothing to infer
+# when reading it back.
+WAZUH_MANAGER_DEFAULT_PORT="1517"
+WAZUH_MANAGER_DEFAULT_PREFIX="/wazuh-manager/"
 
 ##############################################################################
 # Aux functions
@@ -48,20 +57,171 @@ mount_files() {
 }
 
 ##############################################################################
-# Allow users to set the manager ip and port, enrollment ip and port and
-# enroll dynamically on container start.
+# Report the variables that no longer configure anything, so that a compose file
+# carried over from an earlier version fails loudly rather than silently
+# connecting somewhere else.
 #
-# To use this:
+# WAZUH_REGISTRATION_SERVER and WAZUH_REGISTRATION_PORT pointed enrollment at
+# authd separately. Since 5.0.0 the agent enrolls over the same HTTPS channel it
+# uses for everything else, so <enrollment> carries neither an address nor a port
+# of its own and both are taken from the manager connection.
+##############################################################################
+
+warn_unsupported_vars() {
+  for var in WAZUH_REGISTRATION_SERVER WAZUH_REGISTRATION_PORT; do
+    if [ -n "${!var}" ]; then
+      print "WARNING: $var is not supported, it configures nothing. Enrollment reuses the manager connection, so it is the manager variables that set it."
+    fi
+  done
+}
+
+##############################################################################
+# Resolve the manager connection into its address, port and path prefix, and
+# assemble the normalized endpoint string back out of them.
+#
+# Since wazuh/wazuh#38624 the agent takes one <endpoint> holding
+# host[:port][/prefix], with 1517 and /wazuh-manager/ as the defaults for the
+# components left out. Those defaults are applied here rather than left to the
+# agent, so the value written is always the complete host:port/prefix form. Two
+# sets of variables fill it in:
+#
+#   WAZUH_MANAGER_ENDPOINT                     the whole value at once
+#   WAZUH_MANAGER_SERVER + WAZUH_MANAGER_PORT  address and port separately
+#
+# The endpoint wins outright when it is set: the other two are not consulted at
+# all, not even to supply a port it left out, so one variable never silently
+# alters what another one states. A port missing from the endpoint falls back to
+# the default, exactly as it would if the agent parsed it.
+#
+# host is an IPv4 literal, a hostname, or a bracketed IPv6 literal optionally
+# carrying a zone id: [<ipv6-literal>%25<ifname>]. That zone replaces the
+# <interface_index> option the agent used to take separately.
+#
+# Only MANAGER_ENDPOINT is written to ossec.conf. The components are kept apart
+# because assembling the value means normalizing them first: defaulting the port,
+# percent-encoding a zone id and bracketing an IPv6 literal.
+##############################################################################
+
+resolve_manager_endpoint() {
+  local endpoint rest host
+
+  MANAGER_PREFIX=""
+
+  if [ -n "$WAZUH_MANAGER_ENDPOINT" ]; then
+    # Drop a scheme if one was given: the agent always speaks HTTPS here.
+    endpoint="${WAZUH_MANAGER_ENDPOINT#*://}"
+
+    # An IPv6 literal is bracketed, so the port separator is the first colon
+    # after the closing bracket, never one of the colons inside the address.
+    if [ "${endpoint:0:1}" = "[" ]; then
+      MANAGER_ADDRESS="${endpoint%%]*}"
+      MANAGER_ADDRESS="${MANAGER_ADDRESS#[}"
+      rest="${endpoint#*]}"
+    else
+      MANAGER_ADDRESS="${endpoint%%[:/]*}"
+      rest="${endpoint#"$MANAGER_ADDRESS"}"
+    fi
+
+    MANAGER_PORT=""
+    if [ "${rest:0:1}" = ":" ]; then
+      rest="${rest#:}"
+      MANAGER_PORT="${rest%%/*}"
+      rest="${rest#"$MANAGER_PORT"}"
+    fi
+
+    MANAGER_PREFIX="$rest"
+  else
+    MANAGER_ADDRESS="$WAZUH_MANAGER_SERVER"
+    MANAGER_PORT="$WAZUH_MANAGER_PORT"
+  fi
+
+  MANAGER_PORT="${MANAGER_PORT:-${WAZUH_MANAGER_DEFAULT_PORT:-1517}}"
+  MANAGER_PREFIX="${MANAGER_PREFIX:-${WAZUH_MANAGER_DEFAULT_PREFIX:-/wazuh-manager/}}"
+
+  host="$MANAGER_ADDRESS"
+
+  # An IPv6 zone id is percent-encoded in the URL, so the interface name reads
+  # as [fe80::1%25eth0]. Writing it the way the system reports it, fe80::1%eth0,
+  # is the natural mistake and produces an endpoint the agent rejects, so encode
+  # a lone '%' here and say so. A '%' already followed by 25 is left alone.
+  case "$host" in
+    *:*%25*) ;;
+    *:*%*)
+      host="${host/\%/%25}"
+      print "Percent-encoded the IPv6 zone id in the manager address: $MANAGER_ADDRESS -> $host"
+      ;;
+  esac
+
+  # Bracket a bare IPv6 literal so that appending the port stays unambiguous.
+  case "$host" in
+    *:*) host="[$host]" ;;
+  esac
+
+  # Every component has a value by now, defaulted above where one was not given,
+  # so the endpoint is always the complete host:port/prefix form.
+  MANAGER_ENDPOINT="${host}:${MANAGER_PORT}${MANAGER_PREFIX}"
+}
+
+##############################################################################
+# Allow users to set the manager endpoint, the agent name and the enrollment
+# password on container start. The manager endpoint also drives enrollment,
+# which reuses the agent connection since 5.0.0.
+#
+# To use a configuration of your own instead:
 # 1. Create your own ossec.conf file
 # 2. In your ossec.conf file, use the <agent> configuration
 # 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
+#
+# mount_files() copies it in before this runs, so a mounted file carries no
+# placeholders left to substitute and is used as it is.
 ##############################################################################
 
 set_manager_conn() {
+  local config="${WAZUH_INSTALL_PATH}/etc/ossec.conf"
+
   echo "ossec.conf configuration"
-  sed -i "s#<address>CHANGE_MANAGER_IP</address>#<address>$WAZUH_MANAGER_SERVER</address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-  sed -i "s#<manager_address>CHANGE_ENROLL_IP</manager_address>#<manager_address>$WAZUH_REGISTRATION_SERVER</manager_address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
+
+  # A configuration with no manager placeholder left is a mounted one, already
+  # carrying a manager of its own. mount_files() has copied it in by now, so
+  # this is what keeps it from being rewritten.
+  if ! grep -q "CHANGE_MANAGER_ENDPOINT" "$config"; then
+    print "No manager placeholder in ossec.conf, keeping the configuration as it is."
+    set_agent_name_and_password "$config"
+    return
+  fi
+
+  if [ -z "$WAZUH_MANAGER_ENDPOINT" ] && [ -z "$WAZUH_MANAGER_SERVER" ]; then
+    print "ERROR: no manager address configured and ossec.conf still holds the packaged placeholder, so the agent has nothing to connect to."
+    print "Set WAZUH_MANAGER_ENDPOINT to the whole endpoint as host[:port][/prefix], for example wazuh.manager:1517/wazuh-manager/,"
+    print "or set WAZUH_MANAGER_SERVER (and optionally WAZUH_MANAGER_PORT) to the address and port,"
+    print "or mount an ossec.conf of your own at $WAZUH_CONFIG_MOUNT/etc/ossec.conf."
+    exit 1
+  fi
+
+  if [ -n "$WAZUH_MANAGER_ENDPOINT" ] && [ -n "$WAZUH_MANAGER_SERVER" ]; then
+    print "WARNING: WAZUH_MANAGER_ENDPOINT and WAZUH_MANAGER_SERVER are both set. Using WAZUH_MANAGER_ENDPOINT and ignoring WAZUH_MANAGER_SERVER and WAZUH_MANAGER_PORT."
+  fi
+
+  resolve_manager_endpoint
+
+  # <endpoint> is the only tag configured here, whichever variables supplied the
+  # value. <address> and <port> are never written: wazuh/wazuh#38624 folded them
+  # into the endpoint, so a package that still ships them predates the change and
+  # cannot use what this writes anyway.
+  if sed -n '/<manager>/,/<\/manager>/p' "$config" | grep -q "<address>"; then
+    print "WARNING: ossec.conf still has <address> and <port> in <manager>, so this package predates the unified endpoint (wazuh/wazuh#38624) and will not read what is written below. Rebuild the image once the package ships the single <endpoint>."
+  fi
+
+  print "Manager endpoint: $MANAGER_ENDPOINT"
+  sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$MANAGER_ENDPOINT</endpoint>#" "$config"
+
+  set_agent_name_and_password "$config"
+}
+
+set_agent_name_and_password() {
+  local config="$1"
+
+  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" "$config"
   if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
     set +x
     cat << EOF > /var/ossec/etc/authd.pass
@@ -81,6 +241,9 @@ main() {
 
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
+
+  # Report the variables that no longer take effect
+  warn_unsupported_vars
 
   # Configure agent variables
   set_manager_conn
