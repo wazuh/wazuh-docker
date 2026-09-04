@@ -74,4 +74,18 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
         docker compose up -d
         ```
 
+7.  Read the password of the `admin` account. It is generated on the first start of the deployment and printed once:
+
+    ```bash
+    docker compose logs wazuh1.indexer | grep "Log in to the Wazuh dashboard"
+    ```
+
+    Afterwards, every account and its password are printed by the tool the image ships:
+
+    ```bash
+    docker compose exec wazuh1.indexer /password-tool.sh --show
+    ```
+
+    The same tool changes them (`--user <account>`) and checks them against the running deployment (`--verify`). The passwords are shared through the `wazuh-credentials` volume, which is what makes the three indexer nodes, the two manager nodes and the dashboard agree on one set. See [Credentials](../../credentials.md).
+
 Please allow some time for the environment to initialize, especially on the first run. A multi-node setup can take a few minutes (depending on your host resources and network) as the Wazuh Indexer cluster forms, and the necessary indexes and index patterns are generated.

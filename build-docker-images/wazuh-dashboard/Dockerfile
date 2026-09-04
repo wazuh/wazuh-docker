@@ -80,6 +80,7 @@ ENV USER="wazuh-dashboard" \
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
 COPY config/wazuh_dashboard_config.sh /
+COPY config/credentials.sh /
 
 # Update and install dependencies
 RUN yum install shadow-utils -y && \
@@ -95,6 +96,10 @@ RUN yum install shadow-utils -y && \
     $USER && \
     chmod 700 /entrypoint.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
+    chmod 700 /credentials.sh && \
+    mkdir -p /wazuh-credentials && \
+    chown ${WAZUH_UID}:${WAZUH_GID} /wazuh-credentials && \
+    chmod 700 /wazuh-credentials && \
     mkdir -p $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \

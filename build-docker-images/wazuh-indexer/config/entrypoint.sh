@@ -97,6 +97,13 @@ if [ -n "$NODES_DN" ]; then
 fi
 }
 
+function configureInternalUsers {
+    if ! ( source /credentials.sh && credentials_bootstrap ); then
+        echo "Wazuh indexer: the internal user passwords of this deployment could not be set. Refusing to start."
+        exit 1
+    fi
+}
+
 # Prepend "opensearch" command if no argument was provided or if the first
 # argument looks like a flag (i.e. starts with a dash).
 
@@ -108,6 +115,7 @@ fi
 
 if [ "$1" = "opensearch" ]; then
     # If the first argument is opensearch, then run the setup script.
+    configureInternalUsers
     runOpensearch "$@"
 else
     # Otherwise, just exec the command.

@@ -4,9 +4,14 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 
 ## Credentials and secrets
 
-- Do not use default credentials. The Compose examples include placeholder values for the Wazuh API, Dashboard, and Indexer access.
-- Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of hardcoding them in `docker-compose.yml`.
-- Rotate credentials regularly and after any suspected exposure.
+The images ship no usable password. Every account of the deployment, in the Wazuh indexer and in the Wazuh API, gets a random password on its first start, unique to the deployment and shared between the containers through the `wazuh-credentials` volume. [Credentials](credentials.md) describes how to read them, how to verify them and how to change them.
+
+- No Compose file, image or repository file contains a password, and there is no variable for putting one there. Nothing in a pull of these images authenticates.
+- Passwords are changed with `password-tool.sh`, shipped in the indexer and manager images: `docker compose exec wazuh.indexer /password-tool.sh --user admin`. The same tool reads them (`--show`) and checks them against the running deployment (`--verify`).
+- The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
+- Treat the `wazuh-credentials` volume as a secret of the deployment: restrict access to it as you do for the certificates, do not copy it between deployments, and remember that anyone who can run `docker compose exec` on these containers can read it. To keep the passwords out of it entirely, set them in the environment from your own secret store.
+- The `admin` password is printed once, on the first start of the indexer, and it is the credential that logs into the dashboard. Logging into the dashboard as `admin` also produces a Wazuh API administrator session, so it deserves the same protection as an API superuser password.
+- Rotate credentials regularly and after any suspected exposure. `tools/tests/check-default-credentials.sh` asserts that no account of a running deployment authenticates with its username as its password.
 - The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
 
 ## Certificates and TLS
@@ -32,7 +37,8 @@ The Wazuh manager image ships no self-signed certificate. Each manager container
 ## Network exposure
 
 - Restrict access to exposed service ports at the host firewall and security group level.
-- Do not expose internal-only endpoints to untrusted networks. In particular, limit access to the Indexer API port (`9200`) and the Wazuh API port (`55000`) to administrative networks.
+- **The Wazuh indexer port (`9200`) is not published.** The manager and the dashboard reach the indexer over the Compose network, and the account that answers on that port administers the datastore, so publishing it puts an administrator-reachable endpoint on every interface of the host. If you need it for development, add the mapping bound to the loopback address (`127.0.0.1:9200:9200`) rather than to all interfaces.
+- Do not expose internal-only endpoints to untrusted networks. In particular, limit access to the Wazuh API port (`55000`) to administrative networks.
 
 ## Host and runtime hardening
 

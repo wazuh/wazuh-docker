@@ -33,8 +33,8 @@ services:
       - WAZUH_CLUSTER_NODES=wazuh.manager
       - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
       - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - wazuh_api_configuration:/var/wazuh-manager/api/configuration
       - wazuh_etc:/var/wazuh-manager/etc
       - wazuh_logs:/var/wazuh-manager/logs
@@ -49,8 +49,6 @@ services:
     hostname: wazuh.indexer
     container_name: single-node-wazuh.indexer
     restart: always
-    ports:
-      - "9200:9200"
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -74,6 +72,7 @@ services:
       retries: 5
       start_period: 60s
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - wazuh-indexer-data:/var/lib/wazuh-indexer
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
       - ./config/wazuh_indexer/certs/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
@@ -100,11 +99,11 @@ services:
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - WAZUH_API_URL=https://wazuh.manager
       - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - ./config/wazuh_dashboard/certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - ./config/wazuh_dashboard/certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
@@ -117,6 +116,7 @@ services:
         condition: service_healthy
 
 volumes:
+  wazuh-credentials:
   wazuh_api_configuration:
   wazuh_etc:
   wazuh_logs:

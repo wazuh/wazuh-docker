@@ -86,10 +86,19 @@ if [ "$INDEXER_PASSWORD" != "" ]; then
 fi
 }
 
+function_configure_api_users() {
+  credentials_api_bootstrap && credentials_api_apply
+}
+
+source /etc/wazuh-credentials.sh
+
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
 
+function_configure_api_users
+
 # configure Vulnerabilty detection
+credentials_resolve_indexer_password
 function_configure_vulnerability_detection
 
 # run entrypoint scripts

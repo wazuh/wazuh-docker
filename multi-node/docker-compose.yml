@@ -32,8 +32,8 @@ services:
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - master-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - master-wazuh-etc:/var/wazuh-manager/etc
       - master-wazuh-logs:/var/wazuh-manager/logs
@@ -71,8 +71,8 @@ services:
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - worker-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - worker-wazuh-etc:/var/wazuh-manager/etc
       - worker-wazuh-logs:/var/wazuh-manager/logs
@@ -87,8 +87,6 @@ services:
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
-    ports:
-      - "9200:9200"
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -113,6 +111,7 @@ services:
       retries: 5
       start_period: 60s
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - wazuh-indexer-data-1:/var/lib/wazuh-indexer
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
       - ./config/wazuh1_indexer/certs/wazuh1.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
@@ -153,6 +152,7 @@ services:
       retries: 5
       start_period: 60s
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - wazuh-indexer-data-2:/var/lib/wazuh-indexer
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
       - ./config/wazuh2_indexer/certs/wazuh2.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
@@ -191,6 +191,7 @@ services:
       retries: 5
       start_period: 60s
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - wazuh-indexer-data-3:/var/lib/wazuh-indexer
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
       - ./config/wazuh3_indexer/certs/wazuh3.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
@@ -215,11 +216,11 @@ services:
       - OPENSEARCH_HOSTS=["https://wazuh1.indexer:9200","https://wazuh2.indexer:9200","https://wazuh3.indexer:9200"]
       - WAZUH_API_URL=https://wazuh.master
       - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
     volumes:
+      - wazuh-credentials:/wazuh-credentials
       - ./config/wazuh_dashboard/certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - ./config/wazuh_dashboard/certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
@@ -247,6 +248,7 @@ services:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
+  wazuh-credentials:
   master-wazuh-api-configuration:
   master-wazuh-etc:
   master-wazuh-logs:

@@ -22,17 +22,14 @@ The Wazuh Manager container accepts the following environment variables, which c
 ```yaml
 environment:
   - INDEXER_USERNAME=wazuh-manager
-  - INDEXER_PASSWORD=wazuh-manager
   - WAZUH_API_URL=https://wazuh.manager
-  - DASHBOARD_USERNAME=kibanaserver
-  - DASHBOARD_PASSWORD=kibanaserver
 ```
 
 **Variable Descriptions:**
 
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions.
+- `INDEXER_USERNAME`: Wazuh Indexer account the manager writes events and reads state as. Its password is not set here: it belongs to the deployment and is read from the `wazuh-credentials` volume. See [Credentials](../credentials.md).
+- `INDEXER_PASSWORD`: Optional. Not set by the Compose files. Overrides the password read from that volume, for a deployment that injects this credential from its own secret store.
 - `WAZUH_API_URL`: URL of the Wazuh API, used by other services for communication.
-- `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: Credentials for the Wazuh Dashboard to authenticate with the Indexer.
 - `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
 
 ---
@@ -49,6 +46,9 @@ environment:
 **Variable Descriptions:**
 
 - `OPENSEARCH_JAVA_OPTS`: Sets JVM heap size and other Java options.
+- Any setting of `opensearch.yml` can also be given as an environment variable, as described at the end of this page.
+
+There is no environment variable for the passwords of the indexer accounts. They are generated on the first start of the deployment and changed with `password-tool.sh`; see [Credentials](../credentials.md).
 
 ---
 
@@ -58,19 +58,16 @@ The Wazuh Dashboard container accepts the following environment variables, which
 
 ```yaml
 environment:
-  - INDEXER_USERNAME=wazuh-manager
-  - INDEXER_PASSWORD=wazuh-manager
   - WAZUH_API_URL=https://wazuh.manager
   - DASHBOARD_USERNAME=kibanaserver
-  - DASHBOARD_PASSWORD=kibanaserver
 ```
 
 **Variable Descriptions:**
 
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials used by the Dashboard to authenticate with the Wazuh Indexer.
 - `WAZUH_API_URL`: Base URL of the Wazuh API, used for querying and visualizing security data.
-- `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: User credentials for the Dashboard interface.
-- `API_USERNAME` / `API_PASSWORD`: API user credentials for authenticating Wazuh API requests initiated by the Dashboard.
+- `DASHBOARD_USERNAME`: Wazuh Indexer account the Dashboard authenticates as.
+- `API_USERNAME`: Wazuh API account the Dashboard proxies manager requests as. Defaults to `wazuh-wui`.
+- `DASHBOARD_PASSWORD` / `API_PASSWORD`: Optional. Not set by the Compose files. Their passwords are read from the `wazuh-credentials` volume; these variables override that, for a deployment that injects the credentials from its own secret store. The Dashboard does not start without a password from one source or the other: there is no default to fall back to. See [Credentials](../credentials.md).
 
 These variables are critical for enabling communication between the Wazuh Dashboard, the Wazuh Indexer, and the Wazuh API.
 

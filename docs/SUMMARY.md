@@ -24,6 +24,7 @@
 - [Configuration](ref/configuration/configuration.md)
   - [Environment Variabless](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
+- [Credentials](ref/credentials.md)
 - [Upgrade](ref/upgrade.md)
 - [Uninstall](ref/uninstall.md)
 - [Backup and restore](ref/backup-and-restore.md)

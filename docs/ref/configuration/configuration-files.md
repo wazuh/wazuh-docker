@@ -56,6 +56,17 @@ The `docker-compose.yml` files mount a named volume on `/var/wazuh-manager/etc` 
 
 Removing the volume (for example, with `docker compose down -v`) deletes the pair, and the next start generates a new one. Agents do not validate this certificate by default, so a new pair does not break already enrolled agents. Do not copy the volume between deployments: that reuses the same private key in both. See [Security](../security.md) for rotation and for using your own certificate.
 
+### Deployment credentials
+
+The `docker-compose.yml` files mount a named volume, `wazuh-credentials`, on `/wazuh-credentials` in the indexer, manager and dashboard containers. It holds the passwords of the deployment, generated on the first start and read by the other components afterwards:
+
+* `indexer-users.env`: the Wazuh indexer internal users, written by the indexer.
+* `api-users.env`: the Wazuh API users `wazuh` and `wazuh-wui`, written by the manager.
+
+The volume is created from the images, so nothing has to exist on the host beforehand, and the files are readable only by the containers' own user. It is the deployment's password store: `password-tool.sh` reads, verifies and changes what is in it, and the containers read their own credentials from it on start.
+
+Removing the volume makes the next start generate a new set of passwords. The indexer keeps its accounts in the security index, which is not rewritten by that, so the deployment would end up disagreeing with itself; rotate with `password-tool.sh` instead. See [Credentials](../credentials.md).
+
 ### Wazuh Dashboard keystore
 
 The `docker-compose.yml` files mount the named volume `wazuh-dashboard-config` on `/usr/share/wazuh-dashboard/config`, which is where `opensearch_dashboards.keystore` is stored. Keeping this volume preserves the `wazuh_ai_assistant.encryptionKey` generated on the first start.
