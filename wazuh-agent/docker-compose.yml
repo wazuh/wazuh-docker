@@ -4,5 +4,9 @@ services:
     image: wazuh/wazuh-agent:5.1.0
     restart: always
     environment:
-      - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
+      # The whole manager connection as one host[:port][/prefix] value. Required.
+      # The port and the prefix may be left out, defaulting to 1517 and
+      # /wazuh-manager/.
+      - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
+      #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
       - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
