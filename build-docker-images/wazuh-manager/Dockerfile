@@ -99,6 +99,12 @@ COPY config/permanent_data.env /
 RUN chmod 755 /entrypoint.sh
 
 # Services ports
-EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
+#   1517/tcp: agent communication and enrollment (Wazuh 5.x agents, HTTPS)
+#   1514/tcp: agent communication for Wazuh 4.x agents (legacy remoted)
+#   1515/tcp: agent enrollment for Wazuh 4.x agents (authd)
+#   514/udp:  syslog event collection
+#   1516/tcp: cluster communication between manager nodes
+#   55000/tcp: Wazuh API
+EXPOSE 55000/tcp 1517/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
 
 ENTRYPOINT ["/usr/local/bin/tini", "--", "/entrypoint.sh"]

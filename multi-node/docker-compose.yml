@@ -237,6 +237,7 @@ services:
     container_name: multi-node-nginx
     restart: always
     ports:
+      - "1517:1517"
       - "1514:1514"
     depends_on:
       - wazuh.master
