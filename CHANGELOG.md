@@ -79,6 +79,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
 | [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt Wazuh manager image to new enroll process |
 | [#2594](https://github.com/wazuh/wazuh-docker/issues/2594) | Added `diffutils` to the Wazuh agent image so FIM `report_changes` can generate content diffs |
 | [#2590](https://github.com/wazuh/wazuh-docker/issues/2590) | Restore `WAZUH_MANAGER_PORT` support in the Wazuh agent image and document the enrollment variables removed in 5.0.0 |
