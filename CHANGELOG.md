@@ -19,6 +19,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#6058](https://github.com/wazuh/internal-devel-requests/issues/6058) | Remove the OpenSearch demo users from the indexer image, add `password-tool.sh` to change the indexer and API passwords of a running deployment, and stop publishing the indexer port `9200` |
 | [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 | [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
 | [#2581](https://github.com/wazuh/wazuh-docker/issues/2581) | Change Codebuild runners to Github runners |
