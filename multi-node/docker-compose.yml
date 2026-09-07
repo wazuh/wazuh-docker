@@ -9,7 +9,7 @@ services:
       wazuh1.indexer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0" ]
+      test: [ "CMD", "/var/wazuh-manager/bin/wazuh-manager-control", "status" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -49,7 +49,7 @@ services:
     container_name: multi-node-wazuh.worker
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -q 'not running' && exit 1 || exit 0" ]
+      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -v apid | grep -qE 'not running|failed to start|refused its configuration' && exit 1 || exit 0" ]
       interval: 15s
       timeout: 5s
       retries: 5
