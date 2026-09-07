@@ -21,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2627](https://github.com/wazuh/wazuh-docker/issues/2627) | Manager healthcheck now uses the command's own exit code instead of grepping for 'not running', catching all failure states |
 
 ## Prior versions
 
