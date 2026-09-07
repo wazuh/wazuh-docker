@@ -313,6 +313,7 @@ sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$WAZUH_CLUSTER_KEY</key>|
 # --------------------------
 # Cluster: bind_addr
 # --------------------------
+WAZUH_CLUSTER_BIND_ADDR="${WAZUH_CLUSTER_BIND_ADDR:-0.0.0.0}"
 sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
