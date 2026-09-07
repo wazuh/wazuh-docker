@@ -5,7 +5,7 @@
 # index of the running cluster. Used by password-tool.sh; can also be run on
 # its own. See docs/ref/credentials.md.
 #
-# Overridable: CACERT, CERT, KEY, HOST, PORT, FILE, TYPE, WAIT_SECONDS.
+# Overridable: CACERT, CERT, KEY, HOST, PORT, FILE, TYPE, BACKUP, WAIT_SECONDS.
 
 set -o pipefail
 
@@ -39,7 +39,9 @@ until curl -sk --max-time 5 "https://${HOST}:${PORT}/" >/dev/null 2>&1; do
 done
 
 args=()
-if [ -n "${FILE}" ]; then
+if [ -n "${BACKUP}" ]; then
+    args+=(-backup "${BACKUP}")
+elif [ -n "${FILE}" ]; then
     args+=(-f "${FILE}")
 else
     args+=(-cd "${SECURITY_CONFIG_DIR}")

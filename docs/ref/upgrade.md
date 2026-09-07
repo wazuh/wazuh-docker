@@ -82,19 +82,20 @@ Below is a step-by-step example of how to perform this update:
 
 ## Credentials on existing deployments
 
-A deployment created before this change is running on the passwords the images shipped: the OpenSearch demo hashes in the Wazuh indexer, and `wazuh` / `wazuh-wui` in the Wazuh API. Upgrading the image tag does not replace them on its own, because both are stored outside the images, in the security index and in the RBAC database.
+The Wazuh indexer image no longer ships the OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`), but taking them out of the image does not take them out of a deployment that already exists: those accounts live in the security index, which is on a volume and is not rewritten by an upgrade. Removing them takes one extra step, before the password change:
 
-- **The Wazuh API accounts are replaced on the first start of the new manager image**, on the master and on each worker. Nothing else is needed.
-- **The Wazuh indexer accounts stay as they are.** The new image generates a password for each of them and records it, but the cluster reads its user database only when the security index is created. Load the recorded passwords into the running cluster once, after the upgrade:
+```bash
+# 1. Load the user database of the new image into the cluster. The demo
+#    accounts are not in it, so they stop existing. Every account is left on
+#    the default password of the image, which the next step replaces.
+docker compose exec wazuh.indexer /securityadmin.sh
 
-  ```bash
-  docker compose exec wazuh.indexer /password-tool.sh --all
-  docker compose restart wazuh.manager wazuh.dashboard
-  ```
+# 2. Change every password, as on a new deployment.
+docker compose exec wazuh.indexer /password-tool.sh --all
+docker compose exec wazuh.manager /password-tool.sh --all
+```
 
-  `--all` rotates every account, applies it to the cluster and prints the new passwords. In multi-node, run it on `wazuh1.indexer`, the node that mounts the admin certificate; the change is cluster-wide, and restart every manager node and the dashboard. The restart is what makes those containers read the new service credentials; `docker compose up -d` does not, because nothing in the Compose file changed.
-
-  Until that is done, the deployment still answers to the demo credentials. [Credentials](credentials.md) describes the tool and the rest of the mechanism.
+Step 1 puts the cluster on the default passwords for as long as step 2 takes, so run the two together. In multi-node, run both on `wazuh1.indexer`, the node that mounts the admin certificate; the security configuration is cluster-wide. Then write the service passwords into `docker-compose.yml` and recreate the stack, as described in [Credentials](credentials.md).
 
 Also note that the Compose files no longer publish the Wazuh indexer port `9200` on the host. A deployment that reached the indexer directly from the host has to add the mapping back, preferably bound to the loopback address.
 

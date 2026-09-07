@@ -97,13 +97,8 @@ COPY config/password-tool.sh /password-tool.sh
 COPY config/etc/ /etc/
 COPY config/permanent_data.env /
 
-# An empty named volume mounted on /wazuh-credentials inherits this ownership,
-# so the dashboard container, which does not run as root, can read it.
 RUN chmod 755 /entrypoint.sh /password-tool.sh && \
-    chmod 700 /etc/wazuh-credentials.sh /etc/wazuh-api-users.py && \
-    mkdir -p /wazuh-credentials && \
-    chown ${WAZUH_UID}:${WAZUH_GID} /wazuh-credentials && \
-    chmod 700 /wazuh-credentials
+    chmod 700 /etc/wazuh-api-users.py
 
 # Services ports
 #   1517/tcp: agent communication and enrollment (Wazuh 5.x agents, HTTPS)

@@ -24,13 +24,8 @@ OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-
 WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
 API_USERNAME="${API_USERNAME:-wazuh-wui}"
+API_PASSWORD="${API_PASSWORD:-wazuh-wui}"
 RUN_AS="${RUN_AS:-true}"
-
-source /credentials.sh
-if ! credentials_resolve_api_password; then
-    echo "Wazuh dashboard: no Wazuh API credentials. Refusing to start."
-    exit 1
-fi
 
 # Optional Wazuh app configurations
 PATTERN="${PATTERN:-}"

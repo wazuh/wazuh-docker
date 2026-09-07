@@ -66,18 +66,13 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
         docker compose up -d
         ```
 
-7.  Read the password of the `admin` account. It is generated on the first start of the deployment and printed once:
+7.  **Change the default passwords.** The deployment comes up on the passwords documented in [Credentials](../../credentials.md), and changing them is the first thing to do:
 
     ```bash
-    docker compose logs wazuh.indexer | grep "Log in to the Wazuh dashboard"
+    docker compose exec wazuh.indexer /password-tool.sh --all
+    docker compose exec wazuh.manager /password-tool.sh --all
     ```
 
-    Afterwards, every account and its password are printed by the tool the image ships:
-
-    ```bash
-    docker compose exec wazuh.indexer /password-tool.sh --show
-    ```
-
-    The same tool changes them (`--user <account>`) and checks them against the running deployment (`--verify`). See [Credentials](../../credentials.md).
+    Each command prints the new passwords once and names the ones that have to be written into `docker-compose.yml`. Copy the output, edit the file, and then recreate the stack with `docker compose down` followed by `docker compose up -d` (without `-v`). The full procedure, including how to verify it, is in [Credentials](../../credentials.md).
 
 Please allow some time for the environment to initialize, especially on the first run. It can take approximately a minute or two (depending on your host's resources) as the Wazuh Indexer starts up and generates the necessary indexes and index patterns.

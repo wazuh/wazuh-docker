@@ -11,7 +11,7 @@ cd single-node
 ../tools/tests/check-default-credentials.sh
 ```
 
-It asserts that the Wazuh indexer image ships no usable password hash and none of the OpenSearch demo accounts, that no Wazuh indexer or Wazuh API account authenticates with its own username as its password, and, as a positive control, that the credentials the deployment did generate work.
+It asserts that the Wazuh indexer image ships none of the OpenSearch demo accounts and that no Wazuh indexer or Wazuh API account authenticates with its own username as its password. A deployment that has not been through the first-start password change fails it; see [Credentials](../credentials.md).
 
 ---
 

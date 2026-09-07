@@ -1,21 +1,13 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
-# Asserts that no account of a deployment authenticates with a password that
-# can be known before the deployment exists.
+# Asserts that no account of a deployment authenticates with its own username
+# as its password, and that the Wazuh indexer image carries none of the
+# OpenSearch demo accounts.
 #
-# Three things are checked, and each of them has been true of a shipped image
-# at some point, which is why they are checked and not assumed:
-#
-#   1. The Wazuh indexer image carries no usable password hash, and none of the
-#      OpenSearch demo accounts.
-#   2. No Wazuh indexer account authenticates with its own username as its
-#      password, and neither do the OpenSearch demo accounts.
-#   3. No Wazuh API account authenticates with its own username as its
-#      password.
-#
-# A deployment credential is used at the end as a positive control: a check
-# that only ever says "denied" would also pass against a cluster that is down.
+# The images ship documented default passwords, so a deployment that has not
+# been through the first-start password change fails this check. That is what
+# it is for: see docs/ref/credentials.md.
 #
 # Usage, from single-node/ or multi-node/:
 #
@@ -24,14 +16,12 @@
 # Options:
 #   -f, --file <compose file>   Compose file to use. Default: docker-compose.yml
 #   -i, --indexer <service>     Indexer service. Default: guessed from the file
-#   -m, --manager <service>     Manager service. Default: guessed from the file
 #   -a, --api-url <url>         Wazuh API base URL. Default: https://localhost:55000
 
 set -o pipefail
 
 COMPOSE_FILE="docker-compose.yml"
 INDEXER_SERVICE=""
-MANAGER_SERVICE=""
 API_URL="https://localhost:55000"
 
 # Accounts OpenSearch ships for its demo configuration. None of them has a role
@@ -52,7 +42,7 @@ fail() { checks=$((checks + 1)); failures=$((failures + 1)); printf '  \033[31mF
 info() { printf '%s\n' "$1"; }
 
 usage() {
-  sed -n '3,28p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,22p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
@@ -61,7 +51,6 @@ while [ -n "$1" ]; do
     -h|--help) usage 0 ;;
     -f|--file) COMPOSE_FILE="$2"; shift 2 ;;
     -i|--indexer) INDEXER_SERVICE="$2"; shift 2 ;;
-    -m|--manager) MANAGER_SERVICE="$2"; shift 2 ;;
     -a|--api-url) API_URL="$2"; shift 2 ;;
     *) usage 1 ;;
   esac
@@ -74,19 +63,10 @@ if [ ! -f "${COMPOSE_FILE}" ]; then
   exit 2
 fi
 
-# The two deployments name their services differently.
 if [ -z "${INDEXER_SERVICE}" ]; then
   for candidate in wazuh.indexer wazuh1.indexer; do
     if compose ps --services 2>/dev/null | grep -qx "${candidate}"; then
       INDEXER_SERVICE="${candidate}"
-      break
-    fi
-  done
-fi
-if [ -z "${MANAGER_SERVICE}" ]; then
-  for candidate in wazuh.manager wazuh.master; do
-    if compose ps --services 2>/dev/null | grep -qx "${candidate}"; then
-      MANAGER_SERVICE="${candidate}"
       break
     fi
   done
@@ -97,9 +77,9 @@ if [ -z "${INDEXER_SERVICE}" ]; then
   exit 2
 fi
 
-# Authenticates against the indexer from inside the indexer container, so the
-# check does not need the port to be published on the host, and cannot be made
-# to pass by publishing it.
+# Authenticates from inside the indexer container, so the check does not need
+# the port to be published on the host, and cannot be made to pass by
+# publishing it.
 indexer_auth_code() {
   compose exec -T "${INDEXER_SERVICE}" \
     curl -sk -o /dev/null -w '%{http_code}' --max-time 15 \
@@ -140,12 +120,6 @@ else
         pass "${image} does not ship the OpenSearch demo account '${user}'"
       fi
     done
-
-    if echo "${users_file}" | grep -qE '^[[:space:]]+hash:[[:space:]]*"\$2'; then
-      fail "${image} ships a usable password hash in internal_users.yml"
-    else
-      pass "${image} ships no usable password hash"
-    fi
   fi
 fi
 
@@ -159,10 +133,14 @@ if ! compose exec -T "${INDEXER_SERVICE}" true >/dev/null 2>&1; then
 else
   for user in ${INDEXER_USERS} ${DEMO_USERS}; do
     code=$(indexer_auth_code "${user}" "${user}")
-    if [ "${code}" = "200" ]; then
-      fail "${user} authenticates with '${user}' as its password (HTTP ${code})"
+    if [ -z "${code}" ] || [ "${code}" = "000" ]; then
+      # Everything here is a check that a password is refused, and a cluster
+      # that answers nothing would pass all of them.
+      fail "${INDEXER_SERVICE} did not answer while checking '${user}'"
+    elif [ "${code}" = "200" ]; then
+      fail "${user} authenticates with '${user}' as its password"
     else
-      pass "${user} is refused with '${user}' as its password (HTTP ${code:-no answer})"
+      pass "${user} is refused with '${user}' as its password (HTTP ${code})"
     fi
   done
 fi
@@ -172,62 +150,16 @@ info ""
 info "Wazuh API accounts (${API_URL})"
 ################################################################################
 
-if [ -z "$(api_auth_code probe probe)" ]; then
-  fail "no answer from ${API_URL}; pass --api-url if it is published elsewhere"
-else
-  for user in ${API_USERS}; do
-    code=$(api_auth_code "${user}" "${user}")
-    if [ "${code}" = "200" ]; then
-      fail "${user} authenticates with '${user}' as its password (HTTP ${code})"
-    else
-      pass "${user} is refused with '${user}' as its password (HTTP ${code})"
-    fi
-  done
-fi
-
-################################################################################
-info ""
-info "Positive control"
-################################################################################
-
-# Everything above is a check that a password is refused, and a cluster that
-# refuses everything would pass all of it. The credential this deployment did
-# generate has to work.
-# The password recorded for the deployment on the shared credentials volume.
-read_deployment_password() {
-  compose exec -T "$1" \
-    sh -c "sed -n \"s/^$3='\\(.*\\)'\$/\\1/p\" $2" 2>/dev/null | tr -d '\r\n'
-}
-
-admin_password=$(read_deployment_password "${INDEXER_SERVICE}" /wazuh-credentials/indexer-users.env INDEXER_ADMIN_PASSWORD)
-
-if [ -z "${admin_password}" ]; then
-  info "  skip  no indexer password recorded"
-else
-  code=$(indexer_auth_code admin "${admin_password}")
-  if [ "${code}" = "200" ]; then
-    pass "admin authenticates with the password of this deployment"
+for user in ${API_USERS}; do
+  code=$(api_auth_code "${user}" "${user}")
+  if [ -z "${code}" ] || [ "${code}" = "000" ]; then
+    fail "no answer from ${API_URL} while checking '${user}'; pass --api-url if it is published elsewhere"
+  elif [ "${code}" = "200" ]; then
+    fail "${user} authenticates with '${user}' as its password"
   else
-    fail "admin does not authenticate with the password of this deployment (HTTP ${code})"
+    pass "${user} is refused with '${user}' as its password (HTTP ${code})"
   fi
-fi
-
-if [ -n "${MANAGER_SERVICE}" ]; then
-  api_password=$(read_deployment_password "${MANAGER_SERVICE}" /wazuh-credentials/api-users.env API_WAZUH_PASSWORD)
-else
-  api_password=""
-fi
-
-if [ -z "${api_password}" ]; then
-  info "  skip  no API password recorded"
-else
-  code=$(api_auth_code wazuh "${api_password}")
-  if [ "${code}" = "200" ]; then
-    pass "wazuh authenticates with the API password of this deployment"
-  else
-    fail "wazuh does not authenticate with the API password of this deployment (HTTP ${code})"
-  fi
-fi
+done
 
 info ""
 if [ "${failures}" -eq 0 ]; then
@@ -235,4 +167,6 @@ if [ "${failures}" -eq 0 ]; then
   exit 0
 fi
 info "${checks} checks, ${failures} failed."
+info "A deployment that has not been through the first-start password change fails here."
+info "See docs/ref/credentials.md."
 exit 1

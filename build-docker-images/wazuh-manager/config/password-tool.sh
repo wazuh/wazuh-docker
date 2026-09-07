@@ -1,136 +1,150 @@
 #!/bin/bash
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
-# Reads, verifies and changes the passwords of the Wazuh API users of this
-# deployment. See docs/ref/credentials.md.
+# Changes the passwords of the Wazuh API users of this manager node and prints
+# the new ones. It stores nothing: the passwords are shown once and the
+# operator writes the service one into docker-compose.yml.
+# See docs/ref/credentials.md.
 
 set -o pipefail
 
-source /etc/wazuh-credentials.sh
+USERS=(wazuh wazuh-wui)
+
+# The Compose service and variable each service account has to be copied into.
+declare -A COMPOSE_SERVICE=([wazuh-wui]="wazuh.dashboard")
+declare -A COMPOSE_VARIABLE=([wazuh-wui]="API_PASSWORD")
+
+error() {
+  echo "password-tool.sh: $*" >&2
+}
 
 usage() {
   cat <<USAGE
 Usage: password-tool.sh <action>
 
-  --show                 Print the account and password of every Wazuh API user.
-  --verify               Check every account against this node's user database.
-  -u, --user <account>   Change the password of one account.
   -a, --all              Change the password of every account.
-  --apply                Apply the recorded passwords to this node's user
-                         database, without changing them. Use it on the other
-                         manager nodes of a cluster.
+  -u, --user <account>   Change the password of one account.
   --stdin                Read the new password from standard input instead of
-                         generating one. Only with --user.
+                         generating one. Only with --user. Use it to set the
+                         same password on the other manager nodes of a cluster.
   -h, --help             Show this help.
 
-Accounts: ${WAZUH_API_USERS[*]}
+Accounts: ${USERS[*]}
 USAGE
 }
 
-action=""
+generate_password() {
+  local body special lower upper digit
+  body=$(tr -dc 'A-Za-z0-9.*+?-' < /dev/urandom | head -c 28)
+  special=$(tr -dc '.*+?-' < /dev/urandom | head -c 1)
+  lower=$(tr -dc 'a-z' < /dev/urandom | head -c 1)
+  upper=$(tr -dc 'A-Z' < /dev/urandom | head -c 1)
+  digit=$(tr -dc '0-9' < /dev/urandom | head -c 1)
+  echo "${body}${special}${lower}${upper}${digit}" | fold -w1 | shuf | tr -d '\n'
+}
+
+validate_password() {
+  local password=$1
+  [ "${#password}" -ge 8 ] && [ "${#password}" -le 64 ] || return 1
+  [[ ${password} == *[[:upper:]]* ]] || return 1
+  [[ ${password} == *[[:lower:]]* ]] || return 1
+  [[ ${password} == *[[:digit:]]* ]] || return 1
+  [[ ${password} == *[.*+?-]* ]] || return 1
+  return 0
+}
+
 target=""
 from_stdin=0
 
 while [ -n "$1" ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
-    --show) action="show"; shift ;;
-    --verify) action="verify"; shift ;;
-    --apply) action="apply"; shift ;;
-    -a|--all) action="change"; target="all"; shift ;;
-    -u|--user) action="change"; target="$2"; shift 2 ;;
+    -a|--all) target="all"; shift ;;
+    -u|--user) target="$2"; shift 2 ;;
     --stdin) from_stdin=1; shift ;;
     *) usage >&2; exit 2 ;;
   esac
 done
 
-[ -n "${action}" ] || { usage >&2; exit 2; }
-
-if ! credentials_api_load; then
-  credentials_error "no Wazuh API credentials recorded for this deployment (${WAZUH_API_CREDENTIALS_FILE})"
-  exit 1
-fi
+[ -n "${target}" ] || { usage >&2; exit 2; }
 
 selected=()
 if [ "${target}" = "all" ]; then
-  selected=("${WAZUH_API_USERS[@]}")
-elif [ -n "${target}" ]; then
-  for user in "${WAZUH_API_USERS[@]}"; do
+  selected=("${USERS[@]}")
+else
+  for user in "${USERS[@]}"; do
     [ "${user}" = "${target}" ] && selected=("${user}")
   done
   if [ "${#selected[@]}" -eq 0 ]; then
-    credentials_error "unknown account '${target}'. Accounts: ${WAZUH_API_USERS[*]}"
+    error "unknown account '${target}'. Accounts: ${USERS[*]}"
     exit 2
   fi
 fi
 
-case "${action}" in
-  show)
-    for user in "${WAZUH_API_USERS[@]}"; do
-      printf '%-16s %s\n' "${user}" "${WAZUH_API_PASSWORDS[${user}]}"
-    done
-    exit 0
-    ;;
-
-  verify)
-    args=()
-    for user in "${WAZUH_API_USERS[@]}"; do
-      args+=("${user}=${WAZUH_API_PASSWORDS[${user}]}")
-    done
-    ( cd /var/wazuh-manager && \
-      WAZUH_API_CREDENTIALS="$(printf '%s\n' "${args[@]}")" \
-      /var/wazuh-manager/framework/python/bin/python3 /etc/wazuh-api-users.py --verify )
-    exit $?
-    ;;
-
-  apply)
-    credentials_api_apply || exit 1
-    exec "$0" --verify
-    ;;
-esac
+declare -A NEW_PASSWORD=()
 
 if [ "${from_stdin}" -eq 1 ]; then
   if [ "${target}" = "all" ]; then
-    credentials_error "--stdin changes one account; it would give every account the same password"
+    error "--stdin changes one account; it would give every account the same password"
     exit 2
   fi
 
-  IFS= read -r new_password
-  if ! credentials_validate "${new_password}"; then
-    credentials_error "the password must be 8 to 64 characters and contain an upper case letter,"
-    credentials_error "a lower case letter, a digit and one of '.*+?-'"
+  IFS= read -r password
+  if ! validate_password "${password}"; then
+    error "the password must be 8 to 64 characters and contain an upper case letter,"
+    error "a lower case letter, a digit and one of '.*+?-'"
     exit 2
   fi
+  NEW_PASSWORD["${selected[0]}"]="${password}"
+else
+  for user in "${selected[@]}"; do
+    NEW_PASSWORD["${user}"]=$(generate_password)
+  done
 fi
 
+credentials=""
 for user in "${selected[@]}"; do
-  if [ "${from_stdin}" -eq 1 ]; then
-    WAZUH_API_PASSWORDS["${user}"]="${new_password}"
-  else
-    WAZUH_API_PASSWORDS["${user}"]=$(credentials_generate)
-  fi
+  credentials="${credentials}${user}=${NEW_PASSWORD[${user}]}"$'\n'
 done
 
-credentials_api_store || { credentials_error "could not write ${WAZUH_API_CREDENTIALS_FILE}"; exit 1; }
-credentials_api_apply || exit 1
+if ! ( cd /var/wazuh-manager && \
+       WAZUH_API_CREDENTIALS="${credentials}" \
+       /var/wazuh-manager/framework/python/bin/python3 /etc/wazuh-api-users.py ); then
+  exit 1
+fi
 
-failed=0
+echo
+echo "Changed on this manager node:"
+echo
 for user in "${selected[@]}"; do
-  printf '  %-16s %s\n' "${user}" "${WAZUH_API_PASSWORDS[${user}]}"
+  printf '  %-16s %s\n' "${user}" "${NEW_PASSWORD[${user}]}"
 done
+echo
+echo "This is the only time these passwords are shown. Nothing is stored."
+echo
 
-args=()
-for user in "${WAZUH_API_USERS[@]}"; do
-  args+=("${user}=${WAZUH_API_PASSWORDS[${user}]}")
-done
-( cd /var/wazuh-manager && \
-  WAZUH_API_CREDENTIALS="$(printf '%s\n' "${args[@]}")" \
-  /var/wazuh-manager/framework/python/bin/python3 /etc/wazuh-api-users.py --verify ) || failed=1
-
+needs_compose=0
 for user in "${selected[@]}"; do
-  [ "${user}" = "wazuh-wui" ] && \
-    credentials_log "Restart the dashboard container so it reads the new password: docker compose restart wazuh.dashboard"
+  [ -n "${COMPOSE_VARIABLE[${user}]}" ] && needs_compose=1
 done
-credentials_log "On a cluster, restart the other manager nodes, or run 'password-tool.sh --apply' on each."
 
-exit "${failed}"
+if [ "${needs_compose}" -eq 1 ]; then
+  echo "Write these into docker-compose.yml, then take the stack down and up,"
+  echo "or those components keep authenticating with the old values:"
+  echo
+  for user in "${selected[@]}"; do
+    [ -n "${COMPOSE_VARIABLE[${user}]}" ] || continue
+    printf '  service %s:\n' "${COMPOSE_SERVICE[${user}]}"
+    printf '    - %s=%s\n' "${COMPOSE_VARIABLE[${user}]}" "${NEW_PASSWORD[${user}]}"
+  done
+  echo
+fi
+
+echo "The Wazuh API user database is local to each manager node. On a cluster,"
+echo "set the same passwords on the other nodes:"
+echo
+for user in "${selected[@]}"; do
+  printf "  printf '%%s\\\\n' '%s' | docker compose exec -T <node> /password-tool.sh --user %s --stdin\n" \
+    "${NEW_PASSWORD[${user}]}" "${user}"
+done
+echo

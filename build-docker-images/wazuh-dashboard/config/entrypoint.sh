@@ -16,12 +16,7 @@
 export OPENSEARCH_DASHBOARDS_HOME=/usr/share/wazuh-dashboard
 export PATH=$OPENSEARCH_DASHBOARDS_HOME/bin:$PATH
 DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
-
-source /credentials.sh
-if ! credentials_resolve_indexer_password; then
-    echo "Wazuh dashboard: no Wazuh indexer credentials. Refusing to start."
-    exit 1
-fi
+DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
 
 # Create and configure Wazuh dashboard keystore
 
@@ -34,10 +29,7 @@ fi
 echo $DASHBOARD_USERNAME | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.username --stdin --allow-root -f
 echo $DASHBOARD_PASSWORD | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.password --stdin --allow-root -f
 
-if ! /wazuh_dashboard_config.sh; then
-    echo "Wazuh dashboard: the configuration could not be written. Refusing to start."
-    exit 1
-fi
+/wazuh_dashboard_config.sh
 
 opensearch_dashboards_vars=(
     opensearch.hosts
