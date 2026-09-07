@@ -167,6 +167,22 @@ environment.
 Every account has to be refused with its username as its password. Then log
 into the dashboard as `admin` with the new password.
 
+### What the tool touches
+
+It changes the password of the accounts you name, on the running cluster, and
+nothing else:
+
+| | |
+| - | - |
+| Passwords of the accounts named | changed |
+| Passwords of every other account, including ones you created | untouched |
+| Accounts you created yourself | kept, with their roles, attributes and description |
+| Roles and role mappings | not written at all |
+| The user database inside the image | not modified |
+
+It works this way because it takes the user database from the running cluster
+before changing it, rather than uploading the one in the image.
+
 ## Changing one password later
 
 The same tool, with `--user` instead of `--all`:
@@ -244,3 +260,8 @@ this check**, which is what it is for.
   them. `password-tool.sh` goes through `securityadmin` with the admin
   certificate the deployment already mounts, which is why it is the supported
   way to change them.
+- `/securityadmin.sh` on its own is a different thing. With no arguments it
+  uploads the whole security configuration of the image, replacing the one the
+  cluster is running: every internal user that is not in the image is deleted,
+  custom role mappings are reverted, and every password returns to the default
+  of the image. Use it only when that is what you want.

@@ -2,8 +2,14 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
 # Loads the security configuration files of this container into the security
-# index of the running cluster. Used by password-tool.sh; can also be run on
-# its own. See docs/ref/credentials.md.
+# index of the running cluster.
+#
+# WARNING: with no arguments this replaces the whole security configuration of
+# the cluster with the one in the image. Internal users that are not in the
+# image are deleted, custom role mappings are reverted and every password
+# returns to its default. To change a password without any of that, use
+# password-tool.sh, which patches the configuration the cluster is running.
+# See docs/ref/credentials.md.
 #
 # Overridable: CACERT, CERT, KEY, HOST, PORT, FILE, TYPE, BACKUP, WAIT_SECONDS.
 
