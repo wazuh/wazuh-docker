@@ -2,7 +2,6 @@
 
 ### Added
 
-
 | Issue | Comment |
 | - | - |
 | [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
@@ -15,7 +14,6 @@
 | [#2276](https://github.com/wazuh/wazuh-docker/issues/2276) | Add `--set-as-main` flag support to repository bumper — `wazuh-docker` |
 
 ### Changed
-
 
 | Issue | Comment |
 | - | - |
@@ -75,10 +73,9 @@
 
 ### Fixed
 
-
 | Issue | Comment |
 | - | - |
-| [#2627](https://github.com/wazuh/wazuh-docker/issues/2627) | Manager healthcheck now uses the command's own exit code instead of grepping for 'not running', catching all failure states |
+| [#2627](https://github.com/wazuh/wazuh-docker/issues/2627) | Manager healthcheck now catches all failure states, not just 'not running': single-node and the cluster master use the command's own exit code, and the worker checks for all known failure strings instead of just one |
 | [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt Wazuh manager image to new enroll process |
 | [#2594](https://github.com/wazuh/wazuh-docker/issues/2594) | Added `diffutils` to the Wazuh agent image so FIM `report_changes` can generate content diffs |
 | [#2590](https://github.com/wazuh/wazuh-docker/issues/2590) | Restore `WAZUH_MANAGER_PORT` support in the Wazuh agent image and document the enrollment variables removed in 5.0.0 |
@@ -95,6 +92,7 @@
 | [#2271](https://github.com/wazuh/wazuh-docker/issues/2271) | Wazuh manager Healthcheck |
 | [#2258](https://github.com/wazuh/wazuh-docker/issues/2258) | Delete WAZUH_AGENT_GROUPS of Wazuh 5.0.0 images build |
 | [#2128](https://github.com/wazuh/wazuh-docker/issues/2128) | Development - DevOps 5.0 adaptation - Docker - Delete lists directory references |
+
 
 ## Prior versions
 - []()
