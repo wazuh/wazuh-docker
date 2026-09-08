@@ -79,6 +79,14 @@ declare -A CONFIG_MAP=(
     [wazuh.monitoring.replicas]="$WAZUH_MONITORING_REPLICAS"
 )
 
+# Values used on the right-hand side of a sed substitution are sed syntax.
+# Escape them before interpolation so '&', '\\', and the chosen delimiter are
+# written literally instead of expanding the match, disappearing, or breaking
+# the substitution.
+sed_escape_replacement() {
+    printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
+
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
     value="${CONFIG_MAP[$key]}"
@@ -90,21 +98,32 @@ for key in "${!CONFIG_MAP[@]}"; do
 
     # Escape special characters for sed
     escaped_key=$(echo "$key" | sed 's/[.[\*^$()+?{|]/\\&/g')
+    escaped_value=$(sed_escape_replacement "$value")
 
     # Try to replace existing line (commented or uncommented)
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: ${value}|" "$DASHBOARD_CONFIG_FILE"
+        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: ${escaped_value}|" "$DASHBOARD_CONFIG_FILE"
     fi
 done
 
 # Handle wazuh_core.hosts section separately
 if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
+    escaped_wazuh_api_url=$(sed_escape_replacement "$WAZUH_API_URL")
+    escaped_api_port=$(sed_escape_replacement "$API_PORT")
+    escaped_api_username=$(sed_escape_replacement "$API_USERNAME")
+    escaped_run_as=$(sed_escape_replacement "$RUN_AS")
+
+    # A single-quoted YAML scalar keeps sed metacharacters such as backslashes
+    # literal. YAML represents a literal apostrophe inside it as two apostrophes.
+    yaml_api_password=$(printf '%s' "$API_PASSWORD" | sed "s/'/''/g")
+    escaped_api_password=$(sed_escape_replacement "$yaml_api_password")
+
     # Update existing wazuh_core.hosts section
     sed -i "/^wazuh_core.hosts:/,/^[^ ]/ {
-        s|url:.*|url: $WAZUH_API_URL|
-        s|port:.*|port: $API_PORT|
-        s|username:.*|username: $API_USERNAME|
-        s|password:.*|password: \"$API_PASSWORD\"|
-        s|run_as:.*|run_as: $RUN_AS|
+        s|url:.*|url: $escaped_wazuh_api_url|
+        s|port:.*|port: $escaped_api_port|
+        s|username:.*|username: $escaped_api_username|
+        s|password:.*|password: '$escaped_api_password'|
+        s|run_as:.*|run_as: $escaped_run_as|
     }" "$DASHBOARD_CONFIG_FILE"
 fi
