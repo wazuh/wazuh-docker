@@ -202,7 +202,7 @@ services:
     container_name: multi-node-wazuh.dashboard
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/login" ]
+      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/app/login" ]
       interval: 30s
       timeout: 10s
       retries: 3
