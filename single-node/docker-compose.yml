@@ -9,7 +9,7 @@ services:
       wazuh.indexer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "/var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null | grep -q 'not running' && exit 1 || exit 0" ]
+      test: [ "CMD", "/var/wazuh-manager/bin/wazuh-manager-control", "status" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -85,7 +85,7 @@ services:
     container_name: single-node-wazuh.dashboard
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/login" ]
+      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/app/login" ]
       interval: 30s
       timeout: 10s
       retries: 3
