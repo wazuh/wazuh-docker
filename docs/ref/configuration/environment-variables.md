@@ -30,7 +30,7 @@ environment:
 
 **Variable Descriptions:**
 
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions.
+- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions. The value shown is the default the image ships; change it on the first start and write the new one here. See [Credentials](../credentials.md).
 - `WAZUH_API_URL`: URL of the Wazuh API, used by other services for communication.
 - `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: Credentials for the Wazuh Dashboard to authenticate with the Indexer.
 - `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
@@ -73,6 +73,8 @@ environment:
 - `API_USERNAME` / `API_PASSWORD`: API user credentials for authenticating Wazuh API requests initiated by the Dashboard.
 
 These variables are critical for enabling communication between the Wazuh Dashboard, the Wazuh Indexer, and the Wazuh API.
+
+The passwords shown are the defaults the images ship. `DASHBOARD_PASSWORD` and `API_PASSWORD` are two of the three that have to be replaced on the first start of the deployment, with the values `password-tool.sh` prints. See [Credentials](../credentials.md).
 
 ---
 

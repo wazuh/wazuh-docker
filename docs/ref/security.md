@@ -4,7 +4,10 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 
 ## Credentials and secrets
 
-- Do not use default credentials. The Compose examples include placeholder values for the Wazuh API, Dashboard, and Indexer access.
+- **Change every default password on the first start.** The images ship documented defaults for the Wazuh indexer and Wazuh API accounts, and a deployment that keeps them is reachable by anyone who has read the documentation. Each image carries `password-tool.sh`, which changes the passwords of the running deployment and prints the new ones once; the three that a container has to present are then written into `docker-compose.yml`. [Credentials](credentials.md) is the step-by-step procedure.
+- `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password. Run it after the change; a deployment that has not been through it fails the check.
+- The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
+- A password written into `docker-compose.yml` is in clear text in a file that is usually under version control. Keep it out of your commits and restrict read access to the deployment directory.
 - Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of hardcoding them in `docker-compose.yml`.
 - Rotate credentials regularly and after any suspected exposure.
 - The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
@@ -32,7 +35,8 @@ The Wazuh manager image ships no self-signed certificate. Each manager container
 ## Network exposure
 
 - Restrict access to exposed service ports at the host firewall and security group level.
-- Do not expose internal-only endpoints to untrusted networks. In particular, limit access to the Indexer API port (`9200`) and the Wazuh API port (`55000`) to administrative networks.
+- **The Wazuh indexer port (`9200`) is not published.** The manager and the dashboard reach the indexer over the Compose network, and the account that answers on that port administers the datastore, so publishing it puts an administrator-reachable endpoint on every interface of the host. If you need it for development, add the mapping bound to the loopback address (`127.0.0.1:9200:9200`) rather than to all interfaces.
+- Do not expose internal-only endpoints to untrusted networks. In particular, limit access to the Wazuh API port (`55000`) to administrative networks.
 
 ## Host and runtime hardening
 

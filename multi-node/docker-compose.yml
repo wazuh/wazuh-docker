@@ -87,8 +87,6 @@ services:
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
-    ports:
-      - "9200:9200"
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -216,6 +214,8 @@ services:
       - WAZUH_API_URL=https://wazuh.master
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
+      - API_USERNAME=wazuh-wui
+      - API_PASSWORD=wazuh-wui
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
