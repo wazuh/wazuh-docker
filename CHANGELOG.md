@@ -79,6 +79,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2631](https://github.com/wazuh/wazuh-docker/issues/2631) | Escape special sed replacement characters so passwords and keys with &, \, or the delimiter are no longer corrupted or silently discarded |
 | [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
 | [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt Wazuh manager image to new enroll process |
 | [#2594](https://github.com/wazuh/wazuh-docker/issues/2594) | Added `diffutils` to the Wazuh agent image so FIM `report_changes` can generate content diffs |
