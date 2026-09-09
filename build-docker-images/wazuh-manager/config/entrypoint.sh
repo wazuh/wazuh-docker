@@ -30,13 +30,15 @@ trap '_stop 0' SIGTERM SIGINT SIGQUIT
 STARTUP_GRACE_PERIOD=60
 CHECK_INTERVAL=15
 
-# Same default as cont-init.d/0-wazuh-init: master unless WAZUH_NODE_TYPE=worker
-# is set (only multi-node/docker-compose.yml's wazuh.worker service sets it).
-WAZUH_NODE_TYPE="${WAZUH_NODE_TYPE:-master}"
-
 # Same reader the core wazuh-manager-control script itself uses to decide
 # whether to start authd (start_service(), "auth.disabled: true" case).
 WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-manager -f /var/wazuh-manager/etc/wazuh-manager.conf"
+
+# Timeout for each status check: wazuh-manager-control status has no upper
+# bound of its own, and a hang here would otherwise block both failure
+# detection and the SIGTERM trap below (docker stop would have to wait out
+# its own timeout and fall back to SIGKILL).
+STATUS_TIMEOUT=5
 
 # Supervise the manager: if a critical daemon is not running, exit non-zero so
 # the container dies and `restart: always` (single-node/multi-node
@@ -50,24 +52,33 @@ WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-mana
 # configuration" lines, not a fragile grep on arbitrary text -- these are
 # exactly the three cases that set that script's own non-zero RETVAL.
 #
-# Two lines are excluded before matching those patterns, for daemons that
-# wazuh-manager-control deliberately never starts but that its own status()
-# does not know to exclude:
-#   - apid: only runs on the master node (same exclusion the multi-node
-#     worker healthcheck already applies with its own `grep -v apid`).
-#   - authd: skipped by start_service() when auth.disabled: true is set in
-#     wazuh-manager.conf, but status() has no matching exclusion for it --
-#     a real bug in the core script (found by Julia while reviewing this
-#     fix). Without compensating here, any deployment with
-#     auth.disabled: true would restart-loop forever.
+# No manual exclusion for apid here: status() already excludes it correctly
+# on non-master nodes by reading the real cluster.node_type from the config
+# file, unlike a naive check against the raw WAZUH_NODE_TYPE env var (which
+# an earlier version of this fix duplicated, and which broke silently on
+# case mismatches like WAZUH_NODE_TYPE=WORKER -- found by QA testing this
+# fix). Trust the same source of truth wazuh-manager-control itself uses.
+#
+# authd is excluded when auth.disabled: true is set in wazuh-manager.conf,
+# because start_service() skips starting it in that case but status() has no
+# matching exclusion for it -- a real bug in the core script (found by Julia
+# while reviewing this fix). Without compensating here, any deployment with
+# auth.disabled: true would restart-loop forever.
 _manager_unhealthy() {
     exclude_pattern='^$'
-    [ "${WAZUH_NODE_TYPE}" != "master" ] && exclude_pattern="${exclude_pattern}|apid"
     if [ "$(${WAZUH_MANAGER_CONF} get auth.disabled 2>/dev/null)" = "true" ]; then
         exclude_pattern="${exclude_pattern}|authd"
     fi
 
-    /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null \
+    local status_output status_rc
+    status_output="$(timeout "${STATUS_TIMEOUT}" /var/wazuh-manager/bin/wazuh-manager-control status 2>/dev/null)"
+    status_rc=$?
+    # timeout's own exit code for "killed the command because it ran too
+    # long" is 124 -- treat a hung status check as unhealthy rather than
+    # letting the empty output silently read as "no failures found".
+    [ "${status_rc}" -eq 124 ] && return 0
+
+    echo "${status_output}" \
         | grep -vE "${exclude_pattern}" \
         | grep -qE 'not running|failed to start|refused its configuration'
 }
