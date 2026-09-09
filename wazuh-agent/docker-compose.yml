@@ -10,3 +10,8 @@ services:
       - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
       #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
       - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
+    volumes:
+      - wazuh_agent_etc:/var/ossec/etc
+
+volumes:
+  wazuh_agent_etc:
