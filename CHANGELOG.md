@@ -4,7 +4,7 @@
 
 | Issue | Comment |
 | - | - |
-| [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Provide the manager CA to the Wazuh agent image, now that the agent enforces TLS verification by default: new `WAZUH_MANAGER_CA`, `WAZUH_AGENT_SSL_VERIFICATION`, `WAZUH_AGENT_SSL_CERT` and `WAZUH_AGENT_SSL_KEY` variables, and the deployments issue the manager's agent-facing certificate from their own root CA |
+| [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Add CA verification |
 | [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
 | [#2505](https://github.com/wazuh/wazuh-docker/pull/2505) | Added bump-issue-link support for Revert Stage Bump. |
@@ -18,7 +18,6 @@
 
 | Issue | Comment |
 | - | - |
-| [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Add CA verification |
 | [#6058](https://github.com/wazuh/internal-devel-requests/issues/6058) | Remove the OpenSearch demo users from the indexer image, add `password-tool.sh` to change the indexer and API passwords of a running deployment, and stop publishing the indexer port `9200` |
 | [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 | [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
