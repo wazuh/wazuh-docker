@@ -76,6 +76,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2632](https://github.com/wazuh/wazuh-docker/issues/2632) | Fix agent re creation and re-enrollment |
 | [#2626](https://github.com/wazuh/wazuh-docker/issues/2626) | Supervise the manager daemons from the entrypoint and exit if a critical one dies, so `restart: always` can bring the container back instead of it staying up indefinitely with a dead API |
 | [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
 | [#2630](https://github.com/wazuh/wazuh-docker/issues/2630) | Fixed WAZUH_INDEXER_HOSTS parsing: hosts without an explicit port, URLs with a scheme, and bracketed IPv6 addresses were silently mangled instead of being parsed correctly, and unparseable values were written to the config without any error |
