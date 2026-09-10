@@ -91,6 +91,14 @@ RUN dnf install diffutils procps shadow-utils -y && \
 # Copy Wazuh Agent installation from builder
 COPY --from=builder /var/ossec /var/ossec
 
+# Where the init script puts the TLS material for the manager connection, and
+# where a CA may be dropped instead of being named by a variable. The package
+# ships no such directory, and wazuh-agentd reads what lands here after dropping
+# privileges, so it is created up front and owned by the agent user.
+RUN mkdir -p /var/ossec/etc/certs && \
+    chown wazuh:wazuh /var/ossec/etc/certs && \
+    chmod 750 /var/ossec/etc/certs
+
 # Copy tini static binary
 COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 

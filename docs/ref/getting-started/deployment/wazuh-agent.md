@@ -36,6 +36,9 @@ Follow these steps to deploy the Wazuh agent using Docker.
     | `WAZUH_MANAGER_PORT` | `1517` | Port of `<agent><manager><endpoint>` |
     | `WAZUH_AGENT_NAME` | `wazuh-agent-<container hostname>` | `<agent><enrollment><agent_name>` |
     | `WAZUH_REGISTRATION_PASSWORD` | None | `/var/ossec/etc/authd.pass` |
+    | `WAZUH_MANAGER_CA` | None | `<agent><ssl><certificate_authorities>` |
+    | `WAZUH_AGENT_SSL_VERIFICATION` | Inferred | `<agent><ssl><verification_mode>` |
+    | `WAZUH_AGENT_SSL_CERT` / `WAZUH_AGENT_SSL_KEY` | None | `<agent><ssl><certificate>` / `<key>` |
 
     **Note:** The agent addresses the manager through a single endpoint,
     `host[:port][/prefix]`. A component left out is filled in with its default,
@@ -82,6 +85,37 @@ Follow these steps to deploy the Wazuh agent using Docker.
     supported and configure nothing, because enrollment reuses the agent
     connection instead of reaching `authd` separately. The container logs a
     warning when either is set.
+
+    **Note:** The agent verifies the manager's TLS certificate. Left unconfigured
+    it verifies against the operating system trust store, which covers a manager
+    whose certificate chains to a publicly trusted CA and nothing else: a manager
+    presenting a certificate of its own, which is what a Wazuh manager does by
+    default, is refused. Give the agent the CA that signs it:
+
+    ```yaml
+    environment:
+      - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
+      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
+      - WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
+    volumes:
+      - ./root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
+    ```
+
+    **Note:** Replaces `./root-ca.pem` with the CA that signs the certificate on
+    your manager's `1517` listener. For a manager deployed from this repository
+    it is `single-node/config/root-ca/certs/root-ca.pem`, or the `multi-node`
+    one. For any other manager, ask whoever runs it. The CA may also be dropped
+    at `/var/ossec/etc/certs/root-ca.pem`, in which case the variable is not
+    needed.
+
+    **Note:** A CA on its own means the certificate chain is verified but the
+    hostname is not, which is what lets one agent reach a manager through a name
+    the certificate does not carry, such as a load balancer.
+    `WAZUH_AGENT_SSL_VERIFICATION` overrides that with `full`, `certificate`,
+    `system` or `none`. `WAZUH_AGENT_SSL_CERT` and `WAZUH_AGENT_SSL_KEY` add a
+    client certificate, which only a manager configured with
+    `<remote><https><ca>` asks for. The full table is in
+    [Environment Variables](../../configuration/environment-variables.md#wazuh-agent).
 
     **Note:** To use a configuration of your own instead of these variables,
     mount your `ossec.conf` at `/wazuh-config-mount/etc/ossec.conf`. It is
