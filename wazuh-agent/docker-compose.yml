@@ -10,11 +10,6 @@ services:
       - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
       #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
       - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
-    volumes:
-      - wazuh_agent_etc:/var/ossec/etc
-
-volumes:
-  wazuh_agent_etc:
       # The CA that signs the manager's HTTPS certificate, mounted below.
       #
       # Leave it unset only when the manager's certificate chains to a publicly
@@ -36,5 +31,10 @@ volumes:
       # one with <remote><https><ca>.
       #- WAZUH_AGENT_SSL_CERT=/etc/ssl/wazuh/agent.pem
       #- WAZUH_AGENT_SSL_KEY=/etc/ssl/wazuh/agent-key.pem
+    volumes:
+      - wazuh_agent_etc:/var/ossec/etc
     #volumes:
     #  - ./root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
+
+volumes:
+  wazuh_agent_etc:
