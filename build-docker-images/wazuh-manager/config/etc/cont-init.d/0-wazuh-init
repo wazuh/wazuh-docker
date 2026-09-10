@@ -269,9 +269,15 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
         echo "    <hosts>"
         IFS=',' read -ra NODES <<< "$WAZUH_INDEXER_HOSTS"
         for NODE in "${NODES[@]}"; do
-            IP="${NODE%:*}"
-            PORT="${NODE#*:}"
-            echo "      <host>https://$IP:$PORT</host>"
+            NODE="${NODE#"${NODE%%[![:space:]]*}"}"
+            NODE="${NODE#http://}"; NODE="${NODE#https://}"
+            if [[ "$NODE" == *:* ]]; then
+                HOST="${NODE%:*}"; PORT="${NODE##*:}"
+            else
+                HOST="$NODE"; PORT=9200
+            fi
+            [[ "$PORT" =~ ^[0-9]+$ ]] || { print "Invalid indexer host '$NODE'" >&2; exit 1; }
+            echo "      <host>https://${HOST}:${PORT}</host>"
         done
         echo "    </hosts>"
     } > "$TMP_HOSTS";
