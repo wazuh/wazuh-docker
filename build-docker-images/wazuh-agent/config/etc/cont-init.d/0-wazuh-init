@@ -1,6 +1,9 @@
 #!/bin/bash
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
+# Variables
+source /permanent_data.env
+
 WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 WAZUH_MANAGER_ENDPOINT=$WAZUH_MANAGER_ENDPOINT
@@ -53,6 +56,62 @@ exec_cmd() {
 
 exec_cmd_stdout() {
   eval $1 2>&1 || error_and_exit "$1"
+}
+
+##############################################################################
+# This function will attempt to mount every directory in PERMANENT_DATA
+# into the respective path.
+# If the path is empty means permanent data volume is also empty, so a backup
+# will be copied into it. Otherwise it will not be copied because there is
+# already data inside the volume for the specified path.
+##############################################################################
+
+mount_permanent_data() {
+  for permanent_dir in "${PERMANENT_DATA[@]}"; do
+    data_tmp="${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/"
+    print ${data_tmp}
+    # Check if the path is not empty
+    if find ${permanent_dir} -mindepth 1 | read; then
+      print "The path ${permanent_dir} is already mounted"
+    elif [ ! -d "${data_tmp}" ]; then
+      print "No permanent data snapshot for ${permanent_dir}, skipping"
+    else
+        print "Installing ${permanent_dir}"
+        exec_cmd "cp -ar ${data_tmp}. ${permanent_dir}"
+    fi
+  done
+}
+
+##############################################################################
+# This function will replace from the permanent data volume every file
+# contained in PERMANENT_DATA_EXCP
+# Some files as 'internal_options.conf' are saved as permanent data, but
+# they must be updated to work properly if wazuh version is changed.
+##############################################################################
+
+apply_exclusion_data() {
+  for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
+    if [  -e ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file}  ]
+    then
+      DIR=$(dirname "${exclusion_file}")
+      if [ ! -e ${DIR}  ]
+      then
+        mkdir -p ${DIR}
+      fi
+
+      safe_cp() {
+          if cp -p "$1" "$2" 2>/dev/null; then
+              return 0
+          else
+              echo "Warning: Could not copy $1 (may be read-only)"
+              return 0
+          fi
+      }
+
+      print "Updating ${exclusion_file}"
+      exec_cmd "safe_cp ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
+    fi
+  done
 }
 
 ##############################################################################
@@ -560,6 +619,12 @@ set_agent_ssl() {
 
 main() {
 
+  # Mount permanent data (i.e. client.keys, ossec.conf)
+  mount_permanent_data
+
+  # Restore files stored in permanent data that are not permanent (i.e. internal_options.conf)
+  apply_exclusion_data
+
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
@@ -569,6 +634,8 @@ main() {
   # Configure agent variables
   set_manager_conn
 
+  # Delete temporary data folder
+  rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
   # Configure the TLS material used against the manager. After set_manager_conn,
   # so a mounted ossec.conf has already been through it, and outside it, so the
   # variables take effect whether the configuration is the packaged one or a

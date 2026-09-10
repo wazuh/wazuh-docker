@@ -26,8 +26,11 @@ Follow these steps to deploy the Wazuh agent using Docker.
     **Note:** Replaces `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` with the actual IP address or hostname of your Wazuh manager.
     **Note:** Replaces `<authd.pass-PASSWORD>` with the password configured in the `/var/wazuh-manager/etc/authd.pass` file of the Wazuh manager server where you will connect.
 
-    The container rewrites `/var/ossec/etc/ossec.conf` on every start with the
-    following variables:
+    The container writes `/var/ossec/etc/ossec.conf` with the following
+    variables the first time it starts. `/var/ossec/etc` is persisted in the
+    `wazuh_agent_etc` volume (see the note below), so on later starts the
+    agent's identity and configuration are kept as they are instead of being
+    rewritten:
 
     | Variable | Default | Configuration set |
     | - | - | - |
@@ -121,6 +124,14 @@ Follow these steps to deploy the Wazuh agent using Docker.
     mount your `ossec.conf` at `/wazuh-config-mount/etc/ossec.conf`. It is
     copied over the packaged one before the substitutions run, so a mounted
     file is used as it is.
+
+    **Note:** The compose file mounts `/var/ossec/etc` on the `wazuh_agent_etc`
+    volume, so `client.keys` and the resolved configuration survive the
+    container being recreated (an image upgrade, a host reboot, `docker
+    compose down && up`). Without it, every recreation would enroll as a new
+    agent, since the container gets a new hostname-derived
+    `WAZUH_AGENT_NAME` and loses its previous `client.keys` each time, leaving
+    the old registration on the manager with nothing to remove it.
 
 3.  Start the environment using `docker compose`:
 
