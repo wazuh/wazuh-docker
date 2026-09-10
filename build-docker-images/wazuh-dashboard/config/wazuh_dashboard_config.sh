@@ -84,6 +84,12 @@ declare -A CONFIG_MAP=(
 # by sed as a backreference, an escape, or the end of the substitution.
 escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
 
+# Doubles a literal single quote so the value can be embedded in a single-quoted
+# YAML scalar (YAML's own escaping rule for that quote style, distinct from the
+# sed escaping escape_repl() handles). Needed for values, like a password, that
+# may contain characters double quotes would otherwise require escaping for.
+escape_yaml_single_quote() { printf '%s' "$1" | sed -e "s/'/''/g"; }
+
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
     value="${CONFIG_MAP[$key]}"
@@ -109,7 +115,7 @@ if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
         s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
         s|port:.*|port: $(escape_repl "$API_PORT")|
         s|username:.*|username: $(escape_repl "$API_USERNAME")|
-        s|password:.*|password: \"$(escape_repl "$API_PASSWORD")\"|
+        s|password:.*|password: '$(escape_yaml_single_quote "$(escape_repl "$API_PASSWORD")")'|
         s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
     }" "$DASHBOARD_CONFIG_FILE"
 fi
