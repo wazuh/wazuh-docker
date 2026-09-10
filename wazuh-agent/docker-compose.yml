@@ -15,3 +15,26 @@ services:
 
 volumes:
   wazuh_agent_etc:
+      # The CA that signs the manager's HTTPS certificate, mounted below.
+      #
+      # Leave it unset only when the manager's certificate chains to a publicly
+      # trusted CA: with no CA the agent verifies against the operating system
+      # trust store, and a manager presenting its own certificate -- what a Wazuh
+      # manager does by default -- is refused.
+      #
+      # For a dockerized manager from this repository, this is
+      # single-node/config/root-ca/certs/root-ca.pem (or the multi-node one).
+      # For any other manager, ask whoever runs it for the CA that signs the
+      # certificate on its 1517 listener.
+      #- WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
+      # full | certificate | system | none. Optional: a configured CA already
+      # means 'certificate', which verifies the chain but not the hostname. Use
+      # 'full' only when the manager certificate names the very host the endpoint
+      # above dials.
+      #- WAZUH_AGENT_SSL_VERIFICATION=certificate
+      # Client (mTLS) credential, only for a manager configured to ask agents for
+      # one with <remote><https><ca>.
+      #- WAZUH_AGENT_SSL_CERT=/etc/ssl/wazuh/agent.pem
+      #- WAZUH_AGENT_SSL_KEY=/etc/ssl/wazuh/agent-key.pem
+    #volumes:
+    #  - ./root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro

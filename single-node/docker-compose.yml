@@ -43,6 +43,15 @@ services:
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./config/wazuh_manager/certs/wazuh.manager.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
       - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
+      # The agent-facing HTTPS listener on 1517, and authd on 1515, present this
+      # pair. Mounting it means the deployment's own root CA signs the manager
+      # identity agents verify, instead of the self-signed pair the container
+      # generates for itself at first boot: agents then trust one CA that lives
+      # on the host, survives recreating this container, and can be handed to an
+      # agent anywhere. The manager keeps whatever pair it finds at these paths,
+      # so nothing is generated over them.
+      - ./config/wazuh_manager/certs/wazuh.manager.pem:/var/wazuh-manager/etc/certs/remoted.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -115,6 +124,38 @@ services:
         condition: service_healthy
       wazuh.manager:
         condition: service_healthy
+
+  wazuh.agent:
+    image: wazuh/wazuh-agent:5.0.0
+    hostname: wazuh.agent
+    container_name: single-node-wazuh.agent
+    restart: always
+    # Not part of the default deployment: start it with
+    # `docker compose --profile agent up`. It is an agent on the same host as the
+    # manager, useful to exercise a deployment end to end; a real fleet runs
+    # elsewhere and points at the published 1517.
+    profiles:
+      - agent
+    depends_on:
+      wazuh.manager:
+        condition: service_healthy
+    environment:
+      - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
+      # The CA that signs the manager's HTTPS certificate. Without it the agent
+      # verifies the manager against the operating system trust store, which no
+      # deployment-issued certificate is in, and the connection is refused.
+      - WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
+      # authd generates a random enrollment password at the manager's first boot.
+      # Read it with:
+      #   docker compose exec wazuh.manager cat /var/wazuh-manager/etc/authd.pass
+      #- WAZUH_REGISTRATION_PASSWORD=<authd.pass password>
+      #- WAZUH_AGENT_NAME=<agent name>
+      # The agent keeps its enrollment key in the container's own filesystem, so
+      # recreating the container enrolls again under the same name and the
+      # manager rejects it as a duplicate. Remove the agent from the manager
+      # first, or give the new container a name of its own above.
+    volumes:
+      - ./config/root-ca/certs/root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
 
 volumes:
   wazuh_api_configuration:

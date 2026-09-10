@@ -94,6 +94,70 @@ environment:
 - `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped.
 - `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
 - `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
+- `WAZUH_MANAGER_CA`: Path, inside the container, to the CA that signs the manager's HTTPS certificate. Written to `<agent><ssl><certificate_authorities>`. `WAZUH_REGISTRATION_CA`, the name the package installer uses for the same setting, is accepted as an alias.
+
+**Verifying the manager**
+
+The agent verifies the manager's TLS certificate. With no `<ssl>` configuration it
+verifies against the operating system trust store, which covers a manager whose
+certificate chains to a publicly trusted CA and nothing else — a manager
+presenting a certificate of its own, which is what a Wazuh manager does by
+default, is refused and the agent logs the reason and keeps retrying:
+
+```text
+wazuh-agentd: ERROR: Enrollment request could not be sent: (60) SSL peer certificate or SSH remote key was not OK: SSL certificate OpenSSL verify result: unable to get local issuer certificate (20).
+```
+
+Reaching such a manager means giving the agent the CA that signs it:
+
+```yaml
+environment:
+  - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
+  - WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
+volumes:
+  - ./root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
+```
+
+For a manager deployed from this repository that CA is
+`single-node/config/root-ca/certs/root-ca.pem` (or the `multi-node` one), the same
+root CA the rest of the deployment uses. For any other manager, ask whoever runs
+it for the CA that signs the certificate on its `1517` listener.
+
+The CA may also be dropped at `/var/ossec/etc/certs/root-ca.pem` instead of being
+named, in which case the variable is not needed. That is what makes it mountable
+through `WAZUH_CONFIG_MOUNT` the same way a whole `ossec.conf` is: a file mounted
+at `/wazuh-config-mount/etc/certs/root-ca.pem` is copied there on start.
+
+Whichever way it arrives, the file is copied into `/var/ossec/etc/certs/` and given
+to the agent user. `wazuh-agentd` opens it after dropping privileges, so a bind
+mount carrying the host's own ownership and mode is regularly unreadable to it;
+copying it is what removes that from the deployment's concerns.
+
+**Variable Descriptions (TLS):**
+
+- `WAZUH_AGENT_SSL_VERIFICATION`: How strictly the manager certificate is verified, written to `<agent><ssl><verification_mode>`. `SSL_VERIFICATION`, the installer's name for it, is accepted as an alias. Optional — see the table below for what it defaults to.
+- `WAZUH_AGENT_SSL_CERT` / `WAZUH_AGENT_SSL_KEY`: Client (mTLS) certificate and its private key, written to `<agent><ssl><certificate>` and `<key>`. Both or neither. Only needed by a manager configured with `<remote><https><ca>`, which asks agents for a certificate of their own; the shipped manager configuration does not.
+
+| `WAZUH_AGENT_SSL_VERIFICATION` | Trust anchor | Checks the hostname | Needs a CA |
+| - | - | - | - |
+| unset, no CA given | Operating system trust store | Yes | — |
+| unset, CA given | The given CA | No | — |
+| `certificate` | The given CA | No | Yes |
+| `full` | The given CA | Yes | Yes |
+| `system` | Operating system trust store | Yes | Must not be given |
+| `none` | No verification | No | — |
+
+A CA with no verification mode stated means `certificate`, which verifies the
+certificate chain but not the hostname. That is what lets an agent reach a manager
+through a name the certificate does not carry — a load balancer, or the
+`multi-node` NGINX entry point, where each cluster node answers with its own
+certificate. Use `full` only when the manager certificate names the very host the
+endpoint dials.
+
+The container refuses to start on the combinations the agent itself rejects, so
+they surface at start instead of as a connection that never succeeds: `system`
+together with a CA, `certificate` or `full` without one, and a client certificate
+without its key.
 
 `host` is an IPv4 literal, a hostname, or a bracketed IPv6 literal. An IPv6
 literal must be bracketed whenever a port follows it, as in `[fd00::1]:1517`, and
