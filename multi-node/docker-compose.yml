@@ -29,6 +29,7 @@ services:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=master
       - WAZUH_NODE_TYPE=master
+      - WAZUH_CLUSTER_KEY=${WAZUH_CLUSTER_KEY:-}
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=wazuh-manager
@@ -38,17 +39,11 @@ services:
       - master-wazuh-etc:/var/wazuh-manager/etc
       - master-wazuh-logs:/var/wazuh-manager/logs
       - master-wazuh-queue:/var/wazuh-manager/queue
+      - wazuh-cluster-key:/wazuh-cluster-key
       - master-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./config/wazuh_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
       - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
-      # The agent-facing HTTPS listener on 1517, and authd on 1515, present this
-      # pair. Mounting it means the deployment's own root CA signs the manager
-      # identity agents verify, instead of the self-signed pair the container
-      # generates for itself at first boot: agents then trust one CA that lives
-      # on the host, covers both cluster nodes, and survives recreating either
-      # container. The manager keeps whatever pair it finds at these paths, so
-      # nothing is generated over them.
       - ./config/wazuh_master/certs/wazuh.master.pem:/var/wazuh-manager/etc/certs/remoted.pem
       - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
@@ -77,6 +72,7 @@ services:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=worker01
       - WAZUH_NODE_TYPE=worker
+      - WAZUH_CLUSTER_KEY=${WAZUH_CLUSTER_KEY:-}
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
       - INDEXER_USERNAME=wazuh-manager
@@ -87,16 +83,10 @@ services:
       - worker-wazuh-logs:/var/wazuh-manager/logs
       - worker-wazuh-queue:/var/wazuh-manager/queue
       - worker-wazuh-var-multigroups:/var/wazuh-manager/var/multigroups
+      - wazuh-cluster-key:/wazuh-cluster-key
       - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
       - ./config/wazuh_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
       - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
-      # The agent-facing HTTPS listener on 1517, and authd on 1515, present this
-      # pair. Mounting it means the deployment's own root CA signs the manager
-      # identity agents verify, instead of the self-signed pair the container
-      # generates for itself at first boot: agents then trust one CA that lives
-      # on the host, covers both cluster nodes, and survives recreating either
-      # container. The manager keeps whatever pair it finds at these paths, so
-      # nothing is generated over them.
       - ./config/wazuh_worker/certs/wazuh.worker.pem:/var/wazuh-manager/etc/certs/remoted.pem
       - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
@@ -305,6 +295,7 @@ services:
       - ./config/root-ca/certs/root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
 
 volumes:
+  wazuh-cluster-key:
   master-wazuh-api-configuration:
   master-wazuh-etc:
   master-wazuh-logs:
