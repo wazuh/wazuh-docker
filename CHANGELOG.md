@@ -78,6 +78,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#6124](https://github.com/wazuh/internal-devel-requests/issues/6124) | Enable strict TLS hostname verification by default between the dashboard and the indexer |
 | [#2632](https://github.com/wazuh/wazuh-docker/issues/2632) | Fix agent re creation and re-enrollment |
 | [#2626](https://github.com/wazuh/wazuh-docker/issues/2626) | Supervise the manager daemons from the entrypoint and exit if a critical one dies, so `restart: always` can bring the container back instead of it staying up indefinitely with a dead API |
 | [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
