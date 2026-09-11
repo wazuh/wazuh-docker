@@ -58,6 +58,7 @@ ENV ENGINE_DIR="$INSTALL_DIR/engine"
 
 COPY config/entrypoint.sh /
 COPY config/securityadmin.sh /
+COPY config/password-tool.sh /
 
 RUN yum install curl-minimal shadow-utils findutils hostname -y && \
     yum clean all && \
@@ -70,7 +71,7 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
             --shell /sbin/nologin \
             --comment "$USER user" \
             $USER && \
-    chmod 700 /entrypoint.sh && chmod 700 /securityadmin.sh && \
+    chmod 700 /entrypoint.sh /securityadmin.sh /password-tool.sh && \
     mkdir -p $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \
