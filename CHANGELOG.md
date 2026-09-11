@@ -21,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
 
 ## Prior versions
 
