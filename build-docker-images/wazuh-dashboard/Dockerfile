@@ -62,20 +62,7 @@ ARG WAZUH_GID=101
 ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
-    INSTALL_DIR="/usr/share/wazuh-dashboard" \
-    PATTERN="" \
-    CHECKS_PATTERN="" \
-    CHECKS_TEMPLATE="" \
-    CHECKS_API="" \
-    CHECKS_SETUP="" \
-    APP_TIMEOUT="" \
-    API_SELECTOR="" \
-    IP_SELECTOR="" \
-    IP_IGNORE="" \
-    WAZUH_MONITORING_ENABLED="" \
-    WAZUH_MONITORING_FREQUENCY="" \
-    WAZUH_MONITORING_SHARDS="" \
-    WAZUH_MONITORING_REPLICAS=""
+    INSTALL_DIR="/usr/share/wazuh-dashboard"
 
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
