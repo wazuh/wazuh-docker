@@ -78,6 +78,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
 | [#2632](https://github.com/wazuh/wazuh-docker/issues/2632) | Fix agent re creation and re-enrollment |
 | [#2626](https://github.com/wazuh/wazuh-docker/issues/2626) | Supervise the manager daemons from the entrypoint and exit if a critical one dies, so `restart: always` can bring the container back instead of it staying up indefinitely with a dead API |
 | [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
@@ -99,7 +100,6 @@
 | [#2271](https://github.com/wazuh/wazuh-docker/issues/2271) | Wazuh manager Healthcheck |
 | [#2258](https://github.com/wazuh/wazuh-docker/issues/2258) | Delete WAZUH_AGENT_GROUPS of Wazuh 5.0.0 images build |
 | [#2128](https://github.com/wazuh/wazuh-docker/issues/2128) | Development - DevOps 5.0 adaptation - Docker - Delete lists directory references |
-
 
 ## Prior versions
 - []()
