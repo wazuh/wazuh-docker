@@ -104,7 +104,7 @@ if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
         s|url:.*|url: $WAZUH_API_URL|
         s|port:.*|port: $API_PORT|
         s|username:.*|username: $API_USERNAME|
-        s|password:.*|password: $API_PASSWORD|
+        s|password:.*|password: \"$API_PASSWORD\"|
         s|run_as:.*|run_as: $RUN_AS|
     }" "$DASHBOARD_CONFIG_FILE"
 fi
