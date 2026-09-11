@@ -83,6 +83,15 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
     Each command prints the new passwords once and names the ones that have to be written into `docker-compose.yml`. Copy the output, edit the file, and then recreate the stack with `docker compose down` followed by `docker compose up -d` (without `-v`). The full procedure, including how to verify it, is in [Credentials](../../credentials.md).
 
+    The indexer change reaches the three indexer nodes, but the Wazuh API user database is local to each manager node, so the worker needs the passwords the master printed:
+
+    ```bash
+    printf '%s\n' '<the wazuh password it printed>' | \
+      docker compose exec -T wazuh.worker /password-tool.sh --user wazuh --stdin
+    printf '%s\n' '<the wazuh-wui password it printed>' | \
+      docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
+    ```
+
 8.  **Optionally, run an agent alongside the deployment.** The `wazuh.agent` service is defined but not part of the default startup, so bring it up explicitly:
 
     ```bash
