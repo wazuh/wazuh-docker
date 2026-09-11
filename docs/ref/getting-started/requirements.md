@@ -91,8 +91,12 @@ Ensure that the necessary network ports are open and available on the Docker hos
     * `1516/TCP`: For cluster communication between manager nodes. Only needed
       between the manager containers, not on the Docker host.
 * **Wazuh Indexer**:
-    * `9200/TCP`: For HTTP REST API.
-    * `9300/TCP`: For inter-node communication (if clustered).
+    * `9200/TCP`: For HTTP REST API. **Not published on the host.** The manager
+      and the dashboard reach it over the Compose network, and the account that
+      answers on it administers the datastore. If you need it for development,
+      add the mapping bound to the loopback address (`127.0.0.1:9200:9200`).
+    * `9300/TCP`: For inter-node communication (if clustered). Only needed
+      between the indexer containers, not on the Docker host.
 * **Wazuh Dashboard**:
     * `5601/TCP` (or `443/TCP` if HTTPS is configured via a reverse proxy): For web access.
 

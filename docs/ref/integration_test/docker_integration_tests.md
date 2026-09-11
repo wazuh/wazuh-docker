@@ -4,6 +4,15 @@ Workflow file: `.github/workflows/5_check_integration_tools.yml`
 
 This workflow optionally builds Docker images from the PR branch, provisions a dedicated AWS VM, deploys the Wazuh Docker stack (single-node or multi-node), and runs the integration test suite against it via SSH.
 
+A second, self-contained check lives in the repository and needs no AWS VM. Run it from the directory of a Compose file against a running deployment:
+
+```bash
+cd single-node
+../tools/tests/check-default-credentials.sh
+```
+
+It asserts that the Wazuh indexer image ships none of the OpenSearch demo accounts and that no Wazuh indexer or Wazuh API account authenticates with its own username as its password. A deployment that has not been through the first-start password change fails it; see [Credentials](../credentials.md).
+
 ---
 
 ## Triggers
