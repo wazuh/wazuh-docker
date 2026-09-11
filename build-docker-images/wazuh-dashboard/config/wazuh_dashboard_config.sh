@@ -27,21 +27,6 @@ API_USERNAME="${API_USERNAME:-wazuh-wui}"
 API_PASSWORD="${API_PASSWORD:-wazuh-wui}"
 RUN_AS="${RUN_AS:-true}"
 
-# Optional Wazuh app configurations
-PATTERN="${PATTERN:-}"
-CHECKS_PATTERN="${CHECKS_PATTERN:-}"
-CHECKS_TEMPLATE="${CHECKS_TEMPLATE:-}"
-CHECKS_API="${CHECKS_API:-}"
-CHECKS_SETUP="${CHECKS_SETUP:-}"
-APP_TIMEOUT="${APP_TIMEOUT:-}"
-API_SELECTOR="${API_SELECTOR:-}"
-IP_SELECTOR="${IP_SELECTOR:-}"
-IP_IGNORE="${IP_IGNORE:-}"
-WAZUH_MONITORING_ENABLED="${WAZUH_MONITORING_ENABLED:-}"
-WAZUH_MONITORING_FREQUENCY="${WAZUH_MONITORING_FREQUENCY:-}"
-WAZUH_MONITORING_SHARDS="${WAZUH_MONITORING_SHARDS:-}"
-WAZUH_MONITORING_REPLICAS="${WAZUH_MONITORING_REPLICAS:-}"
-
 # Configuration file path
 DASHBOARD_CONFIG_FILE="${DASHBOARD_CONFIG_FILE:-/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml}"
 
@@ -64,19 +49,6 @@ declare -A CONFIG_MAP=(
     [opensearch_security.cookie.ttl]="$OPENSEARCH_SECURITY_COOKIE_TTL"
     [opensearch_security.session.ttl]="$OPENSEARCH_SECURITY_SESSION_TTL"
     [opensearch_security.session.keepalive]="$OPENSEARCH_SECURITY_SESSION_KEEPALIVE"
-    [pattern]="$PATTERN"
-    [checks.pattern]="$CHECKS_PATTERN"
-    [checks.template]="$CHECKS_TEMPLATE"
-    [checks.api]="$CHECKS_API"
-    [checks.setup]="$CHECKS_SETUP"
-    [timeout]="$APP_TIMEOUT"
-    [api.selector]="$API_SELECTOR"
-    [ip.selector]="$IP_SELECTOR"
-    [ip.ignore]="$IP_IGNORE"
-    [wazuh.monitoring.enabled]="$WAZUH_MONITORING_ENABLED"
-    [wazuh.monitoring.frequency]="$WAZUH_MONITORING_FREQUENCY"
-    [wazuh.monitoring.shards]="$WAZUH_MONITORING_SHARDS"
-    [wazuh.monitoring.replicas]="$WAZUH_MONITORING_REPLICAS"
 )
 
 # Replace configuration values in the dashboard config file
@@ -91,9 +63,17 @@ for key in "${!CONFIG_MAP[@]}"; do
     # Escape special characters for sed
     escaped_key=$(echo "$key" | sed 's/[.[\*^$()+?{|]/\\&/g')
 
-    # Try to replace existing line (commented or uncommented)
+    # Try to replace existing line (commented or uncommented); if the key is
+    # not present at all, append it instead of dropping the value silently.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
         sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: ${value}|" "$DASHBOARD_CONFIG_FILE"
+    else
+        # Ensure the file ends in a newline before appending, otherwise the
+        # new line would be glued onto the previous one.
+        if [ -s "$DASHBOARD_CONFIG_FILE" ] && [ "$(tail -c1 "$DASHBOARD_CONFIG_FILE")" != "" ]; then
+            echo >> "$DASHBOARD_CONFIG_FILE"
+        fi
+        echo "${key}: ${value}" >> "$DASHBOARD_CONFIG_FILE"
     fi
 done
 
