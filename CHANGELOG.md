@@ -2,9 +2,9 @@
 
 ### Added
 
-
 | Issue | Comment |
 | - | - |
+| [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Add CA verification |
 | [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
 | [#2505](https://github.com/wazuh/wazuh-docker/pull/2505) | Added bump-issue-link support for Revert Stage Bump. |
@@ -16,10 +16,10 @@
 
 ### Changed
 
-
 | Issue | Comment |
 | - | - |
 | [#2621](https://github.com/wazuh/wazuh-docker/pull/2621) | Change cluster key assigment |
+| [#6058](https://github.com/wazuh/internal-devel-requests/issues/6058) | Remove the OpenSearch demo users from the indexer image, add `password-tool.sh` to change the indexer and API passwords of a running deployment, and stop publishing the indexer port `9200` |
 | [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
 | [#2564](https://github.com/wazuh/wazuh-docker/issues/2564) | Add default AI assistant encryption key in the post installation script |
 | [#2581](https://github.com/wazuh/wazuh-docker/issues/2581) | Change Codebuild runners to Github runners |
@@ -76,9 +76,13 @@
 
 ### Fixed
 
-
 | Issue | Comment |
 | - | - |
+| [#2632](https://github.com/wazuh/wazuh-docker/issues/2632) | Fix agent re creation and re-enrollment |
+| [#2626](https://github.com/wazuh/wazuh-docker/issues/2626) | Supervise the manager daemons from the entrypoint and exit if a critical one dies, so `restart: always` can bring the container back instead of it staying up indefinitely with a dead API |
+| [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |
+| [#2630](https://github.com/wazuh/wazuh-docker/issues/2630) | Fixed WAZUH_INDEXER_HOSTS parsing: hosts without an explicit port, URLs with a scheme, and bracketed IPv6 addresses were silently mangled instead of being parsed correctly, and unparseable values were written to the config without any error |
+| [#2627](https://github.com/wazuh/wazuh-docker/issues/2627) | Fixed manager and dashboard healthchecks to correctly detect failures instead of always reporting healthy |
 | [#2604](https://github.com/wazuh/wazuh-docker/issues/2604) | Adapt Wazuh manager image to new enroll process |
 | [#2594](https://github.com/wazuh/wazuh-docker/issues/2594) | Added `diffutils` to the Wazuh agent image so FIM `report_changes` can generate content diffs |
 | [#2590](https://github.com/wazuh/wazuh-docker/issues/2590) | Restore `WAZUH_MANAGER_PORT` support in the Wazuh agent image and document the enrollment variables removed in 5.0.0 |
@@ -95,6 +99,7 @@
 | [#2271](https://github.com/wazuh/wazuh-docker/issues/2271) | Wazuh manager Healthcheck |
 | [#2258](https://github.com/wazuh/wazuh-docker/issues/2258) | Delete WAZUH_AGENT_GROUPS of Wazuh 5.0.0 images build |
 | [#2128](https://github.com/wazuh/wazuh-docker/issues/2128) | Development - DevOps 5.0 adaptation - Docker - Delete lists directory references |
+
 
 ## Prior versions
 - []()

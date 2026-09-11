@@ -25,6 +25,9 @@ ARG wazuh_agent_aarch64_rpm
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
+# Prepare permanent data config needed by permanent_data.sh at build time
+COPY config/permanent_data.env config/permanent_data.sh /
+
 # Install only runtime dependencies
 RUN dnf install procps shadow-utils -y && \
     dnf clean all && \
@@ -59,6 +62,11 @@ RUN conf=/var/ossec/etc/ossec.conf; \
     grep -q 'CHANGE_AGENT_NAME' "$conf" || \
         { echo "ERROR: CHANGE_AGENT_NAME is missing from the packaged ossec.conf"; exit 1; }
 
+# Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
+RUN chmod 755 /permanent_data.sh && \
+    sync && /permanent_data.sh && \
+    sync && rm /permanent_data.sh
+
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \
     https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH} \
@@ -77,7 +85,7 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies
-RUN dnf install diffutils procps shadow-utils -y && \
+RUN dnf install diffutils findutils procps shadow-utils -y && \
     dnf clean all && \
     getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
@@ -91,12 +99,21 @@ RUN dnf install diffutils procps shadow-utils -y && \
 # Copy Wazuh Agent installation from builder
 COPY --from=builder /var/ossec /var/ossec
 
+# Where the init script puts the TLS material for the manager connection, and
+# where a CA may be dropped instead of being named by a variable. The package
+# ships no such directory, and wazuh-agentd reads what lands here after dropping
+# privileges, so it is created up front and owned by the agent user.
+RUN mkdir -p /var/ossec/etc/certs && \
+    chown wazuh:wazuh /var/ossec/etc/certs && \
+    chmod 750 /var/ossec/etc/certs
+
 # Copy tini static binary
 COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 
 # Copy entrypoint and init scripts
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/etc/ /etc/
+COPY config/permanent_data.env /
 
 RUN chmod 755 /entrypoint.sh
 

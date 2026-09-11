@@ -66,4 +66,27 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
         docker compose up -d
         ```
 
+7.  **Change the default passwords.** The deployment comes up on the passwords documented in [Credentials](../../credentials.md), and changing them is the first thing to do:
+
+    ```bash
+    docker compose exec wazuh.indexer /password-tool.sh --all
+    docker compose exec wazuh.manager /password-tool.sh --all
+    ```
+
+    Each command prints the new passwords once and names the ones that have to be written into `docker-compose.yml`. Copy the output, edit the file, and then recreate the stack with `docker compose down` followed by `docker compose up -d` (without `-v`). The full procedure, including how to verify it, is in [Credentials](../../credentials.md).
+
+8.  **Optionally, run an agent alongside the deployment.** The `wazuh.agent` service is defined but not part of the default startup, so bring it up explicitly:
+
+    ```bash
+    docker compose exec wazuh.manager cat /var/wazuh-manager/etc/authd.pass
+    ```
+
+    Put that password in the `WAZUH_REGISTRATION_PASSWORD` line of the `wazuh.agent` service in `docker-compose.yml` — `authd` generates it at the manager's first start — and then:
+
+    ```bash
+    docker compose --profile agent up -d
+    ```
+
+    The service already mounts `config/root-ca/certs/root-ca.pem` and points `WAZUH_MANAGER_CA` at it, which is what the agent verifies the manager with. An agent running anywhere else needs the same file; see [Wazuh agent](wazuh-agent.md).
+
 Please allow some time for the environment to initialize, especially on the first run. It can take approximately a minute or two (depending on your host's resources) as the Wazuh Indexer starts up and generates the necessary indexes and index patterns.

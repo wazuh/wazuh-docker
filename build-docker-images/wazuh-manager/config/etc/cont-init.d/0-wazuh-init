@@ -355,9 +355,15 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
         echo "    <hosts>"
         IFS=',' read -ra NODES <<< "$WAZUH_INDEXER_HOSTS"
         for NODE in "${NODES[@]}"; do
-            IP="${NODE%:*}"
-            PORT="${NODE#*:}"
-            echo "      <host>https://$IP:$PORT</host>"
+            NODE="${NODE#"${NODE%%[![:space:]]*}"}"
+            NODE="${NODE#http://}"; NODE="${NODE#https://}"
+            if [[ "$NODE" == *:* ]]; then
+                HOST="${NODE%:*}"; PORT="${NODE##*:}"
+            else
+                HOST="$NODE"; PORT=9200
+            fi
+            [[ "$PORT" =~ ^[0-9]+$ ]] || { print "Invalid indexer host '$NODE'" >&2; exit 1; }
+            echo "      <host>https://${HOST}:${PORT}</host>"
         done
         echo "    </hosts>"
     } > "$TMP_HOSTS";
@@ -399,6 +405,7 @@ sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$(sed_escape_replacement 
 # --------------------------
 # Cluster: bind_addr
 # --------------------------
+WAZUH_CLUSTER_BIND_ADDR="${WAZUH_CLUSTER_BIND_ADDR:-0.0.0.0}"
 sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
