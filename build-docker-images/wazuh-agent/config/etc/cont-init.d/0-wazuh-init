@@ -179,6 +179,11 @@ warn_unsupported_vars() {
 # percent-encoding a zone id and bracketing an IPv6 literal.
 ##############################################################################
 
+# Escapes &, \ and # (the sed replacement delimiter used below) so a value
+# containing any of them is inserted literally instead of being interpreted
+# by sed as a backreference, an escape, or the end of the substitution.
+escape_repl() { printf '%s' "$1" | sed -e 's/[\\&#]/\\&/g'; }
+
 resolve_manager_endpoint() {
   local endpoint rest host
 
@@ -290,7 +295,7 @@ set_manager_conn() {
   fi
 
   print "Manager endpoint: $MANAGER_ENDPOINT"
-  sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$MANAGER_ENDPOINT</endpoint>#" "$config"
+  sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$(escape_repl "$MANAGER_ENDPOINT")</endpoint>#" "$config"
 
   set_agent_name_and_password "$config"
 }
@@ -298,7 +303,7 @@ set_manager_conn() {
 set_agent_name_and_password() {
   local config="$1"
 
-  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" "$config"
+  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$(escape_repl "$WAZUH_AGENT_NAME")</agent_name>#g" "$config"
   if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
     # Keep the password out of any trace, then put tracing back the way it was.
     # Switching it on unconditionally, which is what this used to do, left every

@@ -296,31 +296,36 @@ fi
 # all interfaces is scoped to the container network namespace, so what is
 # actually reachable from outside stays governed by the published ports.
 # --------------------------
+# Escapes &, \ and | (the sed replacement delimiter used below) so a value
+# containing any of them is inserted literally instead of being interpreted
+# by sed as a backreference, an escape, or the end of the substitution.
+escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+
 WAZUH_REMOTE_BIND_ADDR="${WAZUH_REMOTE_BIND_ADDR:-0.0.0.0}"
 
-sed -i "/<https>/,/<\/https>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_REMOTE_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
-sed -i "/<legacy>/,/<\/legacy>/ s|<local_ip>.*</local_ip>|<local_ip>$WAZUH_REMOTE_BIND_ADDR</local_ip>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<https>/,/<\/https>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$(escape_repl "$WAZUH_REMOTE_BIND_ADDR")</bind_addr>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<legacy>/,/<\/legacy>/ s|<local_ip>.*</local_ip>|<local_ip>$(escape_repl "$WAZUH_REMOTE_BIND_ADDR")</local_ip>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: node_name
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<node_name>.*</node_name>|<node_name>$WAZUH_NODE_NAME</node_name>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<node_name>.*</node_name>|<node_name>$(escape_repl "$WAZUH_NODE_NAME")</node_name>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: node_type
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$WAZUH_NODE_TYPE</node_type>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$(escape_repl "$WAZUH_NODE_TYPE")</node_type>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: key
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$WAZUH_CLUSTER_KEY</key>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$(escape_repl "$WAZUH_CLUSTER_KEY")</key>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: bind_addr
 # --------------------------
 WAZUH_CLUSTER_BIND_ADDR="${WAZUH_CLUSTER_BIND_ADDR:-0.0.0.0}"
-sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$WAZUH_CLUSTER_BIND_ADDR</bind_addr>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<bind_addr>.*</bind_addr>|<bind_addr>$(escape_repl "$WAZUH_CLUSTER_BIND_ADDR")</bind_addr>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: nodes list
