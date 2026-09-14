@@ -234,10 +234,17 @@ printf '%s\n' '<the wazuh-wui password it printed>' | \
   docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
 ```
 
+**Do not skip the worker.** The API daemon runs on the master only, so a worker
+serves no API and nothing about the deployment looks wrong while its accounts
+are still on the defaults. What that database is for is the moment the worker
+becomes the master: a promoted node with an untouched database starts answering
+with `wazuh` and `wazuh-wui` as their own passwords. The step is what keeps a
+failover from undoing this procedure.
+
 ## Checking that no default is left
 
 ```bash
-cd single-node
+cd single-node        # or multi-node
 ../tools/tests/check-default-credentials.sh
 ```
 
@@ -245,6 +252,13 @@ It asserts that the image carries none of the OpenSearch demo accounts and that
 no Wazuh indexer or Wazuh API account authenticates with its own username as its
 password. **A deployment that has not been through the procedure above fails
 this check**, which is what it is for.
+
+The Wazuh API accounts are checked in two places: on the published API, and in
+the user database of every manager node the Compose file defines. The second one
+is what covers a worker, whose accounts no API answers for. A worker that has
+never been through the step above has no user database at all, and the check
+reports that as well, because the database a promotion creates holds the
+defaults.
 
 ## Notes
 
