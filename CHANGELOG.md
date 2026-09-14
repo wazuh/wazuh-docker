@@ -18,6 +18,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2621](https://github.com/wazuh/wazuh-docker/pull/2621) | Change cluster key assigment |
 | [#2622](https://github.com/wazuh/wazuh-docker/issues/2622) | Check the Wazuh API accounts of every manager node in `check-default-credentials.sh`, and document the worker step of the multi-node password change |
 | [#6058](https://github.com/wazuh/internal-devel-requests/issues/6058) | Remove the OpenSearch demo users from the indexer image, add `password-tool.sh` to change the indexer and API passwords of a running deployment, and stop publishing the indexer port `9200` |
 | [#2601](https://github.com/wazuh/wazuh-docker/issues/2601) | Regenerate the manager self-signed server certificate per container at first boot |
@@ -79,6 +80,8 @@
 | Issue | Comment |
 | - | - |
 | [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
+| [#2638](https://github.com/wazuh/wazuh-docker/issues/2638) | Fixed manager/dashboard environment variable attribution and documented missing manager variables |
+| [#2631](https://github.com/wazuh/wazuh-docker/issues/2631) | Escape special sed replacement characters so passwords and keys with &, \, or the delimiter are no longer corrupted or silently discarded |
 | [#2632](https://github.com/wazuh/wazuh-docker/issues/2632) | Fix agent re creation and re-enrollment |
 | [#2626](https://github.com/wazuh/wazuh-docker/issues/2626) | Supervise the manager daemons from the entrypoint and exit if a critical one dies, so `restart: always` can bring the container back instead of it staying up indefinitely with a dead API |
 | [#2634](https://github.com/wazuh/wazuh-docker/issues/2634) | Default WAZUH_CLUSTER_BIND_ADDR to 0.0.0.0 so the published manager image actually starts |

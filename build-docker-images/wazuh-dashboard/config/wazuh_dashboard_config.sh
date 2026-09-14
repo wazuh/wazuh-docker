@@ -51,6 +51,17 @@ declare -A CONFIG_MAP=(
     [opensearch_security.session.keepalive]="$OPENSEARCH_SECURITY_SESSION_KEEPALIVE"
 )
 
+# Escapes &, \ and | (the sed replacement delimiter used below) so a value
+# containing any of them is inserted literally instead of being interpreted
+# by sed as a backreference, an escape, or the end of the substitution.
+escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+
+# Doubles a literal single quote so the value can be embedded in a single-quoted
+# YAML scalar (YAML's own escaping rule for that quote style, distinct from the
+# sed escaping escape_repl() handles). Needed for values, like a password, that
+# may contain characters double quotes would otherwise require escaping for.
+escape_yaml_single_quote() { printf '%s' "$1" | sed -e "s/'/''/g"; }
+
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
     value="${CONFIG_MAP[$key]}"
@@ -66,7 +77,7 @@ for key in "${!CONFIG_MAP[@]}"; do
     # Try to replace existing line (commented or uncommented); if the key is
     # not present at all, append it instead of dropping the value silently.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: ${value}|" "$DASHBOARD_CONFIG_FILE"
+        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|" "$DASHBOARD_CONFIG_FILE"
     else
         # Ensure the file ends in a newline before appending, otherwise the
         # new line would be glued onto the previous one.
@@ -81,10 +92,10 @@ done
 if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
     # Update existing wazuh_core.hosts section
     sed -i "/^wazuh_core.hosts:/,/^[^ ]/ {
-        s|url:.*|url: $WAZUH_API_URL|
-        s|port:.*|port: $API_PORT|
-        s|username:.*|username: $API_USERNAME|
-        s|password:.*|password: \"$API_PASSWORD\"|
-        s|run_as:.*|run_as: $RUN_AS|
+        s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
+        s|port:.*|port: $(escape_repl "$API_PORT")|
+        s|username:.*|username: $(escape_repl "$API_USERNAME")|
+        s|password:.*|password: '$(escape_yaml_single_quote "$(escape_repl "$API_PASSWORD")")'|
+        s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
     }" "$DASHBOARD_CONFIG_FILE"
 fi
