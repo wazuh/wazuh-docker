@@ -292,13 +292,6 @@ read_shared_cluster_key() {
     print "Warning: ${WAZUH_CLUSTER_KEY_MOUNT} is mounted but no cluster key could be read from it"
 }
 
-# Text used as a sed replacement is sed syntax, not a literal: the delimiter,
-# the backslash and '&' (the whole-match backreference) have to be escaped or
-# the substitution either fails or writes something other than the value.
-sed_escape_replacement() {
-  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
-}
-
 function_configure_wazuh_manager_conf() {
 WAZUH_MANAGER_CONF="${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf"
 
@@ -405,7 +398,7 @@ sed -i "/<cluster>/,/<\/cluster>/ s|<node_type>.*</node_type>|<node_type>$(escap
 # --------------------------
 # Cluster: key
 # --------------------------
-sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$(sed_escape_replacement "$WAZUH_CLUSTER_KEY")</key>|" "$WAZUH_MANAGER_CONF"
+sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key>$(escape_repl "$WAZUH_CLUSTER_KEY")</key>|" "$WAZUH_MANAGER_CONF"
 
 # --------------------------
 # Cluster: bind_addr
