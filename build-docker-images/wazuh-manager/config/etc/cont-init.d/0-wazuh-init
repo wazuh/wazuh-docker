@@ -60,27 +60,39 @@ mount_permanent_data() {
 # they must be updated to work properly if wazuh version is changed.
 ##############################################################################
 
+safe_cp() {
+    if cp -a "$1" "$2" 2>/dev/null; then
+        return 0
+    else
+        echo "Warning: Could not copy $1 (may be read-only)"
+        return 0
+    fi
+}
+
 apply_exclusion_data() {
-  for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
-    if [  -e ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file}  ]
+  for exclusion_path in "${PERMANENT_DATA_EXCP[@]}"; do
+    snapshot="${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_path}"
+    if [ ! -e "${snapshot}" ]
     then
-      DIR=$(dirname "${exclusion_file}")
-      if [ ! -e ${DIR}  ]
+      continue
+    fi
+
+    if [ -d "${snapshot}" ]
+    then
+      # Emptied rather than removed, so the entry can itself be a mount point, and
+      # so a file dropped in a newer image does not survive next to its replacement.
+      print "Updating ${exclusion_path}/"
+      mkdir -p "${exclusion_path}"
+      find "${exclusion_path}" -mindepth 1 -delete 2>/dev/null
+      exec_cmd "safe_cp ${snapshot}/. ${exclusion_path}/"
+    else
+      DIR=$(dirname "${exclusion_path}")
+      if [ ! -e "${DIR}" ]
       then
-        mkdir -p ${DIR}
+        mkdir -p "${DIR}"
       fi
-
-      safe_cp() {
-          if cp -p "$1" "$2" 2>/dev/null; then
-              return 0
-          else
-              echo "Warning: Could not copy $1 (may be read-only)"
-              return 0
-          fi
-      }
-
-      print "Updating ${exclusion_file}"
-      exec_cmd "safe_cp ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
+      print "Updating ${exclusion_path}"
+      exec_cmd "safe_cp ${snapshot} ${exclusion_path}"
     fi
   done
 }
