@@ -24,6 +24,11 @@
 
 services:
   wazuh.master:
+    # Pinned by digest -- docker.io/wazuh/wazuh-manager:4.14.0 is a mutable
+    # tag that has changed content since this port was last validated
+    # (confirmed via `docker pull` reporting "Downloaded newer image").
+    # Re-validate before ever bumping this.
+    image: wazuh/wazuh-manager@sha256:d2387a8304391600154c7b8604b390c8b798ec1403b5f1f707703bafdb230f84
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
@@ -47,6 +52,7 @@ services:
       - /mnt/backups:/mnt/backups:shared
 
   wazuh.worker:
+    image: wazuh/wazuh-manager@sha256:d2387a8304391600154c7b8604b390c8b798ec1403b5f1f707703bafdb230f84
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
@@ -70,6 +76,13 @@ services:
       - /mnt/backups:/mnt/backups:shared
 
   wazuh1.indexer:
+    # Pinned by digest, not floating tag: docker.io/wazuh/wazuh-indexer:4.14.0
+    # is mutable and has changed content since this port was first validated
+    # (confirmed via `docker pull` reporting "Downloaded newer image" against
+    # a digest cached from a prior pull) -- an unpinned tag risks silently
+    # swapping in a build with a different internal config path convention
+    # on a routine `docker compose pull`. Re-validate before ever bumping this.
+    image: wazuh/wazuh-indexer@sha256:0f1eb6c22912ca7948679cc3eca05346464678a42cab5cf5b1e17b99659e3582
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g
       - bootstrap.memory_lock=true
@@ -90,6 +103,7 @@ services:
       - /mnt/backups:/mnt/backups:shared
 
   wazuh2.indexer:
+    image: wazuh/wazuh-indexer@sha256:0f1eb6c22912ca7948679cc3eca05346464678a42cab5cf5b1e17b99659e3582
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g
       - bootstrap.memory_lock=true
@@ -108,6 +122,7 @@ services:
       - /mnt/backups:/mnt/backups:shared
 
   wazuh3.indexer:
+    image: wazuh/wazuh-indexer@sha256:0f1eb6c22912ca7948679cc3eca05346464678a42cab5cf5b1e17b99659e3582
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g
       - bootstrap.memory_lock=true
@@ -126,6 +141,8 @@ services:
       - /mnt/backups:/mnt/backups:shared
 
   wazuh.dashboard:
+    # Pinned by digest -- see wazuh.master above for why.
+    image: wazuh/wazuh-dashboard@sha256:ee2bad5f799e29a2a1ba218a634749a3bcd823e6f1aa09482b5d81bdba886b6c
     # HAProxy in front of the dashboard terminates TLS, so the dashboard
     # listens plain HTTP on 80 (stock listens HTTPS on 5601).
     ports: !override

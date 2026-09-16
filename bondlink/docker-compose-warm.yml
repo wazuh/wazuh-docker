@@ -14,7 +14,8 @@
 # are the corresponding bondlink/config/wazuh_indexer/wazuh-warm1.indexer.yml.
 services:
   wazuh-warm1.indexer:
-    image: wazuh/wazuh-indexer:4.14.0
+    # Pinned by digest -- see bondlink/docker-compose.override.yml for why.
+    image: wazuh/wazuh-indexer@sha256:0f1eb6c22912ca7948679cc3eca05346464678a42cab5cf5b1e17b99659e3582
     hostname: wazuh-warm1.indexer
     restart: always
     ports:

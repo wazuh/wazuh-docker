@@ -16,6 +16,44 @@ Unlike the 5.0 port, stock 4.14.0 already mounts full config files via
 much more direct: full replacement config files layered on top of the base
 compose file, matching how the current production fork already works.
 
+## Version status
+
+This branch is named `4.10-align`, but it is **not** running Wazuh 4.10 — the
+name is a legacy label carried over from the old ad-hoc fork's directory
+(`/src/wazuh-docker-4.10`), which had itself been manually upgraded over time
+to actually run 4.14.0 in production without ever being renamed. This branch
+tracks that reality: its base commit *is* upstream's `v4.14.0` tag
+(`git describe` on `HEAD` reads `v4.14.0-<n>-g<sha>`), plus the two commits
+that added and validated this `bondlink/` overlay.
+
+So "should we upgrade from 4.10 to 4.14?" is not a live decision here — it
+already happened, upstream of this branch even existing. The real question
+going forward is when to move further: to newer 4.14.x patch tags now, or to
+the 5.x line once `5.0-align` (see below) is validated and its blocking
+images (`wazuh/wazuh-manager:5.1.0`, `wazuh/wazuh-indexer:5.1.0`) are
+published. See "Syncing with upstream Wazuh releases" below for that process.
+
+## Repository structure
+
+This repo is a real fork of `wazuh/wazuh-docker` (`git remote -v` shows
+`origin` = `mblink/wazuh-docker`, `upstream` = `wazuh/wazuh-docker`) with full,
+non-squashed shared history — not a copied/vendored snapshot. `bondlink/` is
+a pure compose-overlay (see Usage below) that never edits upstream-tracked
+files, which is what keeps this branch "upstream-mergeable": there is nothing
+in the overlay design that upstream releases can conflict with, short of
+upstream relocating a file path this overlay hardcodes (has happened once,
+see the sync section below).
+
+Keeping this as one repo with `upstream` as a remote (rather than splitting
+the overlay into its own repo that vendors `wazuh-docker` via a submodule or
+subtree) is the deliberate choice: it gives clean 3-way merges against real
+upstream tags, avoids submodule detached-HEAD foot-guns, and matches
+`bondlink/`'s own design goal of staying a non-invasive layer on top of
+upstream's own compose-override extension point. `4.10-align` and the
+`5.0-align` branch (`/Volumes/Sources/wazuh-docker`, tracking unreleased
+5.1.0) are separate git worktrees sharing this one `.git`, specifically so
+each branch's own `bondlink/` content never mixes with the other's.
+
 ## Usage
 
 Run from this worktree's root:
@@ -85,6 +123,79 @@ needed there, redeclaring a key just replaces its value. Verified live via
 ## Warm-host deployment note
 
 `docker-compose-warm.yml` expects `./config/wazuh_indexer_ssl_certs/{root-ca,wazuh-warm1.indexer,wazuh-warm1.indexer-key,admin,admin-key}.pem`, `./config/wazuh_indexer/wazuh-warm1.indexer.yml`, and `./config/wazuh_indexer/internal_users.yml` relative to wherever it's run. Since the warm node deploys on a separate host, copy those specific files there alongside this compose file — the cert-generator step above produces the `.pem` files on the main host under `multi-node/config/wazuh_indexer_ssl_certs/`.
+
+## Syncing with upstream Wazuh releases
+
+To pull in a newer upstream release (a later 4.14.x patch, or eventually the
+5.x line once it's viable) without disturbing `bondlink/`:
+
+1. `git fetch upstream --tags`
+2. Check `documentation.wazuh.com` release notes for the target version for
+   breaking changes — especially anything touching indexer config/cert paths.
+   Upstream has moved that layout before (the 4.13.x restructuring, from
+   `/usr/share/wazuh-indexer/{certs,opensearch.yml,...}` to
+   `/usr/share/wazuh-indexer/config/{...}`), which is exactly the kind of
+   change that can silently break a hardcoded overlay path.
+3. Run `bondlink/scripts/sync-upstream.sh <tag>` (omit the tag to list
+   upstream tags newer than this branch's current base) to merge it in.
+4. Resolve any conflicts. There should be none/rare, since `bondlink/` never
+   touches upstream-tracked files — a real conflict here is a signal that
+   upstream touched something this overlay assumes, not a normal occurrence.
+5. Re-run `docker compose -f multi-node/docker-compose.yml -f
+   bondlink/docker-compose.override.yml config` to confirm merged paths still
+   resolve.
+6. Bring the stack up against the new images and re-validate (cluster health,
+   TLS pin, mounted config content actually present) the same way the "Live
+   validation results" section below was produced, then update that section
+   with the new version's results.
+7. Re-pull and re-pin the image digests (see "Image pinning" below) as part
+   of the same pass — don't assume the digest behind a version tag is stable
+   from one sync to the next.
+
+## Image pinning
+
+`wazuh.master`/`wazuh.worker`, `wazuh1/2/3.indexer` (and the warm node in
+`docker-compose-warm.yml`), and `wazuh.dashboard` are pinned by digest
+(`image: wazuh/wazuh-<component>@sha256:...`) rather than by the floating
+`4.14.0` tag. This isn't cosmetic: `docker pull` against all three
+`wazuh/wazuh-*:4.14.0` tags on 2026-09-16 reported **"Downloaded newer
+image"** for every one of them, confirming Docker Hub had already served
+different content under the same tag than whatever was cached before —
+this is exactly how production's indexer nodes ended up temporarily
+suspected of running on a different internal config-path convention than
+this overlay assumes (see "Version status" above and the git history for
+the full investigation). An unpinned tag means a routine `docker compose
+pull` can silently swap in a build with different internal behavior with
+no changelog to check against.
+
+Current pinned digests (captured 2026-09-16, from `docker pull
+wazuh/wazuh-<component>:4.14.0` + `docker inspect ... --format
+'{{.RepoDigests}}'`):
+- `wazuh-manager`: `sha256:d2387a8304391600154c7b8604b390c8b798ec1403b5f1f707703bafdb230f84`
+- `wazuh-indexer`: `sha256:0f1eb6c22912ca7948679cc3eca05346464678a42cab5cf5b1e17b99659e3582`
+- `wazuh-dashboard`: `sha256:ee2bad5f799e29a2a1ba218a634749a3bcd823e6f1aa09482b5d81bdba886b6c`
+
+To intentionally move to a newer build, re-pull the tag, re-run
+`docker inspect wazuh/wazuh-<component>:4.14.0 --format
+'{{.RepoDigests}}'`, update the digest here and in every `image:` line
+above, and re-run the full validation pass before trusting it.
+
+**Real-world confirmation (2026-09-16)**: this exact drift caused a live
+production outage on the actual `prodops02` host running the old fork —
+`docker compose up` implicitly re-pulled `wazuh/wazuh-indexer:4.14.0`
+mid-troubleshooting, got a build that reads config from a different
+internal path than the one production's compose file mounts to, and the
+recreated indexer nodes came up on the image's baked-in
+`discovery.type: single-node` default instead of the real cluster config —
+which fatally conflicts with a node's on-disk voting state from actually
+being a 3-node cluster member. Recovered cleanly (no data loss, cluster
+back to green) by retagging the previously-cached good image back onto the
+tag and force-recreating. Production's permanent fix there was
+`pull_policy: never` on all 6 services, not a digest pin — its
+already-running images had empty `RepoDigests` (no registry digest to pin
+to), which is why this repo uses digest-pinning where possible (a fresh
+`docker pull` here does return a real digest) and `pull_policy: never`
+would be the fallback if that ever stops being true.
 
 ## Live validation results (real `v4.14.0` containers)
 
