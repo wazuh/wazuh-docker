@@ -2,7 +2,17 @@
 /../multi-node/config/wazuh_indexer_ssl_certs/*.pem
 /../multi-node/config/wazuh_indexer_ssl_certs/*.key
 
-# Note: config/wazuh_cluster/*.conf and config/wazuh_indexer/*.yml here DO
-# currently carry real plaintext secrets (cluster key, dashboard password),
-# carried forward from production as agreed -- see README.md "Not ported"
-# section on secrets rotation before this branch is used long-term.
+# Centralized secrets file for docker-compose's env_file: -- rendered by
+# salt/wazuh-docker/init.sls's wazuh-docker-env-secrets state. Never tracked.
+.env.secrets
+
+# Note: config/wazuh_cluster/*.conf and config/wazuh_indexer/*.yml here carry
+# only an obvious placeholder (__WAZUH_CLUSTER_KEY__ /
+# __WAZUH_INDEXER_DATASOURCES_KEY__) for the cluster key / indexer datasources
+# masterkey, not the real value -- salt/wazuh-docker/init.sls's file.replace
+# states substitute the real pillar-sourced value on every highstate. A
+# deployed checkout will therefore always show these files (and the
+# wazuh1/2/3/warm1 indexer ymls) as locally modified in `git status`; that's
+# expected on a deployment target and not something to "fix" by committing
+# from there. See README.md's "History" section for how this replaced the
+# real secrets that used to be tracked here.

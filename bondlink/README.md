@@ -1,10 +1,16 @@
 # BondLink overlay for wazuh-docker
 
-**Status: live.** This overlay is the actual, currently-running production
-Wazuh deployment — cut over from the old ad-hoc `/src/wazuh-docker-4.10` fork
-on 2026-09-17, checked out at `/src/wazuh-docker` on `main` (see the History
-section below for how it got here; this file used to document an in-progress
-port on a branch called `4.10-align`, since merged).
+**Status: live, not yet merged.** This overlay is the actual, currently-running
+production Wazuh deployment — cut over from the old ad-hoc
+`/src/wazuh-docker-4.10` fork on 2026-09-17, checked out at `/src/wazuh-docker`
+on this branch, `4.10-align` (see the History section below for how it got
+here). The PR into `mblink/wazuh-docker`'s `main` has **not** been opened yet
+— secrets rotation (see "Not ported" below) is the last precondition for
+that. The real values no longer live in this repo's tracked files (fixed via
+a salt-rendered secrets pipeline, see below), but rotating the *live*
+cluster's actual passwords/keys to match is still outstanding. The
+checked-out production host still tracks this branch directly until the PR
+merges and it can be pointed at `main`.
 
 Purpose: `bondlink/` is a pure compose-overlay carrying forward BondLink's
 production customizations (email alerting, warm indexer tier + ISM lifecycle
@@ -22,11 +28,16 @@ sharing this same `.git`), is doing the analogous port for the unreleased
 migration once those images ship; this overlay isn't going anywhere until then.
 
 **Next steps** (not yet done, tracked here so they aren't lost):
-- Secrets rotation — see "Not ported" below, now more urgent than when this
-  was an unmerged branch (see History).
-- Sync the ~75 commits `main` is currently behind its upstream fork parent
-  (`wazuh/wazuh-docker`) — the next real chunk of work on this line, likely
-  its own branch following the same validate-then-cut-over pattern this one did.
+
+- Rotate the *live* cluster's secrets to match the new pillar-sourced values
+  (see "Not ported" below) — the salt-side pipeline and this repo's own
+  tracked files are ready; the running production containers still hold the
+  old values until that rollout executes.
+- Open the PR into `mblink/wazuh-docker`'s `main` once the above is done.
+- Sync the ~75 commits `4.10-align`'s base is currently behind
+  `wazuh/wazuh-docker`'s `main` — the next real chunk of work on this line
+  after the PR lands, likely its own branch following the same
+  validate-then-cut-over pattern this one did.
 
 ## History
 
@@ -36,10 +47,11 @@ the old ad-hoc fork's directory (`/src/wazuh-docker-4.10`), which had itself
 been manually upgraded over time to actually run 4.14.0 in production
 without ever being renamed. The branch's base commit *was* upstream's
 `v4.14.0` tag exactly, plus the commits that added, live-validated, and
-eventually cut production over to this overlay. Merged into `main` 2026-09-17
-after a live production cutover confirmed clean (see "Live validation
-results" below for the pre-cutover validation, and git log around the merge
-for the cutover itself).
+eventually cut production over to this overlay on 2026-09-17 (see "Live
+validation results" below for the pre-cutover validation). Production runs
+this branch directly, checked out at `/src/wazuh-docker`; the branch has not
+yet been merged into `main` or opened as a PR against `mblink/wazuh-docker` —
+that's blocked only on the live secrets rotation described below.
 
 ## Repository structure
 
@@ -125,7 +137,29 @@ needed there, redeclaring a key just replaces its value. Verified live via
 ## Not ported (deliberately out of scope for this overlay)
 
 - `index_scripts/` (reindex/legacy-agent-ID remap) and `volume-migrator.sh` — one-time historical data-migration tools tied to a specific past cutover (the `prodmonitor` → `wazuh.master` migration), not general features.
-- **Secrets rotation — outstanding, and now more urgent than before.** The real cluster key, dashboard password, and API password are still plaintext in tracked files here (`config/wazuh_cluster/*.conf`, `config/wazuh_indexer/*.yml`), carried forward from production values as agreed at the time. This was deferred while this lived on an unmerged branch; now that it's part of `main` and pushed to `origin`, these values are in that repo's permanent history for anyone with access to it, not just this local checkout. Rotating the actual running cluster's secrets (not just editing these files) is the only real fix — scrubbing git history without also rotating the live values doesn't help anyone who already has the old commits. Do this before this repository gets any wider circulation than it already has.
+- **Secrets rotation — tracked files fixed, live rotation still outstanding.**
+  The real Wazuh cluster key and indexer datasources masterkey used to be
+  plaintext in tracked files here (`config/wazuh_cluster/*.conf`,
+  `config/wazuh_indexer/*.yml`), reused as the *same* value across two
+  unrelated purposes on top of the exposure itself. Both are now an obvious
+  placeholder (`__WAZUH_CLUSTER_KEY__` / `__WAZUH_INDEXER_DATASOURCES_KEY__`)
+  in every tracked copy (including `local-test-only/`); the Wazuh API,
+  dashboard (`kibanaserver`), and indexer (`admin`) credentials now live in
+  the salt `wazuh-cluster-configuration` pillar instead of an unset/stock
+  compose override. The salt state (`salt/wazuh-docker/init.sls` in the salt
+  repo) renders the real values to disk on every highstate — two new,
+  distinct random values for the cluster key/masterkey (they no longer share
+  one value), plus a gitignored `bondlink/.env.secrets` consumed via
+  `env_file:` on `wazuh.master`/`wazuh.worker`/`wazuh.dashboard` — so none of
+  it is tracked in git going forward. **What's still outstanding**: the *live*
+  production cluster is still running on the old values (the tracked-file fix
+  doesn't itself rotate anything already deployed). That requires its own
+  careful rollout — several of these credentials don't take effect from an
+  env var change alone (the indexer's own accepted `admin`/`kibanaserver`
+  passwords need a Security REST API push before any restart, and the Wazuh
+  API's `wazuh-wui` password needs a `wazuh.yml`/Manager-API update, not just
+  a container restart) — validated on staging before it touches production.
+  Do this before the PR into `mblink/wazuh-docker`'s `main` is opened.
 - `internal_users.yml` — unmodified from stock; the source fork never touched it either, so nothing to port.
 
 ## Warm-host deployment note

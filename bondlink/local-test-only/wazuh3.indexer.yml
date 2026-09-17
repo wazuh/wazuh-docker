@@ -38,7 +38,7 @@ plugins.security.restapi.roles_enabled:
 - "all_access"
 - "security_rest_api_access"
 plugins.security.allow_default_init_securityindex: true
-plugins.query.datasources.encryption.masterkey: "c98b6ha9b6169zc5f67rae55ae4z5647"
+plugins.query.datasources.encryption.masterkey: "__WAZUH_INDEXER_DATASOURCES_KEY__"
 cluster.routing.allocation.disk.threshold_enabled: false
 compatibility.override_main_response_version: true
 bootstrap.system_call_filter: false

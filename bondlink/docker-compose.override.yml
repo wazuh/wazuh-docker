@@ -44,6 +44,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
+    # Salt-rendered (see salt/wazuh-docker/init.sls's wazuh-docker-env-secrets
+    # state) -- real credentials live only in this gitignored file, never in
+    # a tracked compose file. Not present until that state has run once.
+    env_file:
+      - ../bondlink/.env.secrets
     volumes: !override
       - master-wazuh-api-configuration:/var/ossec/api/configuration
       - master-wazuh-etc:/var/ossec/etc
@@ -68,6 +73,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
+    env_file:
+      - ../bondlink/.env.secrets
     volumes: !override
       - worker-wazuh-api-configuration:/var/ossec/api/configuration
       - worker-wazuh-etc:/var/ossec/etc
@@ -155,6 +162,8 @@ services:
   wazuh.dashboard:
     # Pinned by digest -- see wazuh.master above for why.
     image: wazuh/wazuh-dashboard@sha256:ee2bad5f799e29a2a1ba218a634749a3bcd823e6f1aa09482b5d81bdba886b6c
+    env_file:
+      - ../bondlink/.env.secrets
     # HAProxy in front of the dashboard terminates TLS, so the dashboard
     # listens plain HTTP on 80 (stock listens HTTPS on 5601).
     ports: !override
