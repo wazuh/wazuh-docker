@@ -222,12 +222,50 @@ one host at a time to avoid a full outage):
    the manager/dashboard already expect the new password but the indexer
    doesn't accept it yet.
 3. Update the Wazuh API's `wazuh-wui` password separately if it changed —
-   `wazuh_app_config.sh` only writes `wazuh.yml` once (guarded by a marker
-   already present on any volume that's booted before), so changing
-   `API_PASSWORD` and restarting the dashboard does nothing on its own. Use
-   the Wazuh Manager API's user-update endpoint (`PUT /security/users/{id}`)
-   to change the real `wazuh-wui` password directly, or clear the relevant
-   `wazuh.yml` stanza so `wazuh_app_config.sh` re-writes it on next boot.
+   `wazuh_app_config.sh` only writes `wazuh.yml` once (it `grep`s for a
+   hardcoded host-block marker and skips writing if found), so changing
+   `API_PASSWORD` and restarting the dashboard does nothing on its own.
+
+   **Preferred: the Wazuh Manager API's user-update endpoint.** Authenticate
+   with the *current* `wazuh-wui` credentials, look up its user ID, then PUT
+   the new password:
+
+   ```
+   TOKEN=$(curl -sk -u "wazuh-wui:${OLD_API_PASSWORD}" \
+     -X POST "https://wazuh.master:55000/security/user/authenticate" \
+     | jq -r .data.token)
+
+   USER_ID=$(curl -sk -H "Authorization: Bearer ${TOKEN}" \
+     "https://wazuh.master:55000/security/users?search=wazuh-wui" \
+     | jq -r '.data.affected_items[0].id')
+
+   curl -sk -H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json' \
+     -X PUT "https://wazuh.master:55000/security/users/${USER_ID}" \
+     -d "{\"password\": \"${API_PASSWORD}\"}"
+   ```
+
+   No restart needed — the new password is live on the manager immediately.
+   Confirm the target password satisfies the API's password-complexity
+   policy (upper/lower/digit, 8+ characters) before pushing; a value that
+   fails the check returns a 400 with no side effects, which is at least
+   safe to retry.
+
+   **Avoid the alternative** of deleting `wazuh.yml` to force
+   `wazuh_app_config.sh` to re-write it on next boot. It's conceptually
+   simpler but operationally fragile: this file is bind-mounted from the
+   host into a path that's *also* inside the `wazuh-dashboard-config` named
+   volume, and if the host-side file goes missing (or gets recreated without
+   also existing inside the volume's own copy of that path), the dashboard
+   container fails to start entirely with a `runc create failed: ... no such
+   file or directory` mount error — confirmed live on staging, twice, with
+   two different partial fixes before a full container removal was needed to
+   recover. If you do need this path (e.g. `wazuh-wui`'s password is
+   otherwise unrecoverable), touch an empty replacement file at both the
+   host bind-mount source *and* inside the named volume
+   (`docker run --rm -v multi-node_wazuh-dashboard-config:/vol busybox touch
+   /vol/wazuh.yml`) before recreating the container, and expect to need
+   `docker compose rm -f wazuh.dashboard` rather than just
+   `--force-recreate` if it's already failed once.
 4. Restart `wazuh.master` + `wazuh.worker` together — new cluster key (must
    match on both) and new `INDEXER_USERNAME`/`PASSWORD`, which the indexer
    now actually accepts from step 2.
