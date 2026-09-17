@@ -31,7 +31,7 @@
 # snapshot_index.py's DEFAULT_ADMIN_CERT_PATH/DEFAULT_ADMIN_KEY_PATH.
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+cd "$(sudo -u bldeploy git rev-parse --show-toplevel)"
 
 INDEXER_HOST="${1:-localhost:9200}"
 ENV_SECRETS="bondlink/.env.secrets"
@@ -62,7 +62,7 @@ push_password() {
     --cert "$ADMIN_CERT" --key "$ADMIN_KEY" \
     -X PATCH "https://${INDEXER_HOST}/_plugins/_security/api/internalusers/${user}" \
     -H 'Content-Type: application/json' \
-    -d "[{\"op\":\"replace\",\"path\":\"/password\",\"value\":\"${password}\"}]")
+    -d "[{\"op\":\"add\",\"path\":\"/password\",\"value\":\"${password}\"}]")
   if [[ "$status" != "200" ]]; then
     echo "error: pushing ${user}'s password failed (HTTP ${status}):" >&2
     cat "$body" >&2
