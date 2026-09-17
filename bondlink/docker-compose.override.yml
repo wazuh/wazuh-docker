@@ -22,6 +22,18 @@
 # path. `environment:` is merged as a map (key-by-key), so no !override is
 # needed there -- redeclaring a key in this file simply replaces its value.
 
+# `name:` pins the compose project name to "multi-node" explicitly, matching
+# the production fork's actual running project name (confirmed via
+# `docker inspect`'s com.docker.compose.project label) -- Compose otherwise
+# derives this from the invoking directory's basename, which happens to
+# already match here but shouldn't be relied on implicitly. This is what
+# makes an in-place cutover (bring this stack up in place of the old fork)
+# reattach to the exact same named volumes -- master-wazuh-etc,
+# wazuh-indexer-data-1/2/3, etc. -- with no data migration step at all,
+# since neither `docker compose down` nor swapping which compose file you
+# run touches named volumes, only the project name does.
+name: multi-node
+
 services:
   wazuh.master:
     # Pinned by digest -- docker.io/wazuh/wazuh-manager:4.14.0 is a mutable
