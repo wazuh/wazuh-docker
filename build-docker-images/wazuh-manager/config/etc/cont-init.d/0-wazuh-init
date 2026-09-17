@@ -130,20 +130,13 @@ remove_data_files() {
 }
 
 ##############################################################################
-# Create certificates: Manager
+# Check the manager agent listener certificate
 #
-# The manager has a single self-signed server pair, etc/certs/remoted.*, read
-# both by remoted's HTTPS agent listener (<remote><https>) and by authd
-# (<auth><ssl_manager_cert>). The package post-install generates it, so the image
-# build removes it (see Dockerfile) and every container generates its own here:
-# no two containers from the same image share a private key.
-#
-# Both consumers are read from the configuration and generated independently, so
-# a deployment pointing one of them at a custom path still gets a valid pair.
-#
-# remoted opens these files after dropping privileges and does not start if they
-# are missing or unreadable, so this must run before the manager is started and
-# the files must end up wazuh-manager:wazuh-manager 0640.
+# etc/certs/remoted.* is read by remoted's HTTPS listener (<remote><https>) and
+# by authd (<auth><ssl_manager_cert>). It is issued by wazuh-certs-tool.sh and
+# mounted into the container; nothing generates it here, and the manager does
+# not start without it. This only names the file that is missing, which the
+# error the manager reports on its own does not.
 ##############################################################################
 
 # Certificate paths in the configuration are Wazuh-home relative, as the rest of
@@ -162,56 +155,38 @@ get_conf_path() {
 }
 
 # $1: certificate path, $2: key path
-create_server_cert_pair() {
+check_server_cert_pair() {
   local cert=$(resolve_wazuh_path "$1")
   local key=$(resolve_wazuh_path "$2")
+  local missing=""
 
-  # Mixed-ownership directory: the daemons regenerate their own certificates here
-  # (group write), while the sticky bit keeps them from replacing the root-owned
-  # indexer trust material that shares the directory. Ownership and mode are
-  # best-effort: the directory may be a read-only mount, and failing to re-apply
-  # them must not stop the certificate from being created.
-  exec_cmd "mkdir -p $(dirname "${cert}") $(dirname "${key}")"
-  chown root:wazuh-manager "$(dirname "${cert}")" 2>/dev/null || true
-  chmod 1770 "$(dirname "${cert}")" 2>/dev/null || true
+  [ -f "${cert}" ] && [ -r "${cert}" ] || missing="${cert}"
+  [ -f "${key}" ] && [ -r "${key}" ] || missing="${missing:+${missing} }${key}"
 
-  if [ -e "${cert}" ] && [ -e "${key}" ]
+  if [ -z "${missing}" ]
   then
-    print "Manager server certificate ${cert} already present, skipping generation"
-  elif [ -e "${cert}" ] || [ -e "${key}" ]
-  then
-    # Same guard as the package post-install: never overwrite operator-provided
-    # material. Half a pair cannot be completed, so warn instead of guessing.
-    print "Warning: only one of ${cert} / ${key} is present; remoted will not start"
+    print "Manager agent listener certificate ${cert} found"
     return
-  else
-    print "Creating the manager server certificate and key (${cert})"
-    ${WAZUH_INSTALL_PATH}/bin/wazuh-manager-remoted -C 3650 -B 4096 \
-      -S "/C=US/ST=California/CN=Wazuh/" -K "${key}" -X "${cert}" > /dev/null 2>&1 || \
-    exec_cmd "openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
-      -keyout ${key} -out ${cert} -subj /C=US/ST=California/CN=Wazuh/"
   fi
 
-  # remoted and authd read these after dropping privileges. Not fatal on failure:
-  # an operator-provided certificate may be a read-only bind mount.
-  chown wazuh-manager:wazuh-manager "${cert}" "${key}" 2>/dev/null || \
-    print "Warning: could not set ownership on ${cert} (read-only mount?)"
-  chmod 640 "${cert}" "${key}" 2>/dev/null || true
+  print "ERROR: the manager agent listener certificate is missing or unreadable: ${missing}"
+  print "Issue it with wazuh-certs-tool.sh, which writes <node>-remoted.pem and"
+  print "<node>-remoted-key.pem, and mount them at ${cert} and ${key}"
+  print "owned by 0:wazuh-manager with mode 0640."
+  print "The agent listener and agent enrollment do not start without them."
 }
 
-create_manager_server_certs() {
+check_manager_server_certs() {
   local https_cert=$(get_conf_path certificate https)
   local https_key=$(get_conf_path key https)
   local authd_cert=$(get_conf_path ssl_manager_cert auth)
   local authd_key=$(get_conf_path ssl_manager_key auth)
 
-  # The manager has one self-signed pair and one identity: authd's
-  # <ssl_manager_cert> is derived from the HTTPS listener's <certificate> by the
-  # installation itself, and /enroll's mTLS mode treats that certificate as the
-  # enrollment credential. Only that pair is generated, exactly as the package
-  # post-install does; a mismatch can only come from hand-edited configuration.
-  create_server_cert_pair "${https_cert:-etc/certs/remoted.pem}" \
-                          "${https_key:-etc/certs/remoted-key.pem}"
+  # authd's <ssl_manager_cert> is derived from the HTTPS listener's <certificate>
+  # by the installation itself, so the two are one pair and one identity. A
+  # mismatch can only come from hand-edited configuration.
+  check_server_cert_pair "${https_cert:-etc/certs/remoted.pem}" \
+                         "${https_key:-etc/certs/remoted-key.pem}"
 
   if [ "${authd_cert:-etc/certs/remoted.pem}" != "${https_cert:-etc/certs/remoted.pem}" ] || \
      [ "${authd_key:-etc/certs/remoted-key.pem}" != "${https_key:-etc/certs/remoted-key.pem}" ]
@@ -486,10 +461,9 @@ main() {
   # Configure wazuh-manager.conf based on environment variables
   function_configure_wazuh_manager_conf
 
-  # Create the manager server certificates if not present. After mount_files and
-  # the configuration rewrite, so a mounted configuration with custom certificate
-  # paths is honoured and a mounted certificate is detected as already present.
-  create_manager_server_certs
+  # After mount_files and the configuration rewrite, so a mounted configuration
+  # with custom certificate paths is honoured.
+  check_manager_server_certs
 
   # Delete temporary data folder
   rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
