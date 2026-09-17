@@ -1,37 +1,45 @@
-# BondLink overlay for wazuh-docker 4.14.0 (interim stopgap)
+# BondLink overlay for wazuh-docker
 
-Branch `4.10-align`, checked out as a separate git worktree from the main
-repo (`/Volumes/Sources/wazuh-docker`, branch `5.0-align`) so the two efforts'
-untracked `bondlink/` content never mixes — both worktrees share one `.git`.
+**Status: live.** This overlay is the actual, currently-running production
+Wazuh deployment — cut over from the old ad-hoc `/src/wazuh-docker-4.10` fork
+on 2026-09-17, checked out at `/src/wazuh-docker` on `main` (see the History
+section below for how it got here; this file used to document an in-progress
+port on a branch called `4.10-align`, since merged).
 
-Purpose: `wazuh/wazuh-manager:5.1.0` and `wazuh/wazuh-indexer:5.1.0` aren't
-published yet, so the 5.0 port (`5.0-align` branch) can't run live. This
-branch is a deployable, upstream-mergeable stopgap on the version actually
-running today (v4.14.0), carrying forward BondLink's customizations from
-`/src/wazuh-docker-4.10` with the bugs the audit found fixed, meant to be
-retired once the 5.0 port is validated.
+Purpose: `bondlink/` is a pure compose-overlay carrying forward BondLink's
+production customizations (email alerting, warm indexer tier + ISM lifecycle
+policy, HTTP-only dashboard behind HAProxy, CloudWatch/cron-backup sidecars,
+etc.) on top of this repo's own upstream-tracked `multi-node/docker-compose.yml`
+— without ever editing that file directly, which is what keeps this
+upstream-mergeable. Stock wazuh-docker (since 4.x) already mounts full
+config files via `/wazuh-config-mount`, so the overlay is direct: full
+replacement config files layered on top of the base compose file via `-f`.
 
-Unlike the 5.0 port, stock 4.14.0 already mounts full config files via
-`/wazuh-config-mount` (that mechanism isn't new to 5.0), so this overlay is
-much more direct: full replacement config files layered on top of the base
-compose file, matching how the current production fork already works.
+A separate worktree/branch, `5.0-align` (`/Volumes/Sources/wazuh-docker`,
+sharing this same `.git`), is doing the analogous port for the unreleased
+5.1.0 line — still blocked on `wazuh/wazuh-manager:5.1.0` and
+`wazuh/wazuh-indexer:5.1.0` not being published yet. That'll be the next real
+migration once those images ship; this overlay isn't going anywhere until then.
 
-## Version status
+**Next steps** (not yet done, tracked here so they aren't lost):
+- Secrets rotation — see "Not ported" below, now more urgent than when this
+  was an unmerged branch (see History).
+- Sync the ~75 commits `main` is currently behind its upstream fork parent
+  (`wazuh/wazuh-docker`) — the next real chunk of work on this line, likely
+  its own branch following the same validate-then-cut-over pattern this one did.
 
-This branch is named `4.10-align`, but it is **not** running Wazuh 4.10 — the
-name is a legacy label carried over from the old ad-hoc fork's directory
-(`/src/wazuh-docker-4.10`), which had itself been manually upgraded over time
-to actually run 4.14.0 in production without ever being renamed. This branch
-tracks that reality: its base commit *is* upstream's `v4.14.0` tag
-(`git describe` on `HEAD` reads `v4.14.0-<n>-g<sha>`), plus the two commits
-that added and validated this `bondlink/` overlay.
+## History
 
-So "should we upgrade from 4.10 to 4.14?" is not a live decision here — it
-already happened, upstream of this branch even existing. The real question
-going forward is when to move further: to newer 4.14.x patch tags now, or to
-the 5.x line once `5.0-align` (see below) is validated and its blocking
-images (`wazuh/wazuh-manager:5.1.0`, `wazuh/wazuh-indexer:5.1.0`) are
-published. See "Syncing with upstream Wazuh releases" below for that process.
+This overlay was developed and validated on a branch named `4.10-align` —
+not because it ran Wazuh 4.10, but because that name was carried over from
+the old ad-hoc fork's directory (`/src/wazuh-docker-4.10`), which had itself
+been manually upgraded over time to actually run 4.14.0 in production
+without ever being renamed. The branch's base commit *was* upstream's
+`v4.14.0` tag exactly, plus the commits that added, live-validated, and
+eventually cut production over to this overlay. Merged into `main` 2026-09-17
+after a live production cutover confirmed clean (see "Live validation
+results" below for the pre-cutover validation, and git log around the merge
+for the cutover itself).
 
 ## Repository structure
 
@@ -39,20 +47,20 @@ This repo is a real fork of `wazuh/wazuh-docker` (`git remote -v` shows
 `origin` = `mblink/wazuh-docker`, `upstream` = `wazuh/wazuh-docker`) with full,
 non-squashed shared history — not a copied/vendored snapshot. `bondlink/` is
 a pure compose-overlay (see Usage below) that never edits upstream-tracked
-files, which is what keeps this branch "upstream-mergeable": there is nothing
-in the overlay design that upstream releases can conflict with, short of
-upstream relocating a file path this overlay hardcodes (has happened once,
-see the sync section below).
+files, which is what keeps this "upstream-mergeable": there is nothing in the
+overlay design that upstream releases can conflict with, short of upstream
+relocating a file path this overlay hardcodes (has happened once, see the
+sync section below).
 
 Keeping this as one repo with `upstream` as a remote (rather than splitting
 the overlay into its own repo that vendors `wazuh-docker` via a submodule or
 subtree) is the deliberate choice: it gives clean 3-way merges against real
 upstream tags, avoids submodule detached-HEAD foot-guns, and matches
 `bondlink/`'s own design goal of staying a non-invasive layer on top of
-upstream's own compose-override extension point. `4.10-align` and the
-`5.0-align` branch (`/Volumes/Sources/wazuh-docker`, tracking unreleased
-5.1.0) are separate git worktrees sharing this one `.git`, specifically so
-each branch's own `bondlink/` content never mixes with the other's.
+upstream's own compose-override extension point. `main` and the `5.0-align`
+branch (`/Volumes/Sources/wazuh-docker`, tracking unreleased 5.1.0) are
+separate git worktrees sharing this one `.git`, specifically so each
+branch's own `bondlink/` content never mixes with the other's.
 
 ## Usage
 
@@ -114,10 +122,10 @@ needed there, redeclaring a key just replaces its value. Verified live via
 - **`host.docker.internal`/`wazuh-warm1.indexer` extra_hosts + static IP** on master/worker, for the warm node running on a separate host/compose project.
 - **CloudWatch-agent / cron-backup sidecars**: `build/cloudwatch-agent/`, `build/cron-backup/`. **Fixed three real bugs**: (1) cron-backup's `ENTRYPOINT` was commented out in the source, so the container fell back to alpine's default shell and exited immediately — with `restart: always` it crash-looped forever and the daily S3 backup never actually ran; restored. (2) cloudwatch-agent's `jq` filter wrapped `${VAR}` in single quotes, so the build args for log group/stream/region were never actually interpolated and the agent silently used hardcoded template values instead; switched to `jq --arg`. (3) Both images were built to shadow the public `amazon/cloudwatch-agent` and `alpine:latest` tags — fragile on any host running unrelated containers under those names; renamed to `bondlink/wazuh-cwagent:4.10-align` and `bondlink/wazuh-cron-backup:4.10-align`, built directly via `build:` in the override (no separate `build-images.yml`/`build-images.sh` needed — that file's own bug, silently wiping the sidecar env vars from `.env` on rebuild, is sidestepped entirely by putting the build args directly in the compose override).
 
-## Not ported (deliberately out of scope for this stopgap)
+## Not ported (deliberately out of scope for this overlay)
 
 - `index_scripts/` (reindex/legacy-agent-ID remap) and `volume-migrator.sh` — one-time historical data-migration tools tied to a specific past cutover (the `prodmonitor` → `wazuh.master` migration), not general features.
-- Secrets rotation — the cluster key, dashboard password, and API password are still plaintext in tracked files here (carried forward from production values as agreed). Since this is an interim stopgap expected to retire once 5.0 ships, this wasn't prioritized, but don't let this branch live long-term without addressing it.
+- **Secrets rotation — outstanding, and now more urgent than before.** The real cluster key, dashboard password, and API password are still plaintext in tracked files here (`config/wazuh_cluster/*.conf`, `config/wazuh_indexer/*.yml`), carried forward from production values as agreed at the time. This was deferred while this lived on an unmerged branch; now that it's part of `main` and pushed to `origin`, these values are in that repo's permanent history for anyone with access to it, not just this local checkout. Rotating the actual running cluster's secrets (not just editing these files) is the only real fix — scrubbing git history without also rotating the live values doesn't help anyone who already has the old commits. Do this before this repository gets any wider circulation than it already has.
 - `internal_users.yml` — unmodified from stock; the source fork never touched it either, so nothing to port.
 
 ## Warm-host deployment note
