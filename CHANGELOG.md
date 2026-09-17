@@ -79,6 +79,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2628](https://github.com/wazuh/wazuh-docker/issues/2628) | Persist the Wazuh manager `data` directory on a named volume in the single-node and multi-node deployments, so the deployed detection content survives recreating the container, and refresh the content the image owns from the image on every start |
 | [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
 | [#2638](https://github.com/wazuh/wazuh-docker/issues/2638) | Fixed manager/dashboard environment variable attribution and documented missing manager variables |
 | [#2631](https://github.com/wazuh/wazuh-docker/issues/2631) | Escape special sed replacement characters so passwords and keys with &, \, or the delimiter are no longer corrupted or silently discarded |

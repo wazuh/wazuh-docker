@@ -16,7 +16,7 @@ ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
-COPY config/permanent_data.env config/permanent_data.sh /
+COPY config/permanent_data.env config/permanent_data.sh config/check-data-exceptions.sh /
 
 RUN dnf install openssl findutils procps shadow-utils -y && \
     dnf clean all && \
@@ -64,6 +64,13 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
 RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
+
+# Fail the build if the image ships content under data/ that neither the exclusion
+# list nor the manager itself owns: a deployment upgrading onto an existing data
+# volume would never see it. See docs/ref/configuration/configuration-files.md.
+RUN chmod 755 /check-data-exceptions.sh && \
+    /check-data-exceptions.sh && \
+    rm /check-data-exceptions.sh
 
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \

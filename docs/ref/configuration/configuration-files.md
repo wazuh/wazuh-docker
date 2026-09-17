@@ -56,6 +56,18 @@ The `docker-compose.yml` files mount a named volume on `/var/wazuh-manager/etc` 
 
 Removing the volume (for example, with `docker compose down -v`) deletes the pair, and the next start generates a new one. Agents do not validate this certificate by default, so a new pair does not break already enrolled agents. Do not copy the volume between deployments: that reuses the same private key in both. See [Security](../security.md) for rotation and for using your own certificate.
 
+### Wazuh manager detection content
+
+The `docker-compose.yml` files mount a named volume on `/var/wazuh-manager/data` (`wazuh_data` in single-node; `master-wazuh-data` and `worker-wazuh-data` in multi-node). That directory holds the detection content the manager downloads from the indexer after it starts — the ruleset, the IOC store and the engine state — together with the GeoIP databases and the timezone database.
+
+Without the volume the content lives only in the container's writable layer, so recreating the container discards it and the manager comes back with no decoders until it has downloaded everything again.
+
+Part of what lives under `data` ships in the image and is owned by it, not by the manager: `data/tzdb`, `data/store/schema` and `data/store/enrichment`. A volume is filled from the image only when it is created, so those three are listed in `PERMANENT_DATA_EXCP` (`build-docker-images/wazuh-manager/config/permanent_data.env`) and the container refreshes them from the image on every start. Without that, an upgraded deployment would keep serving the content of whichever image first created the volume. Anything written into those three paths is replaced on the next start; custom content belongs elsewhere.
+
+A release that adds content under `data` has to declare it in the same list, or it will never reach a deployment that upgrades onto an existing volume. The manager image build fails if it finds content under `data` that is in neither that list nor the set of paths the manager rewrites itself (`data/mmdb` and `data/store/geo`).
+
+Removing the volume (for example, with `docker compose down -v`) is not destructive: the manager downloads the content again on the next start, which takes a few minutes.
+
 ### Wazuh Dashboard keystore
 
 The `docker-compose.yml` files mount the named volume `wazuh-dashboard-config` on `/usr/share/wazuh-dashboard/config`, which is where `opensearch_dashboards.keystore` is stored. Keeping this volume preserves the `wazuh_ai_assistant.encryptionKey` generated on the first start.
