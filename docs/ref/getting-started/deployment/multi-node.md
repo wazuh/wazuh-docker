@@ -54,11 +54,35 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
           dns: "wazuh.dashboard"
     ```
 
-5.  Run the certificate creation script:
+    Each manager node keeps its own name here. The address agents dial is not one
+    of them: agents reach the cluster through `nginx`, which publishes `1517` and
+    hands each connection to either manager node, so that address belongs to both
+    nodes at once and is given in the next step instead.
+
+5.  Run the certificate creation script, naming the address agents dial:
 
     ```bash
-    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
+        --agent-san nginx --agent-san <DOCKER_HOST_ADDRESS>
     ```
+
+    This issues every certificate the deployment mounts, including
+    `wazuh.master-remoted.pem` and `wazuh.worker-remoted.pem`, the pair each
+    manager node presents to agents. **A manager node does not start without its
+    pair**, so this step has to run before `docker compose up`.
+
+    `--agent-san` puts an address in the agent listener certificate of **every**
+    manager node, which is what the `nginx` entry point needs: whichever node
+    answers presents a certificate that names the address the agent dialed, so
+    one agent can verify both. Repeat the option for each address. Use `nginx`
+    for agents inside the Compose network, and the Docker host's IP address or
+    DNS name — replacing `<DOCKER_HOST_ADDRESS>` — for agents anywhere else.
+
+    Addresses given this way reach the agent listener certificates only. The
+    `<node>.pem` each manager presents to the Wazuh indexer keeps its own name,
+    and the certificate creation script rejects an address repeated across
+    manager nodes in `config.yml`, which is why the entry point is not written
+    there.
 
 6.  Start the Wazuh environment using `docker compose`:
 
@@ -92,18 +116,12 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
       docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
     ```
 
-8.  **Optionally, run an agent alongside the deployment.** The `wazuh.agent` service is defined but not part of the default startup, so bring it up explicitly:
+8.  **Connect agents.** This deployment runs the Wazuh manager cluster, indexer cluster and dashboard; agents run wherever the endpoints they monitor are. An agent needs two things from here: the enrollment password, which `authd` generates at the master's first start, and the root CA it verifies the manager nodes with.
 
     ```bash
     docker compose exec wazuh.master cat /var/wazuh-manager/etc/authd.pass
     ```
 
-    Put that password in the `WAZUH_REGISTRATION_PASSWORD` line of the `wazuh.agent` service in `docker-compose.yml` — `authd` generates it at the manager's first start — and then:
-
-    ```bash
-    docker compose --profile agent up -d
-    ```
-
-    The service already mounts `config/root-ca/certs/root-ca.pem` and points `WAZUH_MANAGER_CA` at it, which is what the agent verifies the manager with. An agent running anywhere else needs the same file; see [Wazuh agent](wazuh-agent.md).
+    The CA is `config/root-ca/certs/root-ca.pem`, and it covers both manager nodes. Agents connect to the address `nginx` publishes, one of the `--agent-san` values from step 5. See [Wazuh agent](wazuh-agent.md) for a containerized agent, and [Environment Variables](../../configuration/environment-variables.md#wazuh-agent) for the variables that carry them.
 
 Please allow some time for the environment to initialize, especially on the first run. A multi-node setup can take a few minutes (depending on your host resources and network) as the Wazuh Indexer cluster forms, and the necessary indexes and index patterns are generated.
