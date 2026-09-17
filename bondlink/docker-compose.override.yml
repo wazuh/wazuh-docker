@@ -44,11 +44,20 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
-    # Salt-rendered (see salt/wazuh-docker/init.sls's wazuh-docker-env-secrets
-    # state) -- real credentials live only in this gitignored file, never in
-    # a tracked compose file. Not present until that state has run once.
-    env_file:
-      - ../bondlink/.env.secrets
+    # Real values come from bondlink/.env.secrets (salt-rendered, gitignored --
+    # see salt/wazuh-docker/init.sls's wazuh-docker-env-secrets state) via
+    # compose's ${VAR} substitution -- NOT env_file:, which loses to
+    # multi-node/docker-compose.yml's own `environment:` entries for these
+    # same keys regardless of file order (environment: always wins over
+    # env_file: for a given key in Compose's merge model). Must invoke with
+    # `--env-file bondlink/.env.secrets` from the repo root (see README.md's
+    # Usage section) or these fall back to compose's own unset-variable
+    # behavior (empty string), not silently to the stock example values.
+    environment:
+      API_USERNAME: ${API_USERNAME}
+      API_PASSWORD: ${API_PASSWORD}
+      INDEXER_USERNAME: ${INDEXER_USERNAME}
+      INDEXER_PASSWORD: ${INDEXER_PASSWORD}
     volumes: !override
       - master-wazuh-api-configuration:/var/ossec/api/configuration
       - master-wazuh-etc:/var/ossec/etc
@@ -73,8 +82,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "wazuh-warm1.indexer:10.0.2.103"
-    env_file:
-      - ../bondlink/.env.secrets
+    environment:
+      INDEXER_USERNAME: ${INDEXER_USERNAME}
+      INDEXER_PASSWORD: ${INDEXER_PASSWORD}
     volumes: !override
       - worker-wazuh-api-configuration:/var/ossec/api/configuration
       - worker-wazuh-etc:/var/ossec/etc
@@ -162,8 +172,14 @@ services:
   wazuh.dashboard:
     # Pinned by digest -- see wazuh.master above for why.
     image: wazuh/wazuh-dashboard@sha256:ee2bad5f799e29a2a1ba218a634749a3bcd823e6f1aa09482b5d81bdba886b6c
-    env_file:
-      - ../bondlink/.env.secrets
+    # See wazuh.master above -- ${VAR} substitution from --env-file, not
+    # env_file:, which multi-node/docker-compose.yml's own API_/DASHBOARD_
+    # `environment:` entries would silently win over.
+    environment:
+      API_USERNAME: ${API_USERNAME}
+      API_PASSWORD: ${API_PASSWORD}
+      DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
     # HAProxy in front of the dashboard terminates TLS, so the dashboard
     # listens plain HTTP on 80 (stock listens HTTPS on 5601).
     ports: !override

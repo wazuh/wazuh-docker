@@ -80,10 +80,22 @@ Run from this worktree's root:
 
 ```
 docker compose \
+  --env-file bondlink/.env.secrets \
   -f multi-node/docker-compose.yml \
   -f bondlink/docker-compose.override.yml \
   up -d
 ```
+
+`--env-file bondlink/.env.secrets` is required, not optional. It's what
+resolves the `${API_PASSWORD}`/`${INDEXER_PASSWORD}`/etc. `${VAR}`
+substitutions in `bondlink/docker-compose.override.yml`'s `environment:`
+blocks (salt-rendered, see `salt/wazuh-docker/init.sls`'s
+`wazuh-docker-env-secrets` state) -- deliberately *not* `env_file:` on those
+services, since `multi-node/docker-compose.yml` already sets these same keys
+via its own `environment:` entries, and Compose's `environment:` always wins
+over `env_file:` for a shared key regardless of which merged file it came
+from. Without `--env-file`, the `${VAR}` references resolve to empty strings,
+not silently to the upstream stock example values.
 
 Cert generation (run once, before `up`, after adding wazuh-warm1.indexer to
 bondlink/config/certs.yml):
@@ -102,10 +114,12 @@ see below):
 docker compose -f docker-compose-warm.yml up -d
 ```
 
-Always sanity-check a merged config before applying changes:
+Always sanity-check a merged config before applying changes (include
+`--env-file` here too, or the API/DASHBOARD/INDEXER credential fields will
+show as empty rather than reflecting what actually gets passed to `up`):
 
 ```
-docker compose -f multi-node/docker-compose.yml -f bondlink/docker-compose.override.yml config
+docker compose --env-file bondlink/.env.secrets -f multi-node/docker-compose.yml -f bondlink/docker-compose.override.yml config
 ```
 
 **Gotcha** (same as the 5.0 port): Compose resolves relative bind-mount paths
