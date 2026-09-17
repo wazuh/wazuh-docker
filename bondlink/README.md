@@ -163,18 +163,91 @@ needed there, redeclaring a key just replaces its value. Verified live via
   compose override. The salt state (`salt/wazuh-docker/init.sls` in the salt
   repo) renders the real values to disk on every highstate — two new,
   distinct random values for the cluster key/masterkey (they no longer share
-  one value), plus a gitignored `bondlink/.env.secrets` consumed via
-  `env_file:` on `wazuh.master`/`wazuh.worker`/`wazuh.dashboard` — so none of
-  it is tracked in git going forward. **What's still outstanding**: the *live*
-  production cluster is still running on the old values (the tracked-file fix
-  doesn't itself rotate anything already deployed). That requires its own
-  careful rollout — several of these credentials don't take effect from an
-  env var change alone (the indexer's own accepted `admin`/`kibanaserver`
-  passwords need a Security REST API push before any restart, and the Wazuh
-  API's `wazuh-wui` password needs a `wazuh.yml`/Manager-API update, not just
-  a container restart) — validated on staging before it touches production.
-  Do this before the PR into `mblink/wazuh-docker`'s `main` is opened.
+  one value), plus a gitignored `bondlink/.env.secrets` consumed via `${VAR}`
+  substitution in `bondlink/docker-compose.override.yml`'s `environment:`
+  blocks (requires `--env-file bondlink/.env.secrets` on every `docker
+  compose` invocation — see Usage above; `env_file:` doesn't work here since
+  `multi-node/docker-compose.yml` already sets these same keys directly) —
+  so none of it is tracked in git going forward. **What's still outstanding**:
+  the *live* production cluster is still running on the old values (the
+  tracked-file fix doesn't itself rotate anything already deployed). That
+  requires its own careful rollout — several of these credentials don't take
+  effect from an env var change alone; see "Rotating live secrets" below —
+  validated on staging before it touches production. Do this before the PR
+  into `mblink/wazuh-docker`'s `main` is opened.
 - `internal_users.yml` — unmodified from stock; the source fork never touched it either, so nothing to port.
+
+## Rotating live secrets
+
+Rendering new credentials to disk (via the salt state) and restarting a
+service are **not** the same thing for every credential here. Some take
+effect immediately on restart; the indexer's own `admin`/`kibanaserver`
+passwords don't, and skipping this step breaks Filebeat/vulnerability-
+detection auth and dashboard login the moment you restart with new values.
+
+**Why**: `INDEXER_USERNAME`/`INDEXER_PASSWORD` and `DASHBOARD_USERNAME`/
+`DASHBOARD_PASSWORD` only configure what `wazuh.master`/`wazuh.worker`/
+`wazuh.dashboard` *present* when authenticating to the indexer. The
+indexer's own security index — what it actually *accepts* — is seeded once
+from `multi-node/config/wazuh_indexer/internal_users.yml` at first bootstrap
+and is never touched again by an env var change or a config re-render. On
+any indexer that's already bootstrapped (which is every real deployment
+except a genuinely fresh volume), changing `INDEXER_PASSWORD`/
+`DASHBOARD_PASSWORD` and restarting does nothing but break auth until the
+live security index is updated to match.
+
+**How**: `bondlink/scripts/rotate-indexer-secrets.sh` pushes the new
+`admin`/`kibanaserver` passwords (read from `bondlink/.env.secrets`, already
+salt-rendered) into the *live* security index via the OpenSearch Security
+REST API, authenticated with the `admin_dn` client cert — the same mTLS
+bypass `snapshot_index.py`'s `restore_snapshot()`/`delete_snapshot()` already
+use for the same reason (it works regardless of what the *current* password
+is, so the script never needs to know it):
+
+```
+bondlink/scripts/rotate-indexer-secrets.sh                  # localhost:9200
+bondlink/scripts/rotate-indexer-secrets.sh wazuh1.indexer:9200
+```
+
+**Full rollout order** (staging or production — the only difference is
+whether production needs the master/worker/indexer/dashboard restarts done
+one host at a time to avoid a full outage):
+
+1. Apply the salt `wazuh-docker` state — renders `bondlink/.env.secrets` and
+   substitutes the new cluster key/masterkey into the tracked conf/yml files.
+   Nothing is restarted yet.
+2. Run `bondlink/scripts/rotate-indexer-secrets.sh` against a running
+   indexer — pushes the new `admin`/`kibanaserver` passwords live, before
+   anything else changes. Do this *before* step 3, or there's a window where
+   the manager/dashboard already expect the new password but the indexer
+   doesn't accept it yet.
+3. Update the Wazuh API's `wazuh-wui` password separately if it changed —
+   `wazuh_app_config.sh` only writes `wazuh.yml` once (guarded by a marker
+   already present on any volume that's booted before), so changing
+   `API_PASSWORD` and restarting the dashboard does nothing on its own. Use
+   the Wazuh Manager API's user-update endpoint (`PUT /security/users/{id}`)
+   to change the real `wazuh-wui` password directly, or clear the relevant
+   `wazuh.yml` stanza so `wazuh_app_config.sh` re-writes it on next boot.
+4. Restart `wazuh.master` + `wazuh.worker` together — new cluster key (must
+   match on both) and new `INDEXER_USERNAME`/`PASSWORD`, which the indexer
+   now actually accepts from step 2.
+5. Restart the indexer nodes — new
+   `plugins.query.datasources.encryption.masterkey`. Low risk: confirm no
+   configured datasources exist first (`_plugins/_query/_datasources`)
+   before rotating, since nothing here currently appears to use OpenSearch's
+   external-datasources feature.
+6. Restart `wazuh.dashboard` — new `API_PASSWORD`/`DASHBOARD_PASSWORD`, both
+   already live from steps 2-3.
+7. Validate: `_cluster/health` green, dashboard login with the new admin
+   password, API connectivity, Filebeat shipping resumes, agent data still
+   flowing.
+
+On a genuinely fresh volume wipe (`docker compose down -v`, e.g. disposable
+staging), `internal_users.yml`'s stock hash is still what the indexer boots
+with — step 2 is exactly as necessary there as it is on a live, never-wiped
+cluster, since nothing about a fresh bootstrap changes what's baked into
+that file. That makes a wiped staging bring-up a faithful rehearsal of the
+real production sequence above, not a shortcut around it.
 
 ## Warm-host deployment note
 
