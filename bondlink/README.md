@@ -1,16 +1,18 @@
 # BondLink overlay for wazuh-docker
 
-**Status: live, not yet merged.** This overlay is the actual, currently-running
-production Wazuh deployment — cut over from the old ad-hoc
-`/src/wazuh-docker-4.10` fork on 2026-09-17, checked out at `/src/wazuh-docker`
-on this branch, `4.10-align` (see the History section below for how it got
-here). The PR into `mblink/wazuh-docker`'s `main` has **not** been opened yet
-— secrets rotation (see "Not ported" below) is the last precondition for
-that. The real values no longer live in this repo's tracked files (fixed via
-a salt-rendered secrets pipeline, see below), but rotating the *live*
-cluster's actual passwords/keys to match is still outstanding. The
-checked-out production host still tracks this branch directly until the PR
-merges and it can be pointed at `main`.
+**Status: live, secrets rotated, not yet merged.** This overlay is the
+actual, currently-running production Wazuh deployment — cut over from the
+old ad-hoc `/src/wazuh-docker-4.10` fork on 2026-09-17, checked out on this
+branch, `4.10-align` (see the History section below for how it got here).
+The checkout path is whatever `salt/wazuh-docker/init.sls`'s `checkout_dir`
+currently targets (renamed at least once already — check that file rather
+than trusting a specific path written here). The PR into
+`mblink/wazuh-docker`'s `main` has **not** been opened yet, but its last
+precondition — rotating the secrets tracked in this repo *and* the live
+cluster's actual passwords/keys to match — is now done (see "Not ported"
+below and "Rotating live secrets"). The checked-out production host still
+tracks this branch directly until the PR merges and it can be pointed at
+`main`.
 
 Purpose: `bondlink/` is a pure compose-overlay carrying forward BondLink's
 production customizations (email alerting, warm indexer tier + ISM lifecycle
@@ -29,11 +31,8 @@ migration once those images ship; this overlay isn't going anywhere until then.
 
 **Next steps** (not yet done, tracked here so they aren't lost):
 
-- Rotate the *live* cluster's secrets to match the new pillar-sourced values
-  (see "Not ported" below) — the salt-side pipeline and this repo's own
-  tracked files are ready; the running production containers still hold the
-  old values until that rollout executes.
-- Open the PR into `mblink/wazuh-docker`'s `main` once the above is done.
+- Open the PR into `mblink/wazuh-docker`'s `main` — the secrets-rotation
+  precondition is done (see "Not ported" below).
 - Sync the ~75 commits `4.10-align`'s base is currently behind
   `wazuh/wazuh-docker`'s `main` — the next real chunk of work on this line
   after the PR lands, likely its own branch following the same
@@ -49,9 +48,13 @@ without ever being renamed. The branch's base commit *was* upstream's
 `v4.14.0` tag exactly, plus the commits that added, live-validated, and
 eventually cut production over to this overlay on 2026-09-17 (see "Live
 validation results" below for the pre-cutover validation). Production runs
-this branch directly, checked out at `/src/wazuh-docker`; the branch has not
-yet been merged into `main` or opened as a PR against `mblink/wazuh-docker` —
-that's blocked only on the live secrets rotation described below.
+this branch directly (see `salt/wazuh-docker/init.sls`'s `checkout_dir` for
+the current path — it's been renamed at least once, most recently on
+2026-09-18 while chasing the bind-mount/git-checkout conflict described in
+"Rotating live secrets"); the branch has not yet been merged into `main` or
+opened as a PR against `mblink/wazuh-docker`, but the secrets rotation that
+was the last blocker for that is now done, live, and validated (cluster
+green, dashboard login, API connectivity, agent data flowing).
 
 ## Repository structure
 
@@ -80,25 +83,38 @@ Run from this worktree's root:
 
 ```
 docker compose \
-  --env-file bondlink/.env.secrets \
+  --env-file /etc/wazuh-docker-runtime/bondlink/.env.secrets \
   -f multi-node/docker-compose.yml \
   -f bondlink/docker-compose.override.yml \
   up -d
 ```
 
-`--env-file bondlink/.env.secrets` is required, not optional. It's what
-resolves the `${API_PASSWORD}`/`${INDEXER_PASSWORD}`/etc. `${VAR}`
-substitutions in `bondlink/docker-compose.override.yml`'s `environment:`
-blocks (salt-rendered, see `salt/wazuh-docker/init.sls`'s
-`wazuh-docker-env-secrets` state) -- deliberately *not* `env_file:` on those
-services, since `multi-node/docker-compose.yml` already sets these same keys
-via its own `environment:` entries, and Compose's `environment:` always wins
-over `env_file:` for a shared key regardless of which merged file it came
-from. Without `--env-file`, the `${VAR}` references resolve to empty strings,
-not silently to the upstream stock example values.
+`--env-file` is required, not optional, and points at `/etc/wazuh-docker-
+runtime/` (salt-rendered, outside this git checkout — see "Rotating live
+secrets" for why it lives there rather than at `bondlink/.env.secrets`
+directly), not this checkout. It's what resolves the
+`${API_PASSWORD}`/`${INDEXER_PASSWORD}`/etc. `${VAR}` substitutions in
+`bondlink/docker-compose.override.yml`'s `environment:` blocks (salt-rendered
+by `salt/wazuh-docker/init.sls`'s `wazuh-docker-env-secrets` state) --
+deliberately *not* `env_file:` on those services, since
+`multi-node/docker-compose.yml` already sets these same keys via its own
+`environment:` entries, and Compose's `environment:` always wins over
+`env_file:` for a shared key regardless of which merged file it came from.
+Without `--env-file`, the `${VAR}` references resolve to empty strings, not
+silently to the upstream stock example values.
 
-Cert generation (run once, before `up`, after adding wazuh-warm1.indexer to
-bondlink/config/certs.yml):
+Cert generation (run once per checkout, before `up`, after adding
+wazuh-warm1.indexer to bondlink/config/certs.yml). **Certs are gitignored
+and live under `multi-node/config/wazuh_indexer_ssl_certs/`, inside this
+checkout** — they do not survive a move to a different checkout directory
+(confirmed live 2026-09-18, moving to a renamed checkout: every missing
+`.pem` bind-mount source got silently auto-created by Docker as an empty
+*directory* instead of erroring, which then made the generator's own `cp`
+step fail with `cannot overwrite directory ... with non-directory` for
+whichever certs it reached first). If you ever move or recreate this
+checkout, clear any such empty-directory stubs first
+(`find multi-node/config/wazuh_indexer_ssl_certs -mindepth 1 -maxdepth 1
+-type d -empty -exec rmdir {} +`), then generate fresh:
 
 ```
 docker compose \
@@ -119,7 +135,7 @@ Always sanity-check a merged config before applying changes (include
 show as empty rather than reflecting what actually gets passed to `up`):
 
 ```
-docker compose --env-file bondlink/.env.secrets -f multi-node/docker-compose.yml -f bondlink/docker-compose.override.yml config
+docker compose --env-file /etc/wazuh-docker-runtime/bondlink/.env.secrets -f multi-node/docker-compose.yml -f bondlink/docker-compose.override.yml config
 ```
 
 **Gotcha** (same as the 5.0 port): Compose resolves relative bind-mount paths
@@ -152,7 +168,7 @@ needed there, redeclaring a key just replaces its value. Verified live via
 ## Not ported (deliberately out of scope for this overlay)
 
 - `index_scripts/` (reindex/legacy-agent-ID remap) and `volume-migrator.sh` — one-time historical data-migration tools tied to a specific past cutover (the `prodmonitor` → `wazuh.master` migration), not general features.
-- **Secrets rotation — tracked files fixed, live rotation still outstanding.**
+- **Secrets rotation — done, tracked files and the live cluster.**
   The real Wazuh cluster key and indexer datasources masterkey used to be
   plaintext in tracked files here (`config/wazuh_cluster/*.conf`,
   `config/wazuh_indexer/*.yml`), reused as the *same* value across two
@@ -162,20 +178,20 @@ needed there, redeclaring a key just replaces its value. Verified live via
   dashboard (`kibanaserver`), and indexer (`admin`) credentials now live in
   the salt `wazuh-cluster-configuration` pillar instead of an unset/stock
   compose override. The salt state (`salt/wazuh-docker/init.sls` in the salt
-  repo) renders the real values to disk on every highstate — two new,
-  distinct random values for the cluster key/masterkey (they no longer share
-  one value), plus a gitignored `bondlink/.env.secrets` consumed via `${VAR}`
-  substitution in `bondlink/docker-compose.override.yml`'s `environment:`
-  blocks (requires `--env-file bondlink/.env.secrets` on every `docker
-  compose` invocation — see Usage above; `env_file:` doesn't work here since
-  `multi-node/docker-compose.yml` already sets these same keys directly) —
-  so none of it is tracked in git going forward. **What's still outstanding**:
-  the *live* production cluster is still running on the old values (the
-  tracked-file fix doesn't itself rotate anything already deployed). That
-  requires its own careful rollout — several of these credentials don't take
-  effect from an env var change alone; see "Rotating live secrets" below —
-  validated on staging before it touches production. Do this before the PR
-  into `mblink/wazuh-docker`'s `main` is opened.
+  repo) renders the real values into `/etc/wazuh-docker-runtime/` on every
+  highstate — two new, distinct random values for the cluster key/masterkey
+  (they no longer share one value), plus a gitignored `bondlink/.env.secrets`
+  (also rendered there) consumed via `${VAR}` substitution in
+  `bondlink/docker-compose.override.yml`'s `environment:` blocks (requires
+  `--env-file /etc/wazuh-docker-runtime/bondlink/.env.secrets` on every
+  `docker compose` invocation — see Usage above; `env_file:` doesn't work
+  here since `multi-node/docker-compose.yml` already sets these same keys
+  directly) — so none of it is tracked in git going forward. The live
+  production cluster was rotated to match on 2026-09-18 and validated:
+  cluster green, dashboard login with the new credentials, API connectivity,
+  agent data flowing. See "Rotating live secrets" below for how, including
+  two real bugs hit and fixed along the way (a bind-mount/git-checkout
+  conflict, and a username mismatch on the dashboard's backend account).
 - `internal_users.yml` — unmodified from stock; the source fork never touched it either, so nothing to port.
 
 ## Rotating live secrets
@@ -214,8 +230,9 @@ except a genuinely fresh volume), changing `INDEXER_PASSWORD`/
 live security index is updated to match.
 
 **How**: `bondlink/scripts/rotate-indexer-secrets.sh` pushes the new
-`admin`/`kibanaserver` passwords (read from `bondlink/.env.secrets`, already
-salt-rendered) into the *live* security index via the OpenSearch Security
+`admin`/`kibanaserver` passwords (read from `/etc/wazuh-docker-runtime/
+bondlink/.env.secrets`, already salt-rendered) into the *live* security
+index via the OpenSearch Security
 REST API, authenticated with the `admin_dn` client cert — the same mTLS
 bypass `snapshot_index.py`'s `restore_snapshot()`/`delete_snapshot()` already
 use for the same reason (it works regardless of what the *current* password
@@ -230,9 +247,10 @@ bondlink/scripts/rotate-indexer-secrets.sh wazuh1.indexer:9200
 whether production needs the master/worker/indexer/dashboard restarts done
 one host at a time to avoid a full outage):
 
-1. Apply the salt `wazuh-docker` state — renders `bondlink/.env.secrets` and
-   substitutes the new cluster key/masterkey into the tracked conf/yml files.
-   Nothing is restarted yet.
+1. Apply the salt `wazuh-docker` state — renders `.env.secrets` and the
+   cluster key/masterkey-substituted conf/yml files into
+   `/etc/wazuh-docker-runtime/`. Nothing is restarted yet, and nothing in
+   this checkout's own tracked files changes.
 2. Run `bondlink/scripts/rotate-indexer-secrets.sh` against a running
    indexer — pushes the new `admin`/`kibanaserver` passwords live, before
    anything else changes. Do this *before* step 3, or there's a window where

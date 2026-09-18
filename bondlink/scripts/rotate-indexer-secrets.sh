@@ -4,11 +4,13 @@
 # live secrets" for why this exists and where it fits in the rollout order
 # this script is one step of.
 #
-# Changing INDEXER_PASSWORD/DASHBOARD_PASSWORD in bondlink/.env.secrets (see
-# salt/wazuh-docker/init.sls's wazuh-docker-env-secrets state in the salt
-# repo) only changes what wazuh.master/worker/dashboard *present* when they
-# authenticate to the indexer -- it does not change what the indexer itself
-# accepts. That lives in the security index, seeded once from
+# Changing INDEXER_PASSWORD/DASHBOARD_PASSWORD in .env.secrets (rendered by
+# salt/wazuh-docker/init.sls's wazuh-docker-env-secrets state into
+# /etc/wazuh-docker-runtime/, not this checkout -- see that state and
+# README.md's "Rotating live secrets" for why) only changes what
+# wazuh.master/worker/dashboard *present* when they authenticate to the
+# indexer -- it does not change what the indexer itself accepts. That lives
+# in the security index, seeded once from
 # multi-node/config/wazuh_indexer/internal_users.yml at first bootstrap and
 # never touched again by env vars or config re-renders. On a running cluster
 # (or a disposable one deliberately left un-wiped to emulate one -- see
@@ -25,16 +27,17 @@
 #   bondlink/scripts/rotate-indexer-secrets.sh [indexer-host]
 #     indexer-host defaults to localhost:9200.
 #
-# Reads the new passwords from bondlink/.env.secrets (must already be
-# rendered -- see salt/wazuh-docker/init.sls). Reads the admin_dn cert from
-# multi-node/config/wazuh_indexer_ssl_certs/{admin,admin-key}.pem, matching
-# snapshot_index.py's DEFAULT_ADMIN_CERT_PATH/DEFAULT_ADMIN_KEY_PATH.
+# Reads the new passwords from /etc/wazuh-docker-runtime/bondlink/.env.secrets
+# (must already be rendered -- see salt/wazuh-docker/init.sls). Reads the
+# admin_dn cert from multi-node/config/wazuh_indexer_ssl_certs/{admin,admin-key}.pem
+# (inside this checkout -- certs aren't part of the runtime_dir treatment),
+# matching snapshot_index.py's DEFAULT_ADMIN_CERT_PATH/DEFAULT_ADMIN_KEY_PATH.
 set -euo pipefail
 
 cd "$(sudo -u bldeploy git rev-parse --show-toplevel)"
 
 INDEXER_HOST="${1:-localhost:9200}"
-ENV_SECRETS="bondlink/.env.secrets"
+ENV_SECRETS="/etc/wazuh-docker-runtime/bondlink/.env.secrets"
 ADMIN_CERT="multi-node/config/wazuh_indexer_ssl_certs/admin.pem"
 ADMIN_KEY="multi-node/config/wazuh_indexer_ssl_certs/admin-key.pem"
 
@@ -80,8 +83,10 @@ push_password kibanaserver "$DASHBOARD_PASSWORD"
 cat <<EOF
 
 Done. Next steps (see README.md "Rotating live secrets" for the full order):
-  1. If wazuh-wui's API password also changed, update it separately (Manager
-     API or wazuh.yml -- this script only covers the indexer's own users).
+  1. wazuh-wui's API password keeps itself in sync automatically as long as
+     wazuh.master and wazuh.dashboard both restart (salt's own
+     wazuh-docker-wazuh-yml-api-password state handles it) -- no manual
+     step here unless you need it live without restarting wazuh.master.
   2. Restart wazuh.master + wazuh.worker together (new INDEXER_PASSWORD/
      cluster key), then the indexer nodes, then wazuh.dashboard.
   3. Validate: dashboard login, API connectivity, Filebeat shipping resumes.
