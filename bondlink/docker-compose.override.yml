@@ -202,6 +202,30 @@ services:
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
       - /mnt/backups:/mnt/backups:shared
 
+  # nginx.conf's stream{} block resolves wazuh.master/wazuh.worker's
+  # hostnames to container IPs once, at nginx's own startup -- there's no
+  # resolver directive, so it never re-resolves after that. Every time
+  # master/worker get recreated (a new internal Docker IP each time),
+  # nginx keeps trying the stale IP until something restarts nginx itself,
+  # surfacing as "no live upstreams while connecting to upstream" for every
+  # agent trying to ship data on 1514 -- confirmed live. depends_on's
+  # restart: true cascades a restart to nginx whenever either backend
+  # restarts, so this can't drift silently again. Must use the full map
+  # form for all three deps (can't mix short-list and long-map form for
+  # one service) -- wazuh.dashboard doesn't need restart: true since
+  # nothing here proxies to it, just kept for the same startup ordering
+  # upstream's own short-form list already provided.
+  nginx:
+    depends_on:
+      wazuh.master:
+        condition: service_started
+        restart: true
+      wazuh.worker:
+        condition: service_started
+        restart: true
+      wazuh.dashboard:
+        condition: service_started
+
   # Renamed away from amazon/cloudwatch-agent / alpine:latest -- the 4.10
   # source shadowed those public Docker Hub tags with locally-built images
   # of the same name, which is fragile on any host also running plain
