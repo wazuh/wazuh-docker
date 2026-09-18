@@ -185,6 +185,22 @@ effect immediately on restart; the indexer's own `admin`/`kibanaserver`
 passwords don't, and skipping this step breaks Filebeat/vulnerability-
 detection auth and dashboard login the moment you restart with new values.
 
+**Where the rendered files actually live**: `wazuh_manager.conf`,
+`wazuh_worker.conf`, the indexer ymls, and `wazuh.yml` are all bind-mounted
+into a container *by file*, not by directory. Docker's file-level bind
+mount turns that host path into a real mount point for as long as the
+container holding it is running (confirmed directly via
+`/proc/1/mountinfo`), and you can't `unlink` a mount point — which is
+exactly what `git`'s own checkout mechanism needs to do on every
+`force_reset`. Pointing a live bind mount straight at a path inside this
+checkout means the checkout step itself randomly fails ("device or
+resource busy") any time the corresponding container happens to be running
+when salt applies — confirmed live on production. So the salt state
+renders these files into `/etc/wazuh-docker-runtime/` instead (outside the
+git checkout entirely) and `docker-compose.override.yml`/
+`docker-compose-warm.yml` mount from there — the checkout itself is never
+bind-mounted into anything, so it can always be freely refreshed.
+
 **Why**: `INDEXER_USERNAME`/`INDEXER_PASSWORD` and `DASHBOARD_USERNAME`/
 `DASHBOARD_PASSWORD` only configure what `wazuh.master`/`wazuh.worker`/
 `wazuh.dashboard` *present* when authenticating to the indexer. The
@@ -221,14 +237,32 @@ one host at a time to avoid a full outage):
    anything else changes. Do this *before* step 3, or there's a window where
    the manager/dashboard already expect the new password but the indexer
    doesn't accept it yet.
-3. Update the Wazuh API's `wazuh-wui` password separately if it changed —
-   `wazuh_app_config.sh` only writes `wazuh.yml` once (it `grep`s for a
-   hardcoded host-block marker and skips writing if found), so changing
-   `API_PASSWORD` and restarting the dashboard does nothing on its own.
+3. `wazuh-wui`'s password now keeps itself in sync automatically — no
+   manual step needed here. Salt's `wazuh-docker-wazuh-yml-api-password`
+   state rewrites `wazuh.yml`'s password field (in `/etc/wazuh-docker-
+   runtime/`, not this checkout — see below) to match `API_PASSWORD` on
+   every highstate, and the manager's own `create_user.py` unconditionally
+   re-applies `API_PASSWORD` to the real `wazuh-wui` account on every boot.
+   As long as step 4 restarts `wazuh.master` and step 6 restarts
+   `wazuh.dashboard`, both sides land on the same password with nothing
+   manual required.
 
-   **Preferred: the Wazuh Manager API's user-update endpoint.** Authenticate
-   with the *current* `wazuh-wui` credentials, look up its user ID, then PUT
-   the new password:
+   The one thing that still has to hold: the target password must satisfy
+   the Wazuh API's own complexity policy (8–64 chars, upper/lower/digit,
+   and a symbol from its allowed set) — confirmed live, a manager whose
+   `create_user.py` rejects the configured password with `WazuhError 5007`
+   never actually applies it, silently leaving the *previous* real
+   password in place while everything else proceeds as if the rotation
+   succeeded. Nothing in that path surfaces as an obvious error later; it
+   just shows up as unexplained `401`s the next time something tries to
+   log in.
+
+   If you need the new password live *without* restarting `wazuh.master`
+   (an emergency rotation, say), push it directly via the Wazuh Manager
+   API instead, authenticated with the *current* `wazuh-wui` credentials —
+   no restart needed for this path, but it only updates the manager's
+   real password, not `wazuh.yml`'s copy, so the dashboard will still need
+   a restart afterward to pick it up:
 
    ```
    TOKEN=$(curl -sk -u "wazuh-wui:${OLD_API_PASSWORD}" \
@@ -243,29 +277,6 @@ one host at a time to avoid a full outage):
      -X PUT "https://wazuh.master:55000/security/users/${USER_ID}" \
      -d "{\"password\": \"${API_PASSWORD}\"}"
    ```
-
-   No restart needed — the new password is live on the manager immediately.
-   Confirm the target password satisfies the API's password-complexity
-   policy (upper/lower/digit, 8+ characters) before pushing; a value that
-   fails the check returns a 400 with no side effects, which is at least
-   safe to retry.
-
-   **Avoid the alternative** of deleting `wazuh.yml` to force
-   `wazuh_app_config.sh` to re-write it on next boot. It's conceptually
-   simpler but operationally fragile: this file is bind-mounted from the
-   host into a path that's *also* inside the `wazuh-dashboard-config` named
-   volume, and if the host-side file goes missing (or gets recreated without
-   also existing inside the volume's own copy of that path), the dashboard
-   container fails to start entirely with a `runc create failed: ... no such
-   file or directory` mount error — confirmed live on staging, twice, with
-   two different partial fixes before a full container removal was needed to
-   recover. If you do need this path (e.g. `wazuh-wui`'s password is
-   otherwise unrecoverable), touch an empty replacement file at both the
-   host bind-mount source *and* inside the named volume
-   (`docker run --rm -v multi-node_wazuh-dashboard-config:/vol busybox touch
-   /vol/wazuh.yml`) before recreating the container, and expect to need
-   `docker compose rm -f wazuh.dashboard` rather than just
-   `--force-recreate` if it's already failed once.
 4. Restart `wazuh.master` + `wazuh.worker` together — new cluster key (must
    match on both) and new `INDEXER_USERNAME`/`PASSWORD`, which the indexer
    now actually accepts from step 2.
@@ -289,7 +300,7 @@ real production sequence above, not a shortcut around it.
 
 ## Warm-host deployment note
 
-`docker-compose-warm.yml` expects `./config/wazuh_indexer_ssl_certs/{root-ca,wazuh-warm1.indexer,wazuh-warm1.indexer-key,admin,admin-key}.pem`, `./config/wazuh_indexer/wazuh-warm1.indexer.yml`, and `./config/wazuh_indexer/internal_users.yml` relative to wherever it's run. Since the warm node deploys on a separate host, copy those specific files there alongside this compose file — the cert-generator step above produces the `.pem` files on the main host under `multi-node/config/wazuh_indexer_ssl_certs/`.
+`docker-compose-warm.yml` expects `./config/wazuh_indexer_ssl_certs/{root-ca,wazuh-warm1.indexer,wazuh-warm1.indexer-key,admin,admin-key}.pem` and `./config/wazuh_indexer/internal_users.yml` relative to wherever it's run, plus `/etc/wazuh-docker-runtime/wazuh-warm1.indexer.yml` (an absolute path, not relative to this compose file). Since the warm node deploys on a separate host — one this salt state doesn't manage — copy these over manually: the certs and `internal_users.yml` alongside this compose file as before (the cert-generator step above produces the `.pem` files on the main host under `multi-node/config/wazuh_indexer_ssl_certs/`), and `wazuh-warm1.indexer.yml` from the main host's `/etc/wazuh-docker-runtime/wazuh-warm1.indexer.yml` (already salt-rendered with the real masterkey) to the same absolute path on the warm host. Re-copy that last file after any masterkey rotation.
 
 ## Syncing with upstream Wazuh releases
 

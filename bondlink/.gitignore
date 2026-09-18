@@ -9,10 +9,14 @@
 # Note: config/wazuh_cluster/*.conf and config/wazuh_indexer/*.yml here carry
 # only an obvious placeholder (__WAZUH_CLUSTER_KEY__ /
 # __WAZUH_INDEXER_DATASOURCES_KEY__) for the cluster key / indexer datasources
-# masterkey, not the real value -- salt/wazuh-docker/init.sls's file.replace
-# states substitute the real pillar-sourced value on every highstate. A
-# deployed checkout will therefore always show these files (and the
-# wazuh1/2/3/warm1 indexer ymls) as locally modified in `git status`; that's
-# expected on a deployment target and not something to "fix" by committing
-# from there. See README.md's "History" section for how this replaced the
-# real secrets that used to be tracked here.
+# masterkey, not the real value. salt/wazuh-docker/init.sls copies these
+# (and multi-node/config/wazuh_dashboard/wazuh.yml) into /etc/wazuh-docker-
+# runtime/ and substitutes the real pillar-sourced values THERE, never in
+# this checkout -- deliberately, since docker-compose.override.yml's file-
+# level bind mounts turn a path into a real host mount point for as long as
+# the container holding it runs, and git's own checkout mechanism can't
+# unlink a mount point (confirmed live: "device or resource busy" during
+# github_checkout's force_reset). This checkout's own tracked files are
+# therefore never modified in place and a deployed checkout's `git status`
+# should stay clean. See README.md's "History" section for how the
+# placeholder replaced the real secrets that used to be tracked here.

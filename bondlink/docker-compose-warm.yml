@@ -10,8 +10,16 @@
 # but the actual tracked files were named without the "1" suffix
 # (wazuh-warm.indexer.yml) -- as committed, that file would have failed to
 # start. This port standardizes on the "1" suffix everywhere (matching
-# certs.yml and every hot node's NODES_DN entry), and the certs/config here
-# are the corresponding bondlink/config/wazuh_indexer/wazuh-warm1.indexer.yml.
+# certs.yml and every hot node's NODES_DN entry).
+#
+# opensearch.yml is mounted from /etc/wazuh-docker-runtime/ (salt-rendered
+# on the main host, real masterkey already substituted -- see
+# salt/wazuh-docker/init.sls in the salt repo), not from this checkout,
+# same reason as docker-compose.override.yml's indexer mounts: a live file
+# bind mount turns that path into a real mount point on the host, and
+# github_checkout's force_reset can't unlink a mount point. Since this warm
+# host isn't the salt-managed checkout host, copy that one file over
+# alongside the certs -- see README.md's "Warm-host deployment note".
 services:
   wazuh-warm1.indexer:
     # Pinned by digest -- see bondlink/docker-compose.override.yml for why.
@@ -42,7 +50,7 @@ services:
       - ./config/wazuh_indexer_ssl_certs/wazuh-warm1.indexer.pem:/usr/share/wazuh-indexer/config/certs/wazuh-warm1.indexer.pem
       - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
       - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
-      - ./config/wazuh_indexer/wazuh-warm1.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
+      - /etc/wazuh-docker-runtime/wazuh-warm1.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
       - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
 
 volumes:
