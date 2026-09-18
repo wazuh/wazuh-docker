@@ -9,7 +9,29 @@ Follow these steps to deploy the Wazuh agent using Docker.
     cd wazuh-agent
     ```
 
-2.  Edit the `docker-compose.yml` file. You need to update the `WAZUH_MANAGER_ENDPOINT` environment variable with the IP address or hostname of your Wazuh manager.
+2.  Edit the `docker-compose.yml` file. You need an enrollment token, minted by
+    your Wazuh manager, in the `WAZUH_ENROLLMENT_TOKEN` environment variable —
+    this is the only way to enroll, there is no password-based path any more.
+
+    Mint one against the manager's API (`wazuh`/`wazuh` on a deployment that has
+    not been through [Credentials](../../credentials.md) yet):
+
+    ```bash
+    curl -k -u wazuh:wazuh -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/security/user/authenticate"
+    # -> {"data": {"token": "<JWT>"}}
+
+    curl -k -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/agents/enrollment-tokens" \
+      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+      -d '{"address": "<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>", "embed_ca": true}'
+    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
+    ```
+
+    `embed_ca: true` puts the manager's own CA inside the token, so the agent
+    trusts it without any `WAZUH_MANAGER_CA`/`WAZUH_AGENT_SSL_VERIFICATION`
+    configuration below — the token supplies its own trust anchor. Omit it for a
+    token that only pins the CA's fingerprint instead of carrying the whole
+    certificate; see the manager's `POST /agents/enrollment-tokens` reference for
+    the rest of the fields (`ttl`, `max_uses`, `prefix`, `description`).
 
     Locate the `environment` section for the agent service and update it as follows:
     ```yaml
@@ -18,13 +40,10 @@ Follow these steps to deploy the Wazuh agent using Docker.
     #   wazuh-agent:
     #     ...
     environment:
-      - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
+      - WAZUH_ENROLLMENT_TOKEN=<ENROLLMENT TOKEN MINTED ABOVE>
       - WAZUH_AGENT_NAME=<YOUR_AGENT_NAME>
-      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
     #     ...
     ```
-    **Note:** Replaces `<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>` with the actual IP address or hostname of your Wazuh manager.
-    **Note:** Replaces `<authd.pass-PASSWORD>` with the password configured in the `/var/wazuh-manager/etc/authd.pass` file of the Wazuh manager server where you will connect.
 
     The container writes `/var/ossec/etc/ossec.conf` with the following
     variables the first time it starts. `/var/ossec/etc` is persisted in the
@@ -34,14 +53,30 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     | Variable | Default | Configuration set |
     | - | - | - |
-    | `WAZUH_MANAGER_ENDPOINT` | None | `<agent><manager><endpoint>`, whole |
-    | `WAZUH_MANAGER_SERVER` | None | Host of `<agent><manager><endpoint>` |
-    | `WAZUH_MANAGER_PORT` | `1517` | Port of `<agent><manager><endpoint>` |
+    | `WAZUH_ENROLLMENT_TOKEN` | None | `<agent><manager><endpoint>`, decoded from the token; the token itself staged at `/var/ossec/etc/enrollment_token` (`0600 root:root`) for the agent to bootstrap from at its first start |
+    | `WAZUH_MANAGER_ENDPOINT` | None | `<agent><manager><endpoint>`, whole — without a token, see the note below |
+    | `WAZUH_MANAGER_SERVER` | None | Host of `<agent><manager><endpoint>` — without a token |
+    | `WAZUH_MANAGER_PORT` | `1517` | Port of `<agent><manager><endpoint>` — without a token |
     | `WAZUH_AGENT_NAME` | `wazuh-agent-<container hostname>` | `<agent><enrollment><agent_name>` |
-    | `WAZUH_REGISTRATION_PASSWORD` | None | `/var/ossec/etc/authd.pass` |
-    | `WAZUH_MANAGER_CA` | None | `<agent><ssl><certificate_authorities>` |
+    | `WAZUH_MANAGER_CA` | None | `<agent><ssl><certificate_authorities>` — without a token; a token that embeds the CA needs none of this |
     | `WAZUH_AGENT_SSL_VERIFICATION` | Inferred | `<agent><ssl><verification_mode>` |
     | `WAZUH_AGENT_SSL_CERT` / `WAZUH_AGENT_SSL_KEY` | None | `<agent><ssl><certificate>` / `<key>` |
+
+    **Note:** A rejected token (expired, revoked, already at `max_uses`, or
+    malformed) makes the container exit before writing anything, naming the
+    reason:
+
+    ```text
+    ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder (wazuh-agentd --show-token exited 2):
+    wazuh-agentd: invalid enrollment token: malformed token.
+    ```
+
+    **Note:** `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` are for an agent
+    that does *not* need to enroll here — one already carrying its own
+    `client.keys` and trust anchor (mounted, or kept in `wazuh_agent_etc` from a
+    previous container) that just needs to be told where to connect. They are
+    refused alongside `WAZUH_ENROLLMENT_TOKEN`, which already carries the
+    address.
 
     **Note:** The agent addresses the manager through a single endpoint,
     `host[:port][/prefix]`. A component left out is filled in with its default,
@@ -63,13 +98,13 @@ Follow these steps to deploy the Wazuh agent using Docker.
     environment:
       - WAZUH_MANAGER_SERVER=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>
       - WAZUH_MANAGER_PORT=1517
-      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
     ```
 
     `WAZUH_MANAGER_ENDPOINT` wins when both are set, and the other two are then
-    not read at all. One of the two forms is required: with neither, the
-    container logs the reason and exits rather than starting an agent that
-    could only retry against an unconfigured manager.
+    not read at all. One of `WAZUH_ENROLLMENT_TOKEN`, `WAZUH_MANAGER_ENDPOINT` or
+    `WAZUH_MANAGER_SERVER` is required: with none of them, the container logs the
+    reason and exits rather than starting an agent that could only retry against
+    an unconfigured manager.
 
     Either way the single `<endpoint>` is the only configuration written, and it
     is written in full. The `<address>` and `<port>` tags it replaced are never
@@ -84,21 +119,23 @@ Follow these steps to deploy the Wazuh agent using Docker.
       - WAZUH_MANAGER_ENDPOINT=[fe80::1%25eth0]:1517/wazuh-manager/
     ```
 
-    **Note:** `WAZUH_REGISTRATION_SERVER` and `WAZUH_REGISTRATION_PORT` are not
-    supported and configure nothing, because enrollment reuses the agent
-    connection instead of reaching `authd` separately. The container logs a
-    warning when either is set.
+    **Note:** `WAZUH_REGISTRATION_SERVER`, `WAZUH_REGISTRATION_PORT` and
+    `WAZUH_REGISTRATION_PASSWORD` are not supported and configure nothing: the
+    first two because enrollment reuses the agent connection instead of reaching
+    `authd` separately, the third because there is no password-based enrollment
+    any more — see [Environment Variables](../../configuration/environment-variables.md#wazuh-agent).
+    The container logs a warning when any of them is set.
 
-    **Note:** The agent verifies the manager's TLS certificate. Left unconfigured
-    it verifies against the operating system trust store, which covers a manager
-    whose certificate chains to a publicly trusted CA and nothing else: a manager
-    presenting a certificate of its own, which is what a Wazuh manager does by
-    default, is refused. Give the agent the CA that signs it:
+    **Note:** Without a token, the agent verifies the manager's TLS certificate
+    itself. Left unconfigured it verifies against the operating system trust
+    store, which covers a manager whose certificate chains to a publicly trusted
+    CA and nothing else: a manager presenting a certificate of its own, which is
+    what a Wazuh manager does by default, is refused. Give the agent the CA that
+    signs it:
 
     ```yaml
     environment:
       - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
-      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
       - WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
     volumes:
       - ./root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro

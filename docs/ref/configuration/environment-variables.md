@@ -84,17 +84,47 @@ The Wazuh Agent container uses the following environment variables to dynamicall
 
 ```yaml
 environment:
-  - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
+  - WAZUH_ENROLLMENT_TOKEN=<token minted by the manager>
   - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
 **Variable Descriptions:**
 
-- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped.
+- `WAZUH_ENROLLMENT_TOKEN`: One-shot enrollment token, minted by the manager (`POST /agents/enrollment-tokens`). This is the only way to enroll — there is no password-based enrollment. The token's own address is what gets written to `<agent><manager><endpoint>`; mutually exclusive with `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` below, which the container refuses if both are set. See [Enrolling with a token](#enrolling-with-a-token).
 - `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
-- `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
-- `WAZUH_MANAGER_CA`: Path, inside the container, to the CA that signs the manager's HTTPS certificate. Written to `<agent><ssl><certificate_authorities>`. `WAZUH_REGISTRATION_CA`, the name the package installer uses for the same setting, is accepted as an alias.
+- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped. Only meaningful without a token — see [Setting the connection without a token](#setting-the-connection-without-a-token).
+- `WAZUH_MANAGER_CA`: Path, inside the container, to the CA that signs the manager's HTTPS certificate. Written to `<agent><ssl><certificate_authorities>`. `WAZUH_REGISTRATION_CA`, the name the package installer uses for the same setting, is accepted as an alias. Not needed with a token that embeds the manager's CA — see below.
+
+### Enrolling with a token
+
+`WAZUH_ENROLLMENT_TOKEN` decodes to the manager's address and, depending on how it
+was minted, either the manager's CA embedded in it or a pin to verify a fetched
+one against. Decoding happens twice: once here, by `wazuh-agentd --show-token`, to
+get the address for `<endpoint>`; and once more by the agent itself at its first
+start, which is what actually fetches the CA, verifies it, enrolls, and writes the
+trust anchor (`/var/ossec/etc/certs/root-ca.pem`) and `client.keys`. Neither
+`WAZUH_MANAGER_CA` nor `WAZUH_AGENT_SSL_VERIFICATION` is needed for this: the token
+supplies its own trust anchor.
+
+The token itself is staged at `/var/ossec/etc/enrollment_token`, mode `600`, owner
+`root:root`, and deleted by the agent once it has been consumed — successfully or
+not. A rejected token (expired, revoked, already used past `max_uses`, or simply
+malformed) makes the container exit before anything is written:
+
+```yaml
+environment:
+  - WAZUH_ENROLLMENT_TOKEN=eyJ2ZXIiOjEs...
+```
+
+```text
+ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder (wazuh-agentd --show-token exited 2):
+wazuh-agentd: invalid enrollment token: malformed token.
+```
+
+Restarting the same container (the same `/var/ossec/etc` volume) after a
+successful enrollment does nothing further: the manager placeholder is gone from
+`ossec.conf`, so the token is not read again, and the agent's own bootstrap is a
+no-op once `client.keys` and the trust anchor already exist.
 
 **Verifying the manager**
 
@@ -175,6 +205,14 @@ This zone id replaces the separate `<interface_index>` option used before.
 
 These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
 
+### Setting the connection without a token
+
+`WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` configure `<endpoint>` on their
+own, with no enrollment involved — for an agent that already has `client.keys`
+and a trust anchor of its own (mounted, or restored from a previous container's
+`/var/ossec/etc` volume) and just needs to be told where to connect. They are
+refused alongside `WAZUH_ENROLLMENT_TOKEN`, which already carries the address.
+
 **Setting the connection with separate address and port:**
 
 The connection may also be given as an address and a port instead of one value:
@@ -184,7 +222,6 @@ environment:
   - WAZUH_MANAGER_SERVER=wazuh.manager
   - WAZUH_MANAGER_PORT=1517
   - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
 - `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager. Becomes the host of `<endpoint>`.
@@ -197,10 +234,11 @@ read at all, not even to supply a component it left out: an endpoint without a
 port falls back to `1517`, never to `WAZUH_MANAGER_PORT`. The container logs a
 warning when both forms are set at once.
 
-One of the two forms is required. With neither, the container has no manager to
-connect to, so it logs the reason and exits instead of starting an agent that
-could only retry against a placeholder. The one case where both may be omitted is
-a deployment mounting its own `ossec.conf` at
+One of `WAZUH_ENROLLMENT_TOKEN`, `WAZUH_MANAGER_ENDPOINT` or `WAZUH_MANAGER_SERVER`
+is required. With none of them, the container has no manager to connect to, so it
+logs the reason and exits instead of starting an agent that could only retry
+against a placeholder. The one case where all three may be omitted is a
+deployment mounting its own `ossec.conf` at
 `/wazuh-config-mount/etc/ossec.conf`, which already carries a manager of its own.
 
 **Variables that are not supported:**
@@ -209,11 +247,14 @@ a deployment mounting its own `ossec.conf` at
 | - | - |
 | `WAZUH_REGISTRATION_SERVER` | The manager variables, enrollment reuses the agent connection |
 | `WAZUH_REGISTRATION_PORT` | The manager variables, enrollment reuses the agent connection |
+| `WAZUH_REGISTRATION_PASSWORD` | `WAZUH_ENROLLMENT_TOKEN` — there is no password-based enrollment |
 
-Neither configures anything, and the container logs a warning when one is set.
-They pointed enrollment at `authd` separately, which since 5.0.0 no longer
-happens: the agent enrolls through the manager connection it already has, so
-`<enrollment>` carries neither an address nor a port of its own.
+None of these configure anything, and the container logs a warning when one is
+set. The first two pointed enrollment at `authd` separately, which since 5.0.0 no
+longer happens: the agent enrolls through the manager connection it already has,
+so `<enrollment>` carries neither an address nor a port of its own. The token
+replaces the third for the same reason a 5.x manager only ever accepts a token:
+there is no manager version this password would still work against.
 
 ---
 

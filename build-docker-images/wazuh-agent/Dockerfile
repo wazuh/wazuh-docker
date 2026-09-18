@@ -8,15 +8,14 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG TINI_VERSION="v0.19.0"
-# These reach the package post-install as environment variables, and their values
-# are what it writes into the packaged ossec.conf. They are therefore the
-# placeholders the runtime init script substitutes, not real configuration.
-#
-# The package accepts either WAZUH_MANAGER_ENDPOINT or the WAZUH_MANAGER and
-# WAZUH_MANAGER_PORT pair, and only the endpoint is set here: one placeholder for
-# one <endpoint> tag, whichever pair the deployment then uses to fill it in. The
-# image therefore needs a package that understands WAZUH_MANAGER_ENDPOINT
-# (wazuh/wazuh#38624); against an older one the placeholder check below fails.
+# WAZUH_MANAGER_ENDPOINT here is a placeholder for the runtime init script to
+# substitute, not real configuration -- there is no manager to point at during a
+# build. It used to reach the package post-install as an environment variable
+# and get written into <endpoint> that way, but wazuh/wazuh#39285 (5.0.0) made
+# the package's own installer stop writing any address without a real
+# enrollment token, which a build obviously does not have. So it is written
+# below, into the packaged ossec.conf directly, instead of relying on the
+# installer for it.
 ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
@@ -49,13 +48,20 @@ RUN dnf install procps shadow-utils -y && \
     rm -rf /wazuh-agent.rpm && \
     dnf clean all
 
-# Fail the build if the package installer stops writing the placeholders that the
-# runtime init script substitutes: without them the manager endpoint and the agent
-# name are silently ignored at container start, which is how the port support was
-# lost once already (#2590).
-#
-# CHANGE_MANAGER_ENDPOINT is the only manager placeholder the init substitutes,
-# since <endpoint> is the only tag it configures.
+# Write the <endpoint> placeholder ourselves: the packaged ossec.conf ships with
+# a real default (<endpoint>IP:1517/wazuh-manager/</endpoint>), and nothing in
+# the installer replaces it with our placeholder any more (see the ARG comment
+# above), so this is the only thing that puts CHANGE_MANAGER_ENDPOINT there for
+# the runtime init script to find. Scoped to <manager> the same way the runtime
+# script scopes its own substitution, so a second <endpoint>-shaped tag
+# elsewhere in the file is never touched.
+RUN conf=/var/ossec/etc/ossec.conf; \
+    sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>${WAZUH_MANAGER_ENDPOINT}</endpoint>#" "$conf"
+
+# Fail the build if the above stops working, or if the package installer starts
+# writing the agent name placeholder somewhere this image does not expect:
+# without them the manager endpoint and the agent name are silently ignored at
+# container start, which is how the port support was lost once already (#2590).
 RUN conf=/var/ossec/etc/ossec.conf; \
     grep -q 'CHANGE_MANAGER_ENDPOINT' "$conf" || \
         { echo "ERROR: CHANGE_MANAGER_ENDPOINT is missing from the packaged ossec.conf"; exit 1; }; \

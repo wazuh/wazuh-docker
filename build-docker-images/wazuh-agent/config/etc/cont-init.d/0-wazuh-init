@@ -9,6 +9,7 @@ WAZUH_CONFIG_MOUNT=/wazuh-config-mount
 WAZUH_MANAGER_ENDPOINT=$WAZUH_MANAGER_ENDPOINT
 WAZUH_MANAGER_SERVER=$WAZUH_MANAGER_SERVER
 WAZUH_MANAGER_PORT=$WAZUH_MANAGER_PORT
+WAZUH_ENROLLMENT_TOKEN=$WAZUH_ENROLLMENT_TOKEN
 WAZUH_AGENT_NAME=${WAZUH_AGENT_NAME:-"wazuh-agent-$HOSTNAME"}
 
 # TLS material for the manager connection. WAZUH_REGISTRATION_CA and
@@ -150,6 +151,13 @@ warn_unsupported_vars() {
       print "WARNING: $var is not supported, it configures nothing. Enrollment reuses the manager connection, so it is the manager variables that set it."
     fi
   done
+
+  # There is no password-based enrollment left to fall back to: a 5.x agent
+  # only ever enrolls against a 5.x manager, and a 5.x manager only ever
+  # accepts a token. authd.pass is not written for any manager version.
+  if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
+    print "WARNING: WAZUH_REGISTRATION_PASSWORD is not supported, it configures nothing. Set WAZUH_ENROLLMENT_TOKEN to enroll instead."
+  fi
 }
 
 ##############################################################################
@@ -245,9 +253,77 @@ resolve_manager_endpoint() {
 }
 
 ##############################################################################
-# Allow users to set the manager endpoint, the agent name and the enrollment
-# password on container start. The manager endpoint also drives enrollment,
-# which reuses the agent connection since 5.0.0.
+# Decode WAZUH_ENROLLMENT_TOKEN into the manager address it carries, the same
+# way the packaged installer does it for a native install: the token is read
+# by the agent's own decoder (wazuh-agentd --show-token) rather than parsed in
+# shell, so a token this script accepts is exactly one the agent's first-start
+# bootstrap will accept too. It goes in on stdin, never as an argument, so it
+# never reaches `ps` output or gets echoed into the container log.
+#
+# The address is used verbatim, with none of resolve_manager_endpoint()'s
+# bracket/port/prefix handling: the token already carries the endpoint in its
+# final form, and re-normalizing it here would be a second implementation of a
+# rule the token's own decoder already enforces.
+#
+# Sets TOKEN_ADDRESS.
+##############################################################################
+
+decode_enrollment_token() {
+  local description status
+
+  description="$(printf '%s' "$WAZUH_ENROLLMENT_TOKEN" | "${WAZUH_INSTALL_PATH}/bin/wazuh-agentd" --show-token 2>&1)"
+  status=$?
+
+  if [ "$status" -ne 0 ]; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder (wazuh-agentd --show-token exited $status):"
+    print "$description"
+    exit 1
+  fi
+
+  TOKEN_ADDRESS="$(printf '%s\n' "$description" | sed -n 's/^adr: //p')"
+
+  if [ -z "$TOKEN_ADDRESS" ]; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN carries no address; nothing to connect to."
+    exit 1
+  fi
+}
+
+##############################################################################
+# Leave the token where wazuh-agentd picks it up once, at its first start.
+# w_agent_token_bootstrap() reads this file before dropping privileges,
+# fetches the manager's CA, checks it against the token's pin (or trusts an
+# embedded one), writes the trust anchor and client.keys, and deletes the file
+# on success. <endpoint> is the only thing this script writes from the token;
+# the anchor and the key are bootstrapped by the agent itself, not here.
+#
+# Root-only, unlike the old authd.pass: the agent reads it while still root, so
+# the wazuh user never needs it and must not be able to substitute the token
+# that chooses its certificate authority. Created and locked down before the
+# token is written into it, so the credential is never briefly world-readable
+# -- a reinstall would otherwise keep whatever mode the old file had.
+##############################################################################
+
+store_enrollment_token() {
+  local token_path="${WAZUH_INSTALL_PATH}/etc/enrollment_token"
+
+  : > "$token_path"
+  chmod 600 "$token_path"
+  chown root:root "$token_path"
+  printf '%s' "$WAZUH_ENROLLMENT_TOKEN" > "$token_path"
+
+  print "Enrollment token stored at $token_path; the trust anchor and client key are bootstrapped at the agent's first start."
+}
+
+##############################################################################
+# Allow users to set the manager endpoint and the agent name on container
+# start. The manager endpoint also drives enrollment, which reuses the agent
+# connection since 5.0.0.
+#
+# WAZUH_ENROLLMENT_TOKEN is the only way to enroll: its address is what gets
+# written to <endpoint>, and it is mutually exclusive with
+# WAZUH_MANAGER_ENDPOINT/WAZUH_MANAGER_SERVER, which exist for an agent that
+# does not need to enroll here (one bringing its own client.keys) and simply
+# needs an address.
 #
 # To use a configuration of your own instead:
 # 1. Create your own ossec.conf file
@@ -268,23 +344,33 @@ set_manager_conn() {
   # this is what keeps it from being rewritten.
   if ! grep -q "CHANGE_MANAGER_ENDPOINT" "$config"; then
     print "No manager placeholder in ossec.conf, keeping the configuration as it is."
-    set_agent_name_and_password "$config"
+    set_agent_name "$config"
     return
   fi
 
-  if [ -z "$WAZUH_MANAGER_ENDPOINT" ] && [ -z "$WAZUH_MANAGER_SERVER" ]; then
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ] && { [ -n "$WAZUH_MANAGER_ENDPOINT" ] || [ -n "$WAZUH_MANAGER_SERVER" ]; }; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN and WAZUH_MANAGER_ENDPOINT/WAZUH_MANAGER_SERVER are mutually exclusive. The token already carries the manager address; pass one or the other."
+    exit 1
+  fi
+
+  if [ -z "$WAZUH_ENROLLMENT_TOKEN" ] && [ -z "$WAZUH_MANAGER_ENDPOINT" ] && [ -z "$WAZUH_MANAGER_SERVER" ]; then
     print "ERROR: no manager address configured and ossec.conf still holds the packaged placeholder, so the agent has nothing to connect to."
-    print "Set WAZUH_MANAGER_ENDPOINT to the whole endpoint as host[:port][/prefix], for example wazuh.manager:1517/wazuh-manager/,"
+    print "Set WAZUH_ENROLLMENT_TOKEN to enroll with a token, the manager address is decoded from it,"
+    print "or set WAZUH_MANAGER_ENDPOINT to the whole endpoint as host[:port][/prefix], for example wazuh.manager:1517/wazuh-manager/,"
     print "or set WAZUH_MANAGER_SERVER (and optionally WAZUH_MANAGER_PORT) to the address and port,"
     print "or mount an ossec.conf of your own at $WAZUH_CONFIG_MOUNT/etc/ossec.conf."
     exit 1
   fi
 
-  if [ -n "$WAZUH_MANAGER_ENDPOINT" ] && [ -n "$WAZUH_MANAGER_SERVER" ]; then
-    print "WARNING: WAZUH_MANAGER_ENDPOINT and WAZUH_MANAGER_SERVER are both set. Using WAZUH_MANAGER_ENDPOINT and ignoring WAZUH_MANAGER_SERVER and WAZUH_MANAGER_PORT."
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+    decode_enrollment_token
+    MANAGER_ENDPOINT="$TOKEN_ADDRESS"
+  else
+    if [ -n "$WAZUH_MANAGER_ENDPOINT" ] && [ -n "$WAZUH_MANAGER_SERVER" ]; then
+      print "WARNING: WAZUH_MANAGER_ENDPOINT and WAZUH_MANAGER_SERVER are both set. Using WAZUH_MANAGER_ENDPOINT and ignoring WAZUH_MANAGER_SERVER and WAZUH_MANAGER_PORT."
+    fi
+    resolve_manager_endpoint
   fi
-
-  resolve_manager_endpoint
 
   # <endpoint> is the only tag configured here, whichever variables supplied the
   # value. <address> and <port> are never written: wazuh/wazuh#38624 folded them
@@ -297,29 +383,17 @@ set_manager_conn() {
   print "Manager endpoint: $MANAGER_ENDPOINT"
   sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$(escape_repl "$MANAGER_ENDPOINT")</endpoint>#" "$config"
 
-  set_agent_name_and_password "$config"
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+    store_enrollment_token
+  fi
+
+  set_agent_name "$config"
 }
 
-set_agent_name_and_password() {
+set_agent_name() {
   local config="$1"
 
   sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$(escape_repl "$WAZUH_AGENT_NAME")</agent_name>#g" "$config"
-  if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
-    # Keep the password out of any trace, then put tracing back the way it was.
-    # Switching it on unconditionally, which is what this used to do, left every
-    # command after this point echoing itself into the container log.
-    local xtrace=""
-    case "$-" in *x*) xtrace="on" ;; esac
-    set +x
-    cat << EOF > /var/ossec/etc/authd.pass
-$WAZUH_REGISTRATION_PASSWORD
-EOF
-    if [ "$xtrace" = "on" ]; then
-      set -x
-    fi
-  else
-    echo "WAZUH_REGISTRATION_PASSWORD is not set; the authd.pass configuration is omitted."
-  fi
 }
 
 ##############################################################################
