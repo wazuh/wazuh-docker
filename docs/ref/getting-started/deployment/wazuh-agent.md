@@ -120,6 +120,14 @@ Follow these steps to deploy the Wazuh agent using Docker.
     `<remote><https><ca>` asks for. The full table is in
     [Environment Variables](../../configuration/environment-variables.md#wazuh-agent).
 
+    **Note:** With `full`, the address in `WAZUH_MANAGER_ENDPOINT` also has to be
+    in the Subject Alternative Name of the certificate the manager presents on
+    `1517`. For a manager deployed from this repository that address is listed
+    when the certificates are created, on the manager node of `config.yml` or
+    with `--agent-san`; see [single-node](single-node.md) and
+    [multi-node](multi-node.md). An address that is not there fails with
+    `no alternative certificate subject name matches target`.
+
     **Note:** To use a configuration of your own instead of these variables,
     mount your `ossec.conf` at `/wazuh-config-mount/etc/ossec.conf`. It is
     copied over the packaged one before the substitutions run, so a mounted
