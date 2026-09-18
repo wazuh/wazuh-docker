@@ -70,7 +70,14 @@ services:
       - master-wazuh-wodles:/var/ossec/wodles
       - master-filebeat-etc:/etc/filebeat
       - master-filebeat-var:/var/lib/filebeat
-      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
+      # root-ca.pem, not a separate root-ca-manager.pem -- that name (also
+      # referenced by upstream's own multi-node/docker-compose.yml, not just
+      # this override) isn't produced by the cert-generator or documented
+      # anywhere in this repo or upstream's; confirmed live that copying
+      # root-ca.pem to that name and using it works identically, since it's
+      # the same cluster-wide root CA every other service already mounts
+      # under its real name. No separate cert to maintain.
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.master.pem:/etc/ssl/filebeat.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.master-key.pem:/etc/ssl/filebeat.key
       - /etc/wazuh-docker-runtime/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
@@ -97,7 +104,8 @@ services:
       - worker-wazuh-wodles:/var/ossec/wodles
       - worker-filebeat-etc:/etc/filebeat
       - worker-filebeat-var:/var/lib/filebeat
-      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
+      # See wazuh.master above -- same root-ca.pem, not a separate file.
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/etc/ssl/root-ca.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.worker.pem:/etc/ssl/filebeat.pem
       - ./config/wazuh_indexer_ssl_certs/wazuh.worker-key.pem:/etc/ssl/filebeat.key
       - /etc/wazuh-docker-runtime/wazuh_worker.conf:/wazuh-config-mount/etc/ossec.conf
