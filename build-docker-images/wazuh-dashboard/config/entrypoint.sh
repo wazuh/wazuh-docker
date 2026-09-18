@@ -26,8 +26,8 @@ if  [ ! -f "$OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.keystore" ]
     "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" create --allow-root
     head -c 32 /dev/urandom | base64 | tr -d '\n' | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add wazuh_ai_assistant.encryptionKey --stdin --allow-root
 fi
-echo $DASHBOARD_USERNAME | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.username --stdin --allow-root -f
-echo $DASHBOARD_PASSWORD | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.password --stdin --allow-root -f
+printf '%s\n' "$DASHBOARD_USERNAME" | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.username --stdin --allow-root -f
+printf '%s\n' "$DASHBOARD_PASSWORD" | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.password --stdin --allow-root -f
 
 /wazuh_dashboard_config.sh
 

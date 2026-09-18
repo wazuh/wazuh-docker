@@ -27,21 +27,6 @@ API_USERNAME="${API_USERNAME:-wazuh-wui}"
 API_PASSWORD="${API_PASSWORD:-wazuh-wui}"
 RUN_AS="${RUN_AS:-true}"
 
-# Optional Wazuh app configurations
-PATTERN="${PATTERN:-}"
-CHECKS_PATTERN="${CHECKS_PATTERN:-}"
-CHECKS_TEMPLATE="${CHECKS_TEMPLATE:-}"
-CHECKS_API="${CHECKS_API:-}"
-CHECKS_SETUP="${CHECKS_SETUP:-}"
-APP_TIMEOUT="${APP_TIMEOUT:-}"
-API_SELECTOR="${API_SELECTOR:-}"
-IP_SELECTOR="${IP_SELECTOR:-}"
-IP_IGNORE="${IP_IGNORE:-}"
-WAZUH_MONITORING_ENABLED="${WAZUH_MONITORING_ENABLED:-}"
-WAZUH_MONITORING_FREQUENCY="${WAZUH_MONITORING_FREQUENCY:-}"
-WAZUH_MONITORING_SHARDS="${WAZUH_MONITORING_SHARDS:-}"
-WAZUH_MONITORING_REPLICAS="${WAZUH_MONITORING_REPLICAS:-}"
-
 # Configuration file path
 DASHBOARD_CONFIG_FILE="${DASHBOARD_CONFIG_FILE:-/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml}"
 
@@ -64,20 +49,18 @@ declare -A CONFIG_MAP=(
     [opensearch_security.cookie.ttl]="$OPENSEARCH_SECURITY_COOKIE_TTL"
     [opensearch_security.session.ttl]="$OPENSEARCH_SECURITY_SESSION_TTL"
     [opensearch_security.session.keepalive]="$OPENSEARCH_SECURITY_SESSION_KEEPALIVE"
-    [pattern]="$PATTERN"
-    [checks.pattern]="$CHECKS_PATTERN"
-    [checks.template]="$CHECKS_TEMPLATE"
-    [checks.api]="$CHECKS_API"
-    [checks.setup]="$CHECKS_SETUP"
-    [timeout]="$APP_TIMEOUT"
-    [api.selector]="$API_SELECTOR"
-    [ip.selector]="$IP_SELECTOR"
-    [ip.ignore]="$IP_IGNORE"
-    [wazuh.monitoring.enabled]="$WAZUH_MONITORING_ENABLED"
-    [wazuh.monitoring.frequency]="$WAZUH_MONITORING_FREQUENCY"
-    [wazuh.monitoring.shards]="$WAZUH_MONITORING_SHARDS"
-    [wazuh.monitoring.replicas]="$WAZUH_MONITORING_REPLICAS"
 )
+
+# Escapes &, \ and | (the sed replacement delimiter used below) so a value
+# containing any of them is inserted literally instead of being interpreted
+# by sed as a backreference, an escape, or the end of the substitution.
+escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+
+# Doubles a literal single quote so the value can be embedded in a single-quoted
+# YAML scalar (YAML's own escaping rule for that quote style, distinct from the
+# sed escaping escape_repl() handles). Needed for values, like a password, that
+# may contain characters double quotes would otherwise require escaping for.
+escape_yaml_single_quote() { printf '%s' "$1" | sed -e "s/'/''/g"; }
 
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
@@ -91,9 +74,17 @@ for key in "${!CONFIG_MAP[@]}"; do
     # Escape special characters for sed
     escaped_key=$(echo "$key" | sed 's/[.[\*^$()+?{|]/\\&/g')
 
-    # Try to replace existing line (commented or uncommented)
+    # Try to replace existing line (commented or uncommented); if the key is
+    # not present at all, append it instead of dropping the value silently.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: ${value}|" "$DASHBOARD_CONFIG_FILE"
+        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|" "$DASHBOARD_CONFIG_FILE"
+    else
+        # Ensure the file ends in a newline before appending, otherwise the
+        # new line would be glued onto the previous one.
+        if [ -s "$DASHBOARD_CONFIG_FILE" ] && [ "$(tail -c1 "$DASHBOARD_CONFIG_FILE")" != "" ]; then
+            echo >> "$DASHBOARD_CONFIG_FILE"
+        fi
+        echo "${key}: ${value}" >> "$DASHBOARD_CONFIG_FILE"
     fi
 done
 
@@ -101,10 +92,10 @@ done
 if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
     # Update existing wazuh_core.hosts section
     sed -i "/^wazuh_core.hosts:/,/^[^ ]/ {
-        s|url:.*|url: $WAZUH_API_URL|
-        s|port:.*|port: $API_PORT|
-        s|username:.*|username: $API_USERNAME|
-        s|password:.*|password: \"$API_PASSWORD\"|
-        s|run_as:.*|run_as: $RUN_AS|
+        s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
+        s|port:.*|port: $(escape_repl "$API_PORT")|
+        s|username:.*|username: $(escape_repl "$API_USERNAME")|
+        s|password:.*|password: '$(escape_yaml_single_quote "$(escape_repl "$API_PASSWORD")")'|
+        s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
     }" "$DASHBOARD_CONFIG_FILE"
 fi
