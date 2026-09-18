@@ -18,6 +18,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2635](https://github.com/wazuh/wazuh-docker/issues/2635) | Honour the scheme given in `WAZUH_INDEXER_HOSTS`, and drop the `<ssl>` block from the indexer configuration when it resolves to `http` |
 | [#2652](https://github.com/wazuh/wazuh-docker/issues/2652) | Mount the Wazuh manager agent listener certificate, and forward `--agent-san` to the certificate creation tool |
 | [#2621](https://github.com/wazuh/wazuh-docker/pull/2621) | Change cluster key assigment |
 | [#2622](https://github.com/wazuh/wazuh-docker/issues/2622) | Check the Wazuh API accounts of every manager node in `check-default-credentials.sh`, and document the worker step of the multi-node password change |
