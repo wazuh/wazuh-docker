@@ -16,7 +16,7 @@ ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
-COPY config/permanent_data.env config/permanent_data.sh /
+COPY config/permanent_data.env config/permanent_data.sh config/check-data-exceptions.sh /
 
 RUN dnf install openssl findutils procps shadow-utils -y && \
     dnf clean all && \
@@ -49,12 +49,28 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
     rm -f /var/wazuh-manager/etc/certs/remoted.pem \
           /var/wazuh-manager/etc/certs/remoted-key.pem \
           /var/wazuh-manager/etc/certs/apid.pem \
-          /var/wazuh-manager/etc/certs/apid-key.pem
+          /var/wazuh-manager/etc/certs/apid-key.pem && \
+    # Clear the cluster key for the same reason the certificates above are
+    # removed: the installer generates it once, here, and copying the installed
+    # tree into the image would publish that single secret inside every pull of
+    # this tag. Each container generates its own key on first start
+    # (etc/cont-init.d/0-wazuh-init) unless WAZUH_CLUSTER_KEY is set.
+    # This runs before permanent_data.sh, so the snapshot restored into a fresh
+    # 'etc' volume ships the empty key too.
+    sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key></key>|" \
+        /var/wazuh-manager/etc/wazuh-manager.conf
 
 # Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
 RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
+
+# Fail the build if the image ships content under data/ that neither the exclusion
+# list nor the manager itself owns: a deployment upgrading onto an existing data
+# volume would never see it. See docs/ref/configuration/configuration-files.md.
+RUN chmod 755 /check-data-exceptions.sh && \
+    /check-data-exceptions.sh && \
+    rm /check-data-exceptions.sh
 
 # Download tini static binary (no external library dependencies)
 RUN curl --fail --silent -L \

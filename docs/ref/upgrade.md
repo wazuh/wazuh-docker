@@ -103,16 +103,22 @@ Both steps are targeted: they change the accounts they name and leave every othe
 
 Also note that the Compose files no longer publish the Wazuh indexer port `9200` on the host. A deployment that reached the indexer directly from the host has to add the mapping back, preferably bound to the loopback address.
 
-## Manager self-signed certificate on existing deployments
+## Manager detection content on existing deployments
 
-Manager images built before the per-container certificate change shipped `etc/certs/remoted.pem` and `etc/certs/remoted-key.pem` inside the image, so the pair was copied into the manager `etc` volume the first time the deployment started and is the same in every deployment created from that image.
+The Compose files now mount a named volume on `/var/wazuh-manager/data` (`wazuh_data` in single-node; `master-wazuh-data` and `worker-wazuh-data` in multi-node), so the detection content the manager downloads survives recreating the container. A deployment created before this change did not have it, and nothing carries the old content over: it only ever existed in the writable layer of a container that is now gone.
 
-Upgrading the image tag does not replace it: the volume already holds a pair, and the container never overwrites an existing one. To move an existing deployment onto a certificate of its own, remove both files and restart the manager after the upgrade:
+Take the volume by using the updated `docker-compose.yml` and recreating the stack. Docker creates the volume, fills it from the image, and the manager downloads the ruleset again on that first start. Until it finishes — a few minutes on a healthy indexer — the manager runs with no decoders, exactly as it did on every recreation before. From then on the content is kept.
 
-```bash
-docker compose exec wazuh.manager rm -f /var/wazuh-manager/etc/certs/remoted.pem \
-                                        /var/wazuh-manager/etc/certs/remoted-key.pem
-docker compose restart wazuh.manager
+A deployment that keeps its own `docker-compose.yml` has to add the mount and the volume declaration by hand:
+
+```yaml
+services:
+  wazuh.manager:
+    volumes:
+      - wazuh_data:/var/wazuh-manager/data
+
+volumes:
+  wazuh_data:
 ```
 
-In multi-node, repeat it for `wazuh.master` and `wazuh.worker`. Agents do not validate this certificate by default, so the rotation does not require any change on the agents.
+In multi-node, add it to both `wazuh.master` and `wazuh.worker`, each with its own volume.
