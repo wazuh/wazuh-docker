@@ -145,8 +145,9 @@ Follow these steps to deploy the Wazuh agent using Docker.
     your manager's `1517` listener. For a manager deployed from this repository
     it is `single-node/config/root-ca/certs/root-ca.pem`, or the `multi-node`
     one. For any other manager, ask whoever runs it. The CA may also be dropped
-    at `/var/ossec/etc/certs/root-ca.pem`, in which case the variable is not
-    needed.
+    at `/var/ossec/etc/certs/manager-ca.pem` instead, in which case the variable
+    is not needed — deliberately not `root-ca.pem`, which is reserved for the
+    trust anchor a token enrollment writes.
 
     **Note:** A CA on its own means the certificate chain is verified but the
     hostname is not. `WAZUH_AGENT_SSL_VERIFICATION` overrides that with `full`,

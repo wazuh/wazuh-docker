@@ -107,9 +107,12 @@ trust anchor (`/var/ossec/etc/certs/root-ca.pem`) and `client.keys`. Neither
 supplies its own trust anchor.
 
 The token itself is staged at `/var/ossec/etc/enrollment_token`, mode `600`, owner
-`root:root`, and deleted by the agent once it has been consumed — successfully or
-not. A rejected token (expired, revoked, already used past `max_uses`, or simply
-malformed) makes the container exit before anything is written:
+`root:root`. The agent deletes it once it succeeds, or once the manager has
+definitively refused it (unknown, revoked, or already used past `max_uses`); a
+transient failure (the manager unreachable, for instance) leaves it in place on
+purpose, so a retry — within the same boot, or a later one — still has
+something to enroll with. A token this script itself cannot even decode makes
+the container exit before anything is written:
 
 ```yaml
 environment:
@@ -117,14 +120,16 @@ environment:
 ```
 
 ```text
-ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder (wazuh-agentd --show-token exited 2):
+ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:
 wazuh-agentd: invalid enrollment token: malformed token.
 ```
 
 Restarting the same container (the same `/var/ossec/etc` volume) after a
 successful enrollment does nothing further: the manager placeholder is gone from
-`ossec.conf`, so the token is not read again, and the agent's own bootstrap is a
-no-op once `client.keys` and the trust anchor already exist.
+`ossec.conf`, so the token is not read again, the agent's own bootstrap is a
+no-op once `client.keys` and the trust anchor already exist, and the container
+recognizes the anchor already bootstrapped there and leaves it alone instead of
+treating it as an operator-supplied CA.
 
 **Verifying the manager**
 
@@ -153,10 +158,13 @@ For a manager deployed from this repository that CA is
 root CA the rest of the deployment uses. For any other manager, ask whoever runs
 it for the CA that signs the certificate on its `1517` listener.
 
-The CA may also be dropped at `/var/ossec/etc/certs/root-ca.pem` instead of being
-named, in which case the variable is not needed. That is what makes it mountable
-through `WAZUH_CONFIG_MOUNT` the same way a whole `ossec.conf` is: a file mounted
-at `/wazuh-config-mount/etc/certs/root-ca.pem` is copied there on start.
+The CA may also be dropped at `/var/ossec/etc/certs/manager-ca.pem` instead of
+being named, in which case the variable is not needed. That is what makes it
+mountable through `WAZUH_CONFIG_MOUNT` the same way a whole `ossec.conf` is: a
+file mounted at `/wazuh-config-mount/etc/certs/manager-ca.pem` is copied there
+on start. Deliberately not `root-ca.pem`: that name is reserved for the trust
+anchor a token enrollment writes, and the two must never collide — see
+[Enrolling with a token](#enrolling-with-a-token).
 
 Whichever way it arrives, the file is copied into `/var/ossec/etc/certs/` and given
 to the agent user. `wazuh-agentd` opens it after dropping privileges, so a bind

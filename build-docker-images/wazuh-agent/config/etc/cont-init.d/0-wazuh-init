@@ -27,8 +27,16 @@ WAZUH_AGENT_SSL_KEY=$WAZUH_AGENT_SSL_KEY
 WAZUH_CERTS_DIR="${WAZUH_INSTALL_PATH}/etc/certs"
 
 # The path a CA may simply be dropped at instead of being named by a variable.
-# It is also where the agent's own WPK upgrade gate looks for one.
-WAZUH_MANAGER_CA_DEFAULT="${WAZUH_CERTS_DIR}/root-ca.pem"
+#
+# Deliberately NOT etc/certs/root-ca.pem: that path is AGENT_ANCHOR_CA, where
+# w_agent_token_bootstrap() writes the trust anchor it fetched from an
+# enrollment token, owned root:wazuh 0750 on purpose -- the runtime 'wazuh'
+# user must not be able to replace the CA it verifies its manager against.
+# Reusing that path here would make resolve_agent_ssl() treat the bootstrapped
+# anchor as an operator-supplied CA on every restart, downgrading verification
+# from the agent's own 'full' (anchor present, no mode) to 'certificate' (a
+# copy install_tls_file() would also hand to the wazuh user).
+WAZUH_MANAGER_CA_DEFAULT="${WAZUH_CERTS_DIR}/manager-ca.pem"
 
 # Applied when the component is not stated, by either set of variables. They
 # mirror the agent's own defaults, and are written out rather than left implicit
@@ -269,16 +277,32 @@ resolve_manager_endpoint() {
 ##############################################################################
 
 decode_enrollment_token() {
-  local description status
+  local description status stderr_file="${WAZUH_INSTALL_PATH}/tmp/show-token.err"
 
-  description="$(printf '%s' "$WAZUH_ENROLLMENT_TOKEN" | "${WAZUH_INSTALL_PATH}/bin/wazuh-agentd" --show-token 2>&1)"
+  exec_cmd "mkdir -p $(dirname "$stderr_file")"
+
+  description="$(printf '%s' "$WAZUH_ENROLLMENT_TOKEN" | "${WAZUH_INSTALL_PATH}/bin/wazuh-agentd" --show-token 2>"$stderr_file")"
   status=$?
 
-  if [ "$status" -ne 0 ]; then
-    print "ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder (wazuh-agentd --show-token exited $status):"
-    print "$description"
+  # --show-token's exit 2 is the token decoder's own verdict: it ran and
+  # refused what it was given. Anything else non-zero (127 for a missing
+  # binary or an unresolved shared library, notably) means the decoder never
+  # ran at all -- reporting that as "the token was refused" sends an operator
+  # looking at the token instead of the image. Kept apart from stdout so a
+  # shell-level error (e.g. "No such file or directory") is never presented as
+  # if it were the decoder's own message.
+  if [ "$status" -eq 2 ]; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:"
+    print "$(cat "$stderr_file" 2>/dev/null)"
+    rm -f "$stderr_file"
+    exit 1
+  elif [ "$status" -ne 0 ]; then
+    print "ERROR: could not run '${WAZUH_INSTALL_PATH}/bin/wazuh-agentd --show-token' (exit $status); the enrollment token was left unread and no token was stored."
+    print "$(cat "$stderr_file" 2>/dev/null)"
+    rm -f "$stderr_file"
     exit 1
   fi
+  rm -f "$stderr_file"
 
   TOKEN_ADDRESS="$(printf '%s\n' "$description" | sed -n 's/^adr: //p')"
 
@@ -428,9 +452,10 @@ set_agent_name() {
 #
 # The CA may also be dropped at $WAZUH_MANAGER_CA_DEFAULT instead of being named,
 # which is what makes it mountable through WAZUH_CONFIG_MOUNT the same way a whole
-# ossec.conf is: a file mounted at $WAZUH_CONFIG_MOUNT/etc/certs/root-ca.pem is
-# copied there by mount_files() before this runs. That path is the one the agent's
-# own WPK upgrade gate looks in, so the two agree on where a CA lives.
+# ossec.conf is: a file mounted at $WAZUH_CONFIG_MOUNT/etc/certs/manager-ca.pem is
+# copied there by mount_files() before this runs. Deliberately not the agent's own
+# AGENT_ANCHOR_CA path (etc/certs/root-ca.pem) -- see WAZUH_MANAGER_CA_DEFAULT's
+# own comment above for why the two must never collide.
 ##############################################################################
 
 xml_escape() {
@@ -473,6 +498,19 @@ check_tls_file() {
 # ownership -- pointing the configuration at the mount itself would work only for
 # whichever host permissions happened to line up.
 #
+# wazuh-agentd opens these paths after dropping privileges to 'wazuh', so what
+# matters is not that the init script can read the file but that the daemon can.
+# A bind mount arrives carrying the host's ownership and mode, regularly neither,
+# and it may be read-only, so the file is copied and the copy is what gets the
+# ownership -- pointing the configuration at the mount itself would work only for
+# whichever host permissions happened to line up.
+#
+# $WAZUH_CERTS_DIR itself is only reasserted to wazuh:wazuh when it is not
+# already root-owned. That directory may also hold AGENT_ANCHOR_CA, which a
+# token bootstrap deliberately leaves root:wazuh 0750 so the wazuh user cannot
+# unlink and replace a certificate authority it does not own; reasserting
+# wazuh:wazuh there unconditionally would undo exactly that on every restart.
+#
 # $1: source path, $2: destination file name. Sets TLS_INSTALLED_PATH.
 ##############################################################################
 
@@ -488,8 +526,11 @@ install_tls_file() {
   chown wazuh:wazuh "$dest" 2>/dev/null || \
     print "WARNING: could not set ownership on $dest (read-only mount?); wazuh-agentd may not be able to read it once it drops privileges."
   chmod 640 "$dest" 2>/dev/null || true
-  chown wazuh:wazuh "$WAZUH_CERTS_DIR" 2>/dev/null || true
-  chmod 750 "$WAZUH_CERTS_DIR" 2>/dev/null || true
+
+  if [ "$(stat -c %U "$WAZUH_CERTS_DIR" 2>/dev/null)" != "root" ]; then
+    chown wazuh:wazuh "$WAZUH_CERTS_DIR" 2>/dev/null || true
+    chmod 750 "$WAZUH_CERTS_DIR" 2>/dev/null || true
+  fi
 
   TLS_INSTALLED_PATH="$dest"
 }
@@ -597,6 +638,7 @@ set_agent_ssl() {
   local config="$1"
   local block="${WAZUH_INSTALL_PATH}/tmp/ssl-block"
   local rewritten="${config}.tmp"
+  local anchor="${WAZUH_CERTS_DIR}/root-ca.pem"
 
   resolve_agent_ssl
 
@@ -604,6 +646,21 @@ set_agent_ssl() {
   then
     if sed -n '/<agent>/,/<\/agent>/p' "$config" | grep -q "<ssl>"; then
       print "Keeping the <agent><ssl> configuration already in ossec.conf."
+      return
+    fi
+    # AGENT_ANCHOR_CA (etc/certs/root-ca.pem), not $WAZUH_MANAGER_CA_DEFAULT.
+    # w_agent_resolve_ssl_posture() (config.c) treats a file at this exact path
+    # as the CA and resolves to 'full' on its own whenever nothing else is
+    # configured -- a rule of the agent's own, not something specific to a
+    # token. It reads the same whether a token bootstrap wrote it or an
+    # operator placed it there by hand, so this script does not assume which:
+    # either way, nothing needs configuring and nothing is wrong.
+    if [ -e "$anchor" ]; then
+      print "A manager trust anchor is already at $anchor; the agent verifies the manager in full against it, no <ssl> block needed."
+      return
+    fi
+    if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+      print "No TLS material configured up front: the trust anchor is bootstrapped from WAZUH_ENROLLMENT_TOKEN at the agent's first start."
       return
     fi
     print "No TLS material configured for the manager connection, so the agent verifies it against the operating system trust store."
