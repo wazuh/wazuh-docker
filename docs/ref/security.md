@@ -60,7 +60,7 @@ The certificate is issued for that listener and nothing else: `CA:FALSE`, `keyUs
 
 ### Agent verification of the manager
 
-Agents verify the manager's certificate, and with nothing configured they verify it against the operating system trust store. A manager presenting a certificate signed by this deployment's root CA is not in that store, so every agent needs that CA — `config/root-ca/certs/root-ca.pem` — through `WAZUH_MANAGER_CA` or dropped at `/var/ossec/etc/certs/root-ca.pem`. See [Environment Variables](configuration/environment-variables.md#wazuh-agent).
+Agents verify the manager's certificate, and with nothing configured they verify it against the operating system trust store. A manager presenting a certificate signed by this deployment's root CA is not in that store, so an agent enrolled without a token needs that CA — `config/root-ca/certs/root-ca.pem` — through `WAZUH_MANAGER_CA` or dropped at `/var/ossec/etc/certs/manager-ca.pem`, deliberately not `root-ca.pem`, which is reserved for the trust anchor a token enrollment writes. An agent enrolled with `WAZUH_ENROLLMENT_TOKEN` needs none of this: the token supplies its own trust anchor. See [Environment Variables](configuration/environment-variables.md#wazuh-agent).
 
 - Distribute the root CA certificate, never the root CA key. `root-ca.key` signs new certificates and belongs only on the host that issues them.
 - Do not turn verification off (`WAZUH_AGENT_SSL_VERIFICATION=none`) to work around a CA that has not been distributed. It restores exactly the posture that was reported and fixed in [wazuh/wazuh#38684](https://github.com/wazuh/wazuh/issues/38684): the agent then accepts any certificate, from any peer, on a connection carrying enrollment credentials.
