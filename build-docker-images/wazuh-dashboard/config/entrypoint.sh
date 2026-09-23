@@ -28,6 +28,7 @@ if  [ ! -f "$OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.keystore" ]
 fi
 printf '%s\n' "$DASHBOARD_USERNAME" | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.username --stdin --allow-root -f
 printf '%s\n' "$DASHBOARD_PASSWORD" | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.password --stdin --allow-root -f
+unset DASHBOARD_PASSWORD
 
 /wazuh_dashboard_config.sh
 

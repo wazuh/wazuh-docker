@@ -7,6 +7,11 @@ bash /etc/cont-init.d/0-wazuh-init
 # Start Wazuh Manager (may log warnings in environments without certs)
 bash /etc/cont-init.d/1-manager
 
+# The unset inside 1-manager only clears its own (child bash) environment;
+# this process is a separate shell and stays alive for the container's
+# lifetime, so it needs its own unset too.
+unset INDEXER_PASSWORD
+
 # Tail the main log to stdout so Docker captures it
 tail -F /var/wazuh-manager/logs/wazuh-manager.log &
 TAIL_PID=$!
