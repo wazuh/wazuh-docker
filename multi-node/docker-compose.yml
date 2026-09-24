@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.master:
-    image: wazuh/wazuh-manager:5.0.1
+    image: wazuh/wazuh-manager:5.1.0
     hostname: wazuh.master
     container_name: multi-node-wazuh.master
     restart: always
@@ -49,7 +49,7 @@ services:
       - ./config/wazuh_master/certs/wazuh.master-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
   wazuh.worker:
-    image: wazuh/wazuh-manager:5.0.1
+    image: wazuh/wazuh-manager:5.1.0
     hostname: wazuh.worker
     container_name: multi-node-wazuh.worker
     restart: always
@@ -93,7 +93,7 @@ services:
       - ./config/wazuh_worker/certs/wazuh.worker-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
   wazuh1.indexer:
-    image: wazuh/wazuh-indexer:5.0.1
+    image: wazuh/wazuh-indexer:5.1.0
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
@@ -129,7 +129,7 @@ services:
       - ./config/wazuh1_indexer/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh2.indexer:
-    image: wazuh/wazuh-indexer:5.0.1
+    image: wazuh/wazuh-indexer:5.1.0
     hostname: wazuh2.indexer
     container_name: multi-node-wazuh2.indexer
     restart: always
@@ -167,7 +167,7 @@ services:
       - ./config/wazuh2_indexer/certs/wazuh2.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh3.indexer:
-    image: wazuh/wazuh-indexer:5.0.1
+    image: wazuh/wazuh-indexer:5.1.0
     hostname: wazuh3.indexer
     container_name: multi-node-wazuh3.indexer
     restart: always
@@ -205,7 +205,7 @@ services:
       - ./config/wazuh3_indexer/certs/wazuh3.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.1
+    image: wazuh/wazuh-dashboard:5.1.0
     hostname: wazuh.dashboard
     container_name: multi-node-wazuh.dashboard
     restart: always
@@ -255,6 +255,46 @@ services:
       - wazuh.dashboard
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  wazuh.agent:
+    image: wazuh/wazuh-agent:5.0.0
+    hostname: wazuh.agent
+    container_name: multi-node-wazuh.agent
+    restart: always
+    # Not part of the default deployment: start it with
+    # `docker compose --profile agent up`. It is an agent on the same host as the
+    # cluster, useful to exercise a deployment end to end; a real fleet runs
+    # elsewhere and points at the published 1517.
+    profiles:
+      - agent
+    depends_on:
+      wazuh.master:
+        condition: service_healthy
+    environment:
+      # Through nginx, the same entry point a real agent uses, which balances the
+      # connection across both cluster nodes. Each answers with its own
+      # certificate, so the CA below has to cover both -- one root CA does.
+      - WAZUH_MANAGER_ENDPOINT=nginx:1517/wazuh-manager/
+      # The CA that signs the manager certificates. Without it the agent verifies
+      # them against the operating system trust store, which no
+      # deployment-issued certificate is in, and the connection is refused.
+      #
+      # Verification stays on the certificate chain and does not check the
+      # hostname, which is what lets one agent reach either node through nginx:
+      # the name it dials is never the name on the certificate it gets back.
+      # Setting WAZUH_AGENT_SSL_VERIFICATION=full here would break that.
+      - WAZUH_MANAGER_CA=/etc/ssl/wazuh/root-ca.pem
+      # authd generates a random enrollment password at the master's first boot.
+      # Read it with:
+      #   docker compose exec wazuh.master cat /var/wazuh-manager/etc/authd.pass
+      #- WAZUH_REGISTRATION_PASSWORD=<authd.pass password>
+      #- WAZUH_AGENT_NAME=<agent name>
+      # The agent keeps its enrollment key in the container's own filesystem, so
+      # recreating the container enrolls again under the same name and the
+      # manager rejects it as a duplicate. Remove the agent from the manager
+      # first, or give the new container a name of its own above.
+    volumes:
+      - ./config/root-ca/certs/root-ca.pem:/etc/ssl/wazuh/root-ca.pem:ro
 
 volumes:
   wazuh-cluster-key:

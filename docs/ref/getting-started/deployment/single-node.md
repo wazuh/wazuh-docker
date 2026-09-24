@@ -21,8 +21,8 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 3.  Download the certificate creation script and `config.yml` file:
 
     ```bash
-    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.1-1.sh
-    curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.1-1.yml
+    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.1.0-1.sh
+    curl -o config.yml https://packages.wazuh.com/5.0/config-5.1.0-1.yml
     ```
 
 4.  Edit the config.yml file with the configuration of the Wazuh components to be deployed
@@ -38,9 +38,7 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
       # Use node_type only with more than one Wazuh manager
       manager:
         - name: wazuh.manager
-          ip: "<DOCKER_HOST_ADDRESS>"
-          dns:
-            - "wazuh.manager"
+          dns: "wazuh.manager"
 
       # Wazuh dashboard node
       dashboard:
@@ -48,38 +46,10 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
           dns: "wazuh.dashboard"
     ```
 
-    The `ip` and `dns` entries of the manager node become the Subject Alternative
-    Names of the certificate the manager presents on `1517`, the port agents
-    connect to and enroll through. **List every address agents dial.**
-    `wazuh.manager` only resolves inside the Compose network, so an agent on
-    another host reaches the address that publishes `1517`, which is the Docker
-    host: replace `<DOCKER_HOST_ADDRESS>` with that host's IP address, and add its
-    DNS name to the `dns` list if agents use a name instead.
-
-    An address left out is not refused until an agent verifies the hostname as
-    well as the chain (`WAZUH_AGENT_SSL_VERIFICATION=full`), and adding one later
-    means issuing the certificates again. `ip` and `dns` both take one value or a
-    list. Node names are enough for the Wazuh indexer and the Wazuh dashboard,
-    whose certificates are only used inside the Compose network.
-
 5.  Run the certificate creation script:
 
     ```bash
     sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
-    ```
-
-    This issues every certificate the deployment mounts, including
-    `wazuh.manager-remoted.pem` and `wazuh.manager-remoted-key.pem`, the pair the
-    manager presents to agents. **The manager does not start without that pair**,
-    so this step has to run before `docker compose up`.
-
-    `--agent-san` adds an address to the agent listener certificates without
-    putting it on the manager node in `config.yml`, which is useful when agents
-    reach the deployment through a name the host does not carry:
-
-    ```bash
-    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
-        --agent-san wazuh.example.com
     ```
 
 6.  Start the Wazuh environment using `docker compose`:

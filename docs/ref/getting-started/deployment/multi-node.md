@@ -21,8 +21,8 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 3.  Download the certificate creation script and config.yml file:
 
     ```bash
-    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.1-1.sh
-    curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.1-1.yml
+    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.1.0-1.sh
+    curl -o config.yml https://packages.wazuh.com/5.0/config-5.1.0-1.yml
     ```
 
 4.  Edit the `config.yml` file with the configuration of the Wazuh components to be deployed
@@ -54,35 +54,11 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
           dns: "wazuh.dashboard"
     ```
 
-    Each manager node keeps its own name here. The address agents dial is not one
-    of them: agents reach the cluster through `nginx`, which publishes `1517` and
-    hands each connection to either manager node, so that address belongs to both
-    nodes at once and is given in the next step instead.
-
-5.  Run the certificate creation script, naming the address agents dial:
+5.  Run the certificate creation script:
 
     ```bash
-    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
-        --agent-san nginx --agent-san <DOCKER_HOST_ADDRESS>
+    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
     ```
-
-    This issues every certificate the deployment mounts, including
-    `wazuh.master-remoted.pem` and `wazuh.worker-remoted.pem`, the pair each
-    manager node presents to agents. **A manager node does not start without its
-    pair**, so this step has to run before `docker compose up`.
-
-    `--agent-san` puts an address in the agent listener certificate of **every**
-    manager node, which is what the `nginx` entry point needs: whichever node
-    answers presents a certificate that names the address the agent dialed, so
-    one agent can verify both. Repeat the option for each address. Use `nginx`
-    for agents inside the Compose network, and the Docker host's IP address or
-    DNS name — replacing `<DOCKER_HOST_ADDRESS>` — for agents anywhere else.
-
-    Addresses given this way reach the agent listener certificates only. The
-    `<node>.pem` each manager presents to the Wazuh indexer keeps its own name,
-    and the certificate creation script rejects an address repeated across
-    manager nodes in `config.yml`, which is why the entry point is not written
-    there.
 
 6.  Start the Wazuh environment using `docker compose`:
 
