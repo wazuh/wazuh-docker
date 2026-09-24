@@ -328,22 +328,41 @@ WAZUH_NODE_NAME="${WAZUH_NODE_NAME:-$HOSTNAME}"
 
 # --------------------------
 # Replace Indexer Hosts
+#
+# A scheme is honoured when the value carries one, and defaults to https when it
+# does not. Every host must agree: <ssl> is one block per <indexer>, so a list
+# mixing schemes has no configuration that satisfies it.
+#
+# Over plain http the <ssl> block is removed. It names a CA, a certificate and a
+# key, and the connector refuses to start when those files are absent, which is
+# the case in a deployment that has no TLS to configure them for.
 # --------------------------
 if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
     TMP_HOSTS=$(mktemp)
+    INDEXER_SCHEME=""
     {
         echo "    <hosts>"
         IFS=',' read -ra NODES <<< "$WAZUH_INDEXER_HOSTS"
         for NODE in "${NODES[@]}"; do
             NODE="${NODE#"${NODE%%[![:space:]]*}"}"
-            NODE="${NODE#http://}"; NODE="${NODE#https://}"
+            SCHEME="https"
+            case "$NODE" in
+                http://*)  SCHEME="http";  NODE="${NODE#http://}"  ;;
+                https://*) SCHEME="https"; NODE="${NODE#https://}" ;;
+            esac
+            if [[ -z "$INDEXER_SCHEME" ]]; then
+                INDEXER_SCHEME="$SCHEME"
+            elif [[ "$INDEXER_SCHEME" != "$SCHEME" ]]; then
+                print "Invalid WAZUH_INDEXER_HOSTS: every host must use the same scheme" >&2
+                exit 1
+            fi
             if [[ "$NODE" == *:* ]]; then
                 HOST="${NODE%:*}"; PORT="${NODE##*:}"
             else
                 HOST="$NODE"; PORT=9200
             fi
             [[ "$PORT" =~ ^[0-9]+$ ]] || { print "Invalid indexer host '$NODE'" >&2; exit 1; }
-            echo "      <host>https://${HOST}:${PORT}</host>"
+            echo "      <host>${SCHEME}://${HOST}:${PORT}</host>"
         done
         echo "    </hosts>"
     } > "$TMP_HOSTS";
@@ -351,6 +370,9 @@ if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
             -e 'd }}' "$WAZUH_MANAGER_CONF";
     rm -f "$TMP_HOSTS";
 
+    if [[ "$INDEXER_SCHEME" == "http" ]]; then
+        sed -i '/<indexer>/,/<\/indexer>/{ /<ssl>/,/<\/ssl>/d }' "$WAZUH_MANAGER_CONF"
+    fi
 fi
 
 # --------------------------
