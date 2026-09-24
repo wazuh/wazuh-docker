@@ -4,18 +4,31 @@ services:
     image: wazuh/wazuh-agent:5.1.0
     restart: always
     environment:
-      # The whole manager connection as one host[:port][/prefix] value. Required.
-      # The port and the prefix may be left out, defaulting to 1517 and
-      # /wazuh-manager/.
-      - WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
+      # One-shot enrollment token, minted by the manager:
+      #   POST /agents/enrollment-tokens {"address": "<manager host>", "embed_ca": true}
+      # The token carries the manager's address (written to <endpoint>) and its
+      # CA (or a pin to verify a fetched one against), so nothing else below is
+      # needed to reach a manager with its own self-signed certificate, which is
+      # what a Wazuh manager presents by default. Required, unless
+      # WAZUH_MANAGER_ENDPOINT/WAZUH_MANAGER_SERVER below is used instead.
+      - WAZUH_ENROLLMENT_TOKEN=<TOKEN MINTED BY THE MANAGER>
       #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
-      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
-      # The CA that signs the manager's HTTPS certificate, mounted below.
       #
-      # Leave it unset only when the manager's certificate chains to a publicly
-      # trusted CA: with no CA the agent verifies against the operating system
-      # trust store, and a manager presenting its own certificate -- what a Wazuh
-      # manager does by default -- is refused.
+      # Without a token: for an agent that already has client.keys and a trust
+      # anchor of its own (mounted, or restored from a previous container's
+      # /var/ossec/etc volume) and just needs to be told where to connect.
+      # Mutually exclusive with WAZUH_ENROLLMENT_TOKEN above.
+      #
+      # The whole manager connection as one host[:port][/prefix] value. The port
+      # and the prefix may be left out, defaulting to 1517 and /wazuh-manager/.
+      #- WAZUH_MANAGER_ENDPOINT=<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:1517/wazuh-manager/
+      #
+      # The CA that signs the manager's HTTPS certificate, mounted below. Only
+      # meaningful without a token -- leave it unset only when the manager's
+      # certificate chains to a publicly trusted CA: with no CA the agent
+      # verifies against the operating system trust store, and a manager
+      # presenting its own certificate -- what a Wazuh manager does by default --
+      # is refused.
       #
       # For a dockerized manager from this repository, this is
       # single-node/config/root-ca/certs/root-ca.pem (or the multi-node one).

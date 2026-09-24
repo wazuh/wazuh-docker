@@ -22,7 +22,6 @@
 | Issue | Comment |
 | - | - |
 
-
 ## Prior versions
 
 - [v5.0.1](https://github.com/wazuh/wazuh-docker/blob/v5.0.1/CHANGELOG.md)

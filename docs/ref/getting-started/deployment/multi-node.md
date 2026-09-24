@@ -92,18 +92,18 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
       docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
     ```
 
-8.  **Optionally, run an agent alongside the deployment.** The `wazuh.agent` service is defined but not part of the default startup, so bring it up explicitly:
+8.  **Connect agents.** This deployment runs the Wazuh manager cluster, indexer cluster and dashboard; agents run wherever the endpoints they monitor are. An agent needs an enrollment token, minted against the master's API:
 
     ```bash
-    docker compose exec wazuh.master cat /var/wazuh-manager/etc/authd.pass
+    curl -k -u wazuh:wazuh -X POST "https://<the address nginx publishes>:55000/security/user/authenticate"
+    # -> {"data": {"token": "<JWT>"}}
+
+    curl -k -X POST "https://<the address nginx publishes>:55000/agents/enrollment-tokens" \
+      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+      -d '{"address": "<the address nginx publishes>", "embed_ca": true}'
+    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
     ```
 
-    Put that password in the `WAZUH_REGISTRATION_PASSWORD` line of the `wazuh.agent` service in `docker-compose.yml` — `authd` generates it at the manager's first start — and then:
-
-    ```bash
-    docker compose --profile agent up -d
-    ```
-
-    The service already mounts `config/root-ca/certs/root-ca.pem` and points `WAZUH_MANAGER_CA` at it, which is what the agent verifies the manager with. An agent running anywhere else needs the same file; see [Wazuh agent](wazuh-agent.md).
+    Use the credentials `password-tool.sh` printed in step 7, not the defaults shown above, once they have been changed. The address is the one `nginx` publishes, one of the `--agent-san` values from step 5, and it covers both manager nodes. `embed_ca: true` embeds `config/root-ca/certs/root-ca.pem` in the token, so a token-enrolled agent needs no separate CA configuration. See [Wazuh agent](wazuh-agent.md) for a containerized agent, and [Environment Variables](../../configuration/environment-variables.md#wazuh-agent) for the variables that carry it.
 
 Please allow some time for the environment to initialize, especially on the first run. A multi-node setup can take a few minutes (depending on your host resources and network) as the Wazuh Indexer cluster forms, and the necessary indexes and index patterns are generated.
