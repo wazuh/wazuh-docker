@@ -16,3 +16,4 @@ multi-node/config/*/certs
 
 # Documentation
 docs/book/
+multi-node/config/credentials

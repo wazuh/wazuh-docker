@@ -27,13 +27,13 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
+    env_file:
+      - ./config/credentials/manager.env
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
       - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
-      - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - wazuh_api_configuration:/var/wazuh-manager/api/configuration
       - wazuh_etc:/var/wazuh-manager/etc
@@ -52,6 +52,8 @@ services:
     hostname: wazuh.indexer
     container_name: single-node-wazuh.indexer
     restart: always
+    env_file:
+      - ./config/credentials/indexer.env
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -95,15 +97,13 @@ services:
       start_period: 30s
     ports:
       - 443:5601
+    env_file:
+      - ./config/credentials/dashboard.env
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - WAZUH_API_URL=https://wazuh.manager
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=wazuh-wui
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem

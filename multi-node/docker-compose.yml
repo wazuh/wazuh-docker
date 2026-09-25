@@ -25,6 +25,8 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
+    env_file:
+      - ./config/credentials/manager.env
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=master
@@ -32,8 +34,6 @@ services:
       - WAZUH_CLUSTER_KEY=${WAZUH_CLUSTER_KEY:-}
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
-      - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - master-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - master-wazuh-etc:/var/wazuh-manager/etc
@@ -69,6 +69,8 @@ services:
     depends_on:
       wazuh.master:
         condition: service_healthy
+    env_file:
+      - ./config/credentials/manager.env
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=worker01
@@ -76,8 +78,6 @@ services:
       - WAZUH_CLUSTER_KEY=${WAZUH_CLUSTER_KEY:-}
       - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
       - WAZUH_CLUSTER_NODES=wazuh.master
-      - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=wazuh-manager
     volumes:
       - worker-wazuh-api-configuration:/var/wazuh-manager/api/configuration
       - worker-wazuh-etc:/var/wazuh-manager/etc
@@ -97,6 +97,8 @@ services:
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
+    env_file:
+      - ./config/credentials/indexer.env
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -137,6 +139,8 @@ services:
       /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5; until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
     depends_on:
       - wazuh1.indexer
+    env_file:
+      - ./config/credentials/indexer.env
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -175,6 +179,8 @@ services:
       /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5;until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
     depends_on:
       - wazuh1.indexer
+    env_file:
+      - ./config/credentials/indexer.env
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
@@ -217,15 +223,13 @@ services:
       start_period: 30s
     ports:
       - 443:5601
+    env_file:
+      - ./config/credentials/dashboard.env
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=["https://wazuh1.indexer:9200","https://wazuh2.indexer:9200","https://wazuh3.indexer:9200"]
       - WAZUH_API_URL=https://wazuh.master
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=wazuh-wui
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/wazuh-dashboard-key.pem
       - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem

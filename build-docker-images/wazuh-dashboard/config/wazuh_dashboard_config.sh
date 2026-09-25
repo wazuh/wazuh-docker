@@ -6,8 +6,6 @@ SERVER_HOST="${SERVER_HOST:-0.0.0.0}"
 SERVER_PORT="${SERVER_PORT:-443}"
 OPENSEARCH_HOSTS="${OPENSEARCH_HOSTS:-https://wazuh.indexer:9200}"
 OPENSEARCH_SSL_VERIFICATION_MODE="${OPENSEARCH_SSL_VERIFICATION_MODE:-certificate}"
-OPENSEARCH_USERNAME="${OPENSEARCH_USERNAME:-}"
-OPENSEARCH_PASSWORD="${OPENSEARCH_PASSWORD:-}"
 OPENSEARCH_REQUEST_HEADERS_ALLOWLIST="${OPENSEARCH_REQUEST_HEADERS_ALLOWLIST:-[\"securitytenant\",\"Authorization\"]}"
 OPENSEARCH_SECURITY_MULTITENANCY_ENABLED="${OPENSEARCH_SECURITY_MULTITENANCY_ENABLED:-false}"
 OPENSEARCH_SECURITY_READONLY_MODE_ROLES="${OPENSEARCH_SECURITY_READONLY_MODE_ROLES:-[\"kibana_read_only\"]}"
@@ -24,7 +22,6 @@ OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-
 WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
 API_USERNAME="${API_USERNAME:-wazuh-wui}"
-API_PASSWORD="${API_PASSWORD:-wazuh-wui}"
 RUN_AS="${RUN_AS:-true}"
 
 # Configuration file path
@@ -36,8 +33,6 @@ declare -A CONFIG_MAP=(
     [server.port]="$SERVER_PORT"
     [opensearch.hosts]="$OPENSEARCH_HOSTS"
     [opensearch.ssl.verificationMode]="$OPENSEARCH_SSL_VERIFICATION_MODE"
-    [opensearch.username]="$OPENSEARCH_USERNAME"
-    [opensearch.password]="$OPENSEARCH_PASSWORD"
     [opensearch.requestHeadersAllowlist]="$OPENSEARCH_REQUEST_HEADERS_ALLOWLIST"
     [opensearch_security.multitenancy.enabled]="$OPENSEARCH_SECURITY_MULTITENANCY_ENABLED"
     [opensearch_security.readonly_mode.roles]="$OPENSEARCH_SECURITY_READONLY_MODE_ROLES"
@@ -55,12 +50,6 @@ declare -A CONFIG_MAP=(
 # containing any of them is inserted literally instead of being interpreted
 # by sed as a backreference, an escape, or the end of the substitution.
 escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
-
-# Doubles a literal single quote so the value can be embedded in a single-quoted
-# YAML scalar (YAML's own escaping rule for that quote style, distinct from the
-# sed escaping escape_repl() handles). Needed for values, like a password, that
-# may contain characters double quotes would otherwise require escaping for.
-escape_yaml_single_quote() { printf '%s' "$1" | sed -e "s/'/''/g"; }
 
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
@@ -95,7 +84,6 @@ if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
         s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
         s|port:.*|port: $(escape_repl "$API_PORT")|
         s|username:.*|username: $(escape_repl "$API_USERNAME")|
-        s|password:.*|password: '$(escape_yaml_single_quote "$(escape_repl "$API_PASSWORD")")'|
         s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
     }" "$DASHBOARD_CONFIG_FILE"
 fi

@@ -34,9 +34,17 @@ RUN yum install shadow-utils -y && \
     dashboard_url="${!URL_VAR}" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
+    dnf install util-linux -y && \
     dnf install /wazuh-dashboard.rpm -y && \
     rm -rf /wazuh-dashboard.rpm && \
-    dnf clean all
+    dnf clean all && \
+    # The package's %post resolved credentials for this build host; remove
+    # them so no two containers from this image share one.
+    /usr/share/wazuh-dashboard/bin/resolve-credentials --clear && \
+    rm -rf /etc/wazuh && \
+    # The dashboard walks its home directory at start and exits on EACCES;
+    # lib/ stays root-owned, and so not writable by the service user.
+    chmod 755 /usr/share/wazuh-dashboard/lib
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -68,8 +76,9 @@ ENV USER="wazuh-dashboard" \
 COPY config/entrypoint.sh /
 COPY config/wazuh_dashboard_config.sh /
 
-# Update and install dependencies
-RUN yum install shadow-utils -y && \
+# Update and install dependencies. The entrypoint runs as root to resolve
+# the credentials, so it must not be writable by the service user.
+RUN yum install shadow-utils util-linux -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
@@ -80,20 +89,20 @@ RUN yum install shadow-utils -y && \
     --shell /sbin/nologin \
     --comment "$USER user" \
     $USER && \
-    chmod 700 /entrypoint.sh && \
+    chown root:root /entrypoint.sh && \
+    chmod 755 /entrypoint.sh && \
+    chown ${WAZUH_UID}:${WAZUH_GID} /wazuh_dashboard_config.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
 # Copy Install dir from builder to current image
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
 
-# Set workdir and user
+# Starts as root and drops to wazuh-dashboard once the credentials are stored
 WORKDIR $INSTALL_DIR
-USER wazuh-dashboard
 
 # Services ports
 EXPOSE 443

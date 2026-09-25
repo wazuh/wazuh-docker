@@ -4,13 +4,15 @@
 # Run initialization and configuration
 bash /etc/cont-init.d/0-wazuh-init
 
+# Resolve credentials; the container stops if one is missing or invalid
+bash /etc/cont-init.d/1-credentials || exit 1
+
+# Stored by now: keep them out of the environment every daemon inherits
+unset INDEXER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD \
+      WAZUH_MANAGER_API_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
+
 # Start Wazuh Manager (may log warnings in environments without certs)
 bash /etc/cont-init.d/1-manager
-
-# The unset inside 1-manager only clears its own (child bash) environment;
-# this process is a separate shell and stays alive for the container's
-# lifetime, so it needs its own unset too.
-unset INDEXER_PASSWORD
 
 # Tail the main log to stdout so Docker captures it
 tail -F /var/wazuh-manager/logs/wazuh-manager.log &
