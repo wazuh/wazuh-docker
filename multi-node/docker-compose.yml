@@ -101,6 +101,7 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh1.indexer
       - node.name=wazuh1.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -141,6 +142,7 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh2.indexer
       - node.name=wazuh2.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -179,6 +181,7 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh3.indexer
       - node.name=wazuh3.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
