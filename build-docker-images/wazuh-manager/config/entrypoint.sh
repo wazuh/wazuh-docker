@@ -12,7 +12,7 @@ unset INDEXER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD \
       WAZUH_MANAGER_API_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
 
 # Start Wazuh Manager (may log warnings in environments without certs)
-bash /etc/cont-init.d/1-manager
+bash /etc/cont-init.d/2-manager
 
 # Tail the main log to stdout so Docker captures it
 tail -F /var/wazuh-manager/logs/wazuh-manager.log &
