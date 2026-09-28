@@ -1,245 +1,178 @@
 # Credentials
 
-The Wazuh images ship with documented default passwords, and a deployment that
-keeps them answers to anyone who has read this page. **Changing them is the
-first thing to do after the first start**, and this page is the procedure.
-
-Each image carries `password-tool.sh`, which changes the passwords of the
-running deployment and prints the new ones once. It stores nothing: what it
-prints is the only copy, and the passwords the components need are written by
-hand into `docker-compose.yml`.
+The Wazuh images ship no passwords. Every deployment gets its own: they are
+generated once, before the first start, by
+`tools/utils/deployment/credentials-conf.sh`. Each component receives only the
+ones it needs, through the environment. On its first start, each component
+stores what it received: the indexer in its security configuration, the manager
+in its Wazuh API user database and keystore, the dashboard in its keystore. From
+then on, the stored values are the ones that count.
 
 ## Table of Contents
 
 - [The accounts](#the-accounts)
-- [Changing the passwords on the first start](#changing-the-passwords-on-the-first-start)
-- [Changing one password later](#changing-one-password-later)
+- [Creating the credentials](#creating-the-credentials)
+- [What the first start does](#what-the-first-start-does)
+- [Changing a password later](#changing-a-password-later)
 - [Multi-node deployments](#multi-node-deployments)
+- [Password rules](#password-rules)
 - [Checking that no default is left](#checking-that-no-default-is-left)
 - [Notes](#notes)
 
 ## The accounts
 
-Two components hold accounts, in separate databases on separate ports. The
-"Compose" column is the variable the new password has to be written into; the
-accounts with no variable are for people and are not presented by any container.
-
-**Wazuh indexer**, in the security plugin's internal user database. These are
-the accounts the Wazuh dashboard logs in with.
-
-| Account | Default | Compose | What it is for |
+| Account | Key | In | Used by |
 | - | - | - | - |
-| `admin` | `admin` | — | Administrator of the indexer: every index, the cluster settings and the security configuration. Logging into the dashboard as `admin` also produces a Wazuh API administrator session. |
-| `kibanaserver` | `kibanaserver` | `wazuh.dashboard` → `DASHBOARD_PASSWORD` | Service account the dashboard authenticates as. |
-| `wazuh-manager` | `wazuh-manager` | `wazuh.manager` → `INDEXER_PASSWORD` | Service account the manager writes events and reads state as. |
-| `wazuh-admin` | `wazuh-admin` | — | Wazuh administrator: reads the Wazuh indices, writes Wazuh settings and content, and administers the Security Analytics plugin. |
-| `wazuh-readonly` | `wazuh-readonly` | — | Read-only access to settings, content and detectors. |
-| `wazuh-demo` | `wazuh-demo` | — | Content management, without administration of the deployment. |
+| `admin` | `WAZUH_INDEXER_ADMIN_PASSWORD` | `indexer.env` | People: administrator of the indexer, and **the account to log into the Wazuh dashboard with** |
+| `kibanaserver` | `WAZUH_INDEXER_KIBANASERVER_PASSWORD` | `indexer.env`, `dashboard.env` | The dashboard, to authenticate to the indexer |
+| `wazuh-manager` | `WAZUH_INDEXER_MANAGER_PASSWORD` | `indexer.env`, `manager.env` | The manager, to write events and read state in the indexer |
+| `wazuh` | `WAZUH_MANAGER_API_PASSWORD` | `manager.env` | People and automation: superuser of the Wazuh API, for example to mint agent enrollment tokens |
+| `wazuh-wui` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user |
 
-The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`,
-`snapshotrestore`, `anomalyadmin`) are **not** part of a Wazuh deployment. They
-are removed from the image when it is built, so they do not exist and cannot be
-logged into.
+The files are `config/credentials/<file>` under `single-node/` or `multi-node/`.
+The first three accounts live in the indexer, and the last two in the manager's
+Wazuh API. The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`,
+`snapshotrestore`, `anomalyadmin`) are not part of a Wazuh deployment and are
+not in the image.
 
-**Wazuh manager**, in the API's RBAC database.
+## Creating the credentials
 
-| Account | Default | Compose | What it is for |
-| - | - | - | - |
-| `wazuh` | `wazuh` | — | Superuser of the Wazuh API. |
-| `wazuh-wui` | `wazuh-wui` | `wazuh.dashboard` → `API_PASSWORD` | Service account the dashboard proxies manager requests as. It asks the API to act as the logged-in dashboard user, so what a dashboard session can do is decided by that user's role, not by this account. |
-
-In multi-node the services are `wazuh1.indexer` and `wazuh.master`, and the
-manager variables have to be set on `wazuh.master` and `wazuh.worker` alike.
-
-## Changing the passwords on the first start
-
-Run this once, immediately after the deployment comes up for the first time.
-The example is single-node; the multi-node differences are in the section below.
-
-**1. Bring the deployment up and wait for it to be healthy.**
+Run it from `single-node/` or `multi-node/`, after the certificates and before
+the first `docker compose up`. It needs the shared credentials library next to
+`wazuh-certs-tool.sh`, in the same version as the images:
 
 ```bash
-cd single-node
-docker compose up -d
-docker compose ps
+curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.0-1.sh
+sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
-The tools work against the running cluster, so every container has to report
-`healthy` before going on. The first start takes a couple of minutes.
+```text
+WAZUH_INDEXER_ADMIN_PASSWORD: generated
+WAZUH_INDEXER_KIBANASERVER_PASSWORD: generated
+WAZUH_INDEXER_MANAGER_PASSWORD: generated
+WAZUH_MANAGER_API_PASSWORD: generated
+WAZUH_MANAGER_WUI_PASSWORD: generated
+Credentials written to ./config/credentials: indexer.env, manager.env, dashboard.env
+Log in to the Wazuh dashboard as 'admin'. Read its password with:
+  grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' ./config/credentials/indexer.env | cut -d= -f2-
+```
 
-**2. Change the Wazuh indexer passwords.**
+- **Why `sudo`:** `certificates-conf.sh` creates `config/` as root. The files are
+  still given to the user who ran `sudo`, with `0700` on the directory and
+  `0600` on each file, so `docker compose` can read them without root.
+- **Your own values:** to set a password instead of generating it, give its key
+  in the environment. The value is validated against the
+  [password rules](#password-rules), and nothing is written if any value fails:
+
+  ```bash
+  sudo WAZUH_INDEXER_ADMIN_PASSWORD='<password>' bash ../tools/utils/deployment/credentials-conf.sh
+  ```
+
+- **No overwrite:** the script never replaces existing files. `--force` replaces
+  them, and is only for a deployment that has never been started.
+- **If you skip this step:** `docker compose up` refuses to start and names the
+  env file that is missing.
+
+## What the first start does
+
+On its first start, each component takes the keys from its env file, validates
+them and stores them:
+
+- **Indexer:** writes the password digests into its security configuration, and
+  loads them into the cluster.
+- **Manager:** creates the Wazuh API user database, and stores the indexer
+  password in its keystore.
+- **Dashboard:** stores both of its passwords in its keystore.
+
+Later starts, restarts and recreated containers keep what was stored, and the
+env files are no longer read for those values. The stores are on the
+deployment's named volumes, so recreating the containers without `-v` keeps
+them.
+
+If a key is missing or does not meet the rules, the container stops before its
+service starts, and names the key. It never prints the value:
+
+```text
+credentials: MISSING WAZUH_INDEXER_ADMIN_PASSWORD
+credentials: create the deployment credentials with tools/utils/deployment/credentials-conf.sh
+```
+
+Fix `config/credentials/<file>.env` and run `docker compose up -d` again.
+
+## Changing a password later
+
+**Editing a value in `config/credentials/*.env` after the first start changes
+nothing.** Use `password-tool.sh` instead. It changes the account on the running
+deployment, then prints the commands that apply the new value everywhere else it
+is used. Run it from the directory of `docker-compose.yml`:
 
 ```bash
-docker compose exec wazuh.indexer /password-tool.sh --all
-```
-
-It prints every account with its new password, and repeats the two that have to
-go into the Compose file:
-
-```
-Changed on the running deployment:
-
-  admin            r?FT4dqvBn0LxlXQ.uYm-3jHsWk8zAeC
-  kibanaserver     G2wrq1B20.eXC85*-8inI+F27y8UwoL.
-  wazuh-manager    Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM
-  wazuh-admin      j*YwhC.RUiJYCq4Qs10v3U3qm3keJqec
-  wazuh-readonly   2d1a5KtVeVCHkrRytEmRYS4c8VGouku.
-  wazuh-demo       o0V1D.k*qdJaydzha3eYQlvdDOjRLg4v
-
-This is the only time these passwords are shown. Nothing is stored.
-
-Write these into docker-compose.yml, then take the stack down and up,
-or those components keep authenticating with the old values:
-
-  service wazuh.dashboard:
-    - DASHBOARD_PASSWORD=G2wrq1B20.eXC85*-8inI+F27y8UwoL.
-  service wazuh.manager:
-    - INDEXER_PASSWORD=Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM
-```
-
-**Copy the whole output somewhere safe before going on.** It is not written to
-any file and it is not shown again. The `admin` password is the one that logs
-into the dashboard.
-
-**3. Change the Wazuh API passwords.**
-
-```bash
-docker compose exec wazuh.manager /password-tool.sh --all
-```
-
-```
-Changed on this manager node:
-
-  wazuh            ZD04YaYFH*JC?gOvWWaF54O-MrgJEm6K
-  wazuh-wui        VdzPHTfpFCw8MbPkX?nek2902VkwYDsQ
-
-This is the only time these passwords are shown. Nothing is stored.
-
-Write these into docker-compose.yml, then take the stack down and up,
-or those components keep authenticating with the old values:
-
-  service wazuh.dashboard:
-    - API_PASSWORD=VdzPHTfpFCw8MbPkX?nek2902VkwYDsQ
-```
-
-**4. Write the three service passwords into `docker-compose.yml`.**
-
-Replace the default values, leaving the usernames as they are:
-
-```yaml
-  wazuh.manager:
-    environment:
-      - INDEXER_USERNAME=wazuh-manager
-      - INDEXER_PASSWORD=Bqf7j57J3BNEb5RgP9kprDX0GY*6QjmM
-
-  wazuh.dashboard:
-    environment:
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=G2wrq1B20.eXC85*-8inI+F27y8UwoL.
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=VdzPHTfpFCw8MbPkX?nek2902VkwYDsQ
-```
-
-The other five passwords go nowhere in the file: no container presents them.
-
-**5. Take the stack down and up.**
-
-```bash
-docker compose down
-docker compose up -d
-```
-
-Do **not** add `-v`. That deletes the volumes, and with them the security index
-and the API user database, which is where the new passwords now live: the
-deployment would come back on the defaults and this procedure would have to be
-repeated.
-
-`docker compose restart` is not enough either when the values in the file have
-changed: `down` and `up` is what recreates the containers with the new
-environment.
-
-**6. Confirm.**
-
-```bash
-../tools/tests/check-default-credentials.sh
-```
-
-Every account has to be refused with its username as its password. Then log
-into the dashboard as `admin` with the new password.
-
-### What the tool touches
-
-It changes the password of the accounts you name, on the running cluster, and
-nothing else:
-
-| | |
-| - | - |
-| Passwords of the accounts named | changed |
-| Passwords of every other account, including ones you created | untouched |
-| Accounts you created yourself | kept, with their roles, attributes and description |
-| Roles and role mappings | not written at all |
-| The user database inside the image | not modified |
-
-It works this way because it takes the user database from the running cluster
-before changing it, rather than uploading the one in the image.
-
-## Changing one password later
-
-The same tool, with `--user` instead of `--all`:
-
-```bash
-docker compose exec wazuh.indexer /password-tool.sh --user admin
+docker compose exec wazuh.indexer /password-tool.sh --user kibanaserver
 docker compose exec wazuh.manager /password-tool.sh --user wazuh-wui
 ```
 
-To choose the password instead of having one generated, pass it on standard
-input:
+`--all` changes every account of that component. To choose the password
+yourself, pass it on standard input:
 
 ```bash
-printf '%s\n' 'MyNewPassword.1' | \
-  docker compose exec -T wazuh.indexer /password-tool.sh --user admin --stdin
+printf '%s\n' '<password>' | docker compose exec -T wazuh.indexer /password-tool.sh --user admin --stdin
 ```
 
-A password must be 8 to 64 characters and contain an upper case letter, a lower
-case letter, a digit and one of `.*+?-`. The Wazuh API rejects anything else.
+The printed commands have to be run, because the components that consume an
+account keep the value they stored. For `kibanaserver`, for example, they
+update both env files, write the new password into the dashboard keystore and
+restart the dashboard:
 
-If the account you changed has a Compose variable, repeat steps 4 and 5.
-Changing `admin`, `wazuh-admin`, `wazuh-readonly`, `wazuh-demo` or `wazuh` takes
-effect immediately and needs no restart.
+```text
+  kibanaserver:
+    sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/indexer.env
+    sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/dashboard.env
+    printf '%s' '<new password>' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
+    docker compose restart wazuh.dashboard
+```
+
+| Account | Consumer updated by the printed commands |
+| - | - |
+| `admin`, `wazuh` | None: only the env file |
+| `kibanaserver` | Dashboard keystore, `opensearch.password` |
+| `wazuh-manager` | Manager keystore, `indexer` / `password` |
+| `wazuh-wui` | Dashboard keystore, `wazuh_core.hosts.default.password` |
+
+The manager's tool refuses to run before the manager's first start. It would
+otherwise create the Wazuh API user database itself, and the first start would
+then keep that database instead of the passwords in `manager.env`.
 
 ## Multi-node deployments
 
-**The indexer accounts are cluster-wide.** Run the tool on `wazuh1.indexer`,
-which is the node that mounts the admin certificate, and the change reaches the
-three nodes:
+- **Indexer:** the three indexer nodes share `indexer.env`. Each writes the same
+  passwords on its first start, so it does not matter which node initializes the
+  cluster's security configuration. The indexer accounts are cluster-wide:
+  change them on `wazuh1.indexer`, the node that mounts the admin certificate.
+- **Manager:** `wazuh.master` and `wazuh.worker` share `manager.env`, so both
+  create their Wazuh API user database with the same passwords. The database is
+  local to each node and the cluster does not synchronize it. When you change an
+  API password on the master, set the same value on the worker. The tool prints
+  the command:
 
-```bash
-docker compose exec wazuh1.indexer /password-tool.sh --all
-```
+  ```bash
+  docker compose exec wazuh.master /password-tool.sh --user wazuh-wui
+  printf '%s\n' '<the wazuh-wui password it printed>' | \
+    docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
+  ```
 
-`INDEXER_PASSWORD` then has to be written into both `wazuh.master` and
-`wazuh.worker`.
+- **The printed commands** use the single-node service names. In multi-node, the
+  manager keystore commands have to be run on `wazuh.master` and on
+  `wazuh.worker`.
 
-**The Wazuh API accounts are not.** The RBAC database is local to each manager
-node and the cluster does not synchronize it, so every node has to be set to the
-same value. Change them on the master, then set the same passwords on each
-worker with `--stdin`; the tool prints the exact command:
+## Password rules
 
-```bash
-docker compose exec wazuh.master /password-tool.sh --all
+These are the rules the Wazuh packages apply. `credentials-conf.sh`, both
+`password-tool.sh` and the components at start refuse anything else:
 
-printf '%s\n' '<the wazuh password it printed>' | \
-  docker compose exec -T wazuh.worker /password-tool.sh --user wazuh --stdin
-printf '%s\n' '<the wazuh-wui password it printed>' | \
-  docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
-```
+- 12 to 64 characters, only from `A-Z a-z 0-9 . , _ + : @ % ^ = ~ -`;
+- at least one lowercase letter, one uppercase letter, one digit and one symbol.
 
-**Do not skip the worker.** The API daemon runs on the master only, so a worker
-serves no API and nothing about the deployment looks wrong while its accounts
-are still on the defaults. What that database is for is the moment the worker
-becomes the master: a promoted node with an untouched database starts answering
-with `wazuh` and `wazuh-wui` as their own passwords. The step is what keeps a
-failover from undoing this procedure.
+Generated passwords are 32 characters long.
 
 ## Checking that no default is left
 
@@ -248,34 +181,29 @@ cd single-node        # or multi-node
 ../tools/tests/check-default-credentials.sh
 ```
 
-It asserts that the image carries none of the OpenSearch demo accounts and that
-no Wazuh indexer or Wazuh API account authenticates with its own username as its
-password. **A deployment that has not been through the procedure above fails
-this check**, which is what it is for.
-
-The Wazuh API accounts are checked in two places: on the published API, and in
-the user database of every manager node the Compose file defines. The second one
-is what covers a worker, whose accounts no API answers for. A worker that has
-never been through the step above has no user database at all, and the check
-reports that as well, because the database a promotion creates holds the
-defaults.
+It asserts two things. The image carries none of the OpenSearch demo accounts.
+No Wazuh indexer or Wazuh API account authenticates with its own username as its
+password, on the published API and in the user database of every manager node.
 
 ## Notes
 
-- The passwords live in the security index of the indexer and in the RBAC
-  database of each manager node, both on named volumes. Removing those volumes
-  (`docker compose down -v`) returns the deployment to the defaults.
-- `password-tool.sh` writes no file and keeps no copy. A password that is lost
-  is replaced, not recovered: run the tool again for that account.
-- A password written into `docker-compose.yml` is in clear text in a file that
-  is usually under version control. Keep it out of your commits, and restrict
-  read access to the deployment directory as you do for `wazuh-certificates/`.
-- The indexer accounts are `reserved`, so the security API refuses to modify
-  them. `password-tool.sh` goes through `securityadmin` with the admin
-  certificate the deployment already mounts, which is why it is the supported
-  way to change them.
-- `/securityadmin.sh` on its own is a different thing. With no arguments it
-  uploads the whole security configuration of the image, replacing the one the
-  cluster is running: every internal user that is not in the image is deleted,
-  custom role mappings are reverted, and every password returns to the default
-  of the image. Use it only when that is what you want.
+- `config/credentials/*.env` is the record of the deployment's passwords, in
+  clear text. The directory is in `.gitignore`: keep it out of your commits,
+  back it up with the certificates, and restrict access to it.
+- The files are also passed to the containers as environment variables, so
+  anyone who can run `docker inspect` on the host can read them. The containers
+  drop them from the environment of their services once the values are stored.
+- `docker compose down -v` removes the stores. The next start then takes the
+  passwords from the env files again.
+- The names of earlier releases still work as aliases, in the environment only:
+  `INDEXER_PASSWORD` on the manager, and `DASHBOARD_PASSWORD` and `API_PASSWORD`
+  on the dashboard. `INDEXER_USERNAME` and `DASHBOARD_USERNAME` are ignored: the
+  accounts are always `wazuh-manager` and `kibanaserver`.
+- `/securityadmin.sh` on its own is a different thing. With no arguments, it
+  uploads the whole security configuration of the image and replaces the one the
+  cluster is running: internal users that are not in the image are deleted,
+  custom role mappings are reverted, and every password is replaced by what the
+  container's own `internal_users.yml` holds. That is the digests of the first
+  start, which undoes any later rotation, or, in a recreated container, the
+  placeholders the image ships, which no password matches. Use
+  `password-tool.sh` to change a password.

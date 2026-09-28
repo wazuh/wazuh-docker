@@ -21,6 +21,15 @@ SERVICE_USER=wazuh-indexer
 if [ "$(id -u)" = "0" ]; then
     export WAZUH_INDEXER_CONFIG_DIR="$OPENSEARCH_PATH_CONF"
 
+    # The marker is on the data volume, the digests in this container's
+    # internal_users.yml. A recreated container has the placeholders again
+    # while the marker says resolution is done, and a cluster that has not
+    # initialized its security index yet would load them: resolve again.
+    if [ -f /var/lib/wazuh-indexer/.initialized ] && \
+       grep -qE 'hash: "\$\{WAZUH_INDEXER_[A-Z]+_PASSWORD\}"' "$OPENSEARCH_PATH_CONF/opensearch-security/internal_users.yml"; then
+        rm -f /var/lib/wazuh-indexer/.initialized
+    fi
+
     # Until the node is initialized, the resolver would generate these itself,
     # inside this container, where nobody could read them back.
     if [ ! -f /var/lib/wazuh-indexer/.initialized ]; then

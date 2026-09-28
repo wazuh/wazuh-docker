@@ -33,7 +33,7 @@ API_URL="https://localhost:55000"
 DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
 
 # Accounts the Wazuh indexer image keeps.
-INDEXER_USERS="admin kibanaserver wazuh-manager wazuh-admin wazuh-readonly wazuh-demo"
+INDEXER_USERS="admin kibanaserver wazuh-manager"
 
 # Accounts the Wazuh API seeds its user database with.
 API_USERS="wazuh wazuh-wui"

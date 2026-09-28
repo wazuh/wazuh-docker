@@ -11,7 +11,7 @@ cd single-node
 ../tools/tests/check-default-credentials.sh
 ```
 
-It asserts that the Wazuh indexer image ships none of the OpenSearch demo accounts and that no Wazuh indexer or Wazuh API account authenticates with its own username as its password. A deployment that has not been through the first-start password change fails it; see [Credentials](../credentials.md).
+It asserts that the Wazuh indexer image ships none of the OpenSearch demo accounts and that no Wazuh indexer or Wazuh API account authenticates with its own username as its password. See [Credentials](../credentials.md).
 
 ---
 
@@ -227,6 +227,8 @@ Runs on the **runner** (not the VM):
 4. **Generate certificates on VM**: runs `tools/utils/deployment/certificates-conf.sh --cert --copy --priv --agent-san {SSH_HOST}` inside `/tmp/wazuh-docker/{deployment}/`
 
    `--agent-san` puts the VM's own address in the agent listener certificate of every manager node, which is the address an agent outside the Compose network dials on `1517`. In multi-node it is the only way to cover the shared `nginx` entry point, since the script rejects one address repeated across manager nodes in `config.yml`.
+
+5. **Generate credentials on VM**: runs `tools/utils/deployment/credentials-conf.sh` in the same directory, with the `wazuh-credentials.sh` library downloaded from `wazuh-installation-assistant` at the branch of the version under test. It writes `config/credentials/{indexer,manager,dashboard}.env`, without which `docker compose up` refuses to start.
 
 #### Deployment
 

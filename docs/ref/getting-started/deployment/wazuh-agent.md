@@ -13,11 +13,14 @@ Follow these steps to deploy the Wazuh agent using Docker.
     your Wazuh manager, in the `WAZUH_ENROLLMENT_TOKEN` environment variable —
     this is the only way to enroll, there is no password-based path any more.
 
-    Mint one against the manager's API (`wazuh`/`wazuh` on a deployment that has
-    not been through [Credentials](../../credentials.md) yet):
+    Mint one against the manager's API as `wazuh`, whose password is
+    `WAZUH_MANAGER_API_PASSWORD` in the deployment's
+    `config/credentials/manager.env` (see [Credentials](../../credentials.md)).
+    From that deployment's directory:
 
     ```bash
-    curl -k -u wazuh:wazuh -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/security/user/authenticate"
+    printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' config/credentials/manager.env | cut -d= -f2-)" | \
+      curl -k -K - -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/security/user/authenticate"
     # -> {"data": {"token": "<JWT>"}}
 
     curl -k -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/agents/enrollment-tokens" \

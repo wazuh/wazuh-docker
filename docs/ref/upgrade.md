@@ -97,7 +97,7 @@ docker compose exec wazuh.indexer /password-tool.sh --all
 docker compose exec wazuh.manager /password-tool.sh --all
 ```
 
-Both steps are targeted: they change the accounts they name and leave every other account, role and role mapping alone. In multi-node, run them on `wazuh1.indexer`; the security configuration is cluster-wide. Then write the service passwords into `docker-compose.yml` and recreate the stack, as described in [Credentials](credentials.md).
+Both steps are targeted: they change the accounts they name and leave every other account, role and role mapping alone. In multi-node, run them on `wazuh1.indexer`; the security configuration is cluster-wide. Then run the commands each tool prints: they write the new passwords into the dashboard and manager keystores and into `config/credentials/*.env`, as described in [Credentials](credentials.md#changing-a-password-later).
 
 > **Do not use `/securityadmin.sh` on its own for this.** With no arguments it uploads the whole security configuration of the image, which replaces the one the cluster is running: every internal user that is not in the image is deleted, custom role mappings are reverted, and every password goes back to the default of the image.
 
