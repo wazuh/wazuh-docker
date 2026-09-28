@@ -150,10 +150,12 @@ Follow these steps to deploy the Wazuh agent using Docker.
     trust anchor a token enrollment writes.
 
     **Note:** A CA on its own means the certificate chain is verified but the
-    hostname is not. `WAZUH_AGENT_SSL_VERIFICATION` overrides that with `full`,
-    `certificate`, `system` or `none`. `WAZUH_AGENT_SSL_CERT` and
-    `WAZUH_AGENT_SSL_KEY` add a client certificate, which only a manager
-    configured with `<remote><https><ca>` asks for. The full table is in
+    hostname is not, which is what lets one agent reach a manager through a name
+    the certificate does not carry, such as a load balancer.
+    `WAZUH_AGENT_SSL_VERIFICATION` overrides that with `full`, `certificate`,
+    `system` or `none`. `WAZUH_AGENT_SSL_CERT` and `WAZUH_AGENT_SSL_KEY` add a
+    client certificate, which only a manager configured with
+    `<remote><https><ca>` asks for. The full table is in
     [Environment Variables](../../configuration/environment-variables.md#wazuh-agent).
 
     **Note:** With `full`, the address in `WAZUH_MANAGER_ENDPOINT` also has to be
