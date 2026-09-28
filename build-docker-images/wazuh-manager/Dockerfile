@@ -93,7 +93,9 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
-RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iproute hostname -y && \
+# util-linux-core provides flock, which the credentials resolver takes on its
+# first start; the tools it needs to issue certificates are not required here.
+RUN dnf install openssl findutils procps shadow-utils util-linux-core -y && \
     dnf clean all && \
     getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \

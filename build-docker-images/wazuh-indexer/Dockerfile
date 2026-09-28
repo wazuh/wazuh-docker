@@ -32,10 +32,25 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_indexer_${RPM_ARCH}_rpm" && \
     indexer_url="${!URL_VAR}" && \
-    dnf install curl-minimal openssl xz tar findutils shadow-utils -y &&\
+    dnf install curl-minimal openssl xz tar findutils shadow-utils cpio -y &&\
     curl -o /wazuh-indexer.rpm "${indexer_url}" && \
     dnf install /wazuh-indexer.rpm -y && \
-    rm -rf /wazuh-indexer.rpm && \
+    # The package's %post resolved credentials for this build host. --clear
+    # removes the published keys, certificates and CA, but not the password
+    # digests it wrote into internal_users.yml or the DNs in opensearch.yml:
+    # both files are restored from the package, and the build CA is dropped
+    # from the JVM truststore, so each container resolves its own at start.
+    $INSTALL_DIR/bin/resolve-credentials.sh --clear && \
+    (cd / && rpm2cpio /wazuh-indexer.rpm | cpio -idu --quiet \
+        ./etc/wazuh-indexer/opensearch-security/internal_users.yml \
+        ./etc/wazuh-indexer/opensearch.yml) && \
+    chown $USER:$GROUP /etc/wazuh-indexer/opensearch-security/internal_users.yml /etc/wazuh-indexer/opensearch.yml && \
+    chmod 640 /etc/wazuh-indexer/opensearch-security/internal_users.yml && \
+    chmod 660 /etc/wazuh-indexer/opensearch.yml && \
+    if $INSTALL_DIR/jdk/bin/keytool -list -cacerts -storepass changeit -alias wazuh-root-ca >/dev/null 2>&1; then \
+        $INSTALL_DIR/jdk/bin/keytool -delete -cacerts -storepass changeit -alias wazuh-root-ca; \
+    fi && \
+    rm -rf /etc/wazuh /wazuh-indexer.rpm && \
     dnf clean all && \
     bash config.sh
 
@@ -60,7 +75,9 @@ COPY config/entrypoint.sh /
 COPY config/securityadmin.sh /
 COPY config/password-tool.sh /
 
-RUN yum install curl-minimal shadow-utils findutils hostname -y && \
+# The entrypoint and the tools run as root, so none of them may be writable
+# by the service user.
+RUN yum install curl-minimal shadow-utils findutils hostname util-linux -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
@@ -71,10 +88,11 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
             --shell /sbin/nologin \
             --comment "$USER user" \
             $USER && \
-    chmod 700 /entrypoint.sh /securityadmin.sh /password-tool.sh && \
+    chown root:root /entrypoint.sh /securityadmin.sh /password-tool.sh && \
+    chmod 755 /entrypoint.sh && \
+    chmod 700 /securityadmin.sh /password-tool.sh && \
     mkdir -p $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \
     mkdir -p /var/lib/wazuh-indexer && chown ${WAZUH_UID}:${WAZUH_GID} /var/lib/wazuh-indexer && \
     mkdir -p $INSTALL_DIR/logs && chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR/logs && \
     mkdir -p /run/wazuh-indexer && chown ${WAZUH_UID}:${WAZUH_GID} /run/wazuh-indexer && \
@@ -82,7 +100,14 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
 
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 
+# The credentials resolver runs as root from the entrypoint: it and the
+# directories holding it stay root-owned.
 RUN chmod 700 $INSTALL_DIR && \
+    chown root:root $INSTALL_DIR/bin $INSTALL_DIR/lib \
+          $INSTALL_DIR/bin/resolve-credentials.sh $INSTALL_DIR/lib/wazuh-credentials.sh && \
+    chmod 755 $INSTALL_DIR/bin $INSTALL_DIR/lib && \
+    chmod 750 $INSTALL_DIR/bin/resolve-credentials.sh && \
+    chmod 644 $INSTALL_DIR/lib/wazuh-credentials.sh && \
     chmod 700 $INSTALL_DIR/config && \
     chmod 600 $INSTALL_DIR/config/jvm.options && \
     chmod 600 $INSTALL_DIR/config/opensearch.yml && \
@@ -94,7 +119,7 @@ RUN chmod 700 $INSTALL_DIR && \
     { [ -d "$ENGINE_DIR/sockets" ] && chmod 777 "$ENGINE_DIR/sockets" || true; }; \
     fi
 
-USER wazuh-indexer
+# Starts as root and drops to wazuh-indexer once the credentials are resolved
 WORKDIR $INSTALL_DIR
 
 # Services ports

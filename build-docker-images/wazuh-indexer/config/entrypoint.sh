@@ -13,6 +13,42 @@ export OPENSEARCH_HOME=/usr/share/wazuh-indexer
 export OPENSEARCH_PATH_CONF=$OPENSEARCH_HOME/config
 export CONFIG_FILE=${OPENSEARCH_PATH_CONF}/opensearch.yml
 export PATH=$OPENSEARCH_HOME/bin:$PATH
+SERVICE_USER=wazuh-indexer
+
+# Credentials are resolved as root, from the environment (see
+# tools/utils/deployment/credentials-conf.sh), and the indexer itself runs as
+# SERVICE_USER: the entrypoint re-executes itself once they are stored.
+if [ "$(id -u)" = "0" ]; then
+    export WAZUH_INDEXER_CONFIG_DIR="$OPENSEARCH_PATH_CONF"
+
+    # Until the node is initialized, the resolver would generate these itself,
+    # inside this container, where nobody could read them back.
+    if [ ! -f /var/lib/wazuh-indexer/.initialized ]; then
+        missing=""
+        for key in WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD; do
+            [ -n "${!key}" ] && continue
+            [ "$key" = WAZUH_INDEXER_KIBANASERVER_PASSWORD ] && [ -n "$DASHBOARD_PASSWORD" ] && continue
+            missing="$missing $key"
+        done
+        if [ -n "$missing" ]; then
+            for key in $missing; do
+                echo "credentials: MISSING $key" >&2
+            done
+            echo "credentials: create the deployment credentials with tools/utils/deployment/credentials-conf.sh" >&2
+            exit 1
+        fi
+    fi
+
+    if ! "$OPENSEARCH_HOME/bin/resolve-credentials.sh" --prestart; then
+        echo "credentials: the indexer cannot start until the keys above are set in its environment" >&2
+        echo "credentials: (config/credentials/indexer.env, created by tools/utils/deployment/credentials-conf.sh)" >&2
+        exit 1
+    fi
+    unset WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD \
+          WAZUH_INDEXER_MANAGER_PASSWORD DASHBOARD_PASSWORD
+
+    exec setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups "$0" "$@"
+fi
 
 
 # The virtual file /proc/self/cgroup should list the current cgroup
@@ -69,32 +105,28 @@ function runOpensearch {
 
 }
 
+# Replaces the list under a top-level opensearch.yml key with the given
+# semicolon-separated DNs.
+function set_dn_list {
+  local key="$1" list="$2" clean yaml
+  clean=$(echo "$list" | sed 's/^["'\'']//; s/["'\'']$//; s/""/"/g')
+  yaml=$(echo "$clean" | tr ';' '\n' | sed 's/^/- "/; s/$/"/')
+  awk -v key="$key" -v repl="$yaml" '
+    index($0, key ":") == 1 { print key ":"; print repl; skip=1; next }
+    skip && /^[[:space:]]*#?[[:space:]]*-[[:space:]]/ { next }
+    { skip=0; print }
+  ' "$CONFIG_FILE" > "${CONFIG_FILE}.new" && cat "${CONFIG_FILE}.new" > "$CONFIG_FILE"
+  rm -f "${CONFIG_FILE}.new"
+}
+
+# The package ships both lists empty and fills them only when it issues the
+# certificates itself; here the certificates are mounted, so their DNs come
+# from the environment.
 function configureOpensearch {
-# Update opensearch.yml with NODES_DN if set
-if [ -n "$NODES_DN" ]; then
-
-  CLEAN_NODES_DN=$(echo "$NODES_DN" | sed 's/^["'\'']//; s/["'\'']$//; s/""/"/g')
-  NODES_DN_YAML=$(echo $CLEAN_NODES_DN | tr ';' '\n' | sed 's/^/- "/; s/$/"/')
-
-  awk '
-    /^plugins\.security\.nodes_dn:/ {in_block=1; print; next}
-    in_block && /^[^#[:space:]-]/ {in_block=0}
-    !in_block || /^plugins\.security\.nodes_dn:/ {next}
-    {print}
-  ' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-
-  awk -v repl="$NODES_DN_YAML" '
-    /^plugins\.security\.nodes_dn:/ {
-      print "plugins.security.nodes_dn:";
-      print repl;
-      skip=1; next
-    }
-    skip && /^[^#[:space:]-]/ {skip=0}
-    !skip
-  ' "${CONFIG_FILE}" > "${CONFIG_FILE}.new"
-  mv "${CONFIG_FILE}.new" "$CONFIG_FILE"
-  rm -f "${CONFIG_FILE}.tmp"
-fi
+  if [ -n "$NODES_DN" ]; then
+    set_dn_list plugins.security.nodes_dn "$NODES_DN"
+  fi
+  set_dn_list plugins.security.authcz.admin_dn "${ADMIN_DN:-CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US}"
 }
 
 # Prepend "opensearch" command if no argument was provided or if the first
