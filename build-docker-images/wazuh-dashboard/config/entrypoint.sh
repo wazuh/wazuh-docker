@@ -50,8 +50,17 @@ if [ "$(id -u)" = "0" ]; then
     /install-credentials.sh remove
     unset WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
 
+    export WAZUH_ENTRYPOINT_DROPPED=1
     exec setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups "$0" "$@"
 fi
+
+# Started as another user, the credentials above were never resolved.
+if [ -z "$WAZUH_ENTRYPOINT_DROPPED" ]; then
+    echo "credentials: this container has to start as root: it resolves the credentials and then runs the dashboard as $SERVICE_USER" >&2
+    echo "credentials: remove the user it is started as (user: in Compose, runAsUser in Kubernetes)" >&2
+    exit 1
+fi
+unset WAZUH_ENTRYPOINT_DROPPED
 
 opensearch_dashboards_vars=(
     opensearch.hosts

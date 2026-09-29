@@ -93,7 +93,6 @@ RUN yum install curl-minimal shadow-utils findutils hostname util-linux openssl 
     chmod 755 /entrypoint.sh && \
     chmod 700 /securityadmin.sh /password-tool.sh /install-credentials.sh && \
     mkdir -p $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
     mkdir -p /var/lib/wazuh-indexer && chown ${WAZUH_UID}:${WAZUH_GID} /var/lib/wazuh-indexer && \
     mkdir -p $INSTALL_DIR/logs && chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR/logs && \
     mkdir -p /run/wazuh-indexer && chown ${WAZUH_UID}:${WAZUH_GID} /run/wazuh-indexer && \
@@ -101,14 +100,12 @@ RUN yum install curl-minimal shadow-utils findutils hostname util-linux openssl 
 
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 
-# The credentials resolver runs as root from the entrypoint: it and the
-# directories holding it stay root-owned.
-RUN chmod 700 $INSTALL_DIR && \
-    chown root:root $INSTALL_DIR/bin $INSTALL_DIR/lib \
-          $INSTALL_DIR/bin/resolve-credentials.sh $INSTALL_DIR/lib/wazuh-credentials.sh && \
-    chmod 755 $INSTALL_DIR/bin $INSTALL_DIR/lib && \
-    chmod 750 $INSTALL_DIR/bin/resolve-credentials.sh && \
-    chmod 644 $INSTALL_DIR/lib/wazuh-credentials.sh && \
+# COPY keeps the package's ownership of everything below the install
+# directory, but not of the directory itself: it gets the package's
+# root:wazuh-indexer 750 here. The credentials resolver runs as root, so
+# nothing it runs may belong to the service user.
+RUN chown root:${WAZUH_GID} $INSTALL_DIR && \
+    chmod 750 $INSTALL_DIR && \
     chmod 700 $INSTALL_DIR/config && \
     chmod 600 $INSTALL_DIR/config/jvm.options && \
     chmod 600 $INSTALL_DIR/config/opensearch.yml && \

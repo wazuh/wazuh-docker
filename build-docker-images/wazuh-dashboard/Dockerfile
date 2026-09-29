@@ -41,10 +41,7 @@ RUN yum install shadow-utils -y && \
     # The package's %post resolved credentials for this build host; remove
     # them so no two containers from this image share one.
     /usr/share/wazuh-dashboard/bin/resolve-credentials --clear && \
-    rm -rf /etc/wazuh && \
-    # The dashboard walks its home directory at start and exits on EACCES;
-    # lib/ stays root-owned, and so not writable by the service user.
-    chmod 755 /usr/share/wazuh-dashboard/lib
+    rm -rf /etc/wazuh
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -95,11 +92,12 @@ RUN yum install shadow-utils util-linux -y && \
     chmod 700 /install-credentials.sh && \
     chown ${WAZUH_UID}:${WAZUH_GID} /wazuh_dashboard_config.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
-    mkdir -p $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
-# Copy Install dir from builder to current image
+# COPY keeps the package's ownership of everything below the install
+# directory, and creates the directory itself root:root 755, as the package
+# installs it. The credentials resolver runs as root, so nothing it runs may
+# belong to the service user.
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
 

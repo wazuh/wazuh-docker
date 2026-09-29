@@ -64,8 +64,17 @@ if [ "$(id -u)" = "0" ]; then
     unset WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD \
           WAZUH_INDEXER_MANAGER_PASSWORD DASHBOARD_PASSWORD
 
+    export WAZUH_ENTRYPOINT_DROPPED=1
     exec setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups "$0" "$@"
 fi
+
+# Started as another user, the credentials above were never resolved.
+if [ -z "$WAZUH_ENTRYPOINT_DROPPED" ]; then
+    echo "credentials: this container has to start as root: it resolves the credentials and then runs the indexer as $SERVICE_USER" >&2
+    echo "credentials: remove the user it is started as (user: in Compose, runAsUser in Kubernetes)" >&2
+    exit 1
+fi
+unset WAZUH_ENTRYPOINT_DROPPED
 
 
 # The virtual file /proc/self/cgroup should list the current cgroup
@@ -127,8 +136,11 @@ function runOpensearch {
 function set_dn_list {
   local key="$1" list="$2" clean yaml
   clean=$(echo "$list" | sed 's/^["'\'']//; s/["'\'']$//; s/""/"/g')
-  yaml=$(echo "$clean" | tr ';' '\n' | sed 's/^/- "/; s/$/"/')
-  awk -v key="$key" -v repl="$yaml" '
+  yaml=$(echo "$clean" | tr ';' '\n' | sed "s/'/''/g; s/^/- '/; s/\$/'/")
+  # Through ENVIRON, not awk -v, and in single-quoted YAML: an escaped DN
+  # (O=Wazuh\, Inc.) keeps its backslash in both.
+  KEY="$key" REPL="$yaml" awk '
+    BEGIN { key = ENVIRON["KEY"]; repl = ENVIRON["REPL"] }
     index($0, key ":") == 1 { print key ":"; print repl; skip=1; next }
     skip && /^[[:space:]]*#?[[:space:]]*-[[:space:]]/ { next }
     { skip=0; print }

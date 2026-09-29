@@ -112,6 +112,10 @@ own user. The passwords are therefore not in the container's environment, and
   --force-recreate <service>`) for it to see an edited file. This only matters
   when the values are read again: see
   [What the first start does](#what-the-first-start-does).
+- **Start as root:** the containers resolve the credentials as root and then
+  run the service under its own user. Started as another user (`user:` in
+  Compose, `runAsUser` in Kubernetes), the indexer and dashboard containers stop
+  with `credentials: this container has to start as root`.
 - **Capabilities:** the file keeps the owner and the `0600` mode it has on the
   host, and root reads it through Docker's default capabilities. A service
   started with `cap_drop: [ALL]` cannot read it, and stops with
