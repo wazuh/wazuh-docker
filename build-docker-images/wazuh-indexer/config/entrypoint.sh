@@ -15,11 +15,15 @@ export CONFIG_FILE=${OPENSEARCH_PATH_CONF}/opensearch.yml
 export PATH=$OPENSEARCH_HOME/bin:$PATH
 SERVICE_USER=wazuh-indexer
 
-# Credentials are resolved as root, from the environment (see
-# tools/utils/deployment/credentials-conf.sh), and the indexer itself runs as
-# SERVICE_USER: the entrypoint re-executes itself once they are stored.
+# Credentials are resolved as root and the indexer itself runs as SERVICE_USER:
+# the entrypoint re-executes itself once they are stored. They come from the
+# wazuh-credentials secret (config/credentials/indexer.env, created by
+# tools/utils/deployment/credentials-conf.sh), or from the environment.
 if [ "$(id -u)" = "0" ]; then
     export WAZUH_INDEXER_CONFIG_DIR="$OPENSEARCH_PATH_CONF"
+
+    /install-credentials.sh install || exit 1
+    . "$OPENSEARCH_HOME/lib/wazuh-credentials.sh"
 
     # The marker is on the data volume, the digests in this container's
     # internal_users.yml. A recreated container has the placeholders again
@@ -37,6 +41,7 @@ if [ "$(id -u)" = "0" ]; then
         for key in WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD; do
             [ -n "${!key}" ] && continue
             [ "$key" = WAZUH_INDEXER_KIBANASERVER_PASSWORD ] && [ -n "$DASHBOARD_PASSWORD" ] && continue
+            wazuh_env_get "$key" >/dev/null 2>&1 && continue
             missing="$missing $key"
         done
         if [ -n "$missing" ]; then
@@ -44,15 +49,18 @@ if [ "$(id -u)" = "0" ]; then
                 echo "credentials: MISSING $key" >&2
             done
             echo "credentials: create the deployment credentials with tools/utils/deployment/credentials-conf.sh" >&2
+            /install-credentials.sh remove
             exit 1
         fi
     fi
 
     if ! "$OPENSEARCH_HOME/bin/resolve-credentials.sh" --prestart; then
-        echo "credentials: the indexer cannot start until the keys above are set in its environment" >&2
-        echo "credentials: (config/credentials/indexer.env, created by tools/utils/deployment/credentials-conf.sh)" >&2
+        echo "credentials: the indexer cannot start until the keys above are set in config/credentials/indexer.env" >&2
+        echo "credentials: (created by tools/utils/deployment/credentials-conf.sh)" >&2
+        /install-credentials.sh remove
         exit 1
     fi
+    /install-credentials.sh remove
     unset WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD \
           WAZUH_INDEXER_MANAGER_PASSWORD DASHBOARD_PASSWORD
 
@@ -128,14 +136,39 @@ function set_dn_list {
   rm -f "${CONFIG_FILE}.new"
 }
 
+# Prints the DN of a certificate in RFC 2253 form, or nothing.
+function cert_dn {
+  [ -r "$1" ] || return 0
+  openssl x509 -in "$1" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject= *//'
+}
+
+# Certificate tools do not agree on the order of the RDNs in a subject, and
+# OpenSearch compares DNs as strings, so every DN is listed in both orders.
+function dn_variants {
+  local dn
+  tr ';' '\n' <<< "$1" | while IFS= read -r dn; do
+    [ -n "$dn" ] || continue
+    echo "$dn"
+    case "$dn" in
+      *'\,'*) ;;
+      *) tr ',' '\n' <<< "$dn" | tac | paste -sd, - ;;
+    esac
+  done | awk '!seen[$0]++' | paste -sd';' -
+}
+
 # The package ships both lists empty and fills them only when it issues the
-# certificates itself; here the certificates are mounted, so their DNs come
-# from the environment.
+# certificates itself. Here the certificates are mounted: this node's own DN
+# and the admin DN are read from them, and NODES_DN adds the other nodes.
 function configureOpensearch {
-  if [ -n "$NODES_DN" ]; then
-    set_dn_list plugins.security.nodes_dn "$NODES_DN"
+  local nodes admin
+  nodes="$NODES_DN"
+  admin="$(cert_dn "$OPENSEARCH_PATH_CONF/certs/indexer.pem")"
+  [ -n "$admin" ] && nodes="${nodes:+$nodes;}$admin"
+  if [ -n "$nodes" ]; then
+    set_dn_list plugins.security.nodes_dn "$(dn_variants "$nodes")"
   fi
-  set_dn_list plugins.security.authcz.admin_dn "${ADMIN_DN:-CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US}"
+  admin="${ADMIN_DN:-$(cert_dn "$OPENSEARCH_PATH_CONF/certs/admin.pem")}"
+  set_dn_list plugins.security.authcz.admin_dn "$(dn_variants "${admin:-CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US}")"
 }
 
 # Prepend "opensearch" command if no argument was provided or if the first

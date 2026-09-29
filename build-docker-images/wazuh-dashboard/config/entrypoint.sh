@@ -17,9 +17,11 @@ export OPENSEARCH_DASHBOARDS_HOME=/usr/share/wazuh-dashboard
 export PATH=$OPENSEARCH_DASHBOARDS_HOME/bin:$PATH
 SERVICE_USER=wazuh-dashboard
 
-# Credentials are resolved as root, from the environment (see
-# tools/utils/deployment/credentials-conf.sh), and the dashboard itself runs
-# as SERVICE_USER: the entrypoint re-executes itself once they are stored.
+# Credentials are resolved as root and the dashboard itself runs as
+# SERVICE_USER: the entrypoint re-executes itself once they are stored. They
+# come from the wazuh-credentials secret (config/credentials/dashboard.env,
+# created by tools/utils/deployment/credentials-conf.sh), or from the
+# environment.
 if [ "$(id -u)" = "0" ]; then
     # The resolver and the keystore agree on this directory only if it is set.
     export OSD_PATH_CONF="$OPENSEARCH_DASHBOARDS_HOME/config"
@@ -38,11 +40,14 @@ if [ "$(id -u)" = "0" ]; then
 
     setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups /wazuh_dashboard_config.sh || exit 1
 
+    /install-credentials.sh install || exit 1
     if ! "$OPENSEARCH_DASHBOARDS_HOME/bin/resolve-credentials" --prestart; then
-        echo "credentials: the dashboard cannot start until the keys above are set in its environment" >&2
-        echo "credentials: (config/credentials/dashboard.env, created by tools/utils/deployment/credentials-conf.sh)" >&2
+        echo "credentials: the dashboard cannot start until the keys above are set in config/credentials/dashboard.env" >&2
+        echo "credentials: (created by tools/utils/deployment/credentials-conf.sh)" >&2
+        /install-credentials.sh remove
         exit 1
     fi
+    /install-credentials.sh remove
     unset WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
 
     exec setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups "$0" "$@"

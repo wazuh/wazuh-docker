@@ -94,8 +94,8 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 
     This writes `config/credentials/indexer.env`, `manager.env` and
     `dashboard.env`, with a random password for each account. The Compose file
-    gives each service only its own file, and **the deployment does not start
-    without them**. Keep the files: they are the only record of the passwords.
+    gives each service only its own file, as a secret rather than in its
+    environment, and **the deployment does not start without them**. Keep the files: they are the only record of the passwords.
     To choose a password instead of having one generated, and for the rules a
     password has to meet, see [Credentials](../../credentials.md#creating-the-credentials).
 

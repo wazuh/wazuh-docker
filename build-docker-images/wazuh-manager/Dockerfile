@@ -115,11 +115,14 @@ COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 # Copy entrypoint, init scripts and runtime config
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/password-tool.sh /password-tool.sh
+COPY config/install-credentials.sh /install-credentials.sh
 COPY config/etc/ /etc/
 COPY config/permanent_data.env /
 
 RUN chmod 755 /entrypoint.sh /password-tool.sh && \
-    chmod 700 /etc/wazuh-api-users.py
+    chmod 700 /etc/wazuh-api-users.py && \
+    chown root:root /install-credentials.sh && \
+    chmod 700 /install-credentials.sh
 
 # Services ports
 #   1517/tcp: agent communication and enrollment (Wazuh 5.x agents, HTTPS)

@@ -25,8 +25,9 @@ services:
       - "1515:1515"
       - "514:514/udp"
       - "55000:55000"
-    env_file:
-      - ./config/credentials/manager.env
+    secrets:
+      - source: manager_credentials
+        target: wazuh-credentials
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=master
@@ -69,8 +70,9 @@ services:
     depends_on:
       wazuh.master:
         condition: service_healthy
-    env_file:
-      - ./config/credentials/manager.env
+    secrets:
+      - source: manager_credentials
+        target: wazuh-credentials
     environment:
       - WAZUH_INDEXER_HOSTS=wazuh1.indexer:9200,wazuh2.indexer:9200,wazuh3.indexer:9200
       - WAZUH_NODE_NAME=worker01
@@ -97,12 +99,14 @@ services:
     hostname: wazuh1.indexer
     container_name: multi-node-wazuh1.indexer
     restart: always
-    env_file:
-      - ./config/credentials/indexer.env
+    secrets:
+      - source: indexer_credentials
+        target: wazuh-credentials
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh1.indexer
       - node.name=wazuh1.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -139,12 +143,14 @@ services:
       /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5; until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
     depends_on:
       - wazuh1.indexer
-    env_file:
-      - ./config/credentials/indexer.env
+    secrets:
+      - source: indexer_credentials
+        target: wazuh-credentials
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh2.indexer
       - node.name=wazuh2.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -179,12 +185,14 @@ services:
       /bin/sh -c " echo 'Waiting for wazuh1.indexer...'; sleep 5;until getent hosts wazuh1.indexer; do sleep 2; done; /entrypoint.sh opensearch"
     depends_on:
       - wazuh1.indexer
-    env_file:
-      - ./config/credentials/indexer.env
+    secrets:
+      - source: indexer_credentials
+        target: wazuh-credentials
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
+      - network.publish_host=wazuh3.indexer
       - node.name=wazuh3.indexer
       - cluster.initial_cluster_manager_nodes=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
       - discovery.seed_hosts=wazuh1.indexer,wazuh2.indexer,wazuh3.indexer
@@ -223,8 +231,9 @@ services:
       start_period: 30s
     ports:
       - 443:5601
-    env_file:
-      - ./config/credentials/dashboard.env
+    secrets:
+      - source: dashboard_credentials
+        target: wazuh-credentials
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
@@ -259,6 +268,14 @@ services:
       - wazuh.dashboard
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+secrets:
+  indexer_credentials:
+    file: ./config/credentials/indexer.env
+  manager_credentials:
+    file: ./config/credentials/manager.env
+  dashboard_credentials:
+    file: ./config/credentials/dashboard.env
 
 volumes:
   wazuh-cluster-key:

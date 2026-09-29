@@ -7,8 +7,9 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 - **No default passwords.** The images ship none. `tools/utils/deployment/credentials-conf.sh` generates random passwords for each deployment before its first start, and each component stores them on that start. Change them later with `password-tool.sh`. [Credentials](credentials.md) has the procedure.
 - `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password.
 - The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
-- `config/credentials/*.env` holds the deployment's passwords in clear text, and so does the environment `docker inspect` shows. The directory is in `.gitignore`: keep it out of your commits and restrict read access to the deployment directory.
-- Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of keeping the env files on the host.
+- `config/credentials/*.env` holds the deployment's passwords in clear text. The directory is in `.gitignore`: keep it out of your commits and restrict read access to the deployment directory.
+- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers delete their copy once the values are stored. Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
+- Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of keeping the files on the host.
 - Rotate credentials regularly and after any suspected exposure.
 - The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
 

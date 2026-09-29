@@ -74,10 +74,11 @@ ENV ENGINE_DIR="$INSTALL_DIR/engine"
 COPY config/entrypoint.sh /
 COPY config/securityadmin.sh /
 COPY config/password-tool.sh /
+COPY config/install-credentials.sh /
 
 # The entrypoint and the tools run as root, so none of them may be writable
 # by the service user.
-RUN yum install curl-minimal shadow-utils findutils hostname util-linux -y && \
+RUN yum install curl-minimal shadow-utils findutils hostname util-linux openssl -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
@@ -88,9 +89,9 @@ RUN yum install curl-minimal shadow-utils findutils hostname util-linux -y && \
             --shell /sbin/nologin \
             --comment "$USER user" \
             $USER && \
-    chown root:root /entrypoint.sh /securityadmin.sh /password-tool.sh && \
+    chown root:root /entrypoint.sh /securityadmin.sh /password-tool.sh /install-credentials.sh && \
     chmod 755 /entrypoint.sh && \
-    chmod 700 /securityadmin.sh /password-tool.sh && \
+    chmod 700 /securityadmin.sh /password-tool.sh /install-credentials.sh && \
     mkdir -p $INSTALL_DIR && \
     chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
     mkdir -p /var/lib/wazuh-indexer && chown ${WAZUH_UID}:${WAZUH_GID} /var/lib/wazuh-indexer && \

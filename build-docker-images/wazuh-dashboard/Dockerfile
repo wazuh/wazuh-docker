@@ -75,6 +75,7 @@ ENV USER="wazuh-dashboard" \
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
 COPY config/wazuh_dashboard_config.sh /
+COPY config/install-credentials.sh /
 
 # Update and install dependencies. The entrypoint runs as root to resolve
 # the credentials, so it must not be writable by the service user.
@@ -89,8 +90,9 @@ RUN yum install shadow-utils util-linux -y && \
     --shell /sbin/nologin \
     --comment "$USER user" \
     $USER && \
-    chown root:root /entrypoint.sh && \
+    chown root:root /entrypoint.sh /install-credentials.sh && \
     chmod 755 /entrypoint.sh && \
+    chmod 700 /install-credentials.sh && \
     chown ${WAZUH_UID}:${WAZUH_GID} /wazuh_dashboard_config.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p $INSTALL_DIR && \

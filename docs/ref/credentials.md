@@ -3,7 +3,7 @@
 The Wazuh images ship no passwords. Every deployment gets its own: they are
 generated once, before the first start, by
 `tools/utils/deployment/credentials-conf.sh`. Each component receives only the
-ones it needs, through the environment. On its first start, each component
+ones it needs, as a Compose secret. On its first start, each component
 stores what it received: the indexer in its security configuration, the manager
 in its Wazuh API user database and keystore, the dashboard in its keystore. From
 then on, the stored values are the ones that count.
@@ -12,6 +12,7 @@ then on, the stored values are the ones that count.
 
 - [The accounts](#the-accounts)
 - [Creating the credentials](#creating-the-credentials)
+- [How the passwords reach the containers](#how-the-passwords-reach-the-containers)
 - [What the first start does](#what-the-first-start-does)
 - [Changing a password later](#changing-a-password-later)
 - [Multi-node deployments](#multi-node-deployments)
@@ -70,8 +71,52 @@ Log in to the Wazuh dashboard as 'admin'. Read its password with:
 
 - **No overwrite:** the script never replaces existing files. `--force` replaces
   them, and is only for a deployment that has never been started.
-- **If you skip this step:** `docker compose up` refuses to start and names the
-  env file that is missing.
+- **If you skip this step:** the containers do not start, and Docker names the
+  file that is missing:
+
+  ```text
+  level=warning msg="secret file single-node_manager_credentials does not exist"
+  Error response from daemon: invalid mount config for type "bind": bind source path does not exist: /.../single-node/config/credentials/manager.env
+  ```
+
+## How the passwords reach the containers
+
+The Compose files mount each component's file as the secret `wazuh-credentials`:
+
+```yaml
+secrets:
+  manager_credentials:
+    file: ./config/credentials/manager.env
+
+services:
+  wazuh.manager:
+    secrets:
+      - source: manager_credentials
+        target: wazuh-credentials
+```
+
+At every start, the container installs `/run/secrets/wazuh-credentials` as
+`/etc/wazuh/credentials.env`, the file the Wazuh packages resolve their
+credentials from, readable only by root. Once the component has stored the
+values, the container deletes that copy, before the service starts under its
+own user. The passwords are therefore not in the container's environment, and
+`docker inspect` does not show them.
+
+- **Another path:** set `WAZUH_CREDENTIALS_FILE` to mount the file elsewhere.
+  The container then refuses to start if the file is missing.
+- **Environment variables:** the keys can still be given in the environment,
+  for example with `env_file`. The environment takes precedence over the file,
+  key by key.
+- **Changes to the file:** a running container keeps seeing the file as it was
+  when the container was created. Recreate it (`docker compose up -d
+  --force-recreate <service>`) for it to see an edited file. This only matters
+  when the values are read again: see
+  [What the first start does](#what-the-first-start-does).
+- **Capabilities:** the file keeps the owner and the `0600` mode it has on the
+  host, and root reads it through Docker's default capabilities. A service
+  started with `cap_drop: [ALL]` cannot read it, and stops with
+  `credentials: cannot read /run/secrets/wazuh-credentials: it has to be a
+  regular file that root can read`.
 
 ## What the first start does
 
@@ -81,7 +126,8 @@ them and stores them:
 - **Indexer:** writes the password digests into its security configuration, and
   loads them into the cluster.
 - **Manager:** creates the Wazuh API user database, and stores the indexer
-  password in its keystore.
+  password in its keystore. A cluster worker only stores the indexer password:
+  the Wazuh API runs on the master, so the worker has no user database.
 - **Dashboard:** stores both of its passwords in its keystore.
 
 Later starts, restarts and recreated containers keep what was stored, and the
@@ -148,21 +194,21 @@ then keep that database instead of the passwords in `manager.env`.
   passwords on its first start, so it does not matter which node initializes the
   cluster's security configuration. The indexer accounts are cluster-wide:
   change them on `wazuh1.indexer`, the node that mounts the admin certificate.
-- **Manager:** `wazuh.master` and `wazuh.worker` share `manager.env`, so both
-  create their Wazuh API user database with the same passwords. The database is
-  local to each node and the cluster does not synchronize it. When you change an
-  API password on the master, set the same value on the worker. The tool prints
-  the command:
+- **Manager:** only `wazuh.master` has a Wazuh API user database, so the API
+  passwords are changed there alone:
 
   ```bash
   docker compose exec wazuh.master /password-tool.sh --user wazuh-wui
-  printf '%s\n' '<the wazuh-wui password it printed>' | \
-    docker compose exec -T wazuh.worker /password-tool.sh --user wazuh-wui --stdin
   ```
 
+  `wazuh.worker` has no database, and its `password-tool.sh` refuses to run. If
+  it is promoted to master, it creates the database from `manager.env` when its
+  container is recreated. That is why the printed `sed` commands have to be run:
+  they keep `manager.env` in line with the master.
+
 - **The printed commands** use the single-node service names. In multi-node, the
-  manager keystore commands have to be run on `wazuh.master` and on
-  `wazuh.worker`.
+  manager keystore commands of the indexer's tool (`wazuh-manager` account) have
+  to be run on `wazuh.master` and on `wazuh.worker`.
 
 ## Password rules
 
@@ -184,15 +230,17 @@ cd single-node        # or multi-node
 It asserts two things. The image carries none of the OpenSearch demo accounts.
 No Wazuh indexer or Wazuh API account authenticates with its own username as its
 password, on the published API and in the user database of every manager node.
+A cluster worker without a user database passes, since it has no API accounts.
 
 ## Notes
 
 - `config/credentials/*.env` is the record of the deployment's passwords, in
   clear text. The directory is in `.gitignore`: keep it out of your commits,
   back it up with the certificates, and restrict access to it.
-- The files are also passed to the containers as environment variables, so
-  anyone who can run `docker inspect` on the host can read them. The containers
-  drop them from the environment of their services once the values are stored.
+- The containers get the files as secrets, not as environment variables, and
+  keep no copy once the values are stored. If you pass the keys in the
+  environment instead, anyone who can run `docker inspect` on the host can read
+  them.
 - `docker compose down -v` removes the stores. The next start then takes the
   passwords from the env files again.
 - The names of earlier releases still work as aliases, in the environment only:

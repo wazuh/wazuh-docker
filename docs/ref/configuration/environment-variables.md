@@ -20,8 +20,9 @@ This document outlines the environment variables applicable to the Wazuh Docker 
 The Wazuh Manager container accepts the following environment variables, which can be set in the `docker-compose.yml` file under the `environment` section:
 
 ```yaml
-env_file:
-  - ./config/credentials/manager.env
+secrets:
+  - source: manager_credentials
+    target: wazuh-credentials
 environment:
   - WAZUH_NODE_NAME=wazuh.manager
   - WAZUH_NODE_TYPE=master
@@ -34,8 +35,9 @@ environment:
 
 **Variable Descriptions:**
 
-- `WAZUH_INDEXER_MANAGER_PASSWORD`, `WAZUH_MANAGER_API_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords of the indexer account `wazuh-manager` and of the Wazuh API accounts `wazuh` and `wazuh-wui`, read from `config/credentials/manager.env`, which `tools/utils/deployment/credentials-conf.sh` creates. They are required on the first start and are stored then; later changes to them have no effect. See [Credentials](../credentials.md).
-- `INDEXER_PASSWORD`: accepted as an alias of `WAZUH_INDEXER_MANAGER_PASSWORD`. `INDEXER_USERNAME` is ignored: the manager always authenticates to the indexer as `wazuh-manager`.
+- `WAZUH_INDEXER_MANAGER_PASSWORD`, `WAZUH_MANAGER_API_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords of the indexer account `wazuh-manager` and of the Wazuh API accounts `wazuh` and `wazuh-wui`, read from `config/credentials/manager.env`, which `tools/utils/deployment/credentials-conf.sh` creates and the Compose file mounts as the `wazuh-credentials` secret. They can also be set in the environment, which takes precedence over the file. They are required on the first start and are stored then; later changes to them have no effect. See [Credentials](../credentials.md).
+- `WAZUH_CREDENTIALS_FILE`: where the credentials secret is mounted. Default: `/run/secrets/wazuh-credentials`. Set it only to mount the file somewhere else; the container then refuses to start if the file is missing.
+- `INDEXER_PASSWORD`: accepted, in the environment only, as an alias of `WAZUH_INDEXER_MANAGER_PASSWORD`. `INDEXER_USERNAME` is ignored: the manager always authenticates to the indexer as `wazuh-manager`.
 - `WAZUH_NODE_NAME`: This node's cluster name, written to `<cluster><node_name>`. Defaults to the container hostname.
 - `WAZUH_NODE_TYPE`: Either `master` or `worker`, written to `<cluster><node_type>`. Any other value (including unset) is treated as `master`.
 - `WAZUH_CLUSTER_KEY`: The cluster authentication key shared by every master/worker node, written to `<cluster><key>`. The public image ships a fixed default key; leaving this unset keeps that default, which is the same for every deployment using the published image and should be replaced in production. See [#263](https://github.com/wazuh/wazuh-docker/issues/263).
@@ -52,8 +54,9 @@ environment:
 The Wazuh Indexer services (`single-node` and `multi-node`) use the following environment variable:
 
 ```yaml
-env_file:
-  - ./config/credentials/indexer.env
+secrets:
+  - source: indexer_credentials
+    target: wazuh-credentials
 environment:
   - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
   - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
@@ -61,9 +64,10 @@ environment:
 
 **Variable Descriptions:**
 
-- `WAZUH_INDEXER_ADMIN_PASSWORD`, `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_INDEXER_MANAGER_PASSWORD`: the passwords of the indexer accounts `admin`, `kibanaserver` and `wazuh-manager`, read from `config/credentials/indexer.env`. They are required on the first start of the node, when their digests are written, and have no effect afterwards. See [Credentials](../credentials.md).
-- `NODES_DN`: semicolon-separated distinguished names of the indexer nodes' certificates, written to `plugins.security.nodes_dn`. The node rejects cluster members whose certificate is not listed.
-- `ADMIN_DN`: distinguished name of the admin certificate, written to `plugins.security.authcz.admin_dn`. Defaults to `CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US`, the subject `certificates-conf.sh` issues. Set it only when the admin certificate comes from elsewhere; `securityadmin.sh` and `password-tool.sh` need it.
+- `WAZUH_INDEXER_ADMIN_PASSWORD`, `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_INDEXER_MANAGER_PASSWORD`: the passwords of the indexer accounts `admin`, `kibanaserver` and `wazuh-manager`, read from `config/credentials/indexer.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are required on the first start of the node, when their digests are written, and have no effect afterwards. See [Credentials](../credentials.md).
+- `NODES_DN`: semicolon-separated distinguished names of the indexer nodes' certificates, written to `plugins.security.nodes_dn` together with the DN of the node's own mounted certificate. The node rejects cluster members whose certificate is not listed.
+- `ADMIN_DN`: distinguished name of the admin certificate, written to `plugins.security.authcz.admin_dn`. By default it is read from the mounted `certs/admin.pem`; a node that does not mount it falls back to `CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US`. `securityadmin.sh` and `password-tool.sh` need it.
+- Certificate tools do not agree on the order of the attributes in a subject, and the indexer compares these DNs as strings. Both lists are therefore written with each DN in both orders, so certificates issued with either order are accepted.
 - `OPENSEARCH_JAVA_OPTS`: Sets JVM heap size and other Java options.
 
 ---
@@ -71,17 +75,18 @@ environment:
 ## Wazuh Dashboard
 The Wazuh Dashboard container accepts the following environment variables, which should be set in the `docker-compose.yml` file:
 ```yaml
-env_file:
-  - ./config/credentials/dashboard.env
+secrets:
+  - source: dashboard_credentials
+    target: wazuh-credentials
 environment:
   - WAZUH_API_URL=https://wazuh.manager
   - API_USERNAME=wazuh-wui
 ```
 **Variable Descriptions:**
 - `WAZUH_API_URL`: Base URL of the Wazuh API, used for querying and visualizing security data.
-- `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords the Dashboard authenticates with, to the Wazuh Indexer as `kibanaserver` and to the Wazuh API as `wazuh-wui`, read from `config/credentials/dashboard.env`. They are stored in the dashboard keystore on the first start and have no effect afterwards. See [Credentials](../credentials.md).
+- `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords the Dashboard authenticates with, to the Wazuh Indexer as `kibanaserver` and to the Wazuh API as `wazuh-wui`, read from `config/credentials/dashboard.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are stored in the dashboard keystore on the first start and have no effect afterwards. See [Credentials](../credentials.md).
 - `API_USERNAME`: the Wazuh API account the Dashboard uses, `wazuh-wui`.
-- `DASHBOARD_PASSWORD` and `API_PASSWORD`: accepted as aliases of the two passwords above. `DASHBOARD_USERNAME` is ignored: the Dashboard always authenticates to the indexer as `kibanaserver`.
+- `DASHBOARD_PASSWORD` and `API_PASSWORD`: accepted, in the environment only, as aliases of the two passwords above. `DASHBOARD_USERNAME` is ignored: the Dashboard always authenticates to the indexer as `kibanaserver`.
 These variables are critical for enabling communication between the Wazuh Dashboard, the Wazuh Indexer, and the Wazuh API.
 ---
 ## Wazuh Agent

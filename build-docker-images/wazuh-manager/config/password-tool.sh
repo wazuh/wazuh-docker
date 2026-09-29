@@ -2,8 +2,8 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
 # Changes the passwords of the Wazuh API users of this manager node, and prints
-# the new ones with the commands that apply them to the dashboard, to the other
-# manager nodes and to config/credentials/*.env. It stores nothing itself.
+# the new ones with the commands that apply them to the dashboard and to
+# config/credentials/*.env. It stores nothing itself.
 # See docs/ref/credentials.md.
 
 set -o pipefail
@@ -37,8 +37,7 @@ Usage: password-tool.sh <action>
   -a, --all              Change the password of every account.
   -u, --user <account>   Change the password of one account.
   --stdin                Read the new password from standard input instead of
-                         generating one. Only with --user. Use it to set the
-                         same password on the other manager nodes of a cluster.
+                         generating one. Only with --user.
   -h, --help             Show this help.
 
 Accounts: ${USERS[*]}
@@ -94,8 +93,7 @@ validate_password() {
 print_follow_up() {
   local user password key files consumer
   echo "Apply the new passwords to the rest of the deployment, from the directory of"
-  echo "its docker-compose.yml (single-node service names; in multi-node the manager"
-  echo "commands go to wazuh.master and to wazuh.worker):"
+  echo "its docker-compose.yml:"
   echo
   for user in "${selected[@]}"; do
     password=${NEW_PASSWORD[${user}]}
@@ -151,6 +149,13 @@ fi
 # Before the first start there is no user database: 1-credentials creates it
 # from config/credentials/manager.env. Opening it here would create one with the
 # defaults, which the first start would then take as already seeded.
+# A worker never has one: the Wazuh API runs on the master.
+if [ ! -s "${RBAC_DB}" ] && \
+   [ "$(/var/wazuh-manager/bin/wazuh-manager-conf get cluster.node_type 2>/dev/null)" = "worker" ]; then
+  error "this node is a cluster worker and has no Wazuh API user database;"
+  error "change the passwords on the master node"
+  exit 1
+fi
 if [ ! -s "${RBAC_DB}" ]; then
   error "the Wazuh API user database does not exist yet; the first start of the"
   error "manager creates it with the passwords in config/credentials/manager.env"
@@ -202,11 +207,6 @@ echo
 
 print_follow_up
 
-echo "The Wazuh API user database is local to each manager node. On a cluster,"
-echo "set the same passwords on the other nodes:"
-echo
-for user in "${selected[@]}"; do
-  printf "  printf '%%s\\\\n' '%s' | docker compose exec -T <node> /password-tool.sh --user %s --stdin\n" \
-    "${NEW_PASSWORD[${user}]}" "${user}"
-done
-echo
+echo "On a cluster, only the master has a Wazuh API user database. A worker that is"
+echo "promoted to master creates its own from config/credentials/manager.env when its"
+echo "container is recreated, so keep that file updated with the commands above."
