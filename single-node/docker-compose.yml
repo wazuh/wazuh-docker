@@ -62,6 +62,7 @@ services:
       - network.host=0.0.0.0
       - node.name=wazuh.indexer
       - cluster.initial_cluster_manager_nodes=wazuh.indexer
+      - discovery.seed_hosts=wazuh.indexer
       - node.max_local_storage_nodes=1
       - plugins.security.allow_default_init_securityindex=true
       - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US

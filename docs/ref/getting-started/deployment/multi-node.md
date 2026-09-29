@@ -123,19 +123,8 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
     The three indexer nodes share `indexer.env`, and the two manager nodes share `manager.env`, so every node starts with the same passwords. To change a password later, use `password-tool.sh` as described in [Credentials](../../credentials.md#multi-node-deployments). Editing the env files after the first start changes nothing.
 
-9.  **Connect agents.** This deployment runs the Wazuh manager cluster, indexer cluster and dashboard; agents run wherever the endpoints they monitor are. An agent needs an enrollment token, minted against the master's API:
+9.  **Connect agents.** This deployment runs the Wazuh manager cluster, indexer cluster and dashboard; agents run wherever the endpoints they monitor are, and each one enrolls with a token minted by the master. Follow [Wazuh agent](wazuh-agent.md) from this directory: it mints the token and starts a containerized agent with it.
 
-    ```bash
-    printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' config/credentials/manager.env | cut -d= -f2-)" | \
-      curl -k -K - -X POST "https://<the address nginx publishes>:55000/security/user/authenticate"
-    # -> {"data": {"token": "<JWT>"}}
-
-    curl -k -X POST "https://<the address nginx publishes>:55000/agents/enrollment-tokens" \
-      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
-      -d '{"address": "<the address nginx publishes>", "embed_ca": true}'
-    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
-    ```
-
-    The `wazuh` password is read from `manager.env` and handed to `curl` on standard input, which keeps it off the command line. The address is the one `nginx` publishes, one of the `--agent-san` values from step 5, and it covers both manager nodes. `embed_ca: true` embeds `config/root-ca/certs/root-ca.pem` in the token, so a token-enrolled agent needs no separate CA configuration. See [Wazuh agent](wazuh-agent.md) for a containerized agent, and [Environment Variables](../../configuration/environment-variables.md#wazuh-agent) for the variables that carry it.
+    The address the token asks for, `WAZUH_MANAGER_ADDRESS` in that guide, is the one agents connect to: the address `nginx` publishes, one of the `--agent-san` values of step 5. For agents on other machines, it is the Docker host's address, `<DOCKER_HOST_ADDRESS>` in step 5. `nginx` hands each agent to either manager node, and both present that address.
 
 Please allow some time for the environment to initialize, especially on the first run. A multi-node setup can take a few minutes (depending on your host resources and network) as the Wazuh Indexer cluster forms, and the necessary indexes and index patterns are generated.

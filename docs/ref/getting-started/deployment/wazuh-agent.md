@@ -4,48 +4,69 @@
 
 Follow these steps to deploy the Wazuh agent using Docker.
 
-1.  Navigate to the `wazuh-agent` directory within your repository:
-    ```bash
-    cd wazuh-agent
-    ```
-
-2.  Edit the `docker-compose.yml` file. You need an enrollment token, minted by
-    your Wazuh manager, in the `WAZUH_ENROLLMENT_TOKEN` environment variable —
-    this is the only way to enroll, there is no password-based path any more.
-
-    Mint one against the manager's API as `wazuh`, whose password is
-    `WAZUH_MANAGER_API_PASSWORD` in the deployment's
-    `config/credentials/manager.env` (see [Credentials](../../credentials.md)).
-    From that deployment's directory:
+1.  **Mint an enrollment token.** The agent enrolls with a token minted by your
+    Wazuh manager; there is no password-based enrollment. Open a terminal in the
+    directory of the manager deployment (`single-node/` or `multi-node/`) and
+    set the address agents connect to:
 
     ```bash
-    printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' config/credentials/manager.env | cut -d= -f2-)" | \
-      curl -k -K - -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/security/user/authenticate"
-    # -> {"data": {"token": "<JWT>"}}
-
-    curl -k -X POST "https://<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>:55000/agents/enrollment-tokens" \
-      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
-      -d '{"address": "<YOUR_WAZUH_MANAGER_IP_OR_HOSTNAME>", "embed_ca": true}'
-    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
+    WAZUH_MANAGER_ADDRESS=192.168.1.10
     ```
 
-    `embed_ca: true` puts the manager's own CA inside the token, so the agent
-    trusts it without any `WAZUH_MANAGER_CA`/`WAZUH_AGENT_SSL_VERIFICATION`
-    configuration below — the token supplies its own trust anchor. Omit it for a
-    token that only pins the CA's fingerprint instead of carrying the whole
-    certificate; see the manager's `POST /agents/enrollment-tokens` reference for
-    the rest of the fields (`ttl`, `max_uses`, `prefix`, `description`).
+    It has to be one of the addresses of the manager's agent certificate. To
+    list them:
 
-    Locate the `environment` section for the agent service and update it as follows:
+    ```bash
+    for cert in config/wazuh_*/certs/*-remoted.pem; do sudo openssl x509 -noout -ext subjectAltName -in "$cert"; done
+    ```
+
+    ```text
+    X509v3 Subject Alternative Name:
+        IP Address:192.168.1.10, DNS:wazuh.manager
+    ```
+
+    Use the Docker host's address for an agent on another machine. The names
+    (`wazuh.manager`, `nginx`) only resolve inside the deployment's Compose
+    network.
+
+    Then run this block as it is, in the same terminal:
+
+    ```bash
+    WAZUH_API_TOKEN=$(printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' config/credentials/manager.env | cut -d= -f2-)" | \
+      curl -sk -K - -X POST "https://${WAZUH_MANAGER_ADDRESS}:55000/security/user/authenticate?raw=true")
+
+    RESPONSE=$(curl -sk -X POST "https://${WAZUH_MANAGER_ADDRESS}:55000/agents/enrollment-tokens" \
+      -H "Authorization: Bearer ${WAZUH_API_TOKEN}" -H "Content-Type: application/json" \
+      -d "{\"address\": \"${WAZUH_MANAGER_ADDRESS}\", \"embed_ca\": true}")
+    WAZUH_ENROLLMENT_TOKEN=$(printf '%s' "${RESPONSE}" | sed -n 's/.*"token": *"\([^"]*\)".*/\1/p')
+    [ -n "${WAZUH_ENROLLMENT_TOKEN}" ] && echo "WAZUH_ENROLLMENT_TOKEN=${WAZUH_ENROLLMENT_TOKEN}" || echo "${RESPONSE}"
+    ```
+
+    It prints the line to paste in the next step:
+
+    ```text
+    WAZUH_ENROLLMENT_TOKEN=eyJ2ZXIi...
+    ```
+
+    If it prints an error instead, the message says what is wrong. `address not
+    in certificate SAN` means that `WAZUH_MANAGER_ADDRESS` is not one of the
+    addresses listed above.
+
+    The token carries the manager's address and its CA (`embed_ca`), so the
+    agent needs no other connection or certificate settings. See the manager's
+    `POST /agents/enrollment-tokens` reference for the optional fields (`ttl`,
+    `max_uses`, `prefix`, `description`).
+
+2.  **Put the token in the agent's Compose file.** Edit
+    `wazuh-agent/docker-compose.yml` and replace the whole
+    `WAZUH_ENROLLMENT_TOKEN=...` line with the line printed above, as it is,
+    without quotes. Optionally, uncomment `WAZUH_AGENT_NAME` and give the agent
+    a name:
+
     ```yaml
-    # Inside your docker-compose.yml file
-    # services:
-    #   wazuh-agent:
-    #     ...
     environment:
-      - WAZUH_ENROLLMENT_TOKEN=<ENROLLMENT TOKEN MINTED ABOVE>
-      - WAZUH_AGENT_NAME=<YOUR_AGENT_NAME>
-    #     ...
+      - WAZUH_ENROLLMENT_TOKEN=eyJ2ZXIi...
+      - WAZUH_AGENT_NAME=my-agent
     ```
 
     The container writes `/var/ossec/etc/ossec.conf` with the following
@@ -180,14 +201,29 @@ Follow these steps to deploy the Wazuh agent using Docker.
     `WAZUH_AGENT_NAME` and loses its previous `client.keys` each time, leaving
     the old registration on the manager with nothing to remove it.
 
-3.  Start the environment using `docker compose`:
+3.  **Start the agent**, from the `wazuh-agent` directory:
 
-    * To run in the foreground (logs will be displayed in your current terminal, and you can stop it with `Ctrl+C`):
-        ```bash
-        docker compose up
-        ```
+    ```bash
+    cd ../wazuh-agent
+    docker compose up -d
+    ```
 
-    * To run in the background (detached mode, allowing the container to run independently of your terminal):
-        ```bash
-        docker compose up -d
-        ```
+    Use `docker compose up`, without `-d`, to keep the logs in the terminal
+    (`Ctrl+C` stops the agent).
+
+4.  **Check that it connected.** Back in the manager deployment's directory, in
+    the same terminal as step 1:
+
+    ```bash
+    cd -
+    curl -sk -H "Authorization: Bearer ${WAZUH_API_TOKEN}" \
+      "https://${WAZUH_MANAGER_ADDRESS}:55000/agents?select=name,status&pretty=true"
+    ```
+
+    The agent is listed with `"status": "active"`. The API token lasts 15
+    minutes: if the answer is `Invalid token`, run the `WAZUH_API_TOKEN=...`
+    command of step 1 again.
+
+    Once enrolled, the agent keeps its identity in the `wazuh_agent_etc` volume.
+    Recreating the container does not enroll it again, and the token line can
+    stay in the Compose file: a used token is not read again.

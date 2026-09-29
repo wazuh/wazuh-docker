@@ -121,19 +121,8 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 
     To change a password later, use `password-tool.sh` as described in [Credentials](../../credentials.md#changing-a-password-later). Editing the env files after the first start changes nothing.
 
-9.  **Connect agents.** This deployment runs the Wazuh manager, indexer and dashboard; agents run wherever the endpoints they monitor are. An agent needs an enrollment token, minted against this manager's API:
+9.  **Connect agents.** This deployment runs the Wazuh manager, indexer and dashboard; agents run wherever the endpoints they monitor are, and each one enrolls with a token minted by this manager. Follow [Wazuh agent](wazuh-agent.md) from this directory: it mints the token and starts a containerized agent with it.
 
-    ```bash
-    printf 'user = "wazuh:%s"\n' "$(grep '^WAZUH_MANAGER_API_PASSWORD=' config/credentials/manager.env | cut -d= -f2-)" | \
-      curl -k -K - -X POST "https://<this manager's address>:55000/security/user/authenticate"
-    # -> {"data": {"token": "<JWT>"}}
-
-    curl -k -X POST "https://<this manager's address>:55000/agents/enrollment-tokens" \
-      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
-      -d '{"address": "<this manager's address>", "embed_ca": true}'
-    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
-    ```
-
-    The `wazuh` password is read from `manager.env` and handed to `curl` on standard input, which keeps it off the command line. `embed_ca: true` embeds this manager's `config/root-ca/certs/root-ca.pem` in the token, so a token-enrolled agent needs no separate CA configuration. See [Wazuh agent](wazuh-agent.md) for a containerized agent, and [Environment Variables](../../configuration/environment-variables.md#wazuh-agent) for the variables that carry it.
+    The address the token asks for, `WAZUH_MANAGER_ADDRESS` in that guide, is the one agents connect to, and it has to be one of the addresses of the manager node in `config.yml` (step 4) or an `--agent-san` value (step 5). For agents on other machines, it is the Docker host's address, `<DOCKER_HOST_ADDRESS>` in step 4.
 
 Please allow some time for the environment to initialize, especially on the first run. It can take approximately a minute or two (depending on your host's resources) as the Wazuh Indexer starts up and generates the necessary indexes and index patterns.
