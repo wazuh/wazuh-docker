@@ -147,7 +147,7 @@ credentials: MISSING WAZUH_INDEXER_ADMIN_PASSWORD
 credentials: create the deployment credentials with tools/utils/deployment/credentials-conf.sh
 ```
 
-Fix `config/credentials/<file>.env` and run `docker compose up -d` again.
+Fix `config/credentials/<file>.env` and recreate the container, so that it sees the edited file: `docker compose up -d --force-recreate <service>`.
 
 ## Changing a password later
 

@@ -100,6 +100,10 @@ RUN yum install shadow-utils util-linux -y && \
 # belong to the service user.
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
+# config/ stands in for the package's /etc/wazuh-dashboard, and takes its
+# ownership: the service user writes its configuration there.
+RUN chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR/config && \
+    chmod 750 $INSTALL_DIR/config
 
 # Starts as root and drops to wazuh-dashboard once the credentials are stored
 WORKDIR $INSTALL_DIR

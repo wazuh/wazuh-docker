@@ -5,13 +5,14 @@
 # as its password, and that the Wazuh indexer image carries none of the
 # OpenSearch demo accounts.
 #
-# The images ship documented default passwords, so a deployment that has not
-# been through the first-start password change fails this check. That is what
-# it is for: see docs/ref/credentials.md.
+# The images ship no passwords: each deployment generates its own with
+# tools/utils/deployment/credentials-conf.sh. This check fails if an account
+# still authenticates with its username as its password, which only happens
+# when someone sets it that way. See docs/ref/credentials.md.
 #
 # The Wazuh API accounts are checked twice: over HTTP on the published API, and
-# in the RBAC database of every manager node. Only the second one sees a worker
-# that was left on the defaults, because the API answers on the master alone.
+# in the RBAC database of every manager node. Only the second one sees the
+# database of a worker, because the API answers on the master alone.
 # A worker without a database passes: the manager seeds it only on the master,
 # and a promoted worker seeds it from config/credentials/manager.env.
 #
