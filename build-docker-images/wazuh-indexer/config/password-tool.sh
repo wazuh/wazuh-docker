@@ -2,9 +2,9 @@
 # Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
 # Changes the passwords of the Wazuh indexer internal users of the running
-# deployment and prints the new ones. It stores nothing: the passwords are
-# shown once and the operator writes the service ones into docker-compose.yml.
-# See docs/ref/credentials.md.
+# deployment, and prints the new ones with the commands that apply them to the
+# components consuming them and to config/credentials/*.env. It stores
+# nothing itself. See docs/ref/credentials.md.
 
 set -o pipefail
 
@@ -12,15 +12,25 @@ OPENSEARCH_HOME="${OPENSEARCH_HOME:-/usr/share/wazuh-indexer}"
 OPENSEARCH_PATH_CONF="${OPENSEARCH_PATH_CONF:-${OPENSEARCH_HOME}/config}"
 HASH_TOOL="${OPENSEARCH_HOME}/plugins/opensearch-security/tools/hash.sh"
 
-USERS=(admin kibanaserver wazuh-manager wazuh-admin wazuh-readonly wazuh-demo)
+USERS=(admin kibanaserver wazuh-manager)
 
-# The Compose service and variable each service account has to be copied into.
-declare -A COMPOSE_SERVICE=([kibanaserver]="wazuh.dashboard" [wazuh-manager]="wazuh.manager")
-declare -A COMPOSE_VARIABLE=([kibanaserver]="DASHBOARD_PASSWORD" [wazuh-manager]="INDEXER_PASSWORD")
+# Where each account is recorded (config/credentials/<file>.env) and which
+# component stores it: the dashboard keystore entry, or the manager keystore.
+declare -A ENV_KEY=([admin]="WAZUH_INDEXER_ADMIN_PASSWORD" [kibanaserver]="WAZUH_INDEXER_KIBANASERVER_PASSWORD" [wazuh-manager]="WAZUH_INDEXER_MANAGER_PASSWORD")
+declare -A ENV_FILES=([admin]="indexer" [kibanaserver]="indexer dashboard" [wazuh-manager]="indexer manager")
+declare -A CONSUMERS=([kibanaserver]="dashboard:opensearch.password" [wazuh-manager]="manager:indexer")
 
 error() {
   echo "password-tool.sh: $*" >&2
 }
+
+# Password generation and policy come from the credentials library the
+# package ships, the same one its resolver uses.
+CREDENTIALS_LIB="${OPENSEARCH_HOME}/lib/wazuh-credentials.sh"
+if ! . "${CREDENTIALS_LIB}" 2>/dev/null || ! declare -F wazuh_password_generate >/dev/null; then
+  error "cannot load ${CREDENTIALS_LIB}"
+  exit 1
+fi
 
 usage() {
   cat <<USAGE
@@ -36,24 +46,44 @@ Accounts: ${USERS[*]}
 USAGE
 }
 
+# A library older than the four-class policy may produce a password without a
+# symbol, so every candidate goes through validate_password.
 generate_password() {
-  local body special lower upper digit
-  body=$(tr -dc 'A-Za-z0-9.*+?-' < /dev/urandom | head -c 28)
-  special=$(tr -dc '.*+?-' < /dev/urandom | head -c 1)
-  lower=$(tr -dc 'a-z' < /dev/urandom | head -c 1)
-  upper=$(tr -dc 'A-Z' < /dev/urandom | head -c 1)
-  digit=$(tr -dc '0-9' < /dev/urandom | head -c 1)
-  echo "${body}${special}${lower}${upper}${digit}" | fold -w1 | shuf | tr -d '\n'
+  local candidate attempt
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    candidate=$(wazuh_password_generate) || return 1
+    if validate_password "${candidate}" 2>/dev/null; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+  return 1
 }
 
+# The rules the package resolvers apply, so a rotated password is one every
+# component would also accept at start: only the characters the library
+# generates, the library's policy, the four classes it requires since
+# wazuh-installation-assistant#1047 (checked here too, because an older
+# library in a package does not), and no value the dashboard keystore would
+# store as a number.
 validate_password() {
-  local password=$1
-  [ "${#password}" -ge 8 ] && [ "${#password}" -le 64 ] || return 1
-  [[ ${password} == *[[:upper:]]* ]] || return 1
-  [[ ${password} == *[[:lower:]]* ]] || return 1
-  [[ ${password} == *[[:digit:]]* ]] || return 1
-  [[ ${password} == *[.*+?-]* ]] || return 1
-  return 0
+  local password=$1 reason
+  if [ -n "$(printf '%s' "${password}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')" ]; then
+    error "only A-Z a-z 0-9 . , _ + : @ % ^ = ~ - are allowed"
+    return 1
+  fi
+  if ! reason=$(wazuh_password_validate "${password}" 2>&1); then
+    error "${reason#wazuh-credentials: }"
+    return 1
+  fi
+  case ${password} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "password must contain at least one lowercase letter"; return 1 ;; esac
+  case ${password} in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) error "password must contain at least one uppercase letter"; return 1 ;; esac
+  case ${password} in *[0123456789]*) ;; *) error "password must contain at least one digit"; return 1 ;; esac
+  case ${password} in *[.,_+:@%^=~-]*) ;; *) error "password must contain at least one symbol from . , _ + : @ % ^ = ~ -"; return 1 ;; esac
+  if printf '%s' "${password}" | grep -Eq '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$'; then
+    error "the dashboard keystore would store this value as a number"
+    return 1
+  fi
 }
 
 # The password is passed in the environment: an argument would be readable in
@@ -68,6 +98,41 @@ hash_password() {
 
   [ -n "${output}" ] || return 1
   echo "${output}"
+}
+
+# How a rotated password reaches the rest of the deployment. The other
+# components keep the value they stored at their first start (their keystore
+# wins over the environment), so recreating them is not enough: each one that
+# consumes the account gets the new value in its keystore and is restarted.
+# config/credentials/*.env is the operator's record, updated so a deployment
+# started from scratch uses the same passwords.
+print_follow_up() {
+  local user password key files consumer
+  echo "Apply the new passwords to the rest of the deployment, from the directory of"
+  echo "its docker-compose.yml (single-node service names; in multi-node the manager"
+  echo "commands go to wazuh.master and to wazuh.worker):"
+  echo
+  for user in "${selected[@]}"; do
+    password=${NEW_PASSWORD[${user}]}
+    key=${ENV_KEY[${user}]}
+    echo "  ${user}:"
+    for files in ${ENV_FILES[${user}]}; do
+      printf "    sed -i 's|^%s=.*|%s=%s|' config/credentials/%s.env\n" "${key}" "${key}" "${password}" "${files}"
+    done
+    for consumer in ${CONSUMERS[${user}]}; do
+      case "${consumer}" in
+        dashboard:*)
+          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin %s\n" "${password}" "${consumer#dashboard:}"
+          echo "    docker compose restart wazuh.dashboard"
+          ;;
+        manager:indexer)
+          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.manager /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password\n" "${password}"
+          echo "    docker compose restart wazuh.manager"
+          ;;
+      esac
+    done
+    echo
+  done
 }
 
 target=""
@@ -108,14 +173,15 @@ if [ "${from_stdin}" -eq 1 ]; then
 
   IFS= read -r password
   if ! validate_password "${password}"; then
-    error "the password must be 8 to 64 characters and contain an upper case letter,"
-    error "a lower case letter, a digit and one of '.*+?-'"
     exit 2
   fi
   NEW_PASSWORD["${selected[0]}"]="${password}"
 else
   for user in "${selected[@]}"; do
-    NEW_PASSWORD["${user}"]=$(generate_password)
+    if ! NEW_PASSWORD["${user}"]=$(generate_password); then
+      error "could not generate a password for '${user}'"
+      exit 1
+    fi
   done
 fi
 
@@ -210,19 +276,4 @@ echo
 echo "This is the only time these passwords are shown. Nothing is stored."
 echo
 
-needs_compose=0
-for user in "${selected[@]}"; do
-  [ -n "${COMPOSE_VARIABLE[${user}]}" ] && needs_compose=1
-done
-
-if [ "${needs_compose}" -eq 1 ]; then
-  echo "Write these into docker-compose.yml, then take the stack down and up,"
-  echo "or those components keep authenticating with the old values:"
-  echo
-  for user in "${selected[@]}"; do
-    [ -n "${COMPOSE_VARIABLE[${user}]}" ] || continue
-    printf '  service %s:\n' "${COMPOSE_SERVICE[${user}]}"
-    printf '    - %s=%s\n' "${COMPOSE_VARIABLE[${user}]}" "${NEW_PASSWORD[${user}]}"
-  done
-  echo
-fi
+print_follow_up

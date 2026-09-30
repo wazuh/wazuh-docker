@@ -18,12 +18,16 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
     cd single-node
     ```
 
-3.  Download the certificate creation script and `config.yml` file:
+3.  Download the certificate creation script, `config.yml` and the credentials library:
 
     ```bash
     curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
     curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
+    curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.0-1.sh
     ```
+
+    `wazuh-credentials.sh` is the library `credentials-conf.sh` uses in step 6 to
+    generate the passwords. Use the same version as the images.
 
 4.  Edit the config.yml file with the configuration of the Wazuh components to be deployed
 
@@ -82,7 +86,20 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
         --agent-san wazuh.example.com
     ```
 
-6.  Start the Wazuh environment using `docker compose`:
+6.  Create the deployment's passwords:
+
+    ```bash
+    sudo bash ../tools/utils/deployment/credentials-conf.sh
+    ```
+
+    This writes `config/credentials/indexer.env`, `manager.env` and
+    `dashboard.env`, with a random password for each account. The Compose file
+    gives each service only its own file, as a secret rather than in its
+    environment, and **the deployment does not start without them**. Keep the files: they are the only record of the passwords.
+    To choose a password instead of having one generated, and for the rules a
+    password has to meet, see [Credentials](../../credentials.md#creating-the-credentials).
+
+7.  Start the Wazuh environment using `docker compose`:
 
     * To run in the foreground (logs will be displayed in your current terminal; press `Ctrl+C` to stop):
 
@@ -96,27 +113,16 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
         docker compose up -d
         ```
 
-7.  **Change the default passwords.** The deployment comes up on the passwords documented in [Credentials](../../credentials.md), and changing them is the first thing to do:
+8.  **Log in.** Open `https://<DOCKER_HOST_ADDRESS>` and log in as `admin`, with the password from `indexer.env`:
 
     ```bash
-    docker compose exec wazuh.indexer /password-tool.sh --all
-    docker compose exec wazuh.manager /password-tool.sh --all
+    grep '^WAZUH_INDEXER_ADMIN_PASSWORD=' config/credentials/indexer.env | cut -d= -f2-
     ```
 
-    Each command prints the new passwords once and names the ones that have to be written into `docker-compose.yml`. Copy the output, edit the file, and then recreate the stack with `docker compose down` followed by `docker compose up -d` (without `-v`). The full procedure, including how to verify it, is in [Credentials](../../credentials.md).
+    To change a password later, use `password-tool.sh` as described in [Credentials](../../credentials.md#changing-a-password-later). Editing the env files after the first start changes nothing.
 
-8.  **Connect agents.** This deployment runs the Wazuh manager, indexer and dashboard; agents run wherever the endpoints they monitor are. An agent needs an enrollment token, minted against this manager's API:
+9.  **Connect agents.** This deployment runs the Wazuh manager, indexer and dashboard; agents run wherever the endpoints they monitor are, and each one enrolls with a token minted by this manager. Follow [Wazuh agent](wazuh-agent.md) from this directory: it mints the token and starts a containerized agent with it.
 
-    ```bash
-    curl -k -u wazuh:wazuh -X POST "https://<this manager's address>:55000/security/user/authenticate"
-    # -> {"data": {"token": "<JWT>"}}
-
-    curl -k -X POST "https://<this manager's address>:55000/agents/enrollment-tokens" \
-      -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
-      -d '{"address": "<this manager's address>", "embed_ca": true}'
-    # -> {"data": {"token": "<ENROLLMENT TOKEN>", ...}}
-    ```
-
-    Use the credentials `password-tool.sh` printed in step 7, not the defaults shown above, once they have been changed. `embed_ca: true` embeds this manager's `config/root-ca/certs/root-ca.pem` in the token, so a token-enrolled agent needs no separate CA configuration. See [Wazuh agent](wazuh-agent.md) for a containerized agent, and [Environment Variables](../../configuration/environment-variables.md#wazuh-agent) for the variables that carry it.
+    The address the token asks for, `WAZUH_MANAGER_ADDRESS` in that guide, is the one agents connect to, and it has to be one of the addresses of the manager node in `config.yml` (step 4) or an `--agent-san` value (step 5). For agents on other machines, it is the Docker host's address, `<DOCKER_HOST_ADDRESS>` in step 4.
 
 Please allow some time for the environment to initialize, especially on the first run. It can take approximately a minute or two (depending on your host's resources) as the Wazuh Indexer starts up and generates the necessary indexes and index patterns.

@@ -18,6 +18,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2674](https://github.com/wazuh/wazuh-docker/issues/2674) | Adapt Docker images to install-time credential generation |
 | [#2676](https://github.com/wazuh/wazuh-docker/issues/2676) | Replace manual `authd.pass`/`<endpoint>` writing in the agent's `0-wazuh-init` with `WAZUH_ENROLLMENT_TOKEN` support, following wazuh/wazuh#39063 |
 | [#2652](https://github.com/wazuh/wazuh-docker/issues/2652) | Mount the Wazuh manager agent listener certificate, and forward `--agent-san` to the certificate creation tool |
 | [#2635](https://github.com/wazuh/wazuh-docker/issues/2635) | Honour the scheme given in `WAZUH_INDEXER_HOSTS`, and drop the `<ssl>` block from the indexer configuration when it resolves to `http` |
@@ -82,7 +83,7 @@
 
 | Issue | Comment |
 | - | - |
-| [#6068](https://github.com/wazuh/internal-devel-requests/issues/6068) | Unset `INDEXER_PASSWORD` and `DASHBOARD_PASSWORD` after writing them to their keystore, so they no longer remain readable from the manager and dashboard containers' process environment for the rest of the container's life |
+| [#2690](https://github.com/wazuh/wazuh-docker/issues/2690) | Unset INDEXER_PASSWORD and DASHBOARD_PASSWORD after keystore write |
 | [#2675](https://github.com/wazuh/wazuh-docker/issues/2675) | Fixed `docker-agent` package generation: seed the `CHANGE_MANAGER_ENDPOINT` placeholder in the Dockerfile itself instead of relying on the installer, which stopped writing it without an enrollment token |
 | [#2628](https://github.com/wazuh/wazuh-docker/issues/2628) | Persist the Wazuh manager `data` directory on a named volume in the single-node and multi-node deployments, so the deployed detection content survives recreating the container, and refresh the content the image owns from the image on every start |
 | [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
