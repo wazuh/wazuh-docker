@@ -5,14 +5,20 @@ single-node/wazuh-certificates
 single-node/wazuh-certificates/*
 single-node/wazuh-certificates-tool.log
 single-node/wazuh-certs-tool*.sh
+single-node/wazuh-credentials*.sh
 single-node/config*.yml
 single-node/config
+single-node/docker-compose.override.yml
 multi-node/wazuh-certificates
 multi-node/wazuh-certificates/*
 multi-node/wazuh-certificates-tool.log
 multi-node/wazuh-certs-tool*.sh
+multi-node/wazuh-credentials*.sh
 multi-node/config*.yml
 multi-node/config/*/certs
+multi-node/config/credentials
+multi-node/docker-compose.override.yml
 
 # Documentation
 docs/book/
+

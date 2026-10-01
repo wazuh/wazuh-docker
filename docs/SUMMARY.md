@@ -22,7 +22,7 @@
     - [Multi Node Wazuh Stack](ref/getting-started/deployment/multi-node.md)
     - [Wazuh Agent](ref/getting-started/deployment/wazuh-agent.md)
 - [Configuration](ref/configuration/configuration.md)
-  - [Environment Variabless](ref/configuration/environment-variables.md)
+  - [Environment Variables](ref/configuration/environment-variables.md)
   - [Configuration files](ref/configuration/configuration-files.md)
 - [Credentials](ref/credentials.md)
 - [Upgrade](ref/upgrade.md)

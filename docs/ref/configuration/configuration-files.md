@@ -3,7 +3,7 @@
 ### 1. Wazuh Manager Configuration
 
 * **`wazuh-manager.conf`**: The main configuration file for the Wazuh manager. It controls rules, decoders, agent enrollment, active responses, clustering, and more.
-    * **Customization**: Mount a custom `wazuh-manager.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container at `/wazuh-mount-point/`, which will be copied to the path `/var/wazuh-manager` (e.g., the file `/var/wazuh-manager/etc/wazuh-manager.conf` must be mounted at `/wazuh-mount-point/etc/wazuh-manager.conf`) .
+    * **Customization**: Mount a custom `wazuh-manager.conf` or specific configuration snippets (e.g., local rules in `local_rules.xml`) into the manager container under `/wazuh-config-mount/`. Its content is copied over `/var/wazuh-manager` on every start: for example, `/var/wazuh-manager/etc/wazuh-manager.conf` is replaced by a file mounted at `/wazuh-config-mount/etc/wazuh-manager.conf`.
 
 ### 2. Wazuh Indexer Configuration
 
@@ -16,15 +16,15 @@
 
 * **`opensearch_dashboards.yml`**: The main configuration file for OpenSearch Dashboards. Controls server host/port, OpenSearch connection URL, SSL settings, and Wazuh plugin settings.
     * **Customization**: Mount a custom `opensearch_dashboards.yml` into the dashboard container at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml` and custom `wazuh.yml` into the dashboard container at `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` .
-* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, often within `opensearch_dashboards.yml` or managed through environment variables, specifying the Wazuh API URL and credentials.
-* **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore; the container entrypoint creates it on the first start and adds a randomly generated `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data. The `opensearch.username` and `opensearch.password` entries are set on every start from the `DASHBOARD_USERNAME` and `DASHBOARD_PASSWORD` environment variables.
+* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, within `opensearch_dashboards.yml` and `wazuh.yml`. The Wazuh API URL comes from `WAZUH_API_URL`; the password of `wazuh-wui` is kept in the keystore (see [Credentials](../credentials.md)).
+* **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore. On the first start, the dashboard's credentials resolver creates it, stores the passwords of `kibanaserver` and `wazuh-wui` (see [Credentials](../credentials.md)), and generates a random `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data.
     * **Customization**: To set your own key, add it through the keystore tool inside the dashboard container and restart the service:
         ```bash
-        echo "<your-encryption-key>" | docker compose exec -T wazuh.dashboard \
-          /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add wazuh_ai_assistant.encryptionKey --stdin --allow-root -f
+        printf '%s' '<your-encryption-key>' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- \
+          /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin wazuh_ai_assistant.encryptionKey
         docker compose restart wazuh.dashboard
         ```
-    * **Important**: The keystore is created only when it does not already exist, so the encryption key stays stable across restarts as long as the `/usr/share/wazuh-dashboard/config` volume is kept. If the keystore is deleted, the entrypoint generates a new key on the next start and any data encrypted with the previous one becomes unreadable.
+    * **Important**: The keystore is created only when it does not already exist, so the encryption key stays stable across restarts as long as the `/usr/share/wazuh-dashboard/config` volume is kept. If the keystore is deleted, the next start creates a new one with a new key, and any data encrypted with the previous one becomes unreadable.
 
 ## Applying Configuration Changes
 
