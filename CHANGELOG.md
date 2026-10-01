@@ -1,4 +1,29 @@
+<<<<<<< HEAD
 ## [v5.0.0]
+=======
+# Change Log
+All notable changes to this project will be documented in this file.
+
+## [4.14.10]
+
+### Added
+
+- None
+
+### Changed
+
+- None
+
+### Fixed
+
+- None
+
+### Deleted
+
+- None
+
+## [4.14.9]
+>>>>>>> origin/4.14.10
 
 ### Added
 

@@ -1,6 +1,10 @@
 # Reference Manual - Requirements
 
+<<<<<<< HEAD
 Before deploying Wazuh-Docker (version 5.0.0), it's essential to ensure your environment meets the necessary hardware and software requirements. Meeting these prerequisites will help ensure a stable and performant Wazuh deployment.
+=======
+Before deploying Wazuh-Docker (version 4.14.10), it's essential to ensure your environment meets the necessary hardware and software requirements. Meeting these prerequisites will help ensure a stable and performant Wazuh deployment.
+>>>>>>> origin/4.14.10
 
 ## Host System Requirements
 

@@ -6,8 +6,13 @@ This script initializes the environment variables needed to build each of the im
 
 To execute it, make sure to be in the `build-docker-images` directory:
 
+<<<<<<< HEAD
 ```bash
 cd build-docker-images
+=======
+```
+$ build-docker-images/build-images.sh -v 4.14.10
+>>>>>>> origin/4.14.10
 ```
 
 Then execute:
@@ -18,6 +23,7 @@ Then execute:
 
 The script reads the package URLs from `artifact_urls.yaml` in the same directory, and builds the four images in parallel. To build only one, use `-c`:
 
+<<<<<<< HEAD
 ```bash
 ./build-images.sh -c wazuh-dashboard
 ```
@@ -36,5 +42,11 @@ Usage: ./build-images.sh [OPTIONS]
     -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four.
     -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 5.0.0.
     -m, --multiarch              [Optional] Enable multi-architecture builds.
+=======
+    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default.
+    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.5.
+    -r, --revision <rev>         [Optional] Package revision. By default 1
+    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.10.
+>>>>>>> origin/4.14.10
     -h, --help                   Show this help.
 ```

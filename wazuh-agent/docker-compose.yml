@@ -1,7 +1,11 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.agent:
+<<<<<<< HEAD
     image: wazuh/wazuh-agent:5.0.0
+=======
+    image: wazuh/wazuh-agent:4.14.10
+>>>>>>> origin/4.14.10
     restart: always
     environment:
       - WAZUH_ENROLLMENT_TOKEN=<TOKEN MINTED BY THE MANAGER>
