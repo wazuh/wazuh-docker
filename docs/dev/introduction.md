@@ -9,7 +9,7 @@ The primary goals of this guide are:
 -   To provide a clear understanding of the development environment setup.
 -   To outline the process for building Wazuh Docker images from source.
 -   To explain how to run tests to ensure the integrity and functionality of the images.
--   To offer insights into the project structure and contribution guidelines (though detailed contribution guidelines are typically found in `CONTRIBUTING.md` in the repository).
+-   To offer insights into the project structure.
 
 ## Who Should Use This Guide?
 

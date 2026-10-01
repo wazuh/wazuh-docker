@@ -16,7 +16,7 @@ Before you begin, ensure your system meets the following requirements:
 3.  **Git**:
     * Install Git for cloning the repository and managing versions. Most systems have Git pre-installed. If not, visit [https://git-scm.com/downloads](https://git-scm.com/downloads).
 
-5.  **Sufficient System Resources**:
+4.  **Sufficient System Resources**:
     * **RAM**: At least 8GB of RAM is recommended, especially if you plan to run multiple Wazuh components locally. 16GB or more is ideal.
     * **CPU**: A multi-core processor (2+ cores) is recommended.
     * **Disk Space**: Ensure you have sufficient disk space (at least 20-30GB) for Docker images, containers, and Wazuh data.
@@ -29,7 +29,7 @@ Follow these steps to prepare your development environment:
     Clone the `wazuh-docker` repository from GitHub. It's important to check out the specific branch you intend to work with, in this case, `5.1.0`.
 
     ```bash
-    git clone [https://github.com/wazuh/wazuh-docker.git](https://github.com/wazuh/wazuh-docker.git)
+    git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
     git checkout v5.1.0
     ```
@@ -50,6 +50,6 @@ Follow these steps to prepare your development environment:
     * `build-docker-images/wazuh-dashboard/`: Dockerfile and related files for the Wazuh dashboard.
     * `build-docker-images/wazuh-agent/` : Dockerfile and related files for Wazuh agents.
     * `single-node/` : Compose and configuration files for Wazuh deployment with 1 container of each Wazuh component.
-    * `multi-node/` : Compose and configuration files for Wazuh deployment with 1 container of Wazuh dashboardm 2 containers of Wazuh manager (1 master and 1 worker) and 3 containers of Wazuh indexer.
+    * `multi-node/` : Compose and configuration files for Wazuh deployment with 1 container of Wazuh dashboard, 2 containers of Wazuh manager (1 master and 1 worker) and 3 containers of Wazuh indexer.
     * `wazuh-agent/` : Compose and configuration files for Wazuh agent deployment.
 

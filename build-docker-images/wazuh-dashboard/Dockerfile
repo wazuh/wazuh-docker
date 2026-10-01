@@ -34,9 +34,14 @@ RUN yum install shadow-utils -y && \
     dashboard_url="${!URL_VAR}" && \
     dnf install curl-minimal libcap openssl -y && \
     curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
+    dnf install util-linux -y && \
     dnf install /wazuh-dashboard.rpm -y && \
     rm -rf /wazuh-dashboard.rpm && \
-    dnf clean all
+    dnf clean all && \
+    # The package's %post resolved credentials for this build host; remove
+    # them so no two containers from this image share one.
+    /usr/share/wazuh-dashboard/bin/resolve-credentials --clear && \
+    rm -rf /etc/wazuh
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
@@ -67,9 +72,11 @@ ENV USER="wazuh-dashboard" \
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
 COPY config/wazuh_dashboard_config.sh /
+COPY config/install-credentials.sh /
 
-# Update and install dependencies
-RUN yum install shadow-utils -y && \
+# Update and install dependencies. The entrypoint runs as root to resolve
+# the credentials, so it must not be writable by the service user.
+RUN yum install shadow-utils util-linux -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
@@ -80,20 +87,26 @@ RUN yum install shadow-utils -y && \
     --shell /sbin/nologin \
     --comment "$USER user" \
     $USER && \
-    chmod 700 /entrypoint.sh && \
+    chown root:root /entrypoint.sh /install-credentials.sh && \
+    chmod 755 /entrypoint.sh && \
+    chmod 700 /install-credentials.sh && \
+    chown ${WAZUH_UID}:${WAZUH_GID} /wazuh_dashboard_config.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
-    mkdir -p $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR && \
-    chown ${WAZUH_UID}:${WAZUH_GID} /*.sh && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
-# Copy Install dir from builder to current image
+# COPY keeps the package's ownership of everything below the install
+# directory, and creates the directory itself root:root 755, as the package
+# installs it. The credentials resolver runs as root, so nothing it runs may
+# belong to the service user.
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
+# config/ stands in for the package's /etc/wazuh-dashboard, and takes its
+# ownership: the service user writes its configuration there.
+RUN chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR/config && \
+    chmod 750 $INSTALL_DIR/config
 
-# Set workdir and user
+# Starts as root and drops to wazuh-dashboard once the credentials are stored
 WORKDIR $INSTALL_DIR
-USER wazuh-dashboard
 
 # Services ports
 EXPOSE 443

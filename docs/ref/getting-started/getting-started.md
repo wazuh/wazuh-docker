@@ -18,8 +18,8 @@ Getting started with Wazuh-Docker involves the following general steps:
 
 Before diving into the deployment, please ensure you have reviewed:
 
--   The [Description](ref/introduction/description.md) of Wazuh-docker to understand the components and architecture.
--   The [Requirements](ref/getting-started/requirements.md) to confirm your environment is suitable.
+-   The [Description](../introduction/description.md) of Wazuh-docker to understand the components and architecture.
+-   The [Requirements](requirements.md) to confirm your environment is suitable.
 
 ## Steps to Get Started
 
@@ -29,11 +29,10 @@ Before diving into the deployment, please ensure you have reviewed:
 2.  **Obtain Wazuh-docker Configuration**:
     You'll need the Docker Compose files and any associated configuration files from the `wazuh-docker` repository for version 5.1.0.
     ```bash
-    git clone [https://github.com/wazuh/wazuh-docker.git](https://github.com/wazuh/wazuh-docker.git)
+    git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
     git checkout v5.1.0
-    # Navigate to the specific docker-compose directory, e.g., single-node or multi-node
-    # cd docker-compose/single-node/ (example path)
+    cd single-node    # or multi-node
     ```
     Alternatively, you might download specific `docker-compose.yml` files if provided as part of a release package.
 

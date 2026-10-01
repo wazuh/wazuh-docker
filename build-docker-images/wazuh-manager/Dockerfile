@@ -18,7 +18,7 @@ ARG WAZUH_GID=101
 # Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh config/check-data-exceptions.sh /
 
-RUN dnf install openssl findutils procps shadow-utils -y && \
+RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iproute hostname -y && \
     dnf clean all && \
     getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
@@ -45,10 +45,13 @@ RUN dnf install openssl findutils procps shadow-utils -y && \
     mkdir -p /var/wazuh-manager/etc/certs && \
     chown root:wazuh-manager /var/wazuh-manager/etc/certs && \
     chmod 1770 /var/wazuh-manager/etc/certs && \
-    # Remove manager self-signed certificate/key
-    rm -f /var/wazuh-manager/etc/certs/remoted.pem \
-          /var/wazuh-manager/etc/certs/remoted-key.pem \
-          /var/wazuh-manager/etc/certs/apid.pem \
+    # The package's %post resolved credentials for this build host: rbac.db,
+    # the keystore, a bootstrap CA and certificates. Remove them so no two
+    # containers from this image share one; each container resolves its own
+    # at start (etc/cont-init.d/1-credentials).
+    /var/wazuh-manager/bin/wazuh-manager-resolve-credentials --clear -H /var/wazuh-manager && \
+    rm -rf /etc/wazuh && \
+    rm -f /var/wazuh-manager/etc/certs/apid.pem \
           /var/wazuh-manager/etc/certs/apid-key.pem && \
     # Clear the cluster key for the same reason the certificates above are
     # removed: the installer generates it once, here, and copying the installed
@@ -90,7 +93,9 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
-RUN dnf install openssl findutils procps shadow-utils -y && \
+# util-linux-core provides flock, which the credentials resolver takes on its
+# first start; the tools it needs to issue certificates are not required here.
+RUN dnf install openssl findutils procps shadow-utils util-linux-core -y && \
     dnf clean all && \
     getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
@@ -110,11 +115,14 @@ COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 # Copy entrypoint, init scripts and runtime config
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/password-tool.sh /password-tool.sh
+COPY config/install-credentials.sh /install-credentials.sh
 COPY config/etc/ /etc/
 COPY config/permanent_data.env /
 
 RUN chmod 755 /entrypoint.sh /password-tool.sh && \
-    chmod 700 /etc/wazuh-api-users.py
+    chmod 700 /etc/wazuh-api-users.py && \
+    chown root:root /install-credentials.sh && \
+    chmod 700 /install-credentials.sh
 
 # Services ports
 #   1517/tcp: agent communication and enrollment (Wazuh 5.x agents, HTTPS)
