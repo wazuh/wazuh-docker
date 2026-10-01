@@ -78,7 +78,11 @@ COPY config/install-credentials.sh /
 
 # The entrypoint and the tools run as root, so none of them may be writable
 # by the service user.
-RUN yum install curl-minimal shadow-utils findutils hostname util-linux openssl -y && \
+# Only the install directory is copied from the builder, so the runtime
+# dependencies the package declares are installed here. coreutils is provided
+# by the base image's coreutils-single.
+RUN yum install curl-minimal shadow-utils findutils hostname util-linux openssl \
+        diffutils iproute procps-ng -y && \
     yum clean all && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
