@@ -524,6 +524,15 @@ jobs:
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
 
+          # The credentials library credentials-conf.sh generates the passwords
+          # with. It is not among the presigned build_docker artifacts yet, so it
+          # is taken from the installation assistant branch of this version,
+          # which is the file the packages bundle.
+          curl --fail --silent --show-error \
+            --output "wazuh-docker/${DEPLOYMENT}/wazuh-credentials.sh" \
+            "https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/${{ env.DOCKER_VERSION }}/credentials_lib/wazuh-credentials.sh"
+          echo "Credentials library: $(sha256sum "wazuh-docker/${DEPLOYMENT}/wazuh-credentials.sh" | cut -c1-16)"
+
           # Write config.yml directly into the deployment directory
           if [ "$DEPLOYMENT" = "single-node" ]; then
             printf '%s\n' \
@@ -608,6 +617,16 @@ jobs:
               echo -n \"\$pem: \"
               sudo openssl x509 -in \"\$pem\" -noout -subject -issuer 2>/dev/null || echo '(not a cert / key file)'
             done
+          "
+
+      - name: Generate credentials
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -e
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+            sudo bash /tmp/wazuh-docker/tools/utils/deployment/credentials-conf.sh
+            ls -la config/credentials
           "
 
       - name: Start Docker Compose

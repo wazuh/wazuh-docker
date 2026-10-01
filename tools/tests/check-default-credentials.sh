@@ -5,13 +5,16 @@
 # as its password, and that the Wazuh indexer image carries none of the
 # OpenSearch demo accounts.
 #
-# The images ship documented default passwords, so a deployment that has not
-# been through the first-start password change fails this check. That is what
-# it is for: see docs/ref/credentials.md.
+# The images ship no passwords: each deployment generates its own with
+# tools/utils/deployment/credentials-conf.sh. This check fails if an account
+# still authenticates with its username as its password, which only happens
+# when someone sets it that way. See docs/ref/credentials.md.
 #
 # The Wazuh API accounts are checked twice: over HTTP on the published API, and
-# in the RBAC database of every manager node. Only the second one sees a worker
-# that was left on the defaults, because the API answers on the master alone.
+# in the RBAC database of every manager node. Only the second one sees the
+# database of a worker, because the API answers on the master alone.
+# A worker without a database passes: the manager seeds it only on the master,
+# and a promoted worker seeds it from config/credentials/manager.env.
 #
 # Usage, from single-node/ or multi-node/:
 #
@@ -33,7 +36,7 @@ API_URL="https://localhost:55000"
 DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
 
 # Accounts the Wazuh indexer image keeps.
-INDEXER_USERS="admin kibanaserver wazuh-manager wazuh-admin wazuh-readonly wazuh-demo"
+INDEXER_USERS="admin kibanaserver wazuh-manager"
 
 # Accounts the Wazuh API seeds its user database with.
 API_USERS="wazuh wazuh-wui"
@@ -176,6 +179,12 @@ except Exception:
 PROBE
 }
 
+# The same test the manager's credentials resolver makes before it skips
+# seeding the Wazuh API user database.
+node_type() {
+  compose exec -T "$1" /var/wazuh-manager/bin/wazuh-manager-conf get cluster.node_type 2>/dev/null | tr -d '\r'
+}
+
 ################################################################################
 info ""
 info "The Wazuh indexer image"
@@ -272,7 +281,13 @@ for service in ${MANAGER_SERVICES}; do
       changed) pass "${service}: ${user} does not have '${user}' as its password" ;;
       default) fail "${service}: ${user} has '${user}' as its password" ;;
       missing) fail "${service}: ${user} is not in the Wazuh API user database" ;;
-      absent)  fail "${service}: no Wazuh API user database, so ${user} would be seeded with '${user}' as its password" ;;
+      absent)
+        if [ "$(node_type "${service}")" = "worker" ]; then
+          pass "${service}: cluster worker, no Wazuh API user database to hold '${user}'"
+        else
+          fail "${service}: no Wazuh API user database, so ${user} would be seeded with '${user}' as its password"
+        fi
+        ;;
       *)       fail "${service}: could not read the state of '${user}'" ;;
     esac
   done
