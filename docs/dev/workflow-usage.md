@@ -1,16 +1,19 @@
 # Workflow usage
 
-The Procedure_push_docker_images.yml workflow builds and pushes multi-architecture Docker images (amd64/arm64) of Wazuh core components (Indexer, Manager, Dashboard, and Agent) to container registries.
+The `(5.x) Build and push images` workflow (`.github/workflows/5_build_and_push_images.yml`) builds and pushes multi-architecture Docker images (amd64/arm64) of Wazuh core components (Indexer, Manager, Dashboard, and Agent) to container registries.
 
 ## Input Parameters
 
 | Parameter | Description | Default | Required |
 |-----------|-------------|---------|----------|
-| `image_tag` | Docker image version tag | `5.1.0` | Yes |
-| `docker_reference` | Branch/tag to build from | - | Yes |
-| `reference` | Dev reference (for pre-release builds) | `latest` | No |
+| `image_tag` | Docker image version tag | `main` | Yes |
+| `docker_reference` | Branch or tag of `wazuh-docker` to build from | - | Yes |
+| `wazuh_automation_reference` | Branch or tag of `wazuh-automation` | `main` | No |
+| `products` | Comma-separated list of the images to build and push | `wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent` | No |
+| `commit_list` | JSON array with the package revision of each product (development only) | `["latest", "latest", "latest", "latest"]` | No |
+| `assistant_revision` | Revision of the installation assistant tools (development only) | `latest` | No |
 | `id` | Workflow run identifier | - | No |
-| `dev` | Enable development mode (adds `-dev` suffix) | `false`/`true` | No |
+| `dev` | Development mode | `true` | No |
 
 ## Development vs Production Mode
 
