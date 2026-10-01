@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2706](https://github.com/wazuh/wazuh-docker/issues/2706) | Add Wazuh indexer dependencies on builder final stage |
 | [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Add CA verification |
 | [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
