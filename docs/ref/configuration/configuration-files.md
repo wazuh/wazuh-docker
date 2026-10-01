@@ -38,7 +38,6 @@
 
 Consult the official Wazuh documentation for version 5.0.0 for detailed information on all possible configuration parameters for each component.
 
-<<<<<<< HEAD
 ## Persistence configuration
 
 When customizing your Wazuh Docker deployment, certain files and directories must be persisted to retain your changes across container restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
@@ -92,6 +91,3 @@ Removing the volume (for example, with `docker compose down -v`) deletes the key
 For more information on Docker volumes and bind mounts, refer to the official Docker documentation:
 - [Use volumes](https://docs.docker.com/storage/volumes/)
 - [Bind mounts](https://docs.docker.com/storage/bind-mounts/)
-=======
-Consult the official Wazuh documentation for version 4.14.10 for detailed information on all possible configuration parameters for each component.
->>>>>>> origin/4.14.10

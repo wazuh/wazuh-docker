@@ -8,22 +8,13 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-<<<<<<< HEAD
 WAZUH_IMAGE_VERSION=5.0.0
 IMAGE_TAG=5.0.0
-=======
-IMAGE_TAG=4.14.10
->>>>>>> origin/4.14.10
 WAZUH_CURRENT_VERSION=$(curl --silent https://api.github.com/repos/wazuh/wazuh/releases/latest | grep '["]tag_name["]:' | sed -E 's/.*\"([^\"]+)\".*/\1/' | cut -c 2- | sed -e 's/\.//g')
 IMAGE_VERSION=${WAZUH_IMAGE_VERSION}
 WAZUH_REGISTRY=docker.io
 
-<<<<<<< HEAD
 WAZUH_IMAGE_VERSION="5.0.0"
-=======
-WAZUH_IMAGE_VERSION="4.14.10"
-WAZUH_TAG_REVISION="1"
->>>>>>> origin/4.14.10
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""

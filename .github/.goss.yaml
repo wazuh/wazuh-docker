@@ -15,60 +15,9 @@ file:
     contains: []
   /var/wazuh-manager/etc/certs:
     exists: true
-<<<<<<< HEAD
     owner: root
     group: wazuh-manager
     filetype: directory
-=======
-    mode: "0660"
-    owner: wazuh
-    group: wazuh
-    filetype: file
-    contains: []
-package:
-  filebeat:
-    installed: true
-    versions:
-    - 7.10.2
-  wazuh-manager:
-    installed: true
-    versions:
-    - 4.14.10
-port:
-  tcp:1514:
-    listening: true
-    ip:
-    - 0.0.0.0
-  tcp:1515:
-    listening: true
-    ip:
-    - 0.0.0.0
-  tcp:55000:
-    listening: true
-    ip:
-    - 0.0.0.0
-process:
-  filebeat:
-    running: true
-  wazuh-analysisd:
-    running: true
-  wazuh-authd:
-    running: true
-  wazuh-execd:
-    running: true
-  wazuh-monitord:
-    running: true
-  wazuh-remoted:
-    running: true
-  wazuh-syscheckd:
-    running: true
-  s6-supervise:
-    running: true
-  wazuh-db:
-    running: true
-  wazuh-modulesd:
-    running: true
->>>>>>> origin/4.14.10
 user:
   wazuh-manager:
     exists: true

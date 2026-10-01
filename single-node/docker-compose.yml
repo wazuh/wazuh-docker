@@ -1,11 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-<<<<<<< HEAD
     image: wazuh/wazuh-manager:5.0.0
-=======
-    image: wazuh/wazuh-manager:4.14.10
->>>>>>> origin/4.14.10
     hostname: wazuh.manager
     container_name: single-node-wazuh.manager
     restart: always
@@ -53,11 +49,7 @@ services:
       - ./config/wazuh_manager/certs/wazuh.manager-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
 
   wazuh.indexer:
-<<<<<<< HEAD
     image: wazuh/wazuh-indexer:5.0.0
-=======
-    image: wazuh/wazuh-indexer:4.14.10
->>>>>>> origin/4.14.10
     hostname: wazuh.indexer
     container_name: single-node-wazuh.indexer
     restart: always
@@ -96,11 +88,7 @@ services:
       - ./config/wazuh_indexer/certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
 
   wazuh.dashboard:
-<<<<<<< HEAD
     image: wazuh/wazuh-dashboard:5.0.0
-=======
-    image: wazuh/wazuh-dashboard:4.14.10
->>>>>>> origin/4.14.10
     hostname: wazuh.dashboard
     container_name: single-node-wazuh.dashboard
     restart: always

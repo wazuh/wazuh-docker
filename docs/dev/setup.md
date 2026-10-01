@@ -1,10 +1,6 @@
 # Development Guide - Setup Environment
 
-<<<<<<< HEAD
 This section outlines the steps required to set up your local development environment for working with the Wazuh-Docker project (version 5.0.0). A proper setup is crucial for building images, running tests, and contributing effectively.
-=======
-This section outlines the steps required to set up your local development environment for working with the Wazuh-Docker project (version 4.14.10). A proper setup is crucial for building images, running tests, and contributing effectively.
->>>>>>> origin/4.14.10
 
 ## Prerequisites
 
@@ -30,20 +26,12 @@ Before you begin, ensure your system meets the following requirements:
 Follow these steps to prepare your development environment:
 
 1.  **Clone the Repository**:
-<<<<<<< HEAD
     Clone the `wazuh-docker` repository from GitHub. It's important to check out the specific branch you intend to work with, in this case, `5.0.0`.
-=======
-    Clone the `wazuh-docker` repository from GitHub. It's important to check out the specific branch you intend to work with, in this case, `4.14.10`.
->>>>>>> origin/4.14.10
 
     ```bash
     git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
-<<<<<<< HEAD
     git checkout v5.0.0
-=======
-    git checkout v4.14.10
->>>>>>> origin/4.14.10
     ```
 
 2.  **Verify Docker Installation**:

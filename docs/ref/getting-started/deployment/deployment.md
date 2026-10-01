@@ -1,10 +1,6 @@
 # Reference Manual - Deployment
 
-<<<<<<< HEAD
 This section provides detailed instructions for deploying Wazuh-Docker (version 5.0.0) in various configurations. Choose the deployment model that best suits your needs, from simple single-node setups for testing to more robust multi-node configurations for production environments.
-=======
-This section provides detailed instructions for deploying Wazuh-Docker (version 4.14.10) in various configurations. Choose the deployment model that best suits your needs, from simple single-node setups for testing to more robust multi-node configurations for production environments.
->>>>>>> origin/4.14.10
 
 ## Overview of Deployment Options
 
@@ -28,19 +24,11 @@ Ensure you have:
 
 -   Met all the [System Requirements](../requirements.md).
 -   Installed Docker and Docker Compose on your host(s).
-<<<<<<< HEAD
 -   Cloned the `wazuh-docker` repository (version `5.0.0`) or downloaded the necessary deployment files.
-=======
--   Cloned the `wazuh-docker` repository (version `4.14.10`) or downloaded the necessary deployment files.
->>>>>>> origin/4.14.10
     ```bash
     git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
-<<<<<<< HEAD
     git checkout v5.0.0
-=======
-    git checkout v4.14.10
->>>>>>> origin/4.14.10
     ```
 -   Made a backup of any existing Wazuh data if you are migrating or upgrading.
 

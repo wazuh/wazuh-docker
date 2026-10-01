@@ -1,10 +1,6 @@
 # Reference Manual - Configuration
 
-<<<<<<< HEAD
 This section details how to configure your Wazuh-Docker deployment (version 5.0.0). Proper configuration is key to tailoring the Wazuh stack to your specific needs, managing data persistence, and integrating with your environment.
-=======
-This section details how to configure your Wazuh-Docker deployment (version 4.14.10). Proper configuration is key to tailoring the Wazuh stack to your specific needs, managing data persistence, and integrating with your environment.
->>>>>>> origin/4.14.10
 
 ## Overview of Configuration Methods
 
