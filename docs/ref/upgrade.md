@@ -25,15 +25,15 @@ An upgrade replaces the images and keeps everything else. The named volumes hold
    ```yaml
    services:
      wazuh.manager:
-       image: wazuh/wazuh-manager:5.0.0
+       image: wazuh/wazuh-manager:5.0.0-rc1
        ...
 
      wazuh.indexer:
-       image: wazuh/wazuh-indexer:5.0.0
+       image: wazuh/wazuh-indexer:5.0.0-rc1
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0
+       image: wazuh/wazuh-dashboard:5.0.0-rc1
        ...
    ```
 
@@ -49,27 +49,27 @@ An upgrade replaces the images and keeps everything else. The named volumes hold
    ```yaml
    services:
      wazuh.master:
-       image: wazuh/wazuh-manager:5.0.0
+       image: wazuh/wazuh-manager:5.0.0-rc1
        ...
 
      wazuh.worker:
-       image: wazuh/wazuh-manager:5.0.0
+       image: wazuh/wazuh-manager:5.0.0-rc1
        ...
 
      wazuh1.indexer:
-       image: wazuh/wazuh-indexer:5.0.0
+       image: wazuh/wazuh-indexer:5.0.0-rc1
        ...
 
      wazuh2.indexer:
-       image: wazuh/wazuh-indexer:5.0.0
+       image: wazuh/wazuh-indexer:5.0.0-rc1
        ...
 
      wazuh3.indexer:
-       image: wazuh/wazuh-indexer:5.0.0
+       image: wazuh/wazuh-indexer:5.0.0-rc1
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0
+       image: wazuh/wazuh-dashboard:5.0.0-rc1
        ...
    ```
 
