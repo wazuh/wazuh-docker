@@ -10,7 +10,7 @@ The main objective of the tests is to verify that the Wazuh Docker environment c
 
 ## When Tests Run
 
-- Adding a label to a non-draft pull request starts them: `test/docker-single` for single-node, `test/docker-multi` for multi-node, or `test/docker` for both. To run them again, remove the label and add it again.
+- Adding a label to a non-draft pull request starts them: `test/docker-single` for single-node, `test/docker-multi` for multi-node, or `test/docker` for both. To run them again, remove the label and add it again. If a run for the same label is still in progress, it is cancelled and its cleanup steps still run.
 - They can also be run by hand (`workflow_dispatch`) from `(5.x) PR Check - Docker Integration Tests` (`.github/workflows/5_check_integration_tools.yml`). See [Docker integration tests](../ref/integration_test/docker_integration_tests.md).
 
 ## What Is Tested

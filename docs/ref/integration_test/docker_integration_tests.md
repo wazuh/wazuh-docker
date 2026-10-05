@@ -24,7 +24,7 @@ It asserts that the Wazuh indexer image ships none of the OpenSearch demo accoun
 
 To run the tests on a pull request, add one of the labels listed in [pull_request (label) flow](#pull_request-label-flow). Each label added starts one run against the PR head at that moment:
 
-- To run the tests again (for example after pushing new commits), remove the label and add it again.
+- To run the tests again (for example after pushing new commits), remove the label and add it again. If a run for the same label is still in progress, it is cancelled and its cleanup steps still run.
 - Labels added while the PR is a draft are ignored. Mark the PR as ready for review and add the label again.
 - PRs opened from forks do not run: GitHub does not pass secrets or the OIDC token to `pull_request` runs from forks. Push the branch to this repository to test it.
 
