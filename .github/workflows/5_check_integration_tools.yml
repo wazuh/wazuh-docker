@@ -16,7 +16,7 @@ on:
       automation_reference:
         description: 'Branch of wazuh-automation to use'
         required: false
-        default: '5.0.0'
+        default: 'v5.0.0-rc1'
         type: string
       deployment_type:
         description: 'Deployment type to test'
