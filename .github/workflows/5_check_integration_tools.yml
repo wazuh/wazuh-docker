@@ -42,10 +42,6 @@ on:
           - ECR
           - DockerHub
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.label.name || 'dispatch' }}
-  cancel-in-progress: true
-
 permissions:
   id-token: write
   contents: read
