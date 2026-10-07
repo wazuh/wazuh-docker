@@ -7,6 +7,7 @@ ARG wazuh_indexer_x86_64_rpm
 ARG wazuh_indexer_aarch64_rpm
 ARG wazuh_certs_tool
 ARG wazuh_config_yml
+ARG SKIP_PACKAGE_SIGNATURE_CHECK
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
@@ -16,6 +17,7 @@ ENV USER="wazuh-indexer" \
     INSTALL_DIR="/usr/share/wazuh-indexer" 
 
 COPY config/config.sh .
+COPY --from=shared verify-package-signature.sh /
 
 RUN yum install curl-minimal shadow-utils findutils hostname -y && \
     yum clean all && \
@@ -33,7 +35,8 @@ RUN yum install curl-minimal shadow-utils findutils hostname -y && \
     URL_VAR="wazuh_indexer_${RPM_ARCH}_rpm" && \
     indexer_url="${!URL_VAR}" && \
     dnf install curl-minimal openssl xz tar findutils shadow-utils cpio -y &&\
-    curl -o /wazuh-indexer.rpm "${indexer_url}" && \
+    curl --fail --proto '=https' -o /wazuh-indexer.rpm "${indexer_url}" && \
+    bash /verify-package-signature.sh /wazuh-indexer.rpm && \
     dnf install /wazuh-indexer.rpm -y && \
     # The package's %post resolved credentials for this build host. --clear
     # removes the published keys, certificates and CA, but not the password

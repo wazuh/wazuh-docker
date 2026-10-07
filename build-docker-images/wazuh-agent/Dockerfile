@@ -8,6 +8,9 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG TINI_VERSION="v0.19.0"
+# SHA-256 of tini-static-<arch> for TINI_VERSION, from its release page.
+ARG TINI_SHA256_AMD64="c5b0666b4cb676901f90dfcb37106783c5fe2077b04590973b885950611b30ee"
+ARG TINI_SHA256_ARM64="eae1d3aa50c48fb23b8cbdf4e369d0910dfc538566bfd09df89a774aa84a48b9"
 # WAZUH_MANAGER_ENDPOINT here is a placeholder for the runtime init script to
 # substitute, not real configuration -- there is no manager to point at during a
 # build. It used to reach the package post-install as an environment variable
@@ -21,11 +24,13 @@ ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
 ARG wazuh_agent_x86_64_rpm
 ARG wazuh_agent_aarch64_rpm
+ARG SKIP_PACKAGE_SIGNATURE_CHECK
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh /
+COPY --from=shared verify-package-signature.sh /
 
 # Install only runtime dependencies
 RUN dnf install procps shadow-utils -y && \
@@ -43,7 +48,8 @@ RUN dnf install procps shadow-utils -y && \
     URL_VAR="wazuh_agent_${RPM_ARCH}_rpm" && \
     agent_url="${!URL_VAR}" && \
     dnf install curl-minimal tar gzip procps shadow-utils -y && \
-    curl -o /wazuh-agent.rpm "${agent_url}" && \
+    curl --fail --proto '=https' -o /wazuh-agent.rpm "${agent_url}" && \
+    bash /verify-package-signature.sh /wazuh-agent.rpm && \
     dnf install /wazuh-agent.rpm -y && \
     rm -rf /wazuh-agent.rpm && \
     dnf clean all
@@ -73,10 +79,18 @@ RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
     sync && rm /permanent_data.sh
 
-# Download tini static binary (no external library dependencies)
-RUN curl --fail --silent -L \
+# Download tini static binary (no external library dependencies) and check it
+# against its pinned SHA-256
+RUN case "${TARGETARCH}" in \
+        amd64) tini_sha256="${TINI_SHA256_AMD64}" ;; \
+        arm64) tini_sha256="${TINI_SHA256_ARM64}" ;; \
+        *) echo "ERROR: No tini checksum for architecture '${TARGETARCH}'"; exit 1 ;; \
+    esac && \
+    curl --fail --silent -L \
     https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH} \
     -o /usr/local/bin/tini && \
+    { echo "${tini_sha256}  /usr/local/bin/tini" | sha256sum -c - || \
+        { echo "ERROR: tini-static-${TARGETARCH} ${TINI_VERSION} does not match its pinned SHA-256"; exit 1; }; } && \
     chmod +x /usr/local/bin/tini
 
 ################################################################################

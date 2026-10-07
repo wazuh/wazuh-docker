@@ -18,6 +18,7 @@ WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
+SKIP_PACKAGE_SIGNATURE_CHECK=""
 
 # -----------------------------------------------------------------------------
 
@@ -45,6 +46,15 @@ build() {
     # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+
+    # Unsigned packages only come from development builds.
+    if [ -n "${SKIP_PACKAGE_SIGNATURE_CHECK}" ]; then
+        if [ -z "${IS_DEV_BUILD}" ]; then
+            echo "Error: --skip-signature-check is only valid along with --dev." >&2
+            clean 1
+        fi
+        echo "Warning: Skipping the signature check of the Wazuh packages. Use it only with unsigned development packages." >&2
+    fi
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
@@ -207,6 +217,7 @@ build() {
 
     export WAZUH_VERSION="$WAZUH_IMAGE_VERSION"
     export MULTIARCH="${MULTIARCH}"
+    export SKIP_PACKAGE_SIGNATURE_CHECK="${SKIP_PACKAGE_SIGNATURE_CHECK}"
     export INDEXER_TAG=$(make_tag   "${INDEXER_COMMIT:-latest}")
     export MANAGER_TAG=$(make_tag   "${MANAGER_COMMIT:-latest}")
     export DASHBOARD_TAG=$(make_tag "${DASHBOARD_COMMIT:-latest}")
@@ -255,6 +266,7 @@ help() {
     echo "    -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
     echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
+    echo "    --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages."
     echo "    -h, --help                   Show this help."
     echo
     exit $1
@@ -279,6 +291,10 @@ main() {
             ;;
         "--dev")
             IS_DEV_BUILD="true"
+            shift
+            ;;
+        "--skip-signature-check")
+            SKIP_PACKAGE_SIGNATURE_CHECK="true"
             shift
             ;;
         "-m"|"--multiarch")

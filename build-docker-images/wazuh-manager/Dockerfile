@@ -9,14 +9,19 @@ FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
 ARG TINI_VERSION="v0.19.0"
+# SHA-256 of tini-static-<arch> for TINI_VERSION, from its release page.
+ARG TINI_SHA256_AMD64="c5b0666b4cb676901f90dfcb37106783c5fe2077b04590973b885950611b30ee"
+ARG TINI_SHA256_ARM64="eae1d3aa50c48fb23b8cbdf4e369d0910dfc538566bfd09df89a774aa84a48b9"
 ARG TARGETARCH
 ARG wazuh_manager_x86_64_rpm
 ARG wazuh_manager_aarch64_rpm
+ARG SKIP_PACKAGE_SIGNATURE_CHECK
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
 # Prepare permanent data config needed by permanent_data.sh at build time
 COPY config/permanent_data.env config/permanent_data.sh config/check-data-exceptions.sh /
+COPY --from=shared verify-package-signature.sh /
 
 RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iproute hostname -y && \
     dnf clean all && \
@@ -34,7 +39,8 @@ RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iprou
     manager_url="${!URL_VAR}" && \
     dnf install curl-minimal xz gnupg tar gzip -y && \
     dnf clean all && \
-    curl -o /wazuh-manager.rpm "${manager_url}" && \
+    curl --fail --proto '=https' -o /wazuh-manager.rpm "${manager_url}" && \
+    bash /verify-package-signature.sh /wazuh-manager.rpm && \
     dnf install /wazuh-manager.rpm -y && \
     rm -rf /wazuh-manager.rpm && \
     dnf clean all && \
@@ -75,10 +81,18 @@ RUN chmod 755 /check-data-exceptions.sh && \
     /check-data-exceptions.sh && \
     rm /check-data-exceptions.sh
 
-# Download tini static binary (no external library dependencies)
-RUN curl --fail --silent -L \
+# Download tini static binary (no external library dependencies) and check it
+# against its pinned SHA-256
+RUN case "${TARGETARCH}" in \
+        amd64) tini_sha256="${TINI_SHA256_AMD64}" ;; \
+        arm64) tini_sha256="${TINI_SHA256_ARM64}" ;; \
+        *) echo "ERROR: No tini checksum for architecture '${TARGETARCH}'"; exit 1 ;; \
+    esac && \
+    curl --fail --silent -L \
     https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static-${TARGETARCH} \
     -o /usr/local/bin/tini && \
+    { echo "${tini_sha256}  /usr/local/bin/tini" | sha256sum -c - || \
+        { echo "ERROR: tini-static-${TARGETARCH} ${TINI_VERSION} does not match its pinned SHA-256"; exit 1; }; } && \
     chmod +x /usr/local/bin/tini
 
 ################################################################################
