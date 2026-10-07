@@ -105,6 +105,8 @@ jobs:
 
     steps:
     - name: Print inputs
+      env:
+        DOCKER_REFERENCE: ${{ inputs.docker_reference }}
       run: |
         echo "---------------------------------------------"
         echo "Running 5_build_and_push_images workflow"
@@ -116,7 +118,7 @@ jobs:
         echo "---------------------------------------------"
         echo "* id: ${{ inputs.id }}"
         echo "* image_tag: ${{ inputs.image_tag }}"
-        echo "* docker_reference: ${{ inputs.docker_reference }}"
+        echo "* docker_reference: ${DOCKER_REFERENCE}"
         echo "* wazuh_automation_reference: ${{ inputs.wazuh_automation_reference }}"
         echo "* products: ${{ inputs.products }}"
         echo "* dev: ${{ inputs.dev }}"

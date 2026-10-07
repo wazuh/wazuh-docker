@@ -19,38 +19,42 @@ It asserts that the Wazuh indexer image ships none of the OpenSearch demo accoun
 
 | Mode | Trigger | Who can trigger |
 |---|---|---|
-| PR comment | `issue_comment` on an open, non-draft PR | Any repo collaborator |
+| PR label | `pull_request` (`labeled`) on a non-draft PR opened from a branch of this repository | Anyone who can add labels (triage access or higher) |
 | Manual | `workflow_dispatch` | Anyone with repo write access |
+
+To run the tests on a pull request, add one of the labels listed in [pull_request (label) flow](#pull_request-label-flow). Each label added starts one run against the PR head at that moment:
+
+- To run the tests again (for example after pushing new commits), remove the label and add it again.
+- Labels added while the PR is a draft are ignored. Mark the PR as ready for review and add the label again.
+- PRs opened from forks do not run: GitHub does not pass secrets or the OIDC token to `pull_request` runs from forks. Push the branch to this repository to test it.
 
 ---
 
 ## Execution Flows
 
-### issue_comment flow
+### pull_request (label) flow
 
 ```mermaid
 flowchart TD
-    A[PR comment posted] --> B{Recognized command\non open non-draft PR?}
+    A[Label added to PR] --> B{Test label on a non-draft\nPR from this repository?}
     B -- No --> Z[Ignored]
-    B -- Yes --> C[get_pr_info\nReact · Extract PR data\nParse command · Create Check Run]
+    B -- Yes --> C[get_pr_info\nExtract PR data · Parse label]
     C --> D[prepare\nResolve branch · Read VERSION.json]
-    D --> E[build_images\nBuild + push to ECR\nalways runs on PR comment]
+    D --> E[build_images\nBuild + push to ECR\nalways runs on PR label]
     E --> F{deployment_matrix}
     F --> G[docker_test\nsingle-node]
     F --> H[docker_test\nmulti-node]
-    G --> I[update_check]
-    H --> I
 ```
 
-**Recognized commands:**
+**Labels:**
 
-| Comment | Deployment matrix |
+| Label | Deployment matrix |
 |---|---|
-| `/test-docker` | `["single-node","multi-node"]` |
-| `/test-docker-single` | `["single-node"]` |
-| `/test-docker-multi` | `["multi-node"]` |
+| `test/docker` | `["single-node","multi-node"]` |
+| `test/docker-single` | `["single-node"]` |
+| `test/docker-multi` | `["multi-node"]` |
 
-When triggered by PR comment, `build_images` **always** runs — images are always built from the PR branch and pushed to ECR.
+When triggered by a PR label, `build_images` **always** runs — images are always built from the PR branch and pushed to ECR.
 
 ### workflow_dispatch flow
 
@@ -83,14 +87,14 @@ flowchart TD
 | `stage` | No | — | Image stage suffix (e.g. `beta1`, `beta2-latest`). Required when `version` is set |
 | `registry` | No | `ECR` | `ECR` (dev/built images) or `DockerHub` (released images) |
 
-### issue_comment parameters
+### pull_request (label) parameters
 
 All parameters are derived automatically:
 
 | Parameter | Source |
 |---|---|
-| `pr_head_ref` | PR head branch from GitHub API |
-| `deployment_matrix` | Parsed from comment command |
+| `pr_head_ref` | PR head branch from the event payload |
+| `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Always ECR (images are always built) |
 | `automation_reference` | Always `main` |
@@ -103,7 +107,7 @@ The workflow distinguishes five cases based on inputs:
 
 | Case | `version` input | `stage` input | Registry | Action | Image tag |
 |---|---|---|---|---|---|
-| a.1 | empty | empty | ECR (or PR comment) | **BUILD** from PR → ECR | `{version}-{stage}-latest` |
+| a.1 | empty | empty | ECR (or PR label) | **BUILD** from PR → ECR | `{version}-{stage}-latest` |
 | a.2 | empty | empty | DockerHub | Pull (no build) | `{version}-{stage}` |
 | b.1 | set | empty | ECR | Pull (no build) | `{version}-latest` |
 | b.2 | set | empty | DockerHub | Pull (no build) | `{version}` |
@@ -111,26 +115,24 @@ The workflow distinguishes five cases based on inputs:
 
 > When neither `version` nor `stage` is set, `version` and `stage` are read from `VERSION.json` on the target branch.
 
-> Case a.1 always applies when triggered by PR comment, regardless of the `registry` input (which is not available in that trigger mode).
+> Case a.1 always applies when triggered by a PR label, regardless of the `registry` input (which is not available in that trigger mode).
 
 ---
 
 ## Job Details
 
-### Job 1 — `get_pr_info` (issue_comment only)
+### Job 1 — `get_pr_info` (pull_request only)
 
 | Step | What it does |
 |---|---|
-| React to comment | Adds a 🚀 reaction to the triggering PR comment |
-| Extract PR data | Calls GitHub API to get PR `head_ref` and `head_sha` |
-| Parse command | Maps comment text → `deployment_matrix` JSON and `check_name` string |
-| Create Check Run | Creates a GitHub Check Run in `in_progress` state on the PR head SHA |
+| Extract PR data | Reads the PR number, head branch and head SHA from the event payload |
+| Parse label | Maps the label name → `deployment_matrix` JSON |
 
 ### Job 2 — `prepare` (both triggers)
 
 | Step | What it does |
 |---|---|
-| Resolve context | Reads inputs (workflow_dispatch) or `get_pr_info` outputs (issue_comment) |
+| Resolve context | Reads inputs (workflow_dispatch) or `get_pr_info` outputs (pull_request) |
 | Checkout `VERSION.json` | Sparse-checks out only `VERSION.json` from the target branch |
 | Read version info | Extracts `version` and `stage` from `VERSION.json` |
 | Show test plan | Logs the resolved image case (a.1/a.2/b.1/b.2/c) and writes a summary table |
@@ -141,7 +143,7 @@ Outputs: `pr_head_ref`, `deployment_matrix`, `wazuh_version`, `wazuh_stage`.
 
 Calls the reusable workflow `.github/workflows/5_build_and_push_images.yml`.
 
-**Runs when:** `version == ''` AND `stage == ''` AND (`registry == 'ECR'` OR `github.event_name == 'issue_comment'`).
+**Runs when:** `version == ''` AND `stage == ''` AND (`registry == 'ECR'` OR `github.event_name == 'pull_request'`).
 
 **Skipped when:** any explicit `version` or `stage` is provided, or `registry = DockerHub`.
 
@@ -188,7 +190,7 @@ The allocator writes `inventory.yml` with the SSH connection details (`ansible_h
 All subsequent steps run on the remote VM over SSH:
 
 1. **Install Docker CE**: `curl -fsSL https://get.docker.com | sudo sh`
-2. **Login to ECR** (when registry is ECR or trigger is issue_comment): authenticates the VM's Docker daemon to the dev registry
+2. **Login to ECR** (when registry is ECR or trigger is a PR label): authenticates the VM's Docker daemon to the dev registry
 3. **Set `vm.max_map_count=262144`**: required for OpenSearch/Wazuh Indexer
 
 #### Certificate generation and config
@@ -282,7 +284,7 @@ For details on what `docker-single-node` and `docker-multi-node` test types vali
 | Output | When | Content |
 |---|---|---|
 | Step summary | Always | Test results appended to `$GITHUB_STEP_SUMMARY` |
-| PR comment | `issue_comment` trigger only | Posts or updates a comment (marker: `<!-- docker-integration-check-{deployment} -->`) with ✅/❌ and results |
+| PR comment | `pull_request` trigger only | Posts or updates a comment (marker: `<!-- docker-integration-check-{deployment} -->`) with ✅/❌ and results |
 | Artifact: `test-results-docker-{deployment}-{run_id}` | Always | Results file, retained 7 days |
 | Artifact: `docker-logs-{deployment}-{run_id}` | On failure only | Full `docker compose logs` output, retained 7 days |
 
@@ -296,16 +298,6 @@ For details on what `docker-single-node` and `docker-multi-node` test types vali
      --track-output {ALLOCATOR_PATH}/track.yml
    ```
 
-### Job 5 — `update_check` (issue_comment only)
-
-Updates the GitHub Check Run created in Job 1:
-
-| `docker_test` result | Check conclusion |
-|---|---|
-| `success` | `success` — ✅ All Docker integration tests passed |
-| `failure` | `failure` — ❌ One or more tests failed |
-| `cancelled` | `cancelled` |
-
 ---
 
 ## Required Secrets and Variables
@@ -316,7 +308,7 @@ Updates the GitHub Check Run created in Job 1:
 |---|---|
 | `AWS_IAM_DOCKER_ROLE` | OIDC role for AWS operations (allocator + ECR) |
 | `GH_CLONE_TOKEN` | Checkout `wazuh-automation` |
-| `GITHUB_TOKEN` | PR comments and Check Run updates (built-in) |
+| `GITHUB_TOKEN` | PR comments (built-in) |
 
 ### Repository variables
 
@@ -335,7 +327,6 @@ Updates the GitHub Check Run created in Job 1:
 | `contents: read` | Checkout repository |
 | `pull-requests: write` | Post PR comments |
 | `issues: write` | Post comments via issues API |
-| `checks: write` | Create and update GitHub Check Runs |
 
 ---
 

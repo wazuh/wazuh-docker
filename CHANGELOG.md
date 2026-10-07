@@ -6,6 +6,7 @@
 | - | - |
 | [#6790](https://github.com/wazuh/internal-devel-requests/issues/6790) | Check the signature of the Wazuh packages and the checksum of `tini` before installing them in the images |
 | [#2706](https://github.com/wazuh/wazuh-docker/issues/2706) | Add Wazuh indexer dependencies on builder final stage |
+| [#2717](https://github.com/wazuh/wazuh-docker/issues/2717) | Start the Docker integration tests from PR labels |
 | [#2619](https://github.com/wazuh/wazuh-docker/issues/2619) | Add CA verification |
 | [#2606](https://github.com/wazuh/wazuh-docker/issues/2606) | Support the unified `WAZUH_MANAGER_ENDPOINT` connection URL in the Wazuh agent, alongside `WAZUH_MANAGER_SERVER` and `WAZUH_MANAGER_PORT` |
 | [#2524](https://github.com/wazuh/wazuh-docker/issues/2524) | Set authd password in agents installation. |
@@ -20,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2674](https://github.com/wazuh/wazuh-docker/issues/2674) | Adapt Docker images to install-time credential generation |
 | [#2674](https://github.com/wazuh/wazuh-docker/issues/2674) | Adapt Docker images to install-time credential generation |
 | [#2676](https://github.com/wazuh/wazuh-docker/issues/2676) | Replace manual `authd.pass`/`<endpoint>` writing in the agent's `0-wazuh-init` with `WAZUH_ENROLLMENT_TOKEN` support, following wazuh/wazuh#39063 |
 | [#2652](https://github.com/wazuh/wazuh-docker/issues/2652) | Mount the Wazuh manager agent listener certificate, and forward `--agent-san` to the certificate creation tool |

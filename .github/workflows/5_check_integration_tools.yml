@@ -1,12 +1,12 @@
 run-name: >-
   ${{ github.event_name == 'workflow_dispatch'
     && format('Docker Integration Test - Manual {0} on {1}', inputs.deployment_type, inputs.pr_head_ref)
-    || format('Docker Integration Test - #{0} {1}', github.event.issue.number, github.event.issue.title) }}
+    || format('Docker Integration Test - #{0} {1}', github.event.pull_request.number, github.event.pull_request.title) }}
 name: (5.x) PR Check - Docker Integration Tests
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    types: [labeled]
   workflow_dispatch:
     inputs:
       pr_head_ref:
@@ -47,7 +47,6 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
-  checks: write
 
 env:
   AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
@@ -57,97 +56,59 @@ env:
 
 jobs:
   # -------------------------------------------------------------------------
-  # Job 1: Parse PR info and determine which deployment(s) to test
+  # Job 1: Parse the PR label and determine which deployment(s) to test
   #
-  # Available commands:
-  #   /test-docker-single  — test single-node deployment
-  #   /test-docker-multi   — test multi-node deployment
-  #   /test-docker         — test both single-node and multi-node
+  # Runs when one of these labels is added to a non-draft PR opened from a
+  # branch of this repository:
+  #   test/docker         — test single-node and multi-node deployments
+  #   test/docker-single  — test single-node deployment
+  #   test/docker-multi   — test multi-node deployment
   # -------------------------------------------------------------------------
   get_pr_info:
     if: |
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      github.event.issue.state == 'open' &&
-      !github.event.issue.draft &&
-      (contains(github.event.comment.body, '/test-docker-single') ||
-       contains(github.event.comment.body, '/test-docker-multi') ||
-       contains(github.event.comment.body, '/test-docker'))
+      github.event_name == 'pull_request' &&
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(fromJSON('["test/docker","test/docker-single","test/docker-multi"]'), github.event.label.name)
     runs-on: ubuntu-24.04
     outputs:
       pr_number: ${{ steps.pr_data.outputs.pr_number }}
       pr_head_ref: ${{ steps.pr_data.outputs.pr_head_ref }}
       pr_head_sha: ${{ steps.pr_data.outputs.pr_head_sha }}
-      check_run_id: ${{ steps.create_check.outputs.result }}
-      deployment_matrix: ${{ steps.parse_command.outputs.deployment_matrix }}
-      check_name: ${{ steps.parse_command.outputs.check_name }}
+      deployment_matrix: ${{ steps.parse_label.outputs.deployment_matrix }}
 
     steps:
-      - name: React to comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'rocket'
-            });
-
       - name: Extract PR data
         id: pr_data
         env:
-          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          PR_NUMBER="${{ github.event.issue.number }}"
-          PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
-          PR_HEAD_REF=$(echo "$PR_DATA" | jq -r '.head.ref')
-          PR_HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
-          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+          echo "pr_number=${PR_NUMBER}"     >> $GITHUB_OUTPUT
           echo "pr_head_ref=${PR_HEAD_REF}" >> $GITHUB_OUTPUT
           echo "pr_head_sha=${PR_HEAD_SHA}" >> $GITHUB_OUTPUT
 
-      - name: Parse command and set deployment metadata
-        id: parse_command
+      - name: Parse label and set test metadata
+        id: parse_label
         env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          LABEL_NAME: ${{ github.event.label.name }}
         run: |
-          if echo "$COMMENT_BODY" | grep -q '/test-docker-single'; then
-            echo 'deployment_matrix=["single-node"]'                >> $GITHUB_OUTPUT
-            echo 'check_name=Docker Integration Check (Single-Node)' >> $GITHUB_OUTPUT
-          elif echo "$COMMENT_BODY" | grep -q '/test-docker-multi'; then
-            echo 'deployment_matrix=["multi-node"]'                 >> $GITHUB_OUTPUT
-            echo 'check_name=Docker Integration Check (Multi-Node)'  >> $GITHUB_OUTPUT
-          elif echo "$COMMENT_BODY" | grep -q '/test-docker'; then
-            echo 'deployment_matrix=["single-node","multi-node"]'   >> $GITHUB_OUTPUT
-            echo 'check_name=Docker Integration Check'               >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create check run
-        id: create_check
-        uses: actions/github-script@v7
-        env:
-          HEAD_SHA: ${{ steps.pr_data.outputs.pr_head_sha }}
-          CHECK_NAME: ${{ steps.parse_command.outputs.check_name }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
-        with:
-          script: |
-            const { data: check } = await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: process.env.CHECK_NAME,
-              head_sha: process.env.HEAD_SHA,
-              status: 'in_progress',
-              started_at: new Date().toISOString(),
-              details_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              output: {
-                title: `🔨 Running ${process.env.CHECK_NAME}...`,
-                summary: `Triggered by comment: \`${process.env.COMMENT_BODY}\``,
-                text: 'Allocating instance and running Docker integration tests'
-              }
-            });
-            console.log('Check run created:', check.id);
-            return check.id;
+          case "$LABEL_NAME" in
+            test/docker)
+              echo 'deployment_matrix=["single-node","multi-node"]' >> $GITHUB_OUTPUT
+              ;;
+            test/docker-single)
+              echo 'deployment_matrix=["single-node"]' >> $GITHUB_OUTPUT
+              ;;
+            test/docker-multi)
+              echo 'deployment_matrix=["multi-node"]' >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "::error::Unsupported label: ${LABEL_NAME}"
+              exit 1
+              ;;
+          esac
 
   # -------------------------------------------------------------------------
   # Job 2: Prepare context (pr_head_ref + deployment matrix) for both triggers.
@@ -167,18 +128,28 @@ jobs:
     steps:
       - name: Resolve context
         id: ctx
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_HEAD_REF: ${{ inputs.pr_head_ref }}
+          INPUT_DEPLOY_TYPE: ${{ inputs.deployment_type }}
+          PR_HEAD_REF: ${{ needs.get_pr_info.outputs.pr_head_ref }}
+          PR_DEPLOYMENT_MATRIX: ${{ needs.get_pr_info.outputs.deployment_matrix }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "pr_head_ref=${{ inputs.pr_head_ref }}" >> $GITHUB_OUTPUT
-            DEPLOY_TYPE="${{ inputs.deployment_type }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "pr_head_ref=${INPUT_HEAD_REF}" >> $GITHUB_OUTPUT
+            DEPLOY_TYPE="$INPUT_DEPLOY_TYPE"
             if [ "$DEPLOY_TYPE" = "both" ]; then
               echo 'deployment_matrix=["single-node","multi-node"]' >> $GITHUB_OUTPUT
             else
               echo "deployment_matrix=[\"${DEPLOY_TYPE}\"]" >> $GITHUB_OUTPUT
             fi
           else
-            echo 'pr_head_ref=${{ needs.get_pr_info.outputs.pr_head_ref }}' >> $GITHUB_OUTPUT
-            echo 'deployment_matrix=${{ needs.get_pr_info.outputs.deployment_matrix }}' >> $GITHUB_OUTPUT
+            echo "pr_head_ref=${PR_HEAD_REF}" >> $GITHUB_OUTPUT
+            case "$PR_DEPLOYMENT_MATRIX" in
+              '["single-node"]'|'["multi-node"]'|'["single-node","multi-node"]') ;;
+              *) echo "::error::Unexpected deployment_matrix"; exit 1 ;;
+            esac
+            echo "deployment_matrix=${PR_DEPLOYMENT_MATRIX}" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout wazuh-docker PR branch (VERSION.json only)
@@ -199,6 +170,9 @@ jobs:
           echo "Version: ${VERSION}  Stage: ${STAGE:-<release>}"
 
       - name: Show test plan
+        env:
+          PR_HEAD_REF: ${{ steps.ctx.outputs.pr_head_ref }}
+          DEPLOYMENT_MATRIX: ${{ steps.ctx.outputs.deployment_matrix }}
         run: |
           WAZUH_VERSION="${{ steps.version.outputs.wazuh_version }}"
           WAZUH_STAGE="${{ steps.version.outputs.wazuh_stage }}"
@@ -210,7 +184,7 @@ jobs:
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             DOCKER_VERSION="$WAZUH_VERSION"
             DOCKER_STAGE_DISPLAY="${WAZUH_STAGE}"
-            if [ "$INPUT_REGISTRY" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+            if [ "$INPUT_REGISTRY" = "ECR" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
               CASE="a.1 — No version/stage → BUILD images from PR → push to ECR"
               ACTION="BUILD + push to ECR"
               EFFECTIVE_TAG="${DOCKER_VERSION}${DOCKER_STAGE_DISPLAY:+-${DOCKER_STAGE_DISPLAY}}-latest"
@@ -249,9 +223,9 @@ jobs:
           echo "============================================="
           echo "  DOCKER INTEGRATION TEST PLAN"
           echo "============================================="
-          echo "Branch:        ${{ steps.ctx.outputs.pr_head_ref }}"
+          echo "Branch:        ${PR_HEAD_REF}"
           echo "Trigger:       ${{ github.event_name }}"
-          echo "Deployments:   ${{ steps.ctx.outputs.deployment_matrix }}"
+          echo "Deployments:   ${DEPLOYMENT_MATRIX}"
           echo "Case:          ${CASE}"
           echo "Action:        ${ACTION}"
           echo "Registry:      ${EFFECTIVE_REGISTRY}"
@@ -265,9 +239,9 @@ jobs:
             echo ""
             echo "| | |"
             echo "|---|---|"
-            echo "| **Branch** | \`${{ steps.ctx.outputs.pr_head_ref }}\` |"
+            echo "| **Branch** | \`${PR_HEAD_REF}\` |"
             echo "| **Trigger** | \`${{ github.event_name }}\` |"
-            echo "| **Deployments** | \`${{ steps.ctx.outputs.deployment_matrix }}\` |"
+            echo "| **Deployments** | \`${DEPLOYMENT_MATRIX}\` |"
             echo "| **Case** | ${CASE} |"
             echo "| **Action** | ${ACTION} |"
             echo ""
@@ -302,7 +276,7 @@ jobs:
       needs.prepare.result == 'success' &&
       inputs.version == '' &&
       inputs.stage == '' &&
-      (inputs.registry == 'ECR' || github.event_name == 'issue_comment')
+      (inputs.registry == 'ECR' || github.event_name == 'pull_request')
     uses: ./.github/workflows/5_build_and_push_images.yml
     with:
       image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
@@ -364,7 +338,7 @@ jobs:
           if [ -z "$INPUT_VERSION" ] && [ -z "$INPUT_STAGE" ]; then
             DOCKER_VERSION="$WAZUH_VERSION"
             DOCKER_STAGE="$WAZUH_STAGE"
-            if [ "${{ inputs.registry }}" = "ECR" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+            if [ "${{ inputs.registry }}" = "ECR" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
               # Case a.1: ECR / PR comment — images were built by build_images job → tag = version-stage-latest
               DOCKER_REGISTRY="${{ vars.IMAGE_REGISTRY_DEV }}"
               DOCKER_TAG="${DOCKER_VERSION}${DOCKER_STAGE:+-${DOCKER_STAGE}}-latest"
@@ -486,7 +460,7 @@ jobs:
           "
 
       - name: Login VM to ECR registry
-        if: inputs.registry == 'ECR' || github.event_name == 'issue_comment'
+        if: inputs.registry == 'ECR' || github.event_name == 'pull_request'
         run: |
           ECR_REGISTRY="${{ env.DOCKER_REGISTRY }}"
           ECR_REGION=$(echo "$ECR_REGISTRY" | cut -d. -f4)
@@ -829,7 +803,7 @@ jobs:
           fi
 
       - name: Post PR comment with results
-        if: always() && github.event_name == 'issue_comment'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         env:
           DEPLOYMENT: ${{ matrix.deployment_type }}
@@ -921,41 +895,3 @@ jobs:
           python3 wazuh-automation/deployability/modules/allocation/main.py \
             --action delete \
             --track-output ${{ env.ALLOCATOR_PATH }}/track.yml
-
-  # -------------------------------------------------------------------------
-  # Job 4: Update the GitHub check run (issue_comment trigger only)
-  # -------------------------------------------------------------------------
-  update_check:
-    needs: [get_pr_info, prepare, build_images, docker_test]
-    if: always() && github.event_name == 'issue_comment' && needs.get_pr_info.result == 'success'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Update check run
-        uses: actions/github-script@v7
-        env:
-          DOCKER_RESULT: ${{ needs.docker_test.result }}
-          CHECK_NAME: ${{ needs.get_pr_info.outputs.check_name }}
-          CHECK_RUN_ID: ${{ needs.get_pr_info.outputs.check_run_id }}
-        with:
-          script: |
-            const result = process.env.DOCKER_RESULT;
-            const conclusionMap = {
-              success:   { conclusion: 'success',   icon: '✅', summary: 'All Docker integration tests passed.' },
-              failure:   { conclusion: 'failure',   icon: '❌', summary: 'One or more Docker integration tests failed.' },
-              cancelled: { conclusion: 'cancelled', icon: '⏹️', summary: 'Workflow was cancelled.' },
-            };
-            const { conclusion, icon, summary } = conclusionMap[result] ?? conclusionMap.failure;
-            const label = conclusion.charAt(0).toUpperCase() + conclusion.slice(1);
-            await github.rest.checks.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              check_run_id: parseInt(process.env.CHECK_RUN_ID),
-              status: 'completed',
-              conclusion,
-              completed_at: new Date().toISOString(),
-              output: {
-                title: `${icon} ${process.env.CHECK_NAME} — ${label}`,
-                summary,
-                text: `[View workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
-              }
-            });
