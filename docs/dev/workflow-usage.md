@@ -14,6 +14,7 @@ The `(5.x) Build and push images` workflow (`.github/workflows/5_build_and_push_
 | `assistant_revision` | Revision of the installation assistant tools (development only) | `latest` | No |
 | `id` | Workflow run identifier | - | No |
 | `dev` | Development mode | `true` | No |
+| `skip_signature_check` | Install unsigned Wazuh packages, such as the ones built from a commit (development only) | `false` | No |
 
 ## Development vs Production Mode
 
@@ -37,6 +38,7 @@ The `(5.x) Build and push images` workflow (`.github/workflows/5_build_and_push_
 1. **Artifact Resolution**:
    - Dev mode: Creates pre-signed URLs for all Wazuh packages from S3
    - Prod mode: Uses packages from public repositories
+   - Each package must be signed with the Wazuh key, or the build fails. See [Package signature check](build-image.md#package-signature-check)
 
 2. **Multi-architecture Build**:
    - Uses Docker Buildx with QEMU for cross-platform builds

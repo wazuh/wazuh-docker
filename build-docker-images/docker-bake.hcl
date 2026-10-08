@@ -21,6 +21,10 @@ variable "IMAGE_TAG" { default = WAZUH_VERSION }
 # MULTIARCH: set to a non-empty value to build linux/amd64 + linux/arm64.
 variable "MULTIARCH" { default = "" }
 
+# SKIP_PACKAGE_SIGNATURE_CHECK: set to "true" to install unsigned development
+# packages. By default, the build fails if a package is not signed by Wazuh.
+variable "SKIP_PACKAGE_SIGNATURE_CHECK" { default = "" }
+
 # Per-component tags — all default to IMAGE_TAG.
 # In dev builds the shell script sets each one independently to append the
 # per-component commit ref (e.g. MANAGER_TAG=5.0.0-beta1-abc1234).
@@ -56,8 +60,13 @@ target "_common" {
   # MULTIARCH=true  → build linux/amd64 + linux/arm64 (requires --push, no --load for multi-platform)
   # MULTIARCH unset → null means "native platform of the build host" (amd64 on x86, arm64 on ARM)
   platforms = MULTIARCH != "" ? ["linux/amd64", "linux/arm64"] : null
+  # Files shared by all the Dockerfiles (COPY --from=shared).
+  contexts = {
+    shared = "shared/"
+  }
   args = {
-    WAZUH_VERSION = WAZUH_VERSION
+    WAZUH_VERSION                = WAZUH_VERSION
+    SKIP_PACKAGE_SIGNATURE_CHECK = SKIP_PACKAGE_SIGNATURE_CHECK
   }
 }
 

@@ -38,6 +38,11 @@ on:
         type: boolean
         default: true
         required: false
+      skip_signature_check:
+        description: "Install unsigned Wazuh packages (only with dev)"
+        type: boolean
+        default: false
+        required: false
   workflow_call:
     inputs:
       image_tag:
@@ -77,6 +82,11 @@ on:
         type: boolean
         default: false
         required: false
+      skip_signature_check:
+        description: "Install unsigned Wazuh packages (only with dev)"
+        type: boolean
+        default: false
+        required: false
 
 permissions:
       id-token: write
@@ -112,6 +122,7 @@ jobs:
         echo "* wazuh_automation_reference: ${{ inputs.wazuh_automation_reference }}"
         echo "* products: ${{ inputs.products }}"
         echo "* dev: ${{ inputs.dev }}"
+        echo "* skip_signature_check: ${{ inputs.skip_signature_check }}"
         echo "* commit_list: ${{ inputs.commit_list }}"
         echo "* assistant_revision: ${{ inputs.assistant_revision }}"
         echo "---------------------------------------------"
@@ -360,8 +371,14 @@ jobs:
     - name: Build Wazuh images
       env:
         DEV: ${{ inputs.dev }}
+        SKIP_SIGNATURE_CHECK: ${{ inputs.skip_signature_check }}
         WAZUH_COMPONENT: ${{ matrix.wazuh_component }}
       run: |
+        # Packages built from a commit are not signed; only dev builds may skip the check.
+        SIGNATURE_ARGS=""
+        if [ "$DEV" = true ] && [ "$SKIP_SIGNATURE_CHECK" = true ]; then
+          SIGNATURE_ARGS="--skip-signature-check"
+        fi
         if [[ "$IMAGE_TAG" == *"-"* ]]; then
           IFS='-' read -r -a tokens <<< "$IMAGE_TAG"
           if [ -z "${tokens[1]}" ]; then
@@ -378,7 +395,8 @@ jobs:
               -m \
               --dev \
               -refs "$COMPONENT_REFS_JSON" \
-              -c $WAZUH_COMPONENT
+              -c $WAZUH_COMPONENT \
+              $SIGNATURE_ARGS
           else
             ./build-images.sh \
               -v $WAZUH_VER \
@@ -395,7 +413,8 @@ jobs:
               -m \
               --dev \
               -refs "$COMPONENT_REFS_JSON" \
-              -c $WAZUH_COMPONENT
+              -c $WAZUH_COMPONENT \
+              $SIGNATURE_ARGS
           else
             ./build-images.sh \
               -v $IMAGE_TAG \
