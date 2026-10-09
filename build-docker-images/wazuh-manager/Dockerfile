@@ -52,13 +52,12 @@ RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iprou
     chown root:wazuh-manager /var/wazuh-manager/etc/certs && \
     chmod 1770 /var/wazuh-manager/etc/certs && \
     # The package's %post resolved credentials for this build host: rbac.db,
-    # the keystore, a bootstrap CA and certificates. Remove them so no two
-    # containers from this image share one; each container resolves its own
-    # at start (etc/cont-init.d/1-credentials).
+    # the keystore, a bootstrap CA and the three certificate pairs. Remove them
+    # so no two containers from this image share one; each container resolves
+    # its own at start (etc/cont-init.d/1-credentials), and the certificate
+    # pairs are mounted from the host.
     /var/wazuh-manager/bin/wazuh-manager-resolve-credentials --clear -H /var/wazuh-manager && \
     rm -rf /etc/wazuh && \
-    rm -f /var/wazuh-manager/etc/certs/apid.pem \
-          /var/wazuh-manager/etc/certs/apid-key.pem && \
     # Clear the cluster key for the same reason the certificates above are
     # removed: the installer generates it once, here, and copying the installed
     # tree into the image would publish that single secret inside every pull of

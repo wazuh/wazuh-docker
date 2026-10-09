@@ -34,7 +34,7 @@ environment:
 
 **Variable Descriptions:**
 
-- `WAZUH_INDEXER_MANAGER_PASSWORD`, `WAZUH_MANAGER_API_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords of the indexer account `wazuh-manager` and of the Wazuh API accounts `wazuh` and `wazuh-wui`, read from `config/credentials/manager.env`, which `tools/utils/deployment/credentials-conf.sh` creates and the Compose file mounts as the `wazuh-credentials` secret. They can also be set in the environment, which takes precedence over the file. They are required on the first start and are stored then; later changes to them have no effect. See [Credentials](../credentials.md).
+- `WAZUH_INDEXER_MANAGER_PASSWORD`, `WAZUH_MANAGER_API_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords of the indexer account `wazuh-manager` and of the Wazuh API accounts `wazuh` and `wazuh-internal-client`, read from `config/credentials/manager.env`, which `tools/utils/deployment/credentials-conf.sh` creates and the Compose file mounts as the `wazuh-credentials` secret. They can also be set in the environment, which takes precedence over the file. They are required on the first start and are stored then; later changes to them have no effect. See [Credentials](../credentials.md).
 - `WAZUH_CREDENTIALS_FILE`: where the credentials secret is mounted. Default: `/run/secrets/wazuh-credentials`. Set it only to mount the file somewhere else; the container then refuses to start if the file is missing.
 - `INDEXER_PASSWORD`: accepted, in the environment only, as an alias of `WAZUH_INDEXER_MANAGER_PASSWORD`. `INDEXER_USERNAME` is ignored: the manager always authenticates to the indexer as `wazuh-manager`.
 - `WAZUH_NODE_NAME`: This node's cluster name, written to `<cluster><node_name>`. Defaults to the container hostname.
@@ -79,12 +79,12 @@ secrets:
     target: wazuh-credentials
 environment:
   - WAZUH_API_URL=https://wazuh.manager
-  - API_USERNAME=wazuh-wui
+  - API_USERNAME=wazuh-internal-client
 ```
 **Variable Descriptions:**
 - `WAZUH_API_URL`: Base URL of the Wazuh API, used for querying and visualizing security data.
-- `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords the Dashboard authenticates with, to the Wazuh Indexer as `kibanaserver` and to the Wazuh API as `wazuh-wui`, read from `config/credentials/dashboard.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are stored in the dashboard keystore on the first start and have no effect afterwards. See [Credentials](../credentials.md).
-- `API_USERNAME`: the Wazuh API account the Dashboard uses, `wazuh-wui`.
+- `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords the Dashboard authenticates with, to the Wazuh Indexer as `kibanaserver` and to the Wazuh API as `wazuh-internal-client`, read from `config/credentials/dashboard.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are stored in the dashboard keystore on the first start and have no effect afterwards. See [Credentials](../credentials.md).
+- `API_USERNAME`: the Wazuh API account the Dashboard uses, `wazuh-internal-client`.
 - `DASHBOARD_PASSWORD` and `API_PASSWORD`: accepted, in the environment only, as aliases of the two passwords above. `DASHBOARD_USERNAME` is ignored: the Dashboard always authenticates to the indexer as `kibanaserver`.
 These variables are critical for enabling communication between the Wazuh Dashboard, the Wazuh Indexer, and the Wazuh API.
 ---
@@ -140,17 +140,17 @@ and the agent keeps its `client.keys` and its trust anchor.
 
 **Verifying the manager**
 
-The agent verifies the manager's TLS certificate. With no `<ssl>` configuration it
-verifies against the operating system trust store, which covers a manager whose
-certificate chains to a publicly trusted CA and nothing else — a manager
-presenting a certificate of its own, which is what a Wazuh manager does by
-default, is refused and the agent logs the reason and keeps retrying:
+With no `<ssl>` configuration and no enrollment token, the agent does **not**
+verify the manager's TLS certificate: it resolves `verification_mode` to `none`,
+connects to whatever answers on the endpoint — including a manager presenting a
+self-signed certificate — and logs on every connection:
 
 ```text
-wazuh-agentd: ERROR: Enrollment request could not be sent: (60) SSL peer certificate or SSH remote key was not OK: SSL certificate OpenSSL verify result: unable to get local issuer certificate (20).
+wazuh-agentd:https-client: WARNING: TLS verification is DISABLED (verification_mode=none).
 ```
 
-Reaching such a manager means giving the agent the CA that signs it:
+The container says so at start as well. Verifying the manager means giving the
+agent the CA that signs it:
 
 ```yaml
 environment:
@@ -185,7 +185,7 @@ copying it is what removes that from the deployment's concerns.
 
 | `WAZUH_AGENT_SSL_VERIFICATION` | Trust anchor | Checks the hostname | Needs a CA |
 | - | - | - | - |
-| unset, no CA given | Operating system trust store | Yes | — |
+| unset, no CA given | No verification (`none`), or the token's trust anchor (`full`) after a token enrollment | No / Yes | — |
 | unset, CA given | The given CA | No | — |
 | `certificate` | The given CA | No | Yes |
 | `full` | The given CA | Yes | Yes |

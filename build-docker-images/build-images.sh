@@ -19,6 +19,7 @@ WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
 SKIP_PACKAGE_SIGNATURE_CHECK=""
+ARTIFACT_URLS_INPUT=""
 
 # -----------------------------------------------------------------------------
 
@@ -60,9 +61,15 @@ build() {
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
     ARTIFACT_URLS_DIR="artifact-urls"
 
-    # Check if the artifact file already exists to prevent redundant downloads
-    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
-        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
+    if [ -n "${ARTIFACT_URLS_INPUT}" ]; then
+        if [ ! -f "${ARTIFACT_URLS_INPUT}" ]; then
+            echo "Error: artifact URLs file '${ARTIFACT_URLS_INPUT}' not found." >&2
+            clean 1
+        fi
+        echo "Using artifact URLs from ${ARTIFACT_URLS_INPUT}."
+        if [ "${ARTIFACT_URLS_INPUT}" != "${ARTIFACT_URLS_FILE}" ]; then
+            cp "${ARTIFACT_URLS_INPUT}" "${ARTIFACT_URLS_FILE}" || clean 1
+        fi
     else
         # GitHub URL for exact Release Tag lookup
         TAG="v${WAZUH_IMAGE_VERSION}"
@@ -259,6 +266,7 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
+    echo "    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version."
     echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
@@ -280,6 +288,14 @@ main() {
         case "${1}" in
         "-h"|"--help")
             help 0
+            ;;
+        "-a"|"--artifact-urls")
+            if [ -n "${2}" ]; then
+                ARTIFACT_URLS_INPUT="${2}"
+                shift 2
+            else
+                help 1
+            fi
             ;;
         "-d"|"--dev-stage")
             if [ -n "${2}" ]; then

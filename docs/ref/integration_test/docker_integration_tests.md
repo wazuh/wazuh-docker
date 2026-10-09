@@ -250,7 +250,7 @@ After containers are healthy, waits for steady state:
 
 Run on the VM once the containers are healthy, before the test module:
 
-1. **Per manager node**: prints the ownership and mode of `etc/certs`, and the subject, validity, SAN and extended key usage of `etc/certs/remoted.pem`; verifies it against the mounted `etc/certs/root-ca.pem`; and fails if two manager nodes present the same fingerprint.
+1. **Per manager node**: prints the ownership and mode of `etc/certs`, and the subject, validity, SAN and extended key usage of `etc/certs/remoted.pem`; verifies it against the mounted `etc/certs/root-ca.pem`; and fails if two manager nodes present the same fingerprint. On the node that runs the Server API (the single-node manager, the multi-node master) it also verifies `etc/certs/apid.pem` against `etc/certs/root-ca.pem` and calls `https://<node>:55000/` with that CA, by name and without `-k`.
 2. **From the host**: `openssl s_client -connect localhost:1517 -CAfile config/root-ca/certs/root-ca.pem` has to report `Verify return code: 0 (ok)`, which is the check an agent outside the Compose network performs on the published port.
 
 #### Test execution

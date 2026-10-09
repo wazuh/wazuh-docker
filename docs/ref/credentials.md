@@ -28,7 +28,7 @@ then on, the stored values are the ones that count.
 | `kibanaserver` | `WAZUH_INDEXER_KIBANASERVER_PASSWORD` | `indexer.env`, `dashboard.env` | The dashboard, to authenticate to the indexer |
 | `wazuh-manager` | `WAZUH_INDEXER_MANAGER_PASSWORD` | `indexer.env`, `manager.env` | The manager, to write events and read state in the indexer |
 | `wazuh` | `WAZUH_MANAGER_API_PASSWORD` | `manager.env` | People and automation: superuser of the Wazuh API, for example to mint agent enrollment tokens |
-| `wazuh-wui` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user |
+| `wazuh-internal-client` | `WAZUH_MANAGER_WUI_PASSWORD` | `manager.env`, `dashboard.env` | The dashboard, to call the Wazuh API on behalf of the logged-in user |
 
 The files are `config/credentials/<file>` under `single-node/` or `multi-node/`.
 The first three accounts live in the indexer, and the last two in the manager's
@@ -158,7 +158,7 @@ is used. Run it from the directory of `docker-compose.yml`:
 
 ```bash
 docker compose exec wazuh.indexer /password-tool.sh --user kibanaserver
-docker compose exec wazuh.manager /password-tool.sh --user wazuh-wui
+docker compose exec wazuh.manager /password-tool.sh --user wazuh-internal-client
 ```
 
 `--all` changes every account of that component. To choose the password
@@ -186,7 +186,15 @@ restart the dashboard:
 | `admin`, `wazuh` | None: only the env file |
 | `kibanaserver` | Dashboard keystore, `opensearch.password` |
 | `wazuh-manager` | Manager keystore, `indexer` / `password` |
-| `wazuh-wui` | Dashboard keystore, `wazuh_core.hosts.default.password` |
+| `wazuh-internal-client` | Dashboard keystore, `wazuh_core.hosts.default.password` |
+
+The Wazuh API account the dashboard uses was named `wazuh-wui` before 5.0.0.
+A Wazuh API user database created by a 5.0.0 pre-release image, in the
+`wazuh_api_configuration` volume (`master-wazuh-api-configuration` on
+multi-node), keeps that name after the upgrade, and the dashboard can no longer
+log in. Set `API_USERNAME=wazuh-wui` on the dashboard service of such a
+deployment. `password-tool.sh --user wazuh-internal-client` changes its password
+all the same, since the tool addresses the account by its identifier.
 
 The manager's tool refuses to run before the manager's first start. It would
 otherwise create the Wazuh API user database itself, and the first start would
@@ -202,7 +210,7 @@ then keep that database instead of the passwords in `manager.env`.
   passwords are changed there alone:
 
   ```bash
-  docker compose exec wazuh.master /password-tool.sh --user wazuh-wui
+  docker compose exec wazuh.master /password-tool.sh --user wazuh-internal-client
   ```
 
   `wazuh.worker` has no database, and its `password-tool.sh` refuses to run. If

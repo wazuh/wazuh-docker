@@ -702,6 +702,31 @@ jobs:
             echo 'OK: each manager node has its own remoted certificate'
           "
 
+      - name: Verify the Server API certificate
+        run: |
+          DEPLOYMENT="${{ matrix.deployment_type }}"
+          ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" "
+            set -eo pipefail
+            cd /tmp/wazuh-docker/${DEPLOYMENT}
+
+            for SVC in \$(sudo docker compose config --services | grep -E 'wazuh\.(manager|master)'); do
+              echo \"=== \$SVC ===\"
+              sudo docker compose exec -T \$SVC openssl x509 \
+                -in /var/wazuh-manager/etc/certs/apid.pem -noout -subject -dates \
+                -ext subjectAltName,extendedKeyUsage
+              sudo docker compose exec -T \$SVC openssl verify \
+                -CAfile /var/wazuh-manager/etc/certs/root-ca.pem \
+                /var/wazuh-manager/etc/certs/apid.pem
+              CODE=\$(sudo docker compose exec -T \$SVC curl -s -o /dev/null -w '%{http_code}' \
+                --cacert /var/wazuh-manager/etc/certs/root-ca.pem \"https://\$SVC:55000/\")
+              echo \"https://\$SVC:55000/ verified against root-ca.pem: HTTP \$CODE\"
+              if [ \"\$CODE\" != '401' ]; then
+                echo 'ERROR: the Server API does not answer with a certificate that verifies by name'
+                exit 1
+              fi
+            done
+          "
+
       - name: Verify the agent listener from outside the Compose network
         run: |
           DEPLOYMENT="${{ matrix.deployment_type }}"

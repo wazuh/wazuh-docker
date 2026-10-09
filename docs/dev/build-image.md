@@ -16,7 +16,7 @@ Then execute:
 ./build-images.sh
 ```
 
-The script reads the package URLs from `artifact_urls.yaml` in the same directory, and builds the four images in parallel. To build only one, use `-c`:
+The script downloads the package URLs for the requested version into `artifact_urls.yaml` on every run, overwriting any previous copy, and builds the four images in parallel. To build from your own package list instead, pass it with `-a <file>`. To build only one, use `-c`:
 
 ```bash
 ./build-images.sh -c wazuh-dashboard
@@ -29,6 +29,7 @@ To get all the available script options use the `-h` or `--help` option:
 
 Usage: ./build-images.sh [OPTIONS]
 
+    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version.
     -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default.
     --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow.
     -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'.

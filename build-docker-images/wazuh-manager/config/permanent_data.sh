@@ -13,6 +13,11 @@ EXCLUSION_PATH=${DATA_TMP_PATH}/exclusion
 mkdir ${EXCLUSION_PATH}
 
 for exclusion_path in "${PERMANENT_DATA_EXCP[@]}"; do
+  if [ ! -e "${exclusion_path}" ]; then
+    echo "ERROR: PERMANENT_DATA_EXCP entry not found in the image: ${exclusion_path}" >&2
+    exit 1
+  fi
+
   # Create the parent directory for the exclusion entry if it does not exist
   DIR=$(dirname "${exclusion_path}")
   if [ ! -e ${EXCLUSION_PATH}/${DIR}  ]

@@ -47,6 +47,8 @@ services:
       - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
       - ./config/wazuh_manager/certs/wazuh.manager-remoted.pem:/var/wazuh-manager/etc/certs/remoted.pem
       - ./config/wazuh_manager/certs/wazuh.manager-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-apid.pem:/var/wazuh-manager/etc/certs/apid.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-apid-key.pem:/var/wazuh-manager/etc/certs/apid-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0

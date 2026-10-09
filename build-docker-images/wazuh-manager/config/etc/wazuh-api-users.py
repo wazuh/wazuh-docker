@@ -14,8 +14,10 @@ import os
 import sys
 
 # The identifier of a default user is its position in the file the framework
-# seeds the database from, and the API addresses them by it.
-USER_IDS = {"wazuh": 1, "wazuh-wui": 2}
+# seeds the database from, and the API addresses them by it. User 2 keeps the
+# name wazuh-wui in a database seeded by a 5.0.0 pre-release, so the user is
+# looked up by its identifier.
+USER_IDS = {"wazuh": 1, "wazuh-internal-client": 2}
 
 
 def main() -> int:
@@ -47,7 +49,7 @@ def main() -> int:
         with orm.AuthenticationManager(orm.db_manager.sessions[orm.DB_FILE]) as auth:
             for username, password in targets.items():
                 user_id = USER_IDS.get(username)
-                if user_id is None or not auth.get_user(username):
+                if user_id is None or not auth.get_user_id(user_id):
                     print(f"password-tool.sh: unknown Wazuh API user '{username}'", file=sys.stderr)
                     status = 1
                     continue

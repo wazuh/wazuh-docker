@@ -48,6 +48,8 @@ services:
       - ./config/wazuh_master/certs/wazuh.master-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
       - ./config/wazuh_master/certs/wazuh.master-remoted.pem:/var/wazuh-manager/etc/certs/remoted.pem
       - ./config/wazuh_master/certs/wazuh.master-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
+      - ./config/wazuh_master/certs/wazuh.master-apid.pem:/var/wazuh-manager/etc/certs/apid.pem
+      - ./config/wazuh_master/certs/wazuh.master-apid-key.pem:/var/wazuh-manager/etc/certs/apid-key.pem
 
   wazuh.worker:
     image: wazuh/wazuh-manager:5.0.0
