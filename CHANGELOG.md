@@ -21,6 +21,8 @@
 
 | Issue | Comment |
 | - | - |
+| [#2728](https://github.com/wazuh/wazuh-docker/issues/2728) | Mount the Server API certificate issued by `wazuh-certs-tool.sh` on the manager node that runs the API |
+| [#2716](https://github.com/wazuh/wazuh-docker/issues/2716) | Rename the `wazuh-wui` Server API user to `wazuh-internal-client`, following wazuh/wazuh#40066. The `WAZUH_MANAGER_WUI_PASSWORD` key keeps its name |
 | [#2674](https://github.com/wazuh/wazuh-docker/issues/2674) | Adapt Docker images to install-time credential generation |
 | [#2674](https://github.com/wazuh/wazuh-docker/issues/2674) | Adapt Docker images to install-time credential generation |
 | [#2676](https://github.com/wazuh/wazuh-docker/issues/2676) | Replace manual `authd.pass`/`<endpoint>` writing in the agent's `0-wazuh-init` with `WAZUH_ENROLLMENT_TOKEN` support, following wazuh/wazuh#39063 |
@@ -87,6 +89,10 @@
 
 | Issue | Comment |
 | - | - |
+| [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
+| [#2721](https://github.com/wazuh/wazuh-docker/issues/2721) | Stop `certificates-conf.sh` when `wazuh-certs-tool.sh` fails or `wazuh-certificates/` is missing, and give `config.yml` back to the user who ran it with `sudo` |
+| [#2720](https://github.com/wazuh/wazuh-docker/issues/2720) | Download the `artifact_urls` file of the requested version in `build-images.sh` instead of reusing a leftover `artifact_urls.yaml`, and add `-a/--artifact-urls` to build from a given file |
+| [#2719](https://github.com/wazuh/wazuh-docker/issues/2719) | Report that the Wazuh agent connects without verifying the manager when no TLS material is configured |
 | [#2690](https://github.com/wazuh/wazuh-docker/issues/2690) | Unset INDEXER_PASSWORD and DASHBOARD_PASSWORD after keystore write |
 | [#2675](https://github.com/wazuh/wazuh-docker/issues/2675) | Fixed `docker-agent` package generation: seed the `CHANGE_MANAGER_ENDPOINT` placeholder in the Dockerfile itself instead of relying on the installer, which stopped writing it without an enrollment token |
 | [#2628](https://github.com/wazuh/wazuh-docker/issues/2628) | Persist the Wazuh manager `data` directory on a named volume in the single-node and multi-node deployments, so the deployed detection content survives recreating the container, and refresh the content the image owns from the image on every start |

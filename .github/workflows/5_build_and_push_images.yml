@@ -394,6 +394,7 @@ jobs:
               -rg $IMAGE_REGISTRY \
               -m \
               --dev \
+              -a "${{ vars.ARTIFACT_URL_FILE_NAME }}" \
               -refs "$COMPONENT_REFS_JSON" \
               -c $WAZUH_COMPONENT \
               $SIGNATURE_ARGS
@@ -412,6 +413,7 @@ jobs:
               -rg $IMAGE_REGISTRY \
               -m \
               --dev \
+              -a "${{ vars.ARTIFACT_URL_FILE_NAME }}" \
               -refs "$COMPONENT_REFS_JSON" \
               -c $WAZUH_COMPONENT \
               $SIGNATURE_ARGS
