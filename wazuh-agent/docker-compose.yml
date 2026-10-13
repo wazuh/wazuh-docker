@@ -4,5 +4,9 @@ services:
     image: wazuh/wazuh-agent:5.0.1
     restart: always
     environment:
-      - WAZUH_MANAGER_SERVER=<WAZUH_MANAGER_IP>
-      - WAZUH_REGISTRATION_PASSWORD=<authd.pass-PASSWORD>
+      - WAZUH_ENROLLMENT_TOKEN=<TOKEN MINTED BY THE MANAGER>
+      #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
+    volumes:
+      - wazuh_agent_etc:/var/ossec/etc
+volumes:
+  wazuh_agent_etc:

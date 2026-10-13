@@ -18,6 +18,8 @@ WAZUH_IMAGE_VERSION="5.0.1"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
+SKIP_PACKAGE_SIGNATURE_CHECK=""
+ARTIFACT_URLS_INPUT=""
 
 # -----------------------------------------------------------------------------
 
@@ -45,14 +47,29 @@ build() {
     # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+
+    # Unsigned packages only come from development builds.
+    if [ -n "${SKIP_PACKAGE_SIGNATURE_CHECK}" ]; then
+        if [ -z "${IS_DEV_BUILD}" ]; then
+            echo "Error: --skip-signature-check is only valid along with --dev." >&2
+            clean 1
+        fi
+        echo "Warning: Skipping the signature check of the Wazuh packages. Use it only with unsigned development packages." >&2
+    fi
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
     ARTIFACT_URLS_DIR="artifact-urls"
 
-    # Check if the artifact file already exists to prevent redundant downloads
-    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
-        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
+    if [ -n "${ARTIFACT_URLS_INPUT}" ]; then
+        if [ ! -f "${ARTIFACT_URLS_INPUT}" ]; then
+            echo "Error: artifact URLs file '${ARTIFACT_URLS_INPUT}' not found." >&2
+            clean 1
+        fi
+        echo "Using artifact URLs from ${ARTIFACT_URLS_INPUT}."
+        if [ "${ARTIFACT_URLS_INPUT}" != "${ARTIFACT_URLS_FILE}" ]; then
+            cp "${ARTIFACT_URLS_INPUT}" "${ARTIFACT_URLS_FILE}" || clean 1
+        fi
     else
         # GitHub URL for exact Release Tag lookup
         TAG="v${WAZUH_IMAGE_VERSION}"
@@ -207,6 +224,7 @@ build() {
 
     export WAZUH_VERSION="$WAZUH_IMAGE_VERSION"
     export MULTIARCH="${MULTIARCH}"
+    export SKIP_PACKAGE_SIGNATURE_CHECK="${SKIP_PACKAGE_SIGNATURE_CHECK}"
     export INDEXER_TAG=$(make_tag   "${INDEXER_COMMIT:-latest}")
     export MANAGER_TAG=$(make_tag   "${MANAGER_COMMIT:-latest}")
     export DASHBOARD_TAG=$(make_tag "${DASHBOARD_COMMIT:-latest}")
@@ -248,13 +266,15 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
+    echo "    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version."
     echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
-    echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
+    echo "    -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
     echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
+    echo "    --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages."
     echo "    -h, --help                   Show this help."
     echo
     exit $1
@@ -269,6 +289,14 @@ main() {
         "-h"|"--help")
             help 0
             ;;
+        "-a"|"--artifact-urls")
+            if [ -n "${2}" ]; then
+                ARTIFACT_URLS_INPUT="${2}"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
         "-d"|"--dev-stage")
             if [ -n "${2}" ]; then
                 WAZUH_DEV_STAGE="${2}"
@@ -279,6 +307,10 @@ main() {
             ;;
         "--dev")
             IS_DEV_BUILD="true"
+            shift
+            ;;
+        "--skip-signature-check")
+            SKIP_PACKAGE_SIGNATURE_CHECK="true"
             shift
             ;;
         "-m"|"--multiarch")

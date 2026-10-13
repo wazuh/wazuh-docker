@@ -26,22 +26,22 @@ This manual is intended for:
 This manual is structured to help you find information efficiently:
 
 -   **[Description](description.md)**: Provides a detailed overview of Wazuh-Docker, its components, and how they work together in a containerized setup.
--   **[Getting Started](getting-started/getting-started.md)**: Guides you through the initial setup, from prerequisites to deploying your first Wazuh stack.
-    -   **[Requirements](getting-started/requirements.md)**: Lists the necessary hardware and software.
-    -   **[Deployment](getting-started/deployment/README.md)**: Offers instructions for different deployment models:
-        -   [Single Node Wazuh Stack](getting-started/deployment/single-node.md)
-        -   [Multi Node Wazuh Stack](getting-started/deployment/multi-node.md)
-        -   [Wazuh Agent](getting-started/deployment/wazuh-agent.md)
--   **[Configuration](configuration/configuration.md)**: Explains how to customize your Wazuh-Docker deployment.
-    -   [Environment Variables](configuration/environment-variables.md)
-    -   [Configuration Files](configuration/configuration-files.md)
--   **[Upgrade](upgrade.md)**: Provides instructions for upgrading your Wazuh-Docker deployment to a newer version.
--   **[Glossary](glossary.md)**: Defines key terms and concepts.
+-   **[Getting Started](../getting-started/getting-started.md)**: Guides you through the initial setup, from prerequisites to deploying your first Wazuh stack.
+    -   **[Requirements](../getting-started/requirements.md)**: Lists the necessary hardware and software.
+    -   **[Deployment](../getting-started/deployment/deployment.md)**: Offers instructions for different deployment models:
+        -   [Single Node Wazuh Stack](../getting-started/deployment/single-node.md)
+        -   [Multi Node Wazuh Stack](../getting-started/deployment/multi-node.md)
+        -   [Wazuh Agent](../getting-started/deployment/wazuh-agent.md)
+-   **[Configuration](../configuration/configuration.md)**: Explains how to customize your Wazuh-Docker deployment.
+    -   [Environment Variables](../configuration/environment-variables.md)
+    -   [Configuration Files](../configuration/configuration-files.md)
+-   **[Upgrade](../upgrade.md)**: Provides instructions for upgrading your Wazuh-Docker deployment to a newer version.
+-   **[Glossary](../glossary.md)**: Defines key terms and concepts.
 
 ## Using This Manual
 
--   If you are new to Wazuh-docker, we recommend starting with the [Description](description.md) and then proceeding to the [Getting Started](getting-started/getting-started.md) section.
--   If you need to customize your deployment, refer to the [Configuration](configuration/configuration.md) section.
--   For specific terms or concepts, consult the [Glossary](glossary.md).
+-   If you are new to Wazuh-docker, we recommend starting with the [Description](description.md) and then proceeding to the [Getting Started](../getting-started/getting-started.md) section.
+-   If you need to customize your deployment, refer to the [Configuration](../configuration/configuration.md) section.
+-   For specific terms or concepts, consult the [Glossary](../glossary.md).
 
 This manual refers to version 5.0.1 of Wazuh-Docker. Ensure you are using the documentation that corresponds to your deployed version.

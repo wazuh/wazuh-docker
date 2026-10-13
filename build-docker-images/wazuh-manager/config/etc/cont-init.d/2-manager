@@ -43,11 +43,6 @@ function_wazuh_migration(){
       chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/client.keys
       chmod 640 /var/wazuh-manager/etc/client.keys
 
-      \cp -f /wazuh-migration/data/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.cert
-      \cp -f /wazuh-migration/data/etc/sslmanager.key /var/wazuh-manager/etc/sslmanager.key
-      chown root:root /var/wazuh-manager/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.key
-      chmod 640 /var/wazuh-manager/etc/sslmanager.cert /var/wazuh-manager/etc/sslmanager.key
-
       \cp -f /wazuh-migration/data/etc/shared/default/agent.conf /var/wazuh-manager/etc/shared/default/agent.conf
       chown wazuh-manager:wazuh-manager /var/wazuh-manager/etc/shared/default/agent.conf
       chmod 660 /var/wazuh-manager/etc/shared/default/agent.conf
@@ -83,19 +78,8 @@ function_entrypoint_scripts() {
   fi
 }
 
-function_configure_vulnerability_detection() {
-if [ "$INDEXER_PASSWORD" != "" ]; then
-  >&2 echo "Configuring password."
-    echo "$INDEXER_USERNAME" | /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k username
-    echo "$INDEXER_PASSWORD" | /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password
-fi
-}
-
 # Migrate data from /wazuh-migration volume
 function_wazuh_migration
-
-# configure Vulnerabilty detection
-function_configure_vulnerability_detection
 
 # run entrypoint scripts
 function_entrypoint_scripts

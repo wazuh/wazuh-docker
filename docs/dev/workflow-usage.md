@@ -1,6 +1,6 @@
 # Workflow usage
 
-The Procedure_push_docker_images.yml workflow builds and pushes multi-architecture Docker images (amd64/arm64) of Wazuh core components (Indexer, Manager, Dashboard, and Agent) to container registries.
+The `(5.x) Build and push images` workflow (`.github/workflows/5_build_and_push_images.yml`) builds and pushes multi-architecture Docker images (amd64/arm64) of Wazuh core components (Indexer, Manager, Dashboard, and Agent) to container registries.
 
 ## Input Parameters
 
@@ -10,7 +10,8 @@ The Procedure_push_docker_images.yml workflow builds and pushes multi-architectu
 | `docker_reference` | Branch/tag to build from | - | Yes |
 | `reference` | Dev reference (for pre-release builds) | `latest` | No |
 | `id` | Workflow run identifier | - | No |
-| `dev` | Enable development mode (adds `-dev` suffix) | `false`/`true` | No |
+| `dev` | Development mode | `true` | No |
+| `skip_signature_check` | Install unsigned Wazuh packages, such as the ones built from a commit (development only) | `false` | No |
 
 ## Development vs Production Mode
 
@@ -34,6 +35,7 @@ The Procedure_push_docker_images.yml workflow builds and pushes multi-architectu
 1. **Artifact Resolution**:
    - Dev mode: Creates pre-signed URLs for all Wazuh packages from S3
    - Prod mode: Uses packages from public repositories
+   - Each package must be signed with the Wazuh key, or the build fails. See [Package signature check](build-image.md#package-signature-check)
 
 2. **Multi-architecture Build**:
    - Uses Docker Buildx with QEMU for cross-platform builds

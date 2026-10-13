@@ -9,26 +9,53 @@ OUTPUT_DIR="./wazuh-certificates" # Folder created by the script by default
 DO_CERT=false
 DO_COPY=false
 DO_PRIV=false
+AGENT_SAN=()
+API_SAN=()
 
-for arg in "$@"; do
-  case $arg in
-    --cert) DO_CERT=true ;;
-    --copy) DO_COPY=true ;;
-    --priv) DO_PRIV=true ;;
+usage() {
+  echo "Usage: $0 [--cert] [--copy] [--priv] [--agent-san <ip|dns>]... [--api-san <ip|dns>]..."
+  echo "  --cert       Generate certificates using wazuh-certs-tool.sh"
+  echo "  --copy       Copy certificates to the corresponding config directories"
+  echo "  --priv       Set ownership and permissions on the certificate files"
+  echo "  --agent-san  Additional address for the manager agent listener"
+  echo "               certificates. Repeat it for more than one."
+  echo "  --api-san    Additional address for the manager Server API"
+  echo "               certificates. Repeat it for more than one."
+}
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    --cert) DO_CERT=true; shift ;;
+    --copy) DO_COPY=true; shift ;;
+    --priv) DO_PRIV=true; shift ;;
+    --agent-san)
+      if [ -z "$2" ]; then
+        echo "Missing <ip|dns> after --agent-san"
+        usage
+        exit 1
+      fi
+      AGENT_SAN+=(--agent-san "$2")
+      shift 2
+      ;;
+    --api-san)
+      if [ -z "$2" ]; then
+        echo "Missing <ip|dns> after --api-san"
+        usage
+        exit 1
+      fi
+      API_SAN+=(--api-san "$2")
+      shift 2
+      ;;
     *)
-      echo "Unknown option: $arg"
-      echo "Usage: $0 [--cert] [--copy] [--priv]"
+      echo "Unknown option: $1"
+      usage
       exit 1
       ;;
   esac
 done
 
-# If no flags provided, show usage
 if ! $DO_CERT && ! $DO_COPY && ! $DO_PRIV; then
-  echo "Usage: $0 [--cert] [--copy] [--priv]"
-  echo "  --cert  Generate certificates using wazuh-certs-tool.sh"
-  echo "  --copy  Copy certificates to the corresponding config directories"
-  echo "  --priv  Set ownership and permissions on the certificate files"
+  usage
   exit 1
 fi
 
@@ -79,6 +106,8 @@ node_to_dir() {
 # Parse config.yml
 export WAZUH_UID=101
 export WAZUH_GID=101
+export CERT_UID="${SUDO_UID:-$(id -u)}"
+export CERT_GID="${SUDO_GID:-$(id -g)}"
 if $DO_COPY || $DO_PRIV; then
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Configuration file $CONFIG_FILE not found."
@@ -93,11 +122,24 @@ fi
 # 1. Generate certificates
 if $DO_CERT; then
   echo "Generating certificates"
-  bash $CERT_TOOL -A
+  rc=0
+  bash "$CERT_TOOL" -A "${AGENT_SAN[@]}" "${API_SAN[@]}" || rc=$?
+  # wazuh-certs-tool.sh rewrites config.yml as root with mode 0600
+  if [ "$(id -u)" -eq 0 ]; then
+    chown "${CERT_UID}:${CERT_GID}" "$CONFIG_FILE"
+  fi
+  if [ "$rc" -ne 0 ]; then
+    echo "Error: wazuh-certs-tool.sh failed (exit code $rc). No certificates were copied." >&2
+    exit 1
+  fi
 fi
 
 # 2. Copy certificates to config directories
 if $DO_COPY; then
+  if [ ! -d "$OUTPUT_DIR" ]; then
+    echo "Error: $OUTPUT_DIR not found. Run with --cert first." >&2
+    exit 1
+  fi
   FIRST_INDEXER=true
   for node in "${INDEXER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
@@ -112,6 +154,17 @@ if $DO_COPY; then
 
   for node in "${MANAGER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
+    if [ ! -f "$OUTPUT_DIR/${node}-remoted.pem" ] || [ ! -f "$OUTPUT_DIR/${node}-remoted-key.pem" ]; then
+      echo "Error: $OUTPUT_DIR/${node}-remoted.pem or ${node}-remoted-key.pem is missing."
+      echo "The Wazuh manager does not start without the agent listener certificate."
+      exit 1
+    fi
+    if [ ! -f "$OUTPUT_DIR/${node}-apid.pem" ] || [ ! -f "$OUTPUT_DIR/${node}-apid-key.pem" ]; then
+      echo "Error: $OUTPUT_DIR/${node}-apid.pem or ${node}-apid-key.pem is missing."
+      echo "The Wazuh manager does not start without the Server API certificate."
+      echo "Use a wazuh-certs-tool.sh that issues it; the 5.0.0-rc1 one does not."
+      exit 1
+    fi
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
     cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"

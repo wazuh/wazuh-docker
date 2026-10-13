@@ -1,11 +1,50 @@
 #!/bin/bash
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 
+# Variables
+source /permanent_data.env
+
 WAZUH_INSTALL_PATH=/var/ossec
 WAZUH_CONFIG_MOUNT=/wazuh-config-mount
+WAZUH_MANAGER_ENDPOINT=$WAZUH_MANAGER_ENDPOINT
 WAZUH_MANAGER_SERVER=$WAZUH_MANAGER_SERVER
-WAZUH_REGISTRATION_SERVER=${WAZUH_REGISTRATION_SERVER:-$WAZUH_MANAGER_SERVER}
+WAZUH_MANAGER_PORT=$WAZUH_MANAGER_PORT
+WAZUH_ENROLLMENT_TOKEN=$WAZUH_ENROLLMENT_TOKEN
 WAZUH_AGENT_NAME=${WAZUH_AGENT_NAME:-"wazuh-agent-$HOSTNAME"}
+
+# TLS material for the manager connection. WAZUH_REGISTRATION_CA and
+# SSL_VERIFICATION are the names the package installer takes for the same two
+# settings, accepted here as aliases so one value does not have to be spelled two
+# ways depending on how the agent was deployed.
+WAZUH_MANAGER_CA=${WAZUH_MANAGER_CA:-$WAZUH_REGISTRATION_CA}
+WAZUH_AGENT_SSL_VERIFICATION=${WAZUH_AGENT_SSL_VERIFICATION:-$SSL_VERIFICATION}
+WAZUH_AGENT_SSL_CERT=$WAZUH_AGENT_SSL_CERT
+WAZUH_AGENT_SSL_KEY=$WAZUH_AGENT_SSL_KEY
+
+# Where TLS material ends up inside the container. Everything configured is
+# copied here and handed to the agent user, so the paths written into ossec.conf
+# are always ones wazuh-agentd can open after it drops privileges.
+WAZUH_CERTS_DIR="${WAZUH_INSTALL_PATH}/etc/certs"
+
+# The path a CA may simply be dropped at instead of being named by a variable.
+#
+# Deliberately NOT etc/certs/root-ca.pem: that path is AGENT_ANCHOR_CA, where
+# w_agent_token_bootstrap() writes the trust anchor it fetched from an
+# enrollment token, owned root:wazuh 0750 on purpose -- the runtime 'wazuh'
+# user must not be able to replace the CA it verifies its manager against.
+# Reusing that path here would make resolve_agent_ssl() treat the bootstrapped
+# anchor as an operator-supplied CA on every restart, downgrading verification
+# from the agent's own 'full' (anchor present, no mode) to 'certificate' (a
+# copy install_tls_file() would also hand to the wazuh user).
+WAZUH_MANAGER_CA_DEFAULT="${WAZUH_CERTS_DIR}/manager-ca.pem"
+
+# Applied when the component is not stated, by either set of variables. They
+# mirror the agent's own defaults, and are written out rather than left implicit
+# so that <endpoint> always shows the whole connection: host, port and path
+# prefix. What the file says is then what the agent uses, with nothing to infer
+# when reading it back.
+WAZUH_MANAGER_DEFAULT_PORT="1517"
+WAZUH_MANAGER_DEFAULT_PREFIX="/wazuh-manager/"
 
 ##############################################################################
 # Aux functions
@@ -29,6 +68,62 @@ exec_cmd_stdout() {
 }
 
 ##############################################################################
+# This function will attempt to mount every directory in PERMANENT_DATA
+# into the respective path.
+# If the path is empty means permanent data volume is also empty, so a backup
+# will be copied into it. Otherwise it will not be copied because there is
+# already data inside the volume for the specified path.
+##############################################################################
+
+mount_permanent_data() {
+  for permanent_dir in "${PERMANENT_DATA[@]}"; do
+    data_tmp="${WAZUH_INSTALL_PATH}/data_tmp/permanent${permanent_dir}/"
+    print ${data_tmp}
+    # Check if the path is not empty
+    if find ${permanent_dir} -mindepth 1 | read; then
+      print "The path ${permanent_dir} is already mounted"
+    elif [ ! -d "${data_tmp}" ]; then
+      print "No permanent data snapshot for ${permanent_dir}, skipping"
+    else
+        print "Installing ${permanent_dir}"
+        exec_cmd "cp -ar ${data_tmp}. ${permanent_dir}"
+    fi
+  done
+}
+
+##############################################################################
+# This function will replace from the permanent data volume every file
+# contained in PERMANENT_DATA_EXCP
+# Some files as 'internal_options.conf' are saved as permanent data, but
+# they must be updated to work properly if wazuh version is changed.
+##############################################################################
+
+apply_exclusion_data() {
+  for exclusion_file in "${PERMANENT_DATA_EXCP[@]}"; do
+    if [  -e ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file}  ]
+    then
+      DIR=$(dirname "${exclusion_file}")
+      if [ ! -e ${DIR}  ]
+      then
+        mkdir -p ${DIR}
+      fi
+
+      safe_cp() {
+          if cp -p "$1" "$2" 2>/dev/null; then
+              return 0
+          else
+              echo "Warning: Could not copy $1 (may be read-only)"
+              return 0
+          fi
+      }
+
+      print "Updating ${exclusion_file}"
+      exec_cmd "safe_cp ${WAZUH_INSTALL_PATH}/data_tmp/exclusion/${exclusion_file} ${exclusion_file}"
+    fi
+  done
+}
+
+##############################################################################
 # Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
 # destination files permissions
 #
@@ -48,29 +143,610 @@ mount_files() {
 }
 
 ##############################################################################
-# Allow users to set the manager ip and port, enrollment ip and port and
-# enroll dynamically on container start.
+# Report the variables that no longer configure anything, so that a compose file
+# carried over from an earlier version fails loudly rather than silently
+# connecting somewhere else.
 #
-# To use this:
+# WAZUH_REGISTRATION_SERVER and WAZUH_REGISTRATION_PORT pointed enrollment at
+# authd separately. Since 5.0.0 the agent enrolls over the same HTTPS channel it
+# uses for everything else, so <enrollment> carries neither an address nor a port
+# of its own and both are taken from the manager connection.
+##############################################################################
+
+warn_unsupported_vars() {
+  for var in WAZUH_REGISTRATION_SERVER WAZUH_REGISTRATION_PORT; do
+    if [ -n "${!var}" ]; then
+      print "WARNING: $var is not supported, it configures nothing. Enrollment reuses the manager connection, so it is the manager variables that set it."
+    fi
+  done
+
+  # There is no password-based enrollment left to fall back to: a 5.x agent
+  # only ever enrolls against a 5.x manager, and a 5.x manager only ever
+  # accepts a token. authd.pass is not written for any manager version.
+  if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
+    print "WARNING: WAZUH_REGISTRATION_PASSWORD is not supported, it configures nothing. Set WAZUH_ENROLLMENT_TOKEN to enroll instead."
+  fi
+}
+
+##############################################################################
+# Resolve the manager connection into its address, port and path prefix, and
+# assemble the normalized endpoint string back out of them.
+#
+# Since wazuh/wazuh#38624 the agent takes one <endpoint> holding
+# host[:port][/prefix], with 1517 and /wazuh-manager/ as the defaults for the
+# components left out. Those defaults are applied here rather than left to the
+# agent, so the value written is always the complete host:port/prefix form. Two
+# sets of variables fill it in:
+#
+#   WAZUH_MANAGER_ENDPOINT                     the whole value at once
+#   WAZUH_MANAGER_SERVER + WAZUH_MANAGER_PORT  address and port separately
+#
+# The endpoint wins outright when it is set: the other two are not consulted at
+# all, not even to supply a port it left out, so one variable never silently
+# alters what another one states. A port missing from the endpoint falls back to
+# the default, exactly as it would if the agent parsed it.
+#
+# host is an IPv4 literal, a hostname, or a bracketed IPv6 literal optionally
+# carrying a zone id: [<ipv6-literal>%25<ifname>]. That zone replaces the
+# <interface_index> option the agent used to take separately.
+#
+# Only MANAGER_ENDPOINT is written to ossec.conf. The components are kept apart
+# because assembling the value means normalizing them first: defaulting the port,
+# percent-encoding a zone id and bracketing an IPv6 literal.
+##############################################################################
+
+# Escapes &, \ and # (the sed replacement delimiter used below) so a value
+# containing any of them is inserted literally instead of being interpreted
+# by sed as a backreference, an escape, or the end of the substitution.
+escape_repl() { printf '%s' "$1" | sed -e 's/[\\&#]/\\&/g'; }
+
+resolve_manager_endpoint() {
+  local endpoint rest host
+
+  MANAGER_PREFIX=""
+
+  if [ -n "$WAZUH_MANAGER_ENDPOINT" ]; then
+    # Drop a scheme if one was given: the agent always speaks HTTPS here.
+    endpoint="${WAZUH_MANAGER_ENDPOINT#*://}"
+
+    # An IPv6 literal is bracketed, so the port separator is the first colon
+    # after the closing bracket, never one of the colons inside the address.
+    if [ "${endpoint:0:1}" = "[" ]; then
+      MANAGER_ADDRESS="${endpoint%%]*}"
+      MANAGER_ADDRESS="${MANAGER_ADDRESS#[}"
+      rest="${endpoint#*]}"
+    else
+      MANAGER_ADDRESS="${endpoint%%[:/]*}"
+      rest="${endpoint#"$MANAGER_ADDRESS"}"
+    fi
+
+    MANAGER_PORT=""
+    if [ "${rest:0:1}" = ":" ]; then
+      rest="${rest#:}"
+      MANAGER_PORT="${rest%%/*}"
+      rest="${rest#"$MANAGER_PORT"}"
+    fi
+
+    MANAGER_PREFIX="$rest"
+  else
+    MANAGER_ADDRESS="$WAZUH_MANAGER_SERVER"
+    MANAGER_PORT="$WAZUH_MANAGER_PORT"
+  fi
+
+  MANAGER_PORT="${MANAGER_PORT:-${WAZUH_MANAGER_DEFAULT_PORT:-1517}}"
+  MANAGER_PREFIX="${MANAGER_PREFIX:-${WAZUH_MANAGER_DEFAULT_PREFIX:-/wazuh-manager/}}"
+
+  host="$MANAGER_ADDRESS"
+
+  # An IPv6 zone id is percent-encoded in the URL, so the interface name reads
+  # as [fe80::1%25eth0]. Writing it the way the system reports it, fe80::1%eth0,
+  # is the natural mistake and produces an endpoint the agent rejects, so encode
+  # a lone '%' here and say so. A '%' already followed by 25 is left alone.
+  case "$host" in
+    *:*%25*) ;;
+    *:*%*)
+      host="${host/\%/%25}"
+      print "Percent-encoded the IPv6 zone id in the manager address: $MANAGER_ADDRESS -> $host"
+      ;;
+  esac
+
+  # Bracket a bare IPv6 literal so that appending the port stays unambiguous.
+  case "$host" in
+    *:*) host="[$host]" ;;
+  esac
+
+  # Every component has a value by now, defaulted above where one was not given,
+  # so the endpoint is always the complete host:port/prefix form.
+  MANAGER_ENDPOINT="${host}:${MANAGER_PORT}${MANAGER_PREFIX}"
+}
+
+##############################################################################
+# Decode WAZUH_ENROLLMENT_TOKEN into the manager address it carries, the same
+# way the packaged installer does it for a native install: the token is read
+# by the agent's own decoder (wazuh-agentd --show-token) rather than parsed in
+# shell, so a token this script accepts is exactly one the agent's first-start
+# bootstrap will accept too. It goes in on stdin, never as an argument, so it
+# never reaches `ps` output or gets echoed into the container log.
+#
+# The address is used verbatim, with none of resolve_manager_endpoint()'s
+# bracket/port/prefix handling: the token already carries the endpoint in its
+# final form, and re-normalizing it here would be a second implementation of a
+# rule the token's own decoder already enforces.
+#
+# Sets TOKEN_ADDRESS.
+##############################################################################
+
+decode_enrollment_token() {
+  local description status stderr_file="${WAZUH_INSTALL_PATH}/tmp/show-token.err"
+
+  exec_cmd "mkdir -p $(dirname "$stderr_file")"
+
+  description="$(printf '%s' "$WAZUH_ENROLLMENT_TOKEN" | "${WAZUH_INSTALL_PATH}/bin/wazuh-agentd" --show-token 2>"$stderr_file")"
+  status=$?
+
+  # --show-token's exit 2 is the token decoder's own verdict: it ran and
+  # refused what it was given. Anything else non-zero (127 for a missing
+  # binary or an unresolved shared library, notably) means the decoder never
+  # ran at all -- reporting that as "the token was refused" sends an operator
+  # looking at the token instead of the image. Kept apart from stdout so a
+  # shell-level error (e.g. "No such file or directory") is never presented as
+  # if it were the decoder's own message.
+  if [ "$status" -eq 2 ]; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:"
+    print "$(cat "$stderr_file" 2>/dev/null)"
+    rm -f "$stderr_file"
+    exit 1
+  elif [ "$status" -ne 0 ]; then
+    print "ERROR: could not run '${WAZUH_INSTALL_PATH}/bin/wazuh-agentd --show-token' (exit $status); the enrollment token was left unread and no token was stored."
+    print "$(cat "$stderr_file" 2>/dev/null)"
+    rm -f "$stderr_file"
+    exit 1
+  fi
+  rm -f "$stderr_file"
+
+  TOKEN_ADDRESS="$(printf '%s\n' "$description" | sed -n 's/^adr: //p')"
+
+  if [ -z "$TOKEN_ADDRESS" ]; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN carries no address; nothing to connect to."
+    exit 1
+  fi
+}
+
+##############################################################################
+# Leave the token where wazuh-agentd picks it up once, at its first start.
+# w_agent_token_bootstrap() reads this file before dropping privileges,
+# fetches the manager's CA, checks it against the token's pin (or trusts an
+# embedded one), writes the trust anchor and client.keys, and deletes the file
+# on success. <endpoint> is the only thing this script writes from the token;
+# the anchor and the key are bootstrapped by the agent itself, not here.
+#
+# Root-only, unlike the old authd.pass: the agent reads it while still root, so
+# the wazuh user never needs it and must not be able to substitute the token
+# that chooses its certificate authority. Created and locked down before the
+# token is written into it, so the credential is never briefly world-readable
+# -- a reinstall would otherwise keep whatever mode the old file had.
+##############################################################################
+
+store_enrollment_token() {
+  local token_path="${WAZUH_INSTALL_PATH}/etc/enrollment_token"
+
+  : > "$token_path"
+  chmod 600 "$token_path"
+  chown root:root "$token_path"
+  printf '%s' "$WAZUH_ENROLLMENT_TOKEN" > "$token_path"
+
+  print "Enrollment token stored at $token_path; the trust anchor and client key are bootstrapped at the agent's first start."
+}
+
+##############################################################################
+# Allow users to set the manager endpoint and the agent name on container
+# start. The manager endpoint also drives enrollment, which reuses the agent
+# connection since 5.0.0.
+#
+# WAZUH_ENROLLMENT_TOKEN is the only way to enroll: its address is what gets
+# written to <endpoint>, and it is mutually exclusive with
+# WAZUH_MANAGER_ENDPOINT/WAZUH_MANAGER_SERVER, which exist for an agent that
+# does not need to enroll here (one bringing its own client.keys) and simply
+# needs an address.
+#
+# To use a configuration of your own instead:
 # 1. Create your own ossec.conf file
 # 2. In your ossec.conf file, use the <agent> configuration
 # 3. Mount your custom ossec.conf file at $WAZUH_CONFIG_MOUNT/etc/ossec.conf
+#
+# mount_files() copies it in before this runs, so a mounted file carries no
+# placeholders left to substitute and is used as it is.
 ##############################################################################
 
 set_manager_conn() {
+  local config="${WAZUH_INSTALL_PATH}/etc/ossec.conf"
+
   echo "ossec.conf configuration"
-  sed -i "s#<address>CHANGE_MANAGER_IP</address>#<address>$WAZUH_MANAGER_SERVER</address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-  sed -i "s#<manager_address>CHANGE_ENROLL_IP</manager_address>#<manager_address>$WAZUH_REGISTRATION_SERVER</manager_address>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$WAZUH_AGENT_NAME</agent_name>#g" ${WAZUH_INSTALL_PATH}/etc/ossec.conf
-  if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
-    set +x
-    cat << EOF > /var/ossec/etc/authd.pass
-$WAZUH_REGISTRATION_PASSWORD
-EOF
-    set -x
-  else
-    echo "WAZUH_REGISTRATION_PASSWORD is not set; the authd.pass configuration is omitted."
+
+  # A configuration with no manager placeholder left is a mounted one, already
+  # carrying a manager of its own. mount_files() has copied it in by now, so
+  # this is what keeps it from being rewritten.
+  if ! grep -q "CHANGE_MANAGER_ENDPOINT" "$config"; then
+    print "No manager placeholder in ossec.conf, keeping the configuration as it is."
+    set_agent_name "$config"
+    return
   fi
+
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ] && { [ -n "$WAZUH_MANAGER_ENDPOINT" ] || [ -n "$WAZUH_MANAGER_SERVER" ]; }; then
+    print "ERROR: WAZUH_ENROLLMENT_TOKEN and WAZUH_MANAGER_ENDPOINT/WAZUH_MANAGER_SERVER are mutually exclusive. The token already carries the manager address; pass one or the other."
+    exit 1
+  fi
+
+  if [ -z "$WAZUH_ENROLLMENT_TOKEN" ] && [ -z "$WAZUH_MANAGER_ENDPOINT" ] && [ -z "$WAZUH_MANAGER_SERVER" ]; then
+    print "ERROR: no manager address configured and ossec.conf still holds the packaged placeholder, so the agent has nothing to connect to."
+    print "Set WAZUH_ENROLLMENT_TOKEN to enroll with a token, the manager address is decoded from it,"
+    print "or set WAZUH_MANAGER_ENDPOINT to the whole endpoint as host[:port][/prefix], for example wazuh.manager:1517/wazuh-manager/,"
+    print "or set WAZUH_MANAGER_SERVER (and optionally WAZUH_MANAGER_PORT) to the address and port,"
+    print "or mount an ossec.conf of your own at $WAZUH_CONFIG_MOUNT/etc/ossec.conf."
+    exit 1
+  fi
+
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+    decode_enrollment_token
+    MANAGER_ENDPOINT="$TOKEN_ADDRESS"
+  else
+    if [ -n "$WAZUH_MANAGER_ENDPOINT" ] && [ -n "$WAZUH_MANAGER_SERVER" ]; then
+      print "WARNING: WAZUH_MANAGER_ENDPOINT and WAZUH_MANAGER_SERVER are both set. Using WAZUH_MANAGER_ENDPOINT and ignoring WAZUH_MANAGER_SERVER and WAZUH_MANAGER_PORT."
+    fi
+    resolve_manager_endpoint
+  fi
+
+  # <endpoint> is the only tag configured here, whichever variables supplied the
+  # value. <address> and <port> are never written: wazuh/wazuh#38624 folded them
+  # into the endpoint, so a package that still ships them predates the change and
+  # cannot use what this writes anyway.
+  if sed -n '/<manager>/,/<\/manager>/p' "$config" | grep -q "<address>"; then
+    print "WARNING: ossec.conf still has <address> and <port> in <manager>, so this package predates the unified endpoint (wazuh/wazuh#38624) and will not read what is written below. Rebuild the image once the package ships the single <endpoint>."
+  fi
+
+  print "Manager endpoint: $MANAGER_ENDPOINT"
+  sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>$(escape_repl "$MANAGER_ENDPOINT")</endpoint>#" "$config"
+
+  if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+    store_enrollment_token
+  fi
+
+  set_agent_name "$config"
+}
+
+set_agent_name() {
+  local config="$1"
+
+  sed -i "s#<agent_name>CHANGE_AGENT_NAME</agent_name>#<agent_name>$(escape_repl "$WAZUH_AGENT_NAME")</agent_name>#g" "$config"
+}
+
+##############################################################################
+# TLS material for the manager connection: the <agent><ssl> block.
+#
+# With no <ssl> block and no trust anchor at etc/certs/root-ca.pem the agent
+# resolves <verification_mode> to 'none' (wazuh/wazuh#38940): it connects to
+# whatever answers on the endpoint, including a manager presenting its own
+# self-signed certificate, and logs "TLS verification is DISABLED". A token
+# enrollment writes that anchor, after which the agent verifies in 'full'.
+#
+# Verifying a manager without a token means telling the agent which CA signs it:
+#
+#   WAZUH_MANAGER_CA               path to the CA bundle, written to
+#                                  <certificate_authorities>. WAZUH_REGISTRATION_CA,
+#                                  the name the package installer uses for the
+#                                  same thing, is accepted as an alias.
+#   WAZUH_AGENT_SSL_VERIFICATION   full | certificate | system | none, written to
+#                                  <verification_mode>. Mirrors the installer's
+#                                  own SSL_VERIFICATION, also accepted as an alias.
+#   WAZUH_AGENT_SSL_CERT           client (mTLS) certificate and its key, written
+#   WAZUH_AGENT_SSL_KEY            to <certificate> and <key>. Only needed by a
+#                                  manager configured with <remote><https><ca>,
+#                                  which asks agents for one; the shipped manager
+#                                  configuration does not.
+#
+# None of them is required to connect, and with none of them nothing is written:
+# the agent connects unverified. A manager whose certificate chains to a publicly
+# trusted CA -- a reverse proxy holding a real certificate, say -- is verified
+# against the operating system trust store only with
+# WAZUH_AGENT_SSL_VERIFICATION=system.
+#
+# The CA may also be dropped at $WAZUH_MANAGER_CA_DEFAULT instead of being named,
+# which is what makes it mountable through WAZUH_CONFIG_MOUNT the same way a whole
+# ossec.conf is: a file mounted at $WAZUH_CONFIG_MOUNT/etc/certs/manager-ca.pem is
+# copied there by mount_files() before this runs. Deliberately not the agent's own
+# AGENT_ANCHOR_CA path (etc/certs/root-ca.pem) -- see WAZUH_MANAGER_CA_DEFAULT's
+# own comment above for why the two must never collide.
+##############################################################################
+
+xml_escape() {
+  local value="$1"
+  value="${value//&/&amp;}"
+  value="${value//</&lt;}"
+  value="${value//>/&gt;}"
+  printf '%s' "$value"
+}
+
+# $1: what the path is, for the message. $2: the path.
+check_tls_file() {
+  local what="$1" path="$2"
+
+  if [ ! -e "$path" ]; then
+    print "ERROR: $what '$path' does not exist inside the container. Mount it, or drop it at $WAZUH_MANAGER_CA_DEFAULT."
+    return 1
+  fi
+
+  if [ ! -f "$path" ]; then
+    print "ERROR: $what '$path' is not a regular file. A directory of certificates is not accepted, only a bundle."
+    return 1
+  fi
+
+  if [ ! -r "$path" ] || [ ! -s "$path" ]; then
+    print "ERROR: $what '$path' is empty or unreadable."
+    return 1
+  fi
+
+  return 0
+}
+
+##############################################################################
+# Copy one piece of TLS material into etc/certs and hand it to the agent user.
+#
+# wazuh-agentd opens these paths after dropping privileges to 'wazuh', so what
+# matters is not that the init script can read the file but that the daemon can.
+# A bind mount arrives carrying the host's ownership and mode, regularly neither,
+# and it may be read-only, so the file is copied and the copy is what gets the
+# ownership -- pointing the configuration at the mount itself would work only for
+# whichever host permissions happened to line up.
+#
+# wazuh-agentd opens these paths after dropping privileges to 'wazuh', so what
+# matters is not that the init script can read the file but that the daemon can.
+# A bind mount arrives carrying the host's ownership and mode, regularly neither,
+# and it may be read-only, so the file is copied and the copy is what gets the
+# ownership -- pointing the configuration at the mount itself would work only for
+# whichever host permissions happened to line up.
+#
+# $WAZUH_CERTS_DIR itself is only reasserted to wazuh:wazuh when it is not
+# already root-owned. That directory may also hold AGENT_ANCHOR_CA, which a
+# token bootstrap deliberately leaves root:wazuh 0750 so the wazuh user cannot
+# unlink and replace a certificate authority it does not own; reasserting
+# wazuh:wazuh there unconditionally would undo exactly that on every restart.
+#
+# $1: source path, $2: destination file name. Sets TLS_INSTALLED_PATH.
+##############################################################################
+
+install_tls_file() {
+  local src="$1" dest="${WAZUH_CERTS_DIR}/$2"
+
+  exec_cmd "mkdir -p $WAZUH_CERTS_DIR"
+
+  if [ "$src" != "$dest" ]; then
+    cp -f "$src" "$dest" || error_and_exit "cp -f $src $dest"
+  fi
+
+  chown wazuh:wazuh "$dest" 2>/dev/null || \
+    print "WARNING: could not set ownership on $dest (read-only mount?); wazuh-agentd may not be able to read it once it drops privileges."
+  chmod 640 "$dest" 2>/dev/null || true
+
+  if [ "$(stat -c %U "$WAZUH_CERTS_DIR" 2>/dev/null)" != "root" ]; then
+    chown wazuh:wazuh "$WAZUH_CERTS_DIR" 2>/dev/null || true
+    chmod 750 "$WAZUH_CERTS_DIR" 2>/dev/null || true
+  fi
+
+  TLS_INSTALLED_PATH="$dest"
+}
+
+##############################################################################
+# Work out what the <ssl> block should say, rejecting the combinations the agent
+# itself refuses to start on rather than letting it fail after the fact:
+#
+#   - 'system' with a CA. The trust anchor is the OS store, so a configured CA
+#     would go unused; the agent treats the pair as a configuration error.
+#   - 'certificate' or 'full' without one. Both anchor on the configured CA, so
+#     there is nothing to verify against without it.
+#   - a client certificate without its key, or the other way round.
+#
+# Sets AGENT_SSL_MODE, AGENT_SSL_CA, AGENT_SSL_CERT and AGENT_SSL_KEY.
+##############################################################################
+
+resolve_agent_ssl() {
+  AGENT_SSL_MODE=""
+  AGENT_SSL_CA=""
+  AGENT_SSL_CERT=""
+  AGENT_SSL_KEY=""
+
+  if [ -n "$WAZUH_AGENT_SSL_VERIFICATION" ]; then
+    AGENT_SSL_MODE=$(echo "$WAZUH_AGENT_SSL_VERIFICATION" | tr '[:upper:]' '[:lower:]')
+    case "$AGENT_SSL_MODE" in
+      full|certificate|system|none) ;;
+      *)
+        print "ERROR: invalid WAZUH_AGENT_SSL_VERIFICATION '$WAZUH_AGENT_SSL_VERIFICATION'. It must be exactly one of full, certificate, system or none."
+        exit 1
+        ;;
+    esac
+  fi
+
+  # A named CA is an instruction, so an unusable one stops the container. The
+  # drop-in is a convention, and its absence just leaves the agent's own default
+  # in place -- but a file that is there and unusable is still an error, since it was
+  # put there to be used.
+  if [ -n "$WAZUH_MANAGER_CA" ]; then
+    check_tls_file "The manager CA (WAZUH_MANAGER_CA)" "$WAZUH_MANAGER_CA" || exit 1
+    AGENT_SSL_CA="$WAZUH_MANAGER_CA"
+  elif [ -e "$WAZUH_MANAGER_CA_DEFAULT" ]; then
+    check_tls_file "The manager CA" "$WAZUH_MANAGER_CA_DEFAULT" || exit 1
+    print "Found a manager CA at $WAZUH_MANAGER_CA_DEFAULT."
+    AGENT_SSL_CA="$WAZUH_MANAGER_CA_DEFAULT"
+  fi
+
+  if [ "$AGENT_SSL_MODE" = "system" ]; then
+    if [ -n "$WAZUH_MANAGER_CA" ]; then
+      print "ERROR: WAZUH_AGENT_SSL_VERIFICATION is 'system' and WAZUH_MANAGER_CA is set, but the agent refuses to start with both: 'system' anchors on the operating system trust store, which leaves the CA unused."
+      print "Drop WAZUH_MANAGER_CA to keep the system store, or drop WAZUH_AGENT_SSL_VERIFICATION to verify against the CA instead."
+      exit 1
+    fi
+    if [ -n "$AGENT_SSL_CA" ]; then
+      print "Ignoring the CA at $AGENT_SSL_CA: WAZUH_AGENT_SSL_VERIFICATION is 'system', which anchors on the operating system trust store instead."
+      AGENT_SSL_CA=""
+    fi
+  fi
+
+  if [ "$AGENT_SSL_MODE" = "certificate" ] || [ "$AGENT_SSL_MODE" = "full" ]; then
+    if [ -z "$AGENT_SSL_CA" ]; then
+      print "ERROR: WAZUH_AGENT_SSL_VERIFICATION is '$AGENT_SSL_MODE', which verifies the manager against a configured CA, but no CA was given."
+      print "Set WAZUH_MANAGER_CA to the CA that signs the manager certificate, or mount it at $WAZUH_MANAGER_CA_DEFAULT."
+      exit 1
+    fi
+  fi
+
+  if [ -n "$WAZUH_AGENT_SSL_CERT" ] || [ -n "$WAZUH_AGENT_SSL_KEY" ]; then
+    if [ -z "$WAZUH_AGENT_SSL_CERT" ] || [ -z "$WAZUH_AGENT_SSL_KEY" ]; then
+      print "ERROR: WAZUH_AGENT_SSL_CERT and WAZUH_AGENT_SSL_KEY are the two halves of one client credential and must be set together."
+      exit 1
+    fi
+    check_tls_file "The client certificate (WAZUH_AGENT_SSL_CERT)" "$WAZUH_AGENT_SSL_CERT" || exit 1
+    check_tls_file "The client key (WAZUH_AGENT_SSL_KEY)" "$WAZUH_AGENT_SSL_KEY" || exit 1
+    AGENT_SSL_CERT="$WAZUH_AGENT_SSL_CERT"
+    AGENT_SSL_KEY="$WAZUH_AGENT_SSL_KEY"
+  fi
+
+  # A CA with no mode stated resolves to 'certificate' inside the agent, which
+  # verifies the chain but not the hostname. It is written out rather than left to
+  # that inference for the same reason <endpoint> is written in full: what the file
+  # says is what the agent uses. It also silences the warning the agent logs on
+  # every start when it has to infer the mode itself.
+  #
+  # The other direction is deliberately left implicit: with no CA the agent
+  # resolves to 'none' on its own, and only an implicit 'none' moves to 'full'
+  # once a trust anchor appears (a token bootstrap or a WPK upgrade writing
+  # etc/certs/root-ca.pem). Writing 'none' out would make it an explicit choice,
+  # which the agent keeps even with an anchor present (w_agent_resolve_ssl_posture()).
+  if [ -z "$AGENT_SSL_MODE" ] && [ -n "$AGENT_SSL_CA" ]; then
+    AGENT_SSL_MODE="certificate"
+  fi
+}
+
+##############################################################################
+# Write the <ssl> block into <agent>.
+#
+# Unlike the endpoint and the agent name there is no placeholder to substitute:
+# no shipped agent template carries an <ssl> block (wazuh/wazuh#38684), so the
+# block is inserted. Any existing one is dropped first and rebuilt from the
+# variables, so a restart cannot stack two of them, and what the variables say is
+# what ends up in the file.
+##############################################################################
+
+set_agent_ssl() {
+  local config="$1"
+  local block="${WAZUH_INSTALL_PATH}/tmp/ssl-block"
+  local rewritten="${config}.tmp"
+  local anchor="${WAZUH_CERTS_DIR}/root-ca.pem"
+
+  resolve_agent_ssl
+
+  if [ -z "$AGENT_SSL_MODE" ] && [ -z "$AGENT_SSL_CA" ] && [ -z "$AGENT_SSL_CERT" ]
+  then
+    if sed -n '/<agent>/,/<\/agent>/p' "$config" | grep -q "<ssl>"; then
+      print "Keeping the <agent><ssl> configuration already in ossec.conf."
+      return
+    fi
+    # AGENT_ANCHOR_CA (etc/certs/root-ca.pem), not $WAZUH_MANAGER_CA_DEFAULT.
+    # w_agent_resolve_ssl_posture() (config.c) treats a file at this exact path
+    # as the CA and resolves to 'full' on its own whenever nothing else is
+    # configured -- a rule of the agent's own, not something specific to a
+    # token. It reads the same whether a token bootstrap wrote it or an
+    # operator placed it there by hand, so this script does not assume which:
+    # either way, nothing needs configuring and nothing is wrong.
+    if [ -e "$anchor" ]; then
+      print "A manager trust anchor is already at $anchor; the agent verifies the manager in full against it, no <ssl> block needed."
+      return
+    fi
+    if [ -n "$WAZUH_ENROLLMENT_TOKEN" ]; then
+      print "No TLS material configured up front: the trust anchor is bootstrapped from WAZUH_ENROLLMENT_TOKEN at the agent's first start."
+      return
+    fi
+    print "WARNING: No TLS material configured for the manager connection: the agent connects WITHOUT verifying the manager certificate (verification_mode none)."
+    print "To verify it, set WAZUH_MANAGER_CA to the CA that signs the manager certificate (or mount it at $WAZUH_MANAGER_CA_DEFAULT), enroll with WAZUH_ENROLLMENT_TOKEN, or set WAZUH_AGENT_SSL_VERIFICATION=system for a manager whose certificate chains to a publicly trusted CA."
+    return
+  fi
+
+  if [ -n "$AGENT_SSL_CA" ]; then
+    install_tls_file "$AGENT_SSL_CA" "manager-ca.pem"
+    AGENT_SSL_CA="$TLS_INSTALLED_PATH"
+  fi
+
+  if [ -n "$AGENT_SSL_CERT" ]; then
+    install_tls_file "$AGENT_SSL_CERT" "agent.pem"
+    AGENT_SSL_CERT="$TLS_INSTALLED_PATH"
+    install_tls_file "$AGENT_SSL_KEY" "agent-key.pem"
+    AGENT_SSL_KEY="$TLS_INSTALLED_PATH"
+  fi
+
+  exec_cmd "mkdir -p $(dirname "$block")"
+  : > "$block"
+  echo "    <ssl>" >> "$block"
+  [ -n "$AGENT_SSL_MODE" ] && \
+    echo "      <verification_mode>${AGENT_SSL_MODE}</verification_mode>" >> "$block"
+  [ -n "$AGENT_SSL_CA" ] && \
+    echo "      <certificate_authorities>$(xml_escape "$AGENT_SSL_CA")</certificate_authorities>" >> "$block"
+  [ -n "$AGENT_SSL_CERT" ] && {
+    echo "      <certificate>$(xml_escape "$AGENT_SSL_CERT")</certificate>" >> "$block"
+    echo "      <key>$(xml_escape "$AGENT_SSL_KEY")</key>" >> "$block"
+  }
+  echo "    </ssl>" >> "$block"
+
+  # The block is rebuilt whole, so anything already in it that the variables do
+  # not cover goes away. Restarting a container re-runs this over the block it
+  # wrote itself, which drops nothing and is not worth a warning: only the tags
+  # that are actually about to be lost are reported.
+  local existing_tags our_tags dropped
+  existing_tags=$(sed -n '/<agent>/,/<\/agent>/p' "$config" | \
+    sed -n '/<ssl>/,/<\/ssl>/s|.*<\([a-z_]*\)>.*</\1>.*|\1|p' | sort -u)
+  if [ -n "$existing_tags" ]; then
+    our_tags=$(printf '%s\n' ${AGENT_SSL_MODE:+verification_mode} \
+      ${AGENT_SSL_CA:+certificate_authorities} \
+      ${AGENT_SSL_CERT:+certificate} ${AGENT_SSL_CERT:+key} | sort -u)
+    dropped=$(comm -23 <(printf '%s\n' "$existing_tags") <(printf '%s\n' "$our_tags") | tr '\n' ' ')
+    if [ -n "${dropped// /}" ]; then
+      print "WARNING: rebuilding the <agent><ssl> block from the container variables drops the options already in it that they do not set: ${dropped}"
+    fi
+  fi
+
+  # The whole <agent> block is walked rather than sed-substituted: <verification_mode>
+  # and <key> are not unique to <ssl>, and a blind whole-file substitution would
+  # reach the ones in other blocks.
+  if ! awk -v blockfile="$block" '
+    /^[ \t]*<agent>[ \t]*$/ && !seen_agent {
+      print
+      seen_agent = 1
+      in_agent = 1
+      while ((getline line < blockfile) > 0) print line
+      close(blockfile)
+      next
+    }
+    in_agent && /^[ \t]*<\/agent>[ \t]*$/ { in_agent = 0; print; next }
+    in_agent && /^[ \t]*<ssl>[ \t]*$/ { in_ssl = 1; next }
+    in_agent && in_ssl && /^[ \t]*<\/ssl>[ \t]*$/ { in_ssl = 0; next }
+    in_agent && in_ssl { next }
+    in_agent && /^[ \t]*<ssl[ \t]*\/>[ \t]*$/ { next }
+    { print }
+    END { exit seen_agent ? 0 : 1 }
+  ' "$config" > "$rewritten"
+  then
+    rm -f "$rewritten" "$block"
+    print "ERROR: no <agent> opening tag alone on its own line in $config, so the TLS configuration could not be written."
+    print "Add the <ssl> block to your own ossec.conf instead, or mount one formatted the way the package ships it."
+    exit 1
+  fi
+
+  # Copied over rather than moved, to keep the ownership and mode ossec.conf
+  # already has: wazuh-agentd reads it after dropping privileges.
+  cat "$rewritten" > "$config"
+  rm -f "$rewritten" "$block"
+
+  print "Manager TLS verification: ${AGENT_SSL_MODE:-system}"
+  [ -n "$AGENT_SSL_CA" ] && print "Manager CA: $AGENT_SSL_CA"
+  [ -n "$AGENT_SSL_CERT" ] && print "Client certificate: $AGENT_SSL_CERT"
+  return 0
 }
 
 ##############################################################################
@@ -79,11 +755,28 @@ EOF
 
 main() {
 
+  # Mount permanent data (i.e. client.keys, ossec.conf)
+  mount_permanent_data
+
+  # Restore files stored in permanent data that are not permanent (i.e. internal_options.conf)
+  apply_exclusion_data
+
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
+  # Report the variables that no longer take effect
+  warn_unsupported_vars
+
   # Configure agent variables
   set_manager_conn
+
+  # Delete temporary data folder
+  rm -rf ${WAZUH_INSTALL_PATH}/data_tmp
+  # Configure the TLS material used against the manager. After set_manager_conn,
+  # so a mounted ossec.conf has already been through it, and outside it, so the
+  # variables take effect whether the configuration is the packaged one or a
+  # mounted one.
+  set_agent_ssl "${WAZUH_INSTALL_PATH}/etc/ossec.conf"
 
 }
 
