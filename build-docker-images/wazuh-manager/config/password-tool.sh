@@ -8,13 +8,13 @@
 
 set -o pipefail
 
-USERS=(wazuh wazuh-wui)
+USERS=(wazuh wazuh-internal-client)
 
 # Where each account is recorded (config/credentials/<file>.env) and which
 # component stores it.
-declare -A ENV_KEY=([wazuh]="WAZUH_MANAGER_API_PASSWORD" [wazuh-wui]="WAZUH_MANAGER_WUI_PASSWORD")
-declare -A ENV_FILES=([wazuh]="manager" [wazuh-wui]="manager dashboard")
-declare -A CONSUMERS=([wazuh-wui]="dashboard:wazuh_core.hosts.default.password")
+declare -A ENV_KEY=([wazuh]="WAZUH_MANAGER_API_PASSWORD" [wazuh-internal-client]="WAZUH_MANAGER_WUI_PASSWORD")
+declare -A ENV_FILES=([wazuh]="manager" [wazuh-internal-client]="manager dashboard")
+declare -A CONSUMERS=([wazuh-internal-client]="dashboard:wazuh_core.hosts.default.password")
 
 RBAC_DB="/var/wazuh-manager/api/configuration/security/rbac.db"
 
@@ -199,7 +199,7 @@ echo
 echo "Changed on this manager node:"
 echo
 for user in "${selected[@]}"; do
-  printf '  %-16s %s\n' "${user}" "${NEW_PASSWORD[${user}]}"
+  printf '  %-22s %s\n' "${user}" "${NEW_PASSWORD[${user}]}"
 done
 echo
 echo "This is the only time these passwords are shown. Nothing is stored."
