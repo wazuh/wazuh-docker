@@ -39,7 +39,7 @@ DEMO_USERS="anomalyadmin kibanaro logstash readall snapshotrestore"
 INDEXER_USERS="admin kibanaserver wazuh-manager"
 
 # Accounts the Wazuh API seeds its user database with.
-API_USERS="wazuh wazuh-wui"
+API_USERS="wazuh wazuh-internal-client"
 
 failures=0
 checks=0

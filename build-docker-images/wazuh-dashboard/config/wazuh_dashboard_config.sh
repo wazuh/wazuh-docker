@@ -21,7 +21,7 @@ OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-
 # Wazuh API configuration
 WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
-API_USERNAME="${API_USERNAME:-wazuh-wui}"
+API_USERNAME="${API_USERNAME:-wazuh-internal-client}"
 RUN_AS="${RUN_AS:-true}"
 
 # Configuration file path

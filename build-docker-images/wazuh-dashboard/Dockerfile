@@ -7,6 +7,7 @@ ARG TARGETARCH
 ARG wazuh_dashboard_x86_64_rpm
 ARG wazuh_dashboard_aarch64_rpm
 ARG wazuh_config_yml
+ARG SKIP_PACKAGE_SIGNATURE_CHECK
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
@@ -15,6 +16,8 @@ ENV USER="wazuh-dashboard" \
     GROUP="wazuh-dashboard" \
     NAME="wazuh-dashboard" \
     INSTALL_DIR="/usr/share/wazuh-dashboard" 
+
+COPY --from=shared verify-package-signature.sh /
 
 # Update and install dependencies
 RUN yum install shadow-utils -y && \
@@ -33,7 +36,8 @@ RUN yum install shadow-utils -y && \
     URL_VAR="wazuh_dashboard_${RPM_ARCH}_rpm" && \
     dashboard_url="${!URL_VAR}" && \
     dnf install curl-minimal libcap openssl -y && \
-    curl -o /wazuh-dashboard.rpm "${dashboard_url}" && \
+    curl --fail --proto '=https' -o /wazuh-dashboard.rpm "${dashboard_url}" && \
+    bash /verify-package-signature.sh /wazuh-dashboard.rpm && \
     dnf install util-linux -y && \
     dnf install /wazuh-dashboard.rpm -y && \
     rm -rf /wazuh-dashboard.rpm && \

@@ -1,4 +1,6 @@
 *.log
+__pycache__/
+*.pyc
 build-docker-images/artifact_urls.yaml
 build-docker-images/artifacts_env.txt
 single-node/wazuh-certificates
