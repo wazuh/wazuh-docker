@@ -16,8 +16,8 @@
 
 * **`opensearch_dashboards.yml`**: The main configuration file for OpenSearch Dashboards. Controls server host/port, OpenSearch connection URL, SSL settings, and Wazuh plugin settings.
     * **Customization**: Mount a custom `opensearch_dashboards.yml` into the dashboard container at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml` and custom `wazuh.yml` into the dashboard container at `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` .
-* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, within `opensearch_dashboards.yml` and `wazuh.yml`. The Wazuh API URL comes from `WAZUH_API_URL`; the password of `wazuh-wui` is kept in the keystore (see [Credentials](../credentials.md)).
-* **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore. On the first start, the dashboard's credentials resolver creates it, stores the passwords of `kibanaserver` and `wazuh-wui` (see [Credentials](../credentials.md)), and generates a random `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data.
+* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, within `opensearch_dashboards.yml` and `wazuh.yml`. The Wazuh API URL comes from `WAZUH_API_URL`; the password of `wazuh-internal-client` is kept in the keystore (see [Credentials](../credentials.md)).
+* **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore. On the first start, the dashboard's credentials resolver creates it, stores the passwords of `kibanaserver` and `wazuh-internal-client` (see [Credentials](../credentials.md)), and generates a random `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data.
     * **Customization**: To set your own key, add it through the keystore tool inside the dashboard container and restart the service:
         ```bash
         printf '%s' '<your-encryption-key>' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- \
@@ -61,7 +61,21 @@ To persist files or directories in your Wazuh deployment, you can mount them as 
 
 In multi-node the same two lines appear on `wazuh.master` and `wazuh.worker`, each with its own node's pair.
 
-**Both files have to exist on the host before the containers start.** Docker creates a directory in place of a missing bind-mount source, and the manager refuses its configuration and does not start when it finds one:
+`certs/apid.pem` and `certs/apid-key.pem` are the pair the Server API presents on `55000`, mounted the same way:
+
+```yaml
+      - ./config/wazuh_manager/certs/wazuh.manager-apid.pem:/var/wazuh-manager/etc/certs/apid.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-apid-key.pem:/var/wazuh-manager/etc/certs/apid-key.pem
+```
+
+In multi-node they appear on `wazuh.master` only, since workers do not run the Server API. Without them the API exits and the manager stops with it:
+
+```
+Error when trying to start the Wazuh API. 2003 - Error loading SSL/TLS certificates: API certificate or key not found: WAZUH_PATH/etc/certs/apid.pem. The installer issues it signed by the manager CA.
+wazuh-manager-apid did not start correctly.
+```
+
+**These files have to exist on the host before the containers start.** Docker creates a directory in place of a missing bind-mount source, and the manager refuses its configuration and does not start when it finds one:
 
 ```
 (1244): Invalid configuration at '/remote/https/certificate': file not found: /var/wazuh-manager/etc/certs/remoted.pem
@@ -81,6 +95,10 @@ Part of what lives under `data` ships in the image and is owned by it, not by th
 A release that adds content under `data` has to declare it in the same list, or it will never reach a deployment that upgrades onto an existing volume. The manager image build fails if it finds content under `data` that is in neither that list nor the set of paths the manager rewrites itself (`data/mmdb` and `data/store/geo`).
 
 Removing the volume (for example, with `docker compose down -v`) is not destructive: the manager downloads the content again on the next start, which takes a few minutes.
+
+### Wazuh manager internal options
+
+`/var/wazuh-manager/etc/wazuh-manager-internal-options.conf` holds only your overrides of the manager internal options (`module.option=value`); the defaults are compiled into the manager. It lives on the `etc` volume (`wazuh_etc` in single-node; `master-wazuh-etc` and `worker-wazuh-etc` in multi-node), so an override survives restarts and upgrades, and the container never replaces it with the copy in the image. Removing the volume resets it to the empty file the image ships.
 
 ### Wazuh Dashboard keystore
 

@@ -32,7 +32,8 @@ Before diving into the deployment, please ensure you have reviewed:
     git clone https://github.com/wazuh/wazuh-docker.git
     cd wazuh-docker
     git checkout v5.0.1
-    cd single-node    # or multi-node
+    # Navigate to the specific docker-compose directory, e.g., single-node or multi-node
+    # cd docker-compose/single-node/ (example path)
     ```
     Alternatively, you might download specific `docker-compose.yml` files if provided as part of a release package.
 

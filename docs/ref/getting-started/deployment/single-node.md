@@ -23,7 +23,6 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
     ```bash
     curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.1-1.sh
     curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.1-1.yml
-    curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.1-1.sh
     ```
 
     `wazuh-credentials.sh` is the library `credentials-conf.sh` uses in step 6 to
@@ -74,8 +73,14 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 
     This issues every certificate the deployment mounts, including
     `wazuh.manager-remoted.pem` and `wazuh.manager-remoted-key.pem`, the pair the
-    manager presents to agents. **The manager does not start without that pair**,
-    so this step has to run before `docker compose up`.
+    manager presents to agents, and `wazuh.manager-apid.pem` and
+    `wazuh.manager-apid-key.pem`, the pair the Server API presents on `55000`.
+    **The manager does not start without those pairs**, so this step has to run
+    before `docker compose up`.
+
+    `--api-san` adds an address to the Server API certificate, for API clients
+    that reach `55000` through a name not listed for the manager node in
+    `config.yml`.
 
     `--agent-san` adds an address to the agent listener certificates without
     putting it on the manager node in `config.yml`, which is useful when agents

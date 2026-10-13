@@ -56,8 +56,8 @@ mount_permanent_data() {
 ##############################################################################
 # This function will replace from the permanent data volume every file
 # contained in PERMANENT_DATA_EXCP
-# Some files as 'internal_options.conf' are saved as permanent data, but
-# they must be updated to work properly if wazuh version is changed.
+# Some content shipped by the image (i.e. data/tzdb) lives in a permanent data
+# volume, but it must be updated to work properly if wazuh version is changed.
 ##############################################################################
 
 safe_cp() {
@@ -130,12 +130,13 @@ remove_data_files() {
 }
 
 ##############################################################################
-# Check the manager agent listener certificate
+# Check the manager agent listener and Server API certificates
 #
 # etc/certs/remoted.* is read by remoted's HTTPS listener (<remote><https>) and
-# by authd (<auth><ssl_manager_cert>). It is issued by wazuh-certs-tool.sh and
-# mounted into the container; nothing generates it here, and the manager does
-# not start without it. This only names the file that is missing, which the
+# by authd (<auth><ssl_manager_cert>). etc/certs/apid.* is read by the Server
+# API, which only runs on the master. Both are issued by wazuh-certs-tool.sh and
+# mounted into the container; nothing generates them here, and the manager does
+# not start without them. This only names the file that is missing, which the
 # error the manager reports on its own does not.
 ##############################################################################
 
@@ -154,7 +155,8 @@ get_conf_path() {
     "${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf" | head -n1
 }
 
-# $1: certificate path, $2: key path
+# $1: certificate path, $2: key path, $3: description, $4: wazuh-certs-tool.sh
+# file suffix, $5: what does not start without the pair
 check_server_cert_pair() {
   local cert=$(resolve_wazuh_path "$1")
   local key=$(resolve_wazuh_path "$2")
@@ -165,15 +167,15 @@ check_server_cert_pair() {
 
   if [ -z "${missing}" ]
   then
-    print "Manager agent listener certificate ${cert} found"
+    print "Manager $3 certificate ${cert} found"
     return
   fi
 
-  print "ERROR: the manager agent listener certificate is missing or unreadable: ${missing}"
-  print "Issue it with wazuh-certs-tool.sh, which writes <node>-remoted.pem and"
-  print "<node>-remoted-key.pem, and mount them at ${cert} and ${key}"
+  print "ERROR: the manager $3 certificate is missing or unreadable: ${missing}"
+  print "Issue it with wazuh-certs-tool.sh, which writes <node>-$4.pem and"
+  print "<node>-$4-key.pem, and mount them at ${cert} and ${key}"
   print "owned by 0:wazuh-manager with mode 0640."
-  print "The agent listener and agent enrollment do not start without them."
+  print "$5 without them."
 }
 
 check_manager_server_certs() {
@@ -186,12 +188,21 @@ check_manager_server_certs() {
   # by the installation itself, so the two are one pair and one identity. A
   # mismatch can only come from hand-edited configuration.
   check_server_cert_pair "${https_cert:-etc/certs/remoted.pem}" \
-                         "${https_key:-etc/certs/remoted-key.pem}"
+                         "${https_key:-etc/certs/remoted-key.pem}" \
+                         "agent listener" remoted \
+                         "The agent listener and agent enrollment do not start"
 
   if [ "${authd_cert:-etc/certs/remoted.pem}" != "${https_cert:-etc/certs/remoted.pem}" ] || \
      [ "${authd_key:-etc/certs/remoted-key.pem}" != "${https_key:-etc/certs/remoted-key.pem}" ]
   then
     print "Warning: authd (${authd_cert}) and the HTTPS listener (${https_cert}) use different certificates; both must present the same manager identity"
+  fi
+
+  if [[ "$WAZUH_NODE_TYPE" != "worker" ]]
+  then
+    check_server_cert_pair etc/certs/apid.pem etc/certs/apid-key.pem \
+                           "Server API" apid \
+                           "The Server API, and with it the manager, does not start"
   fi
 }
 
@@ -462,7 +473,7 @@ main() {
   # Mount permanent data  (i.e. wazuh-manager.conf)
   mount_permanent_data
 
-  # Restore files stored in permanent data that are not permanent  (i.e. internal_options.conf)
+  # Restore files stored in permanent data that are not permanent  (i.e. data/tzdb)
   apply_exclusion_data
 
   # Apply correct permission and ownership

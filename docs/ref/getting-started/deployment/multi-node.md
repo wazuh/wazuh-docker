@@ -23,7 +23,6 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
     ```bash
     curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.1-1.sh
     curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.1-1.yml
-    curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.1-1.sh
     ```
 
     `wazuh-credentials.sh` is the library `credentials-conf.sh` uses in step 6 to
@@ -72,8 +71,13 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
     This issues every certificate the deployment mounts, including
     `wazuh.master-remoted.pem` and `wazuh.worker-remoted.pem`, the pair each
-    manager node presents to agents. **A manager node does not start without its
-    pair**, so this step has to run before `docker compose up`.
+    manager node presents to agents, and `wazuh.master-apid.pem`, the pair the
+    Server API presents on `55000`. **A manager node does not start without its
+    pairs**, so this step has to run before `docker compose up`.
+
+    The Server API runs on `wazuh.master` only, and its certificate names that
+    node. API clients that reach `55000` through the Docker host need its
+    address in that certificate too: add `--api-san <DOCKER_HOST_ADDRESS>`.
 
     `--agent-san` puts an address in the agent listener certificate of **every**
     manager node, which is what the `nginx` entry point needs: whichever node

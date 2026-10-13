@@ -148,12 +148,10 @@ Follow these steps to deploy the Wazuh agent using Docker.
     any more — see [Environment Variables](../../configuration/environment-variables.md#wazuh-agent).
     The container logs a warning when any of them is set.
 
-    **Note:** Without a token, the agent verifies the manager's TLS certificate
-    itself. Left unconfigured it verifies against the operating system trust
-    store, which covers a manager whose certificate chains to a publicly trusted
-    CA and nothing else: a manager presenting a certificate of its own, which is
-    what a Wazuh manager does by default, is refused. Give the agent the CA that
-    signs it:
+    **Note:** Without a token and without a CA, the agent connects to the
+    manager **without verifying its TLS certificate** (`verification_mode`
+    `none`) and logs `TLS verification is DISABLED`. To verify it, give the
+    agent the CA that signs it:
 
     ```yaml
     environment:

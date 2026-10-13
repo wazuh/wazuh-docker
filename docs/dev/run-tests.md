@@ -1,6 +1,6 @@
 # Pull Request Test Execution
 
-This repository includes automated tests designed to validate the correct deployment of Wazuh using Docker. They run on a pull request when asked for in a comment, to check that a change keeps the deployments working.
+This repository includes automated tests designed to validate the correct deployment of Wazuh using Docker. They run on a pull request when asked for with a label, to check that a change keeps the deployments working.
 
 Check more information on the [Workflow usage](workflow-usage.md) page.
 
@@ -10,7 +10,7 @@ The main objective of the tests is to verify that the Wazuh Docker environment c
 
 ## When Tests Run
 
-- A comment on the pull request starts them: `/test-docker-single` for single-node, `/test-docker-multi` for multi-node, or `/test-docker` for both.
+- Adding a label to a non-draft pull request starts them: `test/docker-single` for single-node, `test/docker-multi` for multi-node, or `test/docker` for both. To run them again, remove the label and add it again.
 - They can also be run by hand (`workflow_dispatch`) from `(5.x) PR Check - Docker Integration Tests` (`.github/workflows/5_check_integration_tools.yml`). See [Docker integration tests](../ref/integration_test/docker_integration_tests.md).
 
 ## What Is Tested

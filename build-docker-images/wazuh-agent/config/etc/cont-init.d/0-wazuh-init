@@ -423,14 +423,13 @@ set_agent_name() {
 ##############################################################################
 # TLS material for the manager connection: the <agent><ssl> block.
 #
-# Since wazuh/wazuh#38786 the agent verifies the manager's certificate by
-# default. With no <ssl> block it resolves <verification_mode> to 'system' and
-# validates against the operating system's trust store, so the posture is no
-# longer "connect to anything": a manager presenting its own self-signed
-# certificate -- which is what a Wazuh manager does out of the box, dockerized
-# or not -- is refused, and the agent says so and keeps retrying.
+# With no <ssl> block and no trust anchor at etc/certs/root-ca.pem the agent
+# resolves <verification_mode> to 'none' (wazuh/wazuh#38940): it connects to
+# whatever answers on the endpoint, including a manager presenting its own
+# self-signed certificate, and logs "TLS verification is DISABLED". A token
+# enrollment writes that anchor, after which the agent verifies in 'full'.
 #
-# Reaching such a manager therefore means telling the agent which CA signs it:
+# Verifying a manager without a token means telling the agent which CA signs it:
 #
 #   WAZUH_MANAGER_CA               path to the CA bundle, written to
 #                                  <certificate_authorities>. WAZUH_REGISTRATION_CA,
@@ -445,10 +444,11 @@ set_agent_name() {
 #                                  which asks agents for one; the shipped manager
 #                                  configuration does not.
 #
-# None of them is required. Left unset against a manager whose certificate chains
-# to a publicly trusted CA -- Wazuh Cloud, or a manager behind a reverse proxy
-# holding a real certificate -- the agent verifies it through the system store
-# with no configuration at all, which is why nothing is written in that case.
+# None of them is required to connect, and with none of them nothing is written:
+# the agent connects unverified. A manager whose certificate chains to a publicly
+# trusted CA -- a reverse proxy holding a real certificate, say -- is verified
+# against the operating system trust store only with
+# WAZUH_AGENT_SSL_VERIFICATION=system.
 #
 # The CA may also be dropped at $WAZUH_MANAGER_CA_DEFAULT instead of being named,
 # which is what makes it mountable through WAZUH_CONFIG_MOUNT the same way a whole
@@ -566,8 +566,8 @@ resolve_agent_ssl() {
   fi
 
   # A named CA is an instruction, so an unusable one stops the container. The
-  # drop-in is a convention, and its absence just leaves the agent on the system
-  # store -- but a file that is there and unusable is still an error, since it was
+  # drop-in is a convention, and its absence just leaves the agent's own default
+  # in place -- but a file that is there and unusable is still an error, since it was
   # put there to be used.
   if [ -n "$WAZUH_MANAGER_CA" ]; then
     check_tls_file "The manager CA (WAZUH_MANAGER_CA)" "$WAZUH_MANAGER_CA" || exit 1
@@ -616,9 +616,10 @@ resolve_agent_ssl() {
   # every start when it has to infer the mode itself.
   #
   # The other direction is deliberately left implicit: with no CA the agent
-  # resolves to 'system' on its own, and writing that out would turn it into an
-  # explicit choice, which is what stops a WPK upgrade from pinning a CA for an
-  # agent that turns out to need one (wazuh/wazuh#38786).
+  # resolves to 'none' on its own, and only an implicit 'none' moves to 'full'
+  # once a trust anchor appears (a token bootstrap or a WPK upgrade writing
+  # etc/certs/root-ca.pem). Writing 'none' out would make it an explicit choice,
+  # which the agent keeps even with an anchor present (w_agent_resolve_ssl_posture()).
   if [ -z "$AGENT_SSL_MODE" ] && [ -n "$AGENT_SSL_CA" ]; then
     AGENT_SSL_MODE="certificate"
   fi
@@ -663,9 +664,8 @@ set_agent_ssl() {
       print "No TLS material configured up front: the trust anchor is bootstrapped from WAZUH_ENROLLMENT_TOKEN at the agent's first start."
       return
     fi
-    print "No TLS material configured for the manager connection, so the agent verifies it against the operating system trust store."
-    print "That covers a manager whose certificate chains to a publicly trusted CA. A manager presenting its own self-signed certificate, which is what a Wazuh manager does by default, is NOT in that store and the connection will be refused."
-    print "Set WAZUH_MANAGER_CA to the CA that signs the manager certificate, or mount it at $WAZUH_MANAGER_CA_DEFAULT."
+    print "WARNING: No TLS material configured for the manager connection: the agent connects WITHOUT verifying the manager certificate (verification_mode none)."
+    print "To verify it, set WAZUH_MANAGER_CA to the CA that signs the manager certificate (or mount it at $WAZUH_MANAGER_CA_DEFAULT), enroll with WAZUH_ENROLLMENT_TOKEN, or set WAZUH_AGENT_SSL_VERIFICATION=system for a manager whose certificate chains to a publicly trusted CA."
     return
   fi
 
