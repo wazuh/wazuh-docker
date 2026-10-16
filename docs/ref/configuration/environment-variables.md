@@ -43,7 +43,7 @@ environment:
 - `WAZUH_CLUSTER_NODES`: Space-separated list of worker node addresses/hostnames, written to `<cluster><nodes>`. Only meaningful on the master node.
 - `WAZUH_CLUSTER_BIND_ADDR`: Address the cluster service binds to, written to `<cluster><bind_addr>`. Defaults to `0.0.0.0`.
 - `WAZUH_INDEXER_HOSTS`: Comma-separated list of indexer nodes as `host:port` (for example `wazuh.indexer:9200`, or `host1:9200,host2:9200` for multiple nodes), written to `<indexer><hosts>`. Each entry must be exactly `host:port`: no scheme, no trailing slash, no other separator — any other shape either fails validation or produces a corrupt host.
-- `/wazuh-config-mount`: not a variable, but the fixed path where a directory with the manager's own configuration files can be mounted. Its content is copied over the packaged files on every start, for example `/wazuh-config-mount/etc/wazuh-manager.conf` over `/var/wazuh-manager/etc/wazuh-manager.conf`.
+- `/wazuh-config-mount`: not a variable, but the fixed path where a directory with the manager's own configuration files can be mounted. Its content is copied over the packaged files on every start, for example `/wazuh-config-mount/etc/wazuh-manager.conf` over `/etc/wazuh-manager/wazuh-manager.conf`. Its `etc/` subdirectory goes to the configuration directory `/etc/wazuh-manager`, everything else to `/var/wazuh-manager`.
 - `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
 
 ---

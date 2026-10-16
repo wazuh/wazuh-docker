@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 ################################################################################
 # Build stage 0 (builder):
@@ -48,16 +48,16 @@ RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iprou
     mkdir -p /var/wazuh-manager/var/multigroups && \
     chown root:wazuh-manager /var/wazuh-manager/var/multigroups && \
     chmod 770 /var/wazuh-manager/var/multigroups && \
-    mkdir -p /var/wazuh-manager/etc/certs && \
-    chown root:wazuh-manager /var/wazuh-manager/etc/certs && \
-    chmod 1770 /var/wazuh-manager/etc/certs && \
+    source /permanent_data.env && \
+    mkdir -p "${WAZUH_MANAGER_CONF_DIR}/certs" && \
+    chown root:wazuh-manager "${WAZUH_MANAGER_CONF_DIR}/certs" && \
+    chmod 750 "${WAZUH_MANAGER_CONF_DIR}/certs" && \
     # The package's %post resolved credentials for this build host: rbac.db,
     # the keystore, a bootstrap CA and the three certificate pairs. Remove them
     # so no two containers from this image share one; each container resolves
     # its own at start (etc/cont-init.d/1-credentials), and the certificate
     # pairs are mounted from the host.
     /var/wazuh-manager/bin/wazuh-manager-resolve-credentials --clear -H /var/wazuh-manager && \
-    rm -rf /etc/wazuh && \
     # Clear the cluster key for the same reason the certificates above are
     # removed: the installer generates it once, here, and copying the installed
     # tree into the image would publish that single secret inside every pull of
@@ -66,7 +66,7 @@ RUN dnf install openssl findutils procps shadow-utils util-linux diffutils iprou
     # This runs before permanent_data.sh, so the snapshot restored into a fresh
     # 'etc' volume ships the empty key too.
     sed -i "/<cluster>/,/<\/cluster>/ s|<key>.*</key>|<key></key>|" \
-        /var/wazuh-manager/etc/wazuh-manager.conf
+        "${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf"
 
 # Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
 RUN chmod 755 /permanent_data.sh && \
@@ -106,9 +106,9 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
-# util-linux-core provides flock, which the credentials resolver takes on its
-# first start; the tools it needs to issue certificates are not required here.
-RUN dnf install openssl findutils procps shadow-utils util-linux-core -y && \
+# The package needs only coreutils and the account tools. The container scripts
+# add openssl (cluster key) and findutils (permanent data).
+RUN dnf install openssl findutils shadow-utils -y && \
     dnf clean all && \
     getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
@@ -119,8 +119,14 @@ RUN dnf install openssl findutils procps shadow-utils util-linux-core -y && \
         --shell /sbin/nologin \
         wazuh-manager
 
-# Copy Wazuh Manager installation (includes permanent data snapshot)
+# Copy Wazuh Manager installation (includes permanent data snapshot) and its
+# configuration directory, which the package keeps outside the installation
 COPY --from=builder /var/wazuh-manager /var/wazuh-manager
+COPY --from=builder /etc/wazuh-manager /etc/wazuh-manager
+# COPY creates the target directory itself with default ownership; restore the
+# package's (authd, remoted and the Server API write into it)
+RUN chown root:wazuh-manager /etc/wazuh-manager && \
+    chmod 770 /etc/wazuh-manager
 
 # Copy tini static binary
 COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
@@ -128,14 +134,14 @@ COPY --from=builder /usr/local/bin/tini /usr/local/bin/tini
 # Copy entrypoint, init scripts and runtime config
 COPY config/entrypoint.sh /entrypoint.sh
 COPY config/password-tool.sh /password-tool.sh
-COPY config/install-credentials.sh /install-credentials.sh
+COPY --from=shared credentials-env.sh password-policy.sh /
 COPY config/etc/ /etc/
 COPY config/permanent_data.env /
 
 RUN chmod 755 /entrypoint.sh /password-tool.sh && \
     chmod 700 /etc/wazuh-api-users.py && \
-    chown root:root /install-credentials.sh && \
-    chmod 700 /install-credentials.sh
+    chown root:root /credentials-env.sh /password-policy.sh && \
+    chmod 644 /credentials-env.sh /password-policy.sh
 
 # Services ports
 #   1517/tcp: agent communication and enrollment (Wazuh 5.x agents, HTTPS)

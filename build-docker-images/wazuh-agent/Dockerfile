@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 ################################################################################
 # Build stage 0 (builder):

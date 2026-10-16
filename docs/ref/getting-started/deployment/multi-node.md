@@ -18,16 +18,12 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
     cd multi-node
     ```
 
-3.  Download the certificate creation script, `config.yml` and the credentials library:
+3.  Download the certificate creation script and `config.yml`:
 
     ```bash
     curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.0-1.sh
     curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.0-1.yml
-    curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.0-1.sh
     ```
-
-    `wazuh-credentials.sh` is the library `credentials-conf.sh` uses in step 6 to
-    generate the passwords. Use the same version as the images.
 
 4.  Edit the `config.yml` file with the configuration of the Wazuh components to be deployed
 

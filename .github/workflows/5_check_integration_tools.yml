@@ -498,15 +498,6 @@ jobs:
           chmod +x "wazuh-docker/${DEPLOYMENT}/wazuh-certs-tool.sh"
           echo "Downloaded OK"
 
-          # The credentials library credentials-conf.sh generates the passwords
-          # with. It is not among the presigned build_docker artifacts yet, so it
-          # is taken from the installation assistant branch of this version,
-          # which is the file the packages bundle.
-          curl --fail --silent --show-error \
-            --output "wazuh-docker/${DEPLOYMENT}/wazuh-credentials.sh" \
-            "https://raw.githubusercontent.com/wazuh/wazuh-installation-assistant/${{ env.DOCKER_VERSION }}/credentials_lib/wazuh-credentials.sh"
-          echo "Credentials library: $(sha256sum "wazuh-docker/${DEPLOYMENT}/wazuh-credentials.sh" | cut -c1-16)"
-
           # Write config.yml directly into the deployment directory
           if [ "$DEPLOYMENT" = "single-node" ]; then
             printf '%s\n' \
@@ -679,16 +670,16 @@ jobs:
             rm -f /tmp/remoted-fingerprints.txt
             for SVC in \$(sudo docker compose config --services | grep -E 'wazuh\.(manager|master|worker)'); do
               echo \"=== \$SVC ===\"
-              sudo docker compose exec -T \$SVC ls -ld /var/wazuh-manager/etc/certs
-              sudo docker compose exec -T \$SVC ls -la /var/wazuh-manager/etc/certs
+              sudo docker compose exec -T \$SVC ls -ld /etc/wazuh-manager/certs
+              sudo docker compose exec -T \$SVC ls -la /etc/wazuh-manager/certs
               sudo docker compose exec -T \$SVC openssl x509 \
-                -in /var/wazuh-manager/etc/certs/remoted.pem -noout -subject -dates \
+                -in /etc/wazuh-manager/certs/remoted.pem -noout -subject -dates \
                 -ext subjectAltName,extendedKeyUsage
               sudo docker compose exec -T \$SVC openssl verify \
-                -CAfile /var/wazuh-manager/etc/certs/root-ca.pem \
-                /var/wazuh-manager/etc/certs/remoted.pem
+                -CAfile /etc/wazuh-manager/certs/root-ca.pem \
+                /etc/wazuh-manager/certs/remoted.pem
               sudo docker compose exec -T \$SVC openssl x509 \
-                -in /var/wazuh-manager/etc/certs/remoted.pem -noout -fingerprint \
+                -in /etc/wazuh-manager/certs/remoted.pem -noout -fingerprint \
                 | tee -a /tmp/remoted-fingerprints.txt
             done
 
@@ -712,13 +703,13 @@ jobs:
             for SVC in \$(sudo docker compose config --services | grep -E 'wazuh\.(manager|master)'); do
               echo \"=== \$SVC ===\"
               sudo docker compose exec -T \$SVC openssl x509 \
-                -in /var/wazuh-manager/etc/certs/apid.pem -noout -subject -dates \
+                -in /etc/wazuh-manager/certs/apid.pem -noout -subject -dates \
                 -ext subjectAltName,extendedKeyUsage
               sudo docker compose exec -T \$SVC openssl verify \
-                -CAfile /var/wazuh-manager/etc/certs/root-ca.pem \
-                /var/wazuh-manager/etc/certs/apid.pem
+                -CAfile /etc/wazuh-manager/certs/root-ca.pem \
+                /etc/wazuh-manager/certs/apid.pem
               CODE=\$(sudo docker compose exec -T \$SVC curl -s -o /dev/null -w '%{http_code}' \
-                --cacert /var/wazuh-manager/etc/certs/root-ca.pem \"https://\$SVC:55000/\")
+                --cacert /etc/wazuh-manager/certs/root-ca.pem \"https://\$SVC:55000/\")
               echo \"https://\$SVC:55000/ verified against root-ca.pem: HTTP \$CODE\"
               if [ \"\$CODE\" != '401' ]; then
                 echo 'ERROR: the Server API does not answer with a certificate that verifies by name'

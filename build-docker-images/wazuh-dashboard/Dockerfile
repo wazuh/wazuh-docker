@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
@@ -35,7 +35,7 @@ RUN yum install shadow-utils -y && \
     if [ "${TARGETARCH}" = "arm64" ]; then RPM_ARCH="aarch64"; fi && \
     URL_VAR="wazuh_dashboard_${RPM_ARCH}_rpm" && \
     dashboard_url="${!URL_VAR}" && \
-    dnf install curl-minimal libcap openssl -y && \
+    dnf install curl-minimal openssl -y && \
     curl --fail --proto '=https' -o /wazuh-dashboard.rpm "${dashboard_url}" && \
     bash /verify-package-signature.sh /wazuh-dashboard.rpm && \
     dnf install util-linux -y && \
@@ -44,14 +44,12 @@ RUN yum install shadow-utils -y && \
     dnf clean all && \
     # The package's %post resolved credentials for this build host; remove
     # them so no two containers from this image share one.
-    /usr/share/wazuh-dashboard/bin/resolve-credentials --clear && \
-    rm -rf /etc/wazuh
+    /usr/share/wazuh-dashboard/bin/resolve-credentials --clear
 
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
 RUN mkdir -p $INSTALL_DIR/data/wazuh/logs && chmod -R 775 $INSTALL_DIR/data/wazuh/logs
-RUN setcap 'cap_net_bind_service=-ep' /usr/share/wazuh-dashboard/node/bin/node
 
 # Delete default keystore
 RUN if [ -f /etc/wazuh-dashboard/opensearch_dashboards.keystore ]; then rm -f /etc/wazuh-dashboard/opensearch_dashboards.keystore; fi
@@ -76,7 +74,7 @@ ENV USER="wazuh-dashboard" \
 # Copy and set permissions to scripts
 COPY config/entrypoint.sh /
 COPY config/wazuh_dashboard_config.sh /
-COPY config/install-credentials.sh /
+COPY --from=shared credentials-env.sh /
 
 # Update and install dependencies. The entrypoint runs as root to resolve
 # the credentials, so it must not be writable by the service user.
@@ -91,10 +89,9 @@ RUN yum install shadow-utils util-linux -y && \
     --shell /sbin/nologin \
     --comment "$USER user" \
     $USER && \
-    chown root:root /entrypoint.sh /install-credentials.sh && \
+    chown root:root /entrypoint.sh /credentials-env.sh /wazuh_dashboard_config.sh && \
     chmod 755 /entrypoint.sh && \
-    chmod 700 /install-credentials.sh && \
-    chown ${WAZUH_UID}:${WAZUH_GID} /wazuh_dashboard_config.sh && \
+    chmod 644 /credentials-env.sh && \
     chmod 700 /wazuh_dashboard_config.sh && \
     mkdir -p /usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
 
@@ -105,9 +102,13 @@ RUN yum install shadow-utils util-linux -y && \
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 COPY --from=builder /etc/wazuh-dashboard $INSTALL_DIR/config/
 # config/ stands in for the package's /etc/wazuh-dashboard, and takes its
-# ownership: the service user writes its configuration there.
-RUN chown ${WAZUH_UID}:${WAZUH_GID} $INSTALL_DIR/config && \
-    chmod 750 $INSTALL_DIR/config
+# ownership: root's, read by the dashboard through its group. The credentials
+# resolver trusts nothing the service user can write.
+RUN chown root:${WAZUH_GID} $INSTALL_DIR/config && \
+    chmod 750 $INSTALL_DIR/config && \
+    mkdir -p $INSTALL_DIR/config/certs && \
+    chown root:${WAZUH_GID} $INSTALL_DIR/config/certs && \
+    chmod 750 $INSTALL_DIR/config/certs
 
 # Starts as root and drops to wazuh-dashboard once the credentials are stored
 WORKDIR $INSTALL_DIR

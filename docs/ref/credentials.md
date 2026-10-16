@@ -39,11 +39,11 @@ not in the image.
 ## Creating the credentials
 
 Run it from `single-node/` or `multi-node/`, after the certificates and before
-the first `docker compose up`. It needs the shared credentials library next to
-`wazuh-certs-tool.sh`, in the same version as the images:
+the first `docker compose up`. It generates and checks the passwords with the
+rule the Wazuh packages apply (`build-docker-images/shared/password-policy.sh`),
+so it needs nothing besides this checkout:
 
 ```bash
-curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.0-1.sh
 sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
@@ -95,12 +95,12 @@ services:
         target: wazuh-credentials
 ```
 
-At every start, the container installs `/run/secrets/wazuh-credentials` as
-`/etc/wazuh/credentials.env`, the file the Wazuh packages resolve their
-credentials from, readable only by root. Once the component has stored the
-values, the container deletes that copy, before the service starts under its
-own user. The passwords are therefore not in the container's environment, and
-`docker inspect` does not show them.
+At every start, the container reads `/run/secrets/wazuh-credentials` as root and
+exports its `WAZUH_*` keys to the component's credential resolver, which takes
+the environment first. Once the component has stored the values, they are
+removed from the environment, before the service starts under its own user. The
+passwords are therefore not in the service's environment, nothing is written to
+disk for them, and `docker inspect` does not show them.
 
 - **Another path:** set `WAZUH_CREDENTIALS_FILE` to mount the file elsewhere.
   The container then refuses to start if the file is missing.
@@ -177,7 +177,7 @@ restart the dashboard:
   kibanaserver:
     sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/indexer.env
     sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/dashboard.env
-    printf '%s' '<new password>' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
+    printf '%s' '<new password>' | docker compose exec -T -e OSD_PATH_CONF=/usr/share/wazuh-dashboard/config wazuh.dashboard /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin opensearch.password
     docker compose restart wazuh.dashboard
 ```
 

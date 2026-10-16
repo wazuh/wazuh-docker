@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Environment variables with defaults
 SERVER_HOST="${SERVER_HOST:-0.0.0.0}"
@@ -10,9 +10,9 @@ OPENSEARCH_REQUEST_HEADERS_ALLOWLIST="${OPENSEARCH_REQUEST_HEADERS_ALLOWLIST:-[\
 OPENSEARCH_SECURITY_MULTITENANCY_ENABLED="${OPENSEARCH_SECURITY_MULTITENANCY_ENABLED:-false}"
 OPENSEARCH_SECURITY_READONLY_MODE_ROLES="${OPENSEARCH_SECURITY_READONLY_MODE_ROLES:-[\"kibana_read_only\"]}"
 SERVER_SSL_ENABLED="${SERVER_SSL_ENABLED:-true}"
-SERVER_SSL_KEY="${SERVER_SSL_KEY:-/etc/wazuh-dashboard/certs/dashboard-key.pem}"
-SERVER_SSL_CERTIFICATE="${SERVER_SSL_CERTIFICATE:-/etc/wazuh-dashboard/certs/dashboard.pem}"
-OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES="${OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES:-[/etc/wazuh-dashboard/certs/root-ca.pem]}"
+SERVER_SSL_KEY="${SERVER_SSL_KEY:-/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem}"
+SERVER_SSL_CERTIFICATE="${SERVER_SSL_CERTIFICATE:-/usr/share/wazuh-dashboard/config/certs/dashboard.pem}"
+OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES="${OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES:-[/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem]}"
 UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE="${UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE:-/app/wz-home}"
 OPENSEARCH_SECURITY_COOKIE_TTL="${OPENSEARCH_SECURITY_COOKIE_TTL:-900000}"
 OPENSEARCH_SECURITY_SESSION_TTL="${OPENSEARCH_SECURITY_SESSION_TTL:-900000}"
@@ -22,6 +22,8 @@ OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-
 WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
 API_USERNAME="${API_USERNAME:-wazuh-internal-client}"
+# The CA that verifies the Server API certificate: the manager's, not the indexer's.
+WAZUH_API_CA="${WAZUH_API_CA:-/usr/share/wazuh-dashboard/config/certs/manager-ca.pem}"
 RUN_AS="${RUN_AS:-true}"
 
 # Configuration file path
@@ -85,5 +87,6 @@ if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
         s|port:.*|port: $(escape_repl "$API_PORT")|
         s|username:.*|username: $(escape_repl "$API_USERNAME")|
         s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
+        s|ca:.*|ca: '$(escape_repl "$WAZUH_API_CA")'|
     }" "$DASHBOARD_CONFIG_FILE"
 fi

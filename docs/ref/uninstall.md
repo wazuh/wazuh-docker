@@ -19,7 +19,7 @@ This section describes how to uninstall a Wazuh Docker deployment by stopping an
 3. Remove the generated and downloaded files, including the deployment's passwords in `config/credentials/`. They are owned by root or by the service users, hence `sudo`:
 
     ```bash
-    sudo rm -rf wazuh-certificates/ wazuh-certificates-tool.log config.yml wazuh-certs-tool.sh wazuh-credentials.sh \
+    sudo rm -rf wazuh-certificates/ wazuh-certificates-tool.log config.yml wazuh-certs-tool.sh \
         config/*/certs config/credentials
     ```
 

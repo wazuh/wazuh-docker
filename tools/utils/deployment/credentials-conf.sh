@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Creates the passwords of one Wazuh deployment before its first start and
 # writes them, one file per component, into the directory the Compose files
@@ -7,7 +7,8 @@
 
 set -o pipefail
 
-CREDENTIALS_LIB="${WAZUH_CREDENTIALS_LIB:-./wazuh-credentials.sh}"
+# The rule the package resolvers apply, shared with the images.
+PASSWORD_POLICY="$(cd "$(dirname "$0")" && pwd)/../../../build-docker-images/shared/password-policy.sh"
 OUTPUT_DIR="./config/credentials"
 FORCE=false
 
@@ -47,9 +48,6 @@ generated value, e.g.:
   WAZUH_INDEXER_ADMIN_PASSWORD='<password>' $0
 
 Keys: ${ALL_KEYS[*]}
-
-Needs the Wazuh credentials library as ${CREDENTIALS_LIB}
-(WAZUH_CREDENTIALS_LIB overrides the path).
 USAGE
 }
 
@@ -73,24 +71,14 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ! -r "${CREDENTIALS_LIB}" ]; then
-  error "cannot read the Wazuh credentials library at ${CREDENTIALS_LIB}"
-  error "download it next to wazuh-certs-tool.sh, or set WAZUH_CREDENTIALS_LIB to its path"
+# shellcheck source=../../../build-docker-images/shared/password-policy.sh
+if ! . "${PASSWORD_POLICY}" 2>/dev/null; then
+  error "cannot read ${PASSWORD_POLICY}; run this script from a wazuh-docker checkout"
   exit 1
 fi
-# shellcheck source=/dev/null
-. "${CREDENTIALS_LIB}"
-for function in wazuh_password_generate wazuh_password_validate; do
-  if ! declare -F "${function}" >/dev/null; then
-    error "${CREDENTIALS_LIB} does not define ${function}; is it the Wazuh credentials library?"
-    exit 1
-  fi
-done
 
 # Every component validates what it receives; a value one of them would
-# reject is refused here, so the deployment does not find out at start. The
-# four classes are checked here too: a library older than
-# wazuh-installation-assistant#1047 does not require them.
+# reject is refused here, so the deployment does not find out at start.
 check_password() {
   local key=$1 value=$2 rest reason
   rest=$(printf '%s' "${value}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')
@@ -99,7 +87,7 @@ check_password() {
     return 1
   fi
   if ! reason=$(wazuh_password_validate "${value}" 2>&1); then
-    error "${key} was rejected: ${reason#wazuh-credentials: }"
+    error "${key} was rejected: ${reason}"
     return 1
   fi
   case ${value} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "${key} was rejected: password must contain at least one lowercase letter"; return 1 ;; esac
