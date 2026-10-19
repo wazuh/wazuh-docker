@@ -348,7 +348,8 @@ build() {
 
     local bake_files="-f docker-bake.hcl"
     if [ -n "${BASE_IMAGES_BAKE_FILE}" ]; then
-        bake_files="${bake_files} -f ${BASE_IMAGES_BAKE_FILE}"
+        # Bake only reads the layouts outside its directory when allowed to.
+        bake_files="${bake_files} -f ${BASE_IMAGES_BAKE_FILE} --allow=fs.read=${BASE_IMAGES_DIR}"
     fi
 
     # Build a specific component or the full default group (all 4 in parallel).
