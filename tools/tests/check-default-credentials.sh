@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Asserts that no account of a deployment authenticates with its own username
 # as its password, and that the Wazuh indexer image carries none of the

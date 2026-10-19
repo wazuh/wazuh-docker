@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Run initialization and configuration
 bash /etc/cont-init.d/0-wazuh-init
@@ -39,7 +39,8 @@ CHECK_INTERVAL=15
 
 # Same reader the core wazuh-manager-control script itself uses to decide
 # whether to start authd (start_service(), "auth.disabled: true" case).
-WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-manager -f /var/wazuh-manager/etc/wazuh-manager.conf"
+. /permanent_data.env
+WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-manager -f ${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf"
 
 # Timeout for each status check: wazuh-manager-control status has no upper
 # bound of its own, and a hang here would otherwise block both failure

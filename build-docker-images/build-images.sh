@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Wazuh package generator
-# Copyright (C) 2023, Wazuh Inc.
+# Copyright (C) Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -20,6 +20,10 @@ WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
 SKIP_PACKAGE_SIGNATURE_CHECK=""
 ARTIFACT_URLS_INPUT=""
+BASE_IMAGE_PULL_RETRIES="${BASE_IMAGE_PULL_RETRIES:-5}"
+BASE_IMAGE_PULL_DELAY="${BASE_IMAGE_PULL_DELAY:-15}"
+BASE_IMAGES_DIR=""
+BASE_IMAGES_BAKE_FILE=""
 
 # -----------------------------------------------------------------------------
 
@@ -28,11 +32,102 @@ trap ctrl_c INT
 clean() {
     exit_code=$1
 
+    if [ -n "${BASE_IMAGES_DIR}" ]; then
+        rm -rf "${BASE_IMAGES_DIR}"
+    fi
+
     exit ${exit_code}
 }
 
 ctrl_c() {
     clean 1
+}
+
+# -----------------------------------------------------------------------------
+
+# Runs a command until it succeeds, up to BASE_IMAGE_PULL_RETRIES times, waiting
+# BASE_IMAGE_PULL_DELAY seconds more after each failed attempt.
+retry() {
+    local attempt=1
+    until "$@"; do
+        if [ "${attempt}" -ge "${BASE_IMAGE_PULL_RETRIES}" ]; then
+            return 1
+        fi
+        local wait=$(( BASE_IMAGE_PULL_DELAY * attempt ))
+        echo "Attempt ${attempt}/${BASE_IMAGE_PULL_RETRIES} failed. Retrying in ${wait}s..." >&2
+        sleep "${wait}"
+        attempt=$(( attempt + 1 ))
+    done
+}
+
+# Prints the base images of a Dockerfile: the FROM images that are not a
+# previous stage.
+base_images_of() {
+    awk 'toupper($1) == "FROM" {
+             image = $2
+             for (i = 2; i <= NF; i++) if ($i !~ /^--/) { image = $i; break }
+             if (!(image in stage)) print image
+             for (i = 2; i < NF; i++) if (toupper($i) == "AS") stage[$(i + 1)] = 1
+         }' "$1"
+}
+
+# Downloads the base images before the build, with retries, so that a registry
+# rate limit (429 Too Many Requests) fails here instead of in the middle of the
+# build. The docker driver uses the images pulled into the daemon. Other drivers
+# (docker-container, as in CI) do not see them, so the images are exported to
+# OCI layouts and passed to bake as named contexts in an extra bake file.
+prefetch_base_images() {
+    local components=("$@")
+    local driver
+    driver=$(docker buildx inspect 2>/dev/null | awk '$1 == "Driver:" { print $2; exit }')
+
+    local platforms=""
+    if [ "${MULTIARCH}" ]; then
+        platforms="linux/amd64,linux/arm64"
+    fi
+
+    local images=()
+    local component image
+    for component in "${components[@]}"; do
+        while read -r image; do
+            [[ " ${images[*]} " == *" ${image} "* ]] || images+=("${image}")
+        done < <(base_images_of "${component}/Dockerfile")
+    done
+
+    echo "Downloading base images (driver: ${driver:-unknown}, up to ${BASE_IMAGE_PULL_RETRIES} attempts each): ${images[*]}"
+
+    if [ "${driver}" = "docker" ]; then
+        for image in "${images[@]}"; do
+            retry docker pull ${platforms:+--platform "${platforms%%,*}"} "${image}" || {
+                echo "Error: could not download the base image ${image}." >&2
+                return 1
+            }
+        done
+        return 0
+    fi
+
+    BASE_IMAGES_DIR=$(mktemp -d)
+    mkdir -p "${BASE_IMAGES_DIR}/context"
+    local contexts="{}"
+    local i=0
+    for image in "${images[@]}"; do
+        local layout="${BASE_IMAGES_DIR}/image-${i}"
+        echo "FROM ${image}" > "${BASE_IMAGES_DIR}/context/Dockerfile.${i}"
+        retry docker buildx build ${platforms:+--platform "${platforms}"} \
+            --output "type=oci,dest=${layout},tar=false" \
+            -f "${BASE_IMAGES_DIR}/context/Dockerfile.${i}" "${BASE_IMAGES_DIR}/context" || {
+            echo "Error: could not download the base image ${image}." >&2
+            return 1
+        }
+        contexts=$(jq --arg image "${image}" --arg ref "oci-layout://${layout}:latest" \
+            '. + {($image): $ref}' <<< "${contexts}")
+        i=$(( i + 1 ))
+    done
+
+    BASE_IMAGES_BAKE_FILE="${BASE_IMAGES_DIR}/base-images.json"
+    jq -n --argjson contexts "${contexts}" --args \
+        '{target: (reduce $ARGS.positional[] as $t ({}; . + {($t): {contexts: $contexts}}))}' \
+        "${components[@]}" > "${BASE_IMAGES_BAKE_FILE}"
 }
 
 # -----------------------------------------------------------------------------
@@ -245,13 +340,25 @@ build() {
         bake_opts="${bake_opts} --load"
     fi
 
+    local components=(wazuh-indexer wazuh-manager wazuh-dashboard wazuh-agent)
+    if [ -n "${WAZUH_COMPONENT}" ]; then
+        components=("${WAZUH_COMPONENT}")
+    fi
+    prefetch_base_images "${components[@]}" || clean 1
+
+    local bake_files="-f docker-bake.hcl"
+    if [ -n "${BASE_IMAGES_BAKE_FILE}" ]; then
+        # Bake only reads the layouts outside its directory when allowed to.
+        bake_files="${bake_files} -f ${BASE_IMAGES_BAKE_FILE} --allow=fs.read=${BASE_IMAGES_DIR}"
+    fi
+
     # Build a specific component or the full default group (all 4 in parallel).
     if [ -z "${WAZUH_COMPONENT}" ]; then
         echo "Building all components in parallel..."
-        docker buildx bake ${bake_opts} -f docker-bake.hcl || clean 1
+        docker buildx bake ${bake_opts} ${bake_files} || clean 1
     else
         echo "Building ${WAZUH_COMPONENT}..."
-        docker buildx bake ${bake_opts} -f docker-bake.hcl "${WAZUH_COMPONENT}" || clean 1
+        docker buildx bake ${bake_opts} ${bake_files} "${WAZUH_COMPONENT}" || clean 1
     fi
 
     echo ""
@@ -276,6 +383,10 @@ help() {
     echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
     echo "    --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages."
     echo "    -h, --help                   Show this help."
+    echo
+    echo "The base images are downloaded before the build. Environment variables:"
+    echo "    BASE_IMAGE_PULL_RETRIES      Attempts per base image. By default, 5."
+    echo "    BASE_IMAGE_PULL_DELAY        Seconds added to the wait after each failed attempt. By default, 15."
     echo
     exit $1
 }

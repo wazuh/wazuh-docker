@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Run initialization and configuration. A failure here means the agent has no
 # usable manager endpoint, so stop instead of starting an agent that can only

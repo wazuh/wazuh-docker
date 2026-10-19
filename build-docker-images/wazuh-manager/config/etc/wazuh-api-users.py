@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 """Set the password of the Wazuh API default users on this node.
 
 Reads ``WAZUH_API_CREDENTIALS``, one ``user=password`` per line, from the

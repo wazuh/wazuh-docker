@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Run Wazuh dashboard, using environment variables to
 # set longopts defining Wazuh dashboard's configuration.
@@ -38,16 +38,17 @@ if [ "$(id -u)" = "0" ]; then
     fi
     unset DASHBOARD_PASSWORD API_PASSWORD
 
-    setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups /wazuh_dashboard_config.sh || exit 1
+    # The configuration is root's, as the package installs /etc/wazuh-dashboard,
+    # and the dashboard reads it through its group.
+    /wazuh_dashboard_config.sh || exit 1
 
-    /install-credentials.sh install || exit 1
-    if ! "$OPENSEARCH_DASHBOARDS_HOME/bin/resolve-credentials" --prestart; then
-        echo "credentials: the dashboard cannot start until the keys above are set in config/credentials/dashboard.env" >&2
-        echo "credentials: (created by tools/utils/deployment/credentials-conf.sh)" >&2
-        /install-credentials.sh remove
+    . /credentials-env.sh
+    load_credentials || exit 1
+    if ! "$OPENSEARCH_DASHBOARDS_HOME/bin/resolve-credentials" --prestart -H "$OSD_PATH_CONF"; then
+        echo "credentials: the dashboard cannot start until the problems above are solved;" >&2
+        echo "credentials: values go in config/credentials/dashboard.env (created by tools/utils/deployment/credentials-conf.sh)" >&2
         exit 1
     fi
-    /install-credentials.sh remove
     unset WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
 
     export WAZUH_ENTRYPOINT_DROPPED=1

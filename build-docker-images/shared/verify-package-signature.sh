@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Checks that a Wazuh package downloaded during the image build is signed with
 # the Wazuh key, before it is installed. dnf does not check the signature of a
