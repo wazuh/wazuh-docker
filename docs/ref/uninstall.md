@@ -23,7 +23,7 @@ This section describes how to uninstall a Wazuh Docker deployment by stopping an
         config/*/certs config/credentials
     ```
 
-    The root CA that signed the certificates stays on the host, in `/etc/wazuh/ca` (or the directory set in `WAZUH_CA_DIR`). Remove it only if no other deployment issued on this host uses it: `sudo rm -rf /etc/wazuh/ca`.
+    The root CA that signed the certificates stays in `wazuh-ca/` next to `wazuh-certs-tool.sh` (or in the directory set in `WAZUH_CA_DIR`). Remove it only if no other deployment uses it: `sudo rm -rf wazuh-ca/`.
 
 4. Verify that the deployment is removed:
 
