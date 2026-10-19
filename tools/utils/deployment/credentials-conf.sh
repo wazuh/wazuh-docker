@@ -80,22 +80,9 @@ fi
 # Every component validates what it receives; a value one of them would
 # reject is refused here, so the deployment does not find out at start.
 check_password() {
-  local key=$1 value=$2 rest reason
-  rest=$(printf '%s' "${value}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')
-  if [ -n "${rest}" ]; then
-    error "${key} was rejected: only A-Z a-z 0-9 . , _ + : @ % ^ = ~ - are allowed"
-    return 1
-  fi
-  if ! reason=$(wazuh_password_validate "${value}" 2>&1); then
+  local key=$1 value=$2 reason
+  if ! reason=$(common_passwordValidate "${value}" 2>&1); then
     error "${key} was rejected: ${reason}"
-    return 1
-  fi
-  case ${value} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "${key} was rejected: password must contain at least one lowercase letter"; return 1 ;; esac
-  case ${value} in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) error "${key} was rejected: password must contain at least one uppercase letter"; return 1 ;; esac
-  case ${value} in *[0123456789]*) ;; *) error "${key} was rejected: password must contain at least one digit"; return 1 ;; esac
-  case ${value} in *[.,_+:@%^=~-]*) ;; *) error "${key} was rejected: password must contain at least one symbol from . , _ + : @ % ^ = ~ -"; return 1 ;; esac
-  if printf '%s' "${value}" | grep -Eq '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$'; then
-    error "${key} was rejected: the dashboard keystore would store it as a number"
     return 1
   fi
 }
@@ -121,20 +108,7 @@ for key in "${ALL_KEYS[@]}"; do
     VALUES[${key}]="${!key}"
     SOURCES[${key}]="supplied"
   else
-    generated=""
-    for attempt in 1 2 3 4 5 6 7 8 9 10; do
-      candidate=$(wazuh_password_generate) || break
-      if check_password "${key}" "${candidate}" 2>/dev/null; then
-        generated=${candidate}
-        break
-      fi
-    done
-    if [ -z "${generated}" ]; then
-      error "could not generate ${key}"
-      failed=true
-      continue
-    fi
-    VALUES[${key}]=${generated}
+    VALUES[${key}]=$(common_passwordGenerate)
     SOURCES[${key}]="generated"
   fi
 done

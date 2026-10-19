@@ -1,42 +1,56 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 #
-# The password rule of the Wazuh packages: 12 to 64 characters from
-# A-Z a-z 0-9 . , _ + : @ % ^ = ~ -, with at least one lowercase letter, one
-# uppercase letter, one digit and one symbol. Generated passwords are 32
-# characters long. Sourced by tools/utils/deployment/credentials-conf.sh and
-# by the password tools of the images. See docs/ref/credentials.md.
+# The password rule of the Wazuh packages. common_passwordGenerate and
+# common_passwordValidate are the functions of the installation assistant
+# (common_functions/credentials.sh in wazuh-installation-assistant), so every
+# deployment method generates and accepts the same passwords. Sourced by
+# tools/utils/deployment/credentials-conf.sh and by the password tools of the
+# images. See docs/ref/credentials.md.
 
-WAZUH_PASSWORD_SYMBOLS='.,_+:@%^=~-'
-WAZUH_PASSWORD_ALPHABET="A-Za-z0-9${WAZUH_PASSWORD_SYMBOLS}"
+# Prints a 32-character password with at least one uppercase letter, one lowercase
+# letter, one digit and one symbol, from the character set the packages accept.
+function common_passwordGenerate() {
 
-wazuh_password_validate() {
-  local password="$1"
+    local password=""
 
-  case "${password}" in
-    *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,_+:@%^=~-]*)
-      echo "password must only contain characters from A-Z a-z 0-9 . , _ + : @ % ^ = ~ -" >&2
-      return 1 ;;
-  esac
-  if [ "${#password}" -lt 12 ] || [ "${#password}" -gt 64 ]; then
-    echo "password must contain between 12 and 64 characters" >&2
-    return 1
-  fi
-  case "${password}" in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) echo "password must contain at least one lowercase letter" >&2; return 1 ;; esac
-  case "${password}" in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) echo "password must contain at least one uppercase letter" >&2; return 1 ;; esac
-  case "${password}" in *[0123456789]*) ;; *) echo "password must contain at least one digit" >&2; return 1 ;; esac
-  case "${password}" in *[.,_+:@%^=~-]*) ;; *) echo "password must contain at least one symbol from . , _ + : @ % ^ = ~ -" >&2; return 1 ;; esac
+    until common_passwordValidate "${password}" 2>/dev/null; do
+        password=$(LC_ALL=C tr -dc 'A-Za-z0-9.,_+:@%^=~-' < /dev/urandom 2>/dev/null | head -c 32)
+    done
+    printf '%s\n' "${password}"
+
 }
 
-wazuh_password_generate() {
-  local password
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
-    password=$(LC_ALL=C tr -dc "${WAZUH_PASSWORD_ALPHABET}" < /dev/urandom | head -c 32)
-    if wazuh_password_validate "${password}" 2>/dev/null; then
-      printf '%s\n' "${password}"
-      return 0
+# Checks the password rule of the Wazuh packages: 12 to 64 characters from
+# A-Z a-z 0-9 . , _ + : @ % ^ = ~ - with at least one of each class. The reason
+# goes to stderr and never includes the password.
+function common_passwordValidate() {
+
+    local password="${1}"
+
+    if [[ "${password}" =~ [^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,_+:@%^=~-] ]]; then
+        echo "password must only contain characters from A-Z a-z 0-9 . , _ + : @ % ^ = ~ -" >&2
+        return 1
     fi
-  done
-  echo "could not generate a password that meets the rule" >&2
-  return 1
+    if [ "${#password}" -lt 12 ] || [ "${#password}" -gt 64 ]; then
+        echo "password must contain between 12 and 64 characters" >&2
+        return 1
+    fi
+    if [[ ! "${password}" =~ [abcdefghijklmnopqrstuvwxyz] ]]; then
+        echo "password must contain at least one lowercase letter" >&2
+        return 1
+    fi
+    if [[ ! "${password}" =~ [ABCDEFGHIJKLMNOPQRSTUVWXYZ] ]]; then
+        echo "password must contain at least one uppercase letter" >&2
+        return 1
+    fi
+    if [[ ! "${password}" =~ [0123456789] ]]; then
+        echo "password must contain at least one digit" >&2
+        return 1
+    fi
+    if [[ ! "${password}" =~ [.,_+:@%^=~-] ]]; then
+        echo "password must contain at least one symbol from . , _ + : @ % ^ = ~ -" >&2
+        return 1
+    fi
+
 }

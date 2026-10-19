@@ -97,16 +97,16 @@ RUN case "${TARGETARCH}" in \
 # Build stage 1 (the actual Wazuh Agent image):
 # Copy Wazuh Agent and tini from builder. Install only runtime dependencies.
 ################################################################################
-FROM amazonlinux:2023
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal
 
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-# Install only runtime dependencies
-RUN dnf install diffutils findutils procps shadow-utils -y && \
-    dnf clean all && \
+# Install only runtime dependencies: findutils (init script) and procps
+# (wazuh-control). shadow-utils is only needed to create the account.
+RUN dnf install --setopt=install_weak_deps=0 findutils procps shadow-utils -y && \
     getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
         --no-create-home \
@@ -114,7 +114,9 @@ RUN dnf install diffutils findutils procps shadow-utils -y && \
         --uid ${WAZUH_UID} \
         --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
-        wazuh
+        wazuh && \
+    dnf remove shadow-utils -y && \
+    dnf clean all
 
 # Copy Wazuh Agent installation from builder
 COPY --from=builder /var/ossec /var/ossec

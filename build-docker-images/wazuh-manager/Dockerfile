@@ -98,7 +98,7 @@ RUN case "${TARGETARCH}" in \
 # Build stage 1 (the actual Wazuh Manager image):
 # Copy Wazuh Manager and tini from builder. Install only runtime dependencies.
 ################################################################################
-FROM amazonlinux:2023
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal
 
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
@@ -106,10 +106,9 @@ ARG WAZUH_GID=101
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install only runtime dependencies (no curl, tar, gzip, xz, or full dnf stack)
-# The package needs only coreutils and the account tools. The container scripts
-# add openssl (cluster key) and findutils (permanent data).
-RUN dnf install openssl findutils shadow-utils -y && \
-    dnf clean all && \
+# The container scripts need openssl (cluster key) and findutils (permanent
+# data). shadow-utils is only needed to create the account.
+RUN dnf install --setopt=install_weak_deps=0 openssl findutils shadow-utils -y && \
     getent group wazuh-manager || groupadd -r -g ${WAZUH_GID} wazuh-manager && \
     getent passwd wazuh-manager || useradd --system \
         --no-create-home \
@@ -117,7 +116,9 @@ RUN dnf install openssl findutils shadow-utils -y && \
         --uid ${WAZUH_UID} \
         --gid ${WAZUH_GID} \
         --shell /sbin/nologin \
-        wazuh-manager
+        wazuh-manager && \
+    dnf remove shadow-utils -y && \
+    dnf clean all
 
 # Copy Wazuh Manager installation (includes permanent data snapshot) and its
 # configuration directory, which the package keeps outside the installation

@@ -60,7 +60,7 @@ RUN if [ -f /etc/wazuh-dashboard/opensearch_dashboards.keystore ]; then rm -f /e
 # Add entrypoint
 # Add wazuh_dashboard_config
 ################################################################################
-FROM amazonlinux:2023
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal
 
 ARG WAZUH_UID=101
 ARG WAZUH_GID=101
@@ -78,8 +78,8 @@ COPY --from=shared credentials-env.sh /
 
 # Update and install dependencies. The entrypoint runs as root to resolve
 # the credentials, so it must not be writable by the service user.
-RUN yum install shadow-utils util-linux -y && \
-    yum clean all && \
+# util-linux provides setpriv; shadow-utils is only needed to create the account.
+RUN dnf install --setopt=install_weak_deps=0 shadow-utils util-linux -y && \
     getent group $GROUP || groupadd -r -g ${WAZUH_GID} $GROUP && \
     useradd --system \
     --uid ${WAZUH_UID} \
@@ -89,6 +89,8 @@ RUN yum install shadow-utils util-linux -y && \
     --shell /sbin/nologin \
     --comment "$USER user" \
     $USER && \
+    dnf remove shadow-utils -y && \
+    dnf clean all && \
     chown root:root /entrypoint.sh /credentials-env.sh /wazuh_dashboard_config.sh && \
     chmod 755 /entrypoint.sh && \
     chmod 644 /credentials-env.sh && \

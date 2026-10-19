@@ -26,7 +26,7 @@ error() {
 
 # Password generation and policy: the rule the package resolvers apply.
 PASSWORD_POLICY="/password-policy.sh"
-if ! . "${PASSWORD_POLICY}" 2>/dev/null || ! declare -F wazuh_password_generate >/dev/null; then
+if ! . "${PASSWORD_POLICY}" 2>/dev/null || ! declare -F common_passwordGenerate >/dev/null; then
   error "cannot load ${PASSWORD_POLICY}"
   exit 1
 fi
@@ -45,40 +45,16 @@ Accounts: ${USERS[*]}
 USAGE
 }
 
-# Every candidate goes through validate_password, which also refuses what the
-# dashboard keystore would store as a number.
+# The rule the package resolvers apply (password-policy.sh), so a rotated
+# password is one every component would also accept at start.
 generate_password() {
-  local candidate attempt
-  for attempt in 1 2 3 4 5 6 7 8 9 10; do
-    candidate=$(wazuh_password_generate) || return 1
-    if validate_password "${candidate}" 2>/dev/null; then
-      printf '%s\n' "${candidate}"
-      return 0
-    fi
-  done
-  return 1
+  common_passwordGenerate
 }
 
-# The rules the package resolvers apply, so a rotated password is one every
-# component would also accept at start: the characters, length and four
-# classes of password-policy.sh, and no value the dashboard keystore would
-# store as a number.
 validate_password() {
-  local password=$1 reason
-  if [ -n "$(printf '%s' "${password}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')" ]; then
-    error "only A-Z a-z 0-9 . , _ + : @ % ^ = ~ - are allowed"
-    return 1
-  fi
-  if ! reason=$(wazuh_password_validate "${password}" 2>&1); then
+  local reason
+  if ! reason=$(common_passwordValidate "$1" 2>&1); then
     error "${reason}"
-    return 1
-  fi
-  case ${password} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "password must contain at least one lowercase letter"; return 1 ;; esac
-  case ${password} in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) error "password must contain at least one uppercase letter"; return 1 ;; esac
-  case ${password} in *[0123456789]*) ;; *) error "password must contain at least one digit"; return 1 ;; esac
-  case ${password} in *[.,_+:@%^=~-]*) ;; *) error "password must contain at least one symbol from . , _ + : @ % ^ = ~ -"; return 1 ;; esac
-  if printf '%s' "${password}" | grep -Eq '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$'; then
-    error "the dashboard keystore would store this value as a number"
     return 1
   fi
 }
