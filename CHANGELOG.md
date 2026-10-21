@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None
+- Update the certificates generator image to `0.0.5` and pass `CERT_TOOL_REPOSITORY` to it in the single-node and multi-node deployments ([#2729](https://github.com/wazuh/wazuh-docker/issues/2729))
 
 ### Fixed
 
