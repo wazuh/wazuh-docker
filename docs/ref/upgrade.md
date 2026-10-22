@@ -85,3 +85,13 @@ An upgrade replaces the images and keeps everything else. The named volumes hold
    ../tools/tests/check-default-credentials.sh
    ```
    Every service is `healthy` and the check passes. The accounts keep the passwords they had: see [Credentials](credentials.md).
+
+## Dashboard verification of the indexer
+
+From 5.0.0 the dashboard verifies the indexer hostname (`OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`; it was `certificate`). The dashboard writes the setting on every start, so an upgraded deployment uses it even though `opensearch_dashboards.yml` is kept on the `wazuh-dashboard-config` volume. A deployment that keeps the shipped `OPENSEARCH_HOSTS` needs no change. If you changed it, check before upgrading that every host it lists is in the certificate your indexer service mounts as `indexer.pem`. On the shipped single-node deployment:
+
+```bash
+openssl x509 -in config/wazuh_indexer/certs/wazuh.indexer.pem -noout -ext subjectAltName
+```
+
+On multi-node, check `config/wazuh1_indexer/certs/wazuh1.indexer.pem` to `config/wazuh3_indexer/certs/wazuh3.indexer.pem` the same way. See [Dashboard verification of the indexer](security.md#dashboard-verification-of-the-indexer) for what to do when a host is missing.

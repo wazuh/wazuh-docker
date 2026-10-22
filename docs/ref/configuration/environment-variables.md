@@ -293,4 +293,6 @@ environment:
 | `OPENSEARCH_SECURITY_COOKIE_TTL`, `OPENSEARCH_SECURITY_SESSION_TTL`, `OPENSEARCH_SECURITY_SESSION_KEEPALIVE` | `opensearch_security.cookie.ttl`, `opensearch_security.session.ttl`, `opensearch_security.session.keepalive` |
 | `UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE` | `uiSettings.overrides.defaultRoute` |
 
+`OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`: the dashboard checks the certificate chain and that every host in `OPENSEARCH_HOSTS` is named in the certificate that indexer presents. `certificate` checks the chain only. See [Dashboard verification of the indexer](../security.md#dashboard-verification-of-the-indexer).
+
 ---
