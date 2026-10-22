@@ -4,13 +4,33 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 
 ## Credentials and secrets
 
-- **Change every default password on the first start.** The images ship documented defaults for the Wazuh indexer and Wazuh API accounts, and a deployment that keeps them is reachable by anyone who has read the documentation. Each image carries `password-tool.sh`, which changes the passwords of the running deployment and prints the new ones once; the three that a container has to present are then written into `docker-compose.yml`. [Credentials](credentials.md) is the step-by-step procedure.
-- `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password. Run it after the change; a deployment that has not been through it fails the check.
+- **No default passwords.** The images ship none. `tools/utils/deployment/credentials-conf.sh` generates random passwords for each deployment before its first start, and each component stores them on that start. Change them later with `password-tool.sh`. [Credentials](credentials.md) has the procedure.
+- `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password.
 - The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
-- A password written into `docker-compose.yml` is in clear text in a file that is usually under version control. Keep it out of your commits and restrict read access to the deployment directory.
-- Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of hardcoding them in `docker-compose.yml`.
+- `config/credentials/*.env` holds the deployment's passwords in clear text. The directory is in `.gitignore`: keep it out of your commits and restrict read access to the deployment directory.
+- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers delete their copy once the values are stored. Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
+- Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of keeping the files on the host.
 - Rotate credentials regularly and after any suspected exposure.
 - The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
+
+### Manager cluster key
+
+`<cluster><key>` authenticates the communication between manager nodes on port `1516`, and it is the only credential in that exchange. The manager image ships an empty key, so nothing usable for it is published inside the image:
+
+- **A single manager** generates its own key on its first start, so no two deployments of the same image tag share a cluster secret.
+- **The manager nodes of one cluster** need the same value. The multi-node Compose file gives both managers the `wazuh-cluster-key` volume on `/wazuh-cluster-key`: the first node to start creates a random key there and the others read it, so the cluster comes up on a secret that is unique to the deployment and is stored neither in the image nor in the repository. Nodes starting at the same time cannot disagree on it, and the value never appears in the container environment, so `docker inspect` and `/proc/<pid>/environ` do not expose it.
+- **Manager nodes on separate hosts** cannot share that volume. Set `WAZUH_CLUSTER_KEY` to the same value on every node instead (`openssl rand -hex 16` generates one); it takes precedence over both the shared volume and the node's own configuration.
+
+The key in use is written to `etc/wazuh-manager.conf` in each manager `etc` volume, so it is stable across restarts and container recreation.
+
+- Treat the `wazuh-cluster-key` volume as a secret of the deployment: restrict access to it as you do for the certificates, and do not copy it, or the manager `etc` volumes, between deployments.
+- To rotate the key of a multi-node deployment, remove the shared volume and start again. The first node to come up creates a new one and the rest of the nodes adopt it:
+  ```bash
+  docker compose down
+  docker volume rm multi-node_wazuh-cluster-key
+  docker compose up -d
+  ```
+- A manager `etc` volume keeps whatever key is stored in it. The multi-node configuration of the 4.x releases up to 4.14.8 carried one fixed key for every deployment: a manager `etc` volume carried over from one of them keeps that key until you set `WAZUH_CLUSTER_KEY`.
 
 ## Certificates and TLS
 
@@ -18,30 +38,40 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 - Regenerate certificates if private keys are leaked or if nodes are re-provisioned.
 - Use certificates and TLS settings appropriate for production (trusted CA, correct DNS names, and key protection).
 
-### Manager self-signed certificate
+### Manager agent listener certificate
 
-The Wazuh manager image ships no self-signed certificate. Each manager container generates its own `etc/certs/remoted.pem` and `etc/certs/remoted-key.pem` on its first start, so no two containers share a private key. That pair serves both the HTTPS agent listener and the agent enrollment service (`authd`), and it is stored in the manager `etc` volume (`wazuh_etc` in single-node; `master-wazuh-etc` and `worker-wazuh-etc` in multi-node), which keeps it stable across restarts and container recreation.
+The Wazuh manager presents `/etc/wazuh-manager/certs/remoted.pem` and `/etc/wazuh-manager/certs/remoted-key.pem` on port `1517`, to both the agent listener and agent enrollment. **The manager does not create them, and it does not start without them.** They are issued by `wazuh-certs-tool.sh`, as `<node>-remoted.pem` and `<node>-remoted-key.pem`, and the Compose files mount them from the host. This is what makes the manager verifiable: agents anywhere trust one CA, the deployment's root CA, which covers every cluster node and survives recreating a manager container. Its certificate is copied to `config/root-ca/certs/root-ca.pem`; its private key stays in the CA directory of the host that issued the certificates.
 
-**The `single-node` and `multi-node` deployments do not use that generated pair.** They mount the manager certificate `wazuh-certs-tool.sh` issues at those paths, so the identity agents verify is signed by the deployment's own root CA. Generation is skipped whenever a pair is already present, so mounting one is all it takes. This is what makes the manager verifiable from outside the deployment: agents anywhere trust one CA, `config/root-ca/certs/root-ca.pem`, which lives on the host, covers every cluster node, and survives recreating a manager container — none of which is true of a certificate a container signs for itself.
+The certificate is issued for that listener and nothing else: `CA:FALSE`, `keyUsage` limited to `digitalSignature` and `keyEncipherment`, `extendedKeyUsage` `serverAuth`, and a Subject Alternative Name holding the addresses agents dial. The file is the leaf followed by `root-ca.pem`, which is the chain agents receive in the handshake.
 
-Everything below applies to a manager deployed on its own, without those mounts.
-
-- Do not copy or share the manager `etc` volume between deployments, and do not bake the pair into a derived image: either reintroduces a shared private key.
-- To rotate the certificate, remove both files and restart the manager. The next start generates a new pair:
+- It is a different pair from `<node>.pem`, which the manager presents to the Wazuh indexer as a client. Do not reuse one for the other: the key that faces agents would then also be the key that authenticates the indexer connection.
+- The private key belongs on the deployment host only. Protect `wazuh-certificates/` and `config/*/certs`, and do not publish them or copy them between deployments.
+- Distribute the root CA certificate, never the root CA key. `wazuh-certs-tool.sh` keeps the CA in `wazuh-ca/` next to the tool (or in the directory set in `WAZUH_CA_DIR`, which must be an absolute path), root-only, and never copies `root-ca.key` into `wazuh-certificates/`. Back that directory up: it is what issues certificates for new nodes. Run the tool from the same directory, or set the same `WAZUH_CA_DIR`, when you add nodes; otherwise it creates a new CA that the existing nodes do not trust.
+- The addresses in the SAN are what agents can verify by name. Which ones belong there is part of the deployment steps — [single-node](getting-started/deployment/single-node.md), [multi-node](getting-started/deployment/multi-node.md).
+- To rotate the pair, issue the certificates again, with the same `--agent-san` options as when the deployment was created, and restart:
   ```bash
-  docker compose exec wazuh.manager rm -f /var/wazuh-manager/etc/certs/remoted.pem \
-                                          /var/wazuh-manager/etc/certs/remoted-key.pem
-  docker compose restart wazuh.manager
+  docker compose down
+  sudo rm -rf wazuh-certificates/ config/*/certs
+  sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+  docker compose up -d
   ```
-- To use your own certificate instead, mount the pair at those paths owned by `101:101` (`wazuh-manager:wazuh-manager`) with mode `640`. The container detects it and does not overwrite it. The manager opens these files after dropping privileges, so any other ownership prevents the HTTPS listener from starting.
-- The Wazuh API certificate (`etc/certs/apid.pem` and `apid-key.pem`) is generated by the API on its first start, and is also unique per container.
+  The new certificates are signed by the same root CA, read from the CA directory, so enrolled agents keep working. A new root CA is only created when that directory holds none, and then every agent has to be given the new `config/root-ca/certs/root-ca.pem`.
+- The files must be readable by the `wazuh-manager` group: `certificates-conf.sh --priv` leaves them `0:wazuh-manager` with mode `0640`, which is what the manager needs after it drops privileges.
+
+### Manager Server API certificate
+
+The Server API presents `/etc/wazuh-manager/certs/apid.pem` and `/etc/wazuh-manager/certs/apid-key.pem` on port `55000`. **The API does not create them, and the manager does not start without them** on the single-node manager and on every multi-node manager node, workers included: the manager's credential resolver checks the pair before the daemons start. They are issued by `wazuh-certs-tool.sh`, as `<node>-apid.pem` and `<node>-apid-key.pem`, with the same profile as the agent listener pair and signed by the same root CA, and the Compose files mount them from the host.
+
+- The SAN holds the manager node's `ip` and `dns` entries from `config.yml`, `localhost`, `127.0.0.1` and `::1`, plus the addresses given with `--api-san`. The node's `dns` entry is the name the Wazuh dashboard uses (`WAZUH_API_URL`). Add with `--api-san` any other name or address API clients dial, for example the Docker host when `55000` is reached from outside. `--agent-san` addresses do not reach this certificate.
+- Clients verify the API against `config/root-ca/certs/root-ca.pem`.
+- It is rotated together with the other certificates, as described above.
 
 ### Agent verification of the manager
 
-Agents verify the manager's certificate, and with nothing configured they verify it against the operating system trust store. A manager presenting a certificate signed by this deployment's root CA is not in that store, so every agent needs that CA — `config/root-ca/certs/root-ca.pem` — through `WAZUH_MANAGER_CA` or dropped at `/var/ossec/etc/certs/root-ca.pem`. See [Environment Variables](configuration/environment-variables.md#wazuh-agent).
+With nothing configured, an agent enrolled without a token does not verify the manager's certificate (`verification_mode` `none`) and logs `TLS verification is DISABLED`. To verify a manager presenting a certificate signed by this deployment's root CA, the agent needs that CA — `config/root-ca/certs/root-ca.pem` — through `WAZUH_MANAGER_CA` or dropped at `/var/ossec/etc/certs/manager-ca.pem`, deliberately not `root-ca.pem`, which is reserved for the trust anchor a token enrollment writes. An agent enrolled with `WAZUH_ENROLLMENT_TOKEN` needs none of this: the token supplies its own trust anchor. See [Environment Variables](configuration/environment-variables.md#wazuh-agent).
 
-- Distribute the root CA certificate, never the root CA key. `root-ca.key` signs new certificates and belongs only on the host that issues them.
-- Do not turn verification off (`WAZUH_AGENT_SSL_VERIFICATION=none`) to work around a CA that has not been distributed. It restores exactly the posture that was reported and fixed in [wazuh/wazuh#38684](https://github.com/wazuh/wazuh/issues/38684): the agent then accepts any certificate, from any peer, on a connection carrying enrollment credentials.
+- Distribute the root CA certificate, never the root CA key.
+- Do not leave verification off — unset, or `WAZUH_AGENT_SSL_VERIFICATION=none` — because a CA has not been distributed. The agent then accepts any certificate, from any peer, on a connection carrying enrollment credentials.
 - Requiring agents to present a certificate of their own (mTLS) is a separate setting, `<remote><https><ca>` on the manager, off in the shipped configuration. Agents supply theirs with `WAZUH_AGENT_SSL_CERT` and `WAZUH_AGENT_SSL_KEY`.
 
 ## Network exposure

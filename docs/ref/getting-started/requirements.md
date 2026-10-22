@@ -98,7 +98,7 @@ Ensure that the necessary network ports are open and available on the Docker hos
     * `9300/TCP`: For inter-node communication (if clustered). Only needed
       between the indexer containers, not on the Docker host.
 * **Wazuh Dashboard**:
-    * `5601/TCP` (or `443/TCP` if HTTPS is configured via a reverse proxy): For web access.
+    * `443/TCP` on the host, mapped to the container's `5601/TCP`: For web access, over HTTPS served by the dashboard itself.
 
 Port mappings in `docker-compose.yml` will expose these container ports on the host. Adjust host ports if defaults cause conflicts.
 
@@ -106,7 +106,8 @@ In the `single-node` deployment the manager publishes these ports directly. In
 the `multi-node` deployment the agent ports are published by the `nginx`
 service, which balances `1517` (and the legacy `1514`) across the master and
 worker nodes; enrollment travels over `1517` together with the agent traffic,
-so it is balanced the same way.
+so it is balanced the same way. `wazuh.master` publishes the other manager
+ports itself: `1515`, `514/UDP` and the Wazuh API on `55000`.
 
 ## Important Considerations
 

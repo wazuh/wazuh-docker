@@ -1,4 +1,4 @@
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
@@ -10,12 +10,16 @@ export GROUP=${NAME}
 export INSTALLATION_DIR=/usr/share/${NAME}
 export CONFIG_DIR=${INSTALLATION_DIR}/config
 
-# Modify opensearch.yml config paths
+# Move the configuration into the installation directory, with the ownership
+# the package gives /etc/wazuh-indexer: root's, read by the indexer through its
+# group. The credentials resolver trusts nothing the service user can write.
 if [ -d "/etc/wazuh-indexer" ]; then
     mkdir -p ${CONFIG_DIR}
-    chown ${USER}:${GROUP} ${CONFIG_DIR}
+    chown root:${GROUP} ${CONFIG_DIR}
+    chmod 750 ${CONFIG_DIR}
     mkdir -p ${CONFIG_DIR}/certs
-    chown ${USER}:${GROUP} ${CONFIG_DIR}/certs
+    chown root:${GROUP} ${CONFIG_DIR}/certs
+    chmod 750 ${CONFIG_DIR}/certs
     mv /etc/wazuh-indexer/* ${CONFIG_DIR}/
     rmdir /etc/wazuh-indexer
 fi
@@ -60,7 +64,7 @@ sed -i -e '/^## Demo users$/d' \
        "${INTERNAL_USERS}.new"
 
 mv "${INTERNAL_USERS}.new" "${INTERNAL_USERS}"
-chown ${USER}:${GROUP} "${INTERNAL_USERS}"
+chown root:${GROUP} "${INTERNAL_USERS}"
 chmod 640 "${INTERNAL_USERS}"
 
 for demo_user in ${DEMO_USERS}; do

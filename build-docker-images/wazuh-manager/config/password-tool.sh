@@ -1,22 +1,34 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 #
-# Changes the passwords of the Wazuh API users of this manager node and prints
-# the new ones. It stores nothing: the passwords are shown once and the
-# operator writes the service one into docker-compose.yml.
+# Changes the passwords of the Wazuh API users of this manager node, and prints
+# the new ones with the commands that apply them to the dashboard and to
+# config/credentials/*.env. It stores nothing itself.
 # See docs/ref/credentials.md.
 
 set -o pipefail
 
-USERS=(wazuh wazuh-wui)
+USERS=(wazuh wazuh-internal-client)
 
-# The Compose service and variable each service account has to be copied into.
-declare -A COMPOSE_SERVICE=([wazuh-wui]="wazuh.dashboard")
-declare -A COMPOSE_VARIABLE=([wazuh-wui]="API_PASSWORD")
+# Where each account is recorded (config/credentials/<file>.env) and which
+# component stores it.
+declare -A ENV_KEY=([wazuh]="WAZUH_MANAGER_API_PASSWORD" [wazuh-internal-client]="WAZUH_MANAGER_WUI_PASSWORD")
+declare -A ENV_FILES=([wazuh]="manager" [wazuh-internal-client]="manager dashboard")
+declare -A CONSUMERS=([wazuh-internal-client]="dashboard:wazuh_core.hosts.default.password")
+
+RBAC_DB="/var/wazuh-manager/api/configuration/security/rbac.db"
 
 error() {
   echo "password-tool.sh: $*" >&2
 }
+
+# Password generation and policy: the rule the package resolvers apply. The
+# manager package ships its resolver in Python, with no shell library to load.
+PASSWORD_POLICY="/password-policy.sh"
+if ! . "${PASSWORD_POLICY}" 2>/dev/null || ! declare -F common_passwordGenerate >/dev/null; then
+  error "cannot load ${PASSWORD_POLICY}"
+  exit 1
+fi
 
 usage() {
   cat <<USAGE
@@ -25,32 +37,59 @@ Usage: password-tool.sh <action>
   -a, --all              Change the password of every account.
   -u, --user <account>   Change the password of one account.
   --stdin                Read the new password from standard input instead of
-                         generating one. Only with --user. Use it to set the
-                         same password on the other manager nodes of a cluster.
+                         generating one. Only with --user.
   -h, --help             Show this help.
 
 Accounts: ${USERS[*]}
 USAGE
 }
 
+# The rule the package resolvers apply (password-policy.sh), so a rotated
+# password is one every component would also accept at start.
 generate_password() {
-  local body special lower upper digit
-  body=$(tr -dc 'A-Za-z0-9.*+?-' < /dev/urandom | head -c 28)
-  special=$(tr -dc '.*+?-' < /dev/urandom | head -c 1)
-  lower=$(tr -dc 'a-z' < /dev/urandom | head -c 1)
-  upper=$(tr -dc 'A-Z' < /dev/urandom | head -c 1)
-  digit=$(tr -dc '0-9' < /dev/urandom | head -c 1)
-  echo "${body}${special}${lower}${upper}${digit}" | fold -w1 | shuf | tr -d '\n'
+  common_passwordGenerate
 }
 
 validate_password() {
-  local password=$1
-  [ "${#password}" -ge 8 ] && [ "${#password}" -le 64 ] || return 1
-  [[ ${password} == *[[:upper:]]* ]] || return 1
-  [[ ${password} == *[[:lower:]]* ]] || return 1
-  [[ ${password} == *[[:digit:]]* ]] || return 1
-  [[ ${password} == *[.*+?-]* ]] || return 1
-  return 0
+  local reason
+  if ! reason=$(common_passwordValidate "$1" 2>&1); then
+    error "${reason}"
+    return 1
+  fi
+}
+
+# How a rotated password reaches the rest of the deployment. The other
+# components keep the value they stored at their first start (their keystore
+# wins over the environment), so recreating them is not enough: each one that
+# consumes the account gets the new value in its keystore and is restarted.
+# config/credentials/*.env is the operator's record, updated so a deployment
+# started from scratch uses the same passwords.
+print_follow_up() {
+  local user password key files consumer
+  echo "Apply the new passwords to the rest of the deployment, from the directory of"
+  echo "its docker-compose.yml:"
+  echo
+  for user in "${selected[@]}"; do
+    password=${NEW_PASSWORD[${user}]}
+    key=${ENV_KEY[${user}]}
+    echo "  ${user}:"
+    for files in ${ENV_FILES[${user}]}; do
+      printf "    sed -i 's|^%s=.*|%s=%s|' config/credentials/%s.env\n" "${key}" "${key}" "${password}" "${files}"
+    done
+    for consumer in ${CONSUMERS[${user}]}; do
+      case "${consumer}" in
+        dashboard:*)
+          printf "    printf '%%s' '%s' | docker compose exec -T -e OSD_PATH_CONF=/usr/share/wazuh-dashboard/config wazuh.dashboard /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin %s\n" "${password}" "${consumer#dashboard:}"
+          echo "    docker compose restart wazuh.dashboard"
+          ;;
+        manager:indexer)
+          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.manager /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password\n" "${password}"
+          echo "    docker compose restart wazuh.manager"
+          ;;
+      esac
+    done
+    echo
+  done
 }
 
 target=""
@@ -81,6 +120,22 @@ else
   fi
 fi
 
+# Before the first start there is no user database: 1-credentials creates it
+# from config/credentials/manager.env. Opening it here would create one with the
+# defaults, which the first start would then take as already seeded.
+# A worker never has one: the Wazuh API runs on the master.
+if [ ! -s "${RBAC_DB}" ] && \
+   [ "$(/var/wazuh-manager/bin/wazuh-manager-conf get cluster.node_type 2>/dev/null)" = "worker" ]; then
+  error "this node is a cluster worker and has no Wazuh API user database;"
+  error "change the passwords on the master node"
+  exit 1
+fi
+if [ ! -s "${RBAC_DB}" ]; then
+  error "the Wazuh API user database does not exist yet; the first start of the"
+  error "manager creates it with the passwords in config/credentials/manager.env"
+  exit 1
+fi
+
 declare -A NEW_PASSWORD=()
 
 if [ "${from_stdin}" -eq 1 ]; then
@@ -91,14 +146,15 @@ if [ "${from_stdin}" -eq 1 ]; then
 
   IFS= read -r password
   if ! validate_password "${password}"; then
-    error "the password must be 8 to 64 characters and contain an upper case letter,"
-    error "a lower case letter, a digit and one of '.*+?-'"
     exit 2
   fi
   NEW_PASSWORD["${selected[0]}"]="${password}"
 else
   for user in "${selected[@]}"; do
-    NEW_PASSWORD["${user}"]=$(generate_password)
+    if ! NEW_PASSWORD["${user}"]=$(generate_password); then
+      error "could not generate a password for '${user}'"
+      exit 1
+    fi
   done
 fi
 
@@ -117,34 +173,14 @@ echo
 echo "Changed on this manager node:"
 echo
 for user in "${selected[@]}"; do
-  printf '  %-16s %s\n' "${user}" "${NEW_PASSWORD[${user}]}"
+  printf '  %-22s %s\n' "${user}" "${NEW_PASSWORD[${user}]}"
 done
 echo
 echo "This is the only time these passwords are shown. Nothing is stored."
 echo
 
-needs_compose=0
-for user in "${selected[@]}"; do
-  [ -n "${COMPOSE_VARIABLE[${user}]}" ] && needs_compose=1
-done
+print_follow_up
 
-if [ "${needs_compose}" -eq 1 ]; then
-  echo "Write these into docker-compose.yml, then take the stack down and up,"
-  echo "or those components keep authenticating with the old values:"
-  echo
-  for user in "${selected[@]}"; do
-    [ -n "${COMPOSE_VARIABLE[${user}]}" ] || continue
-    printf '  service %s:\n' "${COMPOSE_SERVICE[${user}]}"
-    printf '    - %s=%s\n' "${COMPOSE_VARIABLE[${user}]}" "${NEW_PASSWORD[${user}]}"
-  done
-  echo
-fi
-
-echo "The Wazuh API user database is local to each manager node. On a cluster,"
-echo "set the same passwords on the other nodes:"
-echo
-for user in "${selected[@]}"; do
-  printf "  printf '%%s\\\\n' '%s' | docker compose exec -T <node> /password-tool.sh --user %s --stdin\n" \
-    "${NEW_PASSWORD[${user}]}" "${user}"
-done
-echo
+echo "On a cluster, only the master has a Wazuh API user database. A worker that is"
+echo "promoted to master creates its own from config/credentials/manager.env when its"
+echo "container is recreated, so keep that file updated with the commands above."

@@ -1,13 +1,15 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Loads the security configuration files of this container into the security
 # index of the running cluster.
 #
 # WARNING: with no arguments this replaces the whole security configuration of
 # the cluster with the one in the image. Internal users that are not in the
-# image are deleted, custom role mappings are reverted and every password
-# returns to its default. To change a password without any of that, use
+# image are deleted, custom role mappings are reverted and every password is
+# replaced by what this container's internal_users.yml holds: the digests of
+# its first start, or, in a recreated container, placeholders that no password
+# matches. To change a password without any of that, use
 # password-tool.sh, which patches the configuration the cluster is running.
 # See docs/ref/credentials.md.
 #

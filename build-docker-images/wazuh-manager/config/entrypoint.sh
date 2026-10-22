@@ -1,11 +1,18 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Run initialization and configuration
 bash /etc/cont-init.d/0-wazuh-init
 
+# Resolve credentials; the container stops if one is missing or invalid
+bash /etc/cont-init.d/1-credentials || exit 1
+
+# Stored by now: keep them out of the environment every daemon inherits
+unset INDEXER_PASSWORD WAZUH_INDEXER_MANAGER_PASSWORD \
+      WAZUH_MANAGER_API_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
+
 # Start Wazuh Manager (may log warnings in environments without certs)
-bash /etc/cont-init.d/1-manager
+bash /etc/cont-init.d/2-manager
 
 # Tail the main log to stdout so Docker captures it
 tail -F /var/wazuh-manager/logs/wazuh-manager.log &
@@ -32,7 +39,8 @@ CHECK_INTERVAL=15
 
 # Same reader the core wazuh-manager-control script itself uses to decide
 # whether to start authd (start_service(), "auth.disabled: true" case).
-WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-manager -f /var/wazuh-manager/etc/wazuh-manager.conf"
+. /permanent_data.env
+WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-manager -f ${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf"
 
 # Timeout for each status check: wazuh-manager-control status has no upper
 # bound of its own, and a hang here would otherwise block both failure

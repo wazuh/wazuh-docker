@@ -8,7 +8,7 @@ Configuring Wazuh components within a Docker environment typically involves seve
 
 1.  **[Environment Variables](environment-variables.md)**:
     * Many container settings are controlled by passing environment variables at runtime (e.g., via the `docker-compose.yml` file or `docker run` commands).
-    * These are often used for setting up initial passwords, component versions, cluster names, or basic operational parameters.
+    * These are used for cluster names, node settings and other operational parameters. Passwords are not set here: each deployment generates its own, see [Credentials](../credentials.md).
 
 2.  **[Configuration Files](configuration-files.md)**:
     * Core Wazuh components (manager, indexer, dashboard) rely on their traditional configuration files (e.g., `wazuh-manager.conf`, `opensearch.yml`, `opensearch_dashboards.yml`).

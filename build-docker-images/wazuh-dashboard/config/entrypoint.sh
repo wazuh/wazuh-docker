@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Run Wazuh dashboard, using environment variables to
 # set longopts defining Wazuh dashboard's configuration.
@@ -15,28 +15,58 @@
 # Setup Home Directory
 export OPENSEARCH_DASHBOARDS_HOME=/usr/share/wazuh-dashboard
 export PATH=$OPENSEARCH_DASHBOARDS_HOME/bin:$PATH
-DASHBOARD_USERNAME="${DASHBOARD_USERNAME:-kibanaserver}"
-DASHBOARD_PASSWORD="${DASHBOARD_PASSWORD:-kibanaserver}"
+SERVICE_USER=wazuh-dashboard
 
-# Create and configure Wazuh dashboard keystore
+# Credentials are resolved as root and the dashboard itself runs as
+# SERVICE_USER: the entrypoint re-executes itself once they are stored. They
+# come from the wazuh-credentials secret (config/credentials/dashboard.env,
+# created by tools/utils/deployment/credentials-conf.sh), or from the
+# environment.
+if [ "$(id -u)" = "0" ]; then
+    # The resolver and the keystore agree on this directory only if it is set.
+    export OSD_PATH_CONF="$OPENSEARCH_DASHBOARDS_HOME/config"
 
+    # Names the Compose files and Kubernetes manifests have always used.
+    if [ -z "$WAZUH_INDEXER_KIBANASERVER_PASSWORD" ] && [ -n "$DASHBOARD_PASSWORD" ]; then
+        export WAZUH_INDEXER_KIBANASERVER_PASSWORD="$DASHBOARD_PASSWORD"
+    fi
+    if [ -z "$WAZUH_MANAGER_WUI_PASSWORD" ] && [ -n "$API_PASSWORD" ]; then
+        export WAZUH_MANAGER_WUI_PASSWORD="$API_PASSWORD"
+    fi
+    if [ -n "$DASHBOARD_USERNAME" ] && [ "$DASHBOARD_USERNAME" != "kibanaserver" ]; then
+        echo "credentials: DASHBOARD_USERNAME is ignored; the dashboard authenticates to the indexer as kibanaserver" >&2
+    fi
+    unset DASHBOARD_PASSWORD API_PASSWORD
 
-if  [ ! -f "$OPENSEARCH_DASHBOARDS_HOME/config/opensearch_dashboards.keystore" ]; then
-    echo "The keystore is not available; creating a new keystore."
-    "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" create --allow-root
-    head -c 32 /dev/urandom | base64 | tr -d '\n' | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add wazuh_ai_assistant.encryptionKey --stdin --allow-root
+    # The configuration is root's, as the package installs /etc/wazuh-dashboard,
+    # and the dashboard reads it through its group.
+    /wazuh_dashboard_config.sh || exit 1
+
+    . /credentials-env.sh
+    load_credentials || exit 1
+    if ! "$OPENSEARCH_DASHBOARDS_HOME/bin/resolve-credentials" --prestart -H "$OSD_PATH_CONF"; then
+        echo "credentials: the dashboard cannot start until the problems above are solved;" >&2
+        echo "credentials: values go in config/credentials/dashboard.env (created by tools/utils/deployment/credentials-conf.sh)" >&2
+        exit 1
+    fi
+    unset WAZUH_INDEXER_KIBANASERVER_PASSWORD WAZUH_MANAGER_WUI_PASSWORD
+
+    export WAZUH_ENTRYPOINT_DROPPED=1
+    exec setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups "$0" "$@"
 fi
-echo $DASHBOARD_USERNAME | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.username --stdin --allow-root -f
-echo $DASHBOARD_PASSWORD | "$OPENSEARCH_DASHBOARDS_HOME/bin/opensearch-dashboards-keystore" add opensearch.password --stdin --allow-root -f
 
-/wazuh_dashboard_config.sh
+# Started as another user, the credentials above were never resolved.
+if [ -z "$WAZUH_ENTRYPOINT_DROPPED" ]; then
+    echo "credentials: this container has to start as root: it resolves the credentials and then runs the dashboard as $SERVICE_USER" >&2
+    echo "credentials: remove the user it is started as (user: in Compose, runAsUser in Kubernetes)" >&2
+    exit 1
+fi
+unset WAZUH_ENTRYPOINT_DROPPED
 
 opensearch_dashboards_vars=(
     opensearch.hosts
     server.port
     server.host
-    opensearch.username
-    opensearch.password
 )
 
 function runOpensearchDashboards {

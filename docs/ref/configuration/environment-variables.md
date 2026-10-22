@@ -20,19 +20,30 @@ This document outlines the environment variables applicable to the Wazuh Docker 
 The Wazuh Manager container accepts the following environment variables, which can be set in the `docker-compose.yml` file under the `environment` section:
 
 ```yaml
+secrets:
+  - source: manager_credentials
+    target: wazuh-credentials
 environment:
-  - INDEXER_USERNAME=wazuh-manager
-  - INDEXER_PASSWORD=wazuh-manager
-  - WAZUH_API_URL=https://wazuh.manager
-  - DASHBOARD_USERNAME=kibanaserver
-  - DASHBOARD_PASSWORD=kibanaserver
+  - WAZUH_NODE_NAME=wazuh.manager
+  - WAZUH_NODE_TYPE=master
+  - WAZUH_CLUSTER_KEY=
+  - WAZUH_CLUSTER_NODES=
+  - WAZUH_CLUSTER_BIND_ADDR=0.0.0.0
+  - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
 ```
 
 **Variable Descriptions:**
 
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials for accessing the Wazuh Indexer with `wazuh-manager` user or a user with the same permissions. The value shown is the default the image ships; change it on the first start and write the new one here. See [Credentials](../credentials.md).
-- `WAZUH_API_URL`: URL of the Wazuh API, used by other services for communication.
-- `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: Credentials for the Wazuh Dashboard to authenticate with the Indexer.
+- `WAZUH_INDEXER_MANAGER_PASSWORD`, `WAZUH_MANAGER_API_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords of the indexer account `wazuh-manager` and of the Wazuh API accounts `wazuh` and `wazuh-internal-client`, read from `config/credentials/manager.env`, which `tools/utils/deployment/credentials-conf.sh` creates and the Compose file mounts as the `wazuh-credentials` secret. They can also be set in the environment, which takes precedence over the file. They are required on the first start and are stored then; later changes to them have no effect. See [Credentials](../credentials.md).
+- `WAZUH_CREDENTIALS_FILE`: where the credentials secret is mounted. Default: `/run/secrets/wazuh-credentials`. Set it only to mount the file somewhere else; the container then refuses to start if the file is missing.
+- `INDEXER_PASSWORD`: accepted, in the environment only, as an alias of `WAZUH_INDEXER_MANAGER_PASSWORD`. `INDEXER_USERNAME` is ignored: the manager always authenticates to the indexer as `wazuh-manager`.
+- `WAZUH_NODE_NAME`: This node's cluster name, written to `<cluster><node_name>`. Defaults to the container hostname.
+- `WAZUH_NODE_TYPE`: Either `master` or `worker`, written to `<cluster><node_type>`. Any other value (including unset) is treated as `master`.
+- `WAZUH_CLUSTER_KEY`: The cluster authentication key shared by every master/worker node, written to `<cluster><key>`. Unset, a single manager generates its own key on its first start, and the multi-node managers share the one kept in the `wazuh-cluster-key` volume. Set it when the manager nodes cannot share that volume, for example on separate hosts. See [Manager cluster key](../security.md#manager-cluster-key).
+- `WAZUH_CLUSTER_NODES`: Space-separated list of worker node addresses/hostnames, written to `<cluster><nodes>`. Only meaningful on the master node.
+- `WAZUH_CLUSTER_BIND_ADDR`: Address the cluster service binds to, written to `<cluster><bind_addr>`. Defaults to `0.0.0.0`.
+- `WAZUH_INDEXER_HOSTS`: Comma-separated list of indexer nodes as `host:port` (for example `wazuh.indexer:9200`, or `host1:9200,host2:9200` for multiple nodes), written to `<indexer><hosts>`. Each entry must be exactly `host:port`: no scheme, no trailing slash, no other separator — any other shape either fails validation or produces a corrupt host.
+- `/wazuh-config-mount`: not a variable, but the fixed path where a directory with the manager's own configuration files can be mounted. Its content is copied over the packaged files on every start, for example `/wazuh-config-mount/etc/wazuh-manager.conf` over `/etc/wazuh-manager/wazuh-manager.conf`. Its `etc/` subdirectory goes to the configuration directory `/etc/wazuh-manager`, everything else to `/var/wazuh-manager`.
 - `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
 
 ---
@@ -42,73 +53,104 @@ environment:
 The Wazuh Indexer services (`single-node` and `multi-node`) use the following environment variable:
 
 ```yaml
+secrets:
+  - source: indexer_credentials
+    target: wazuh-credentials
 environment:
   - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+  - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
 ```
 
 **Variable Descriptions:**
 
+- `WAZUH_INDEXER_ADMIN_PASSWORD`, `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_INDEXER_MANAGER_PASSWORD`: the passwords of the indexer accounts `admin`, `kibanaserver` and `wazuh-manager`, read from `config/credentials/indexer.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are required on the first start of the node, when their digests are written, and have no effect afterwards. See [Credentials](../credentials.md).
+- `NODES_DN`: semicolon-separated distinguished names of the indexer nodes' certificates, written to `plugins.security.nodes_dn` together with the DN of the node's own mounted certificate. The node rejects cluster members whose certificate is not listed.
+- `ADMIN_DN`: distinguished name of the admin certificate, written to `plugins.security.authcz.admin_dn`. By default it is read from the mounted `certs/admin.pem`; a node that does not mount it falls back to `CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US`. `securityadmin.sh` and `password-tool.sh` need it.
+- Certificate tools do not agree on the order of the attributes in a subject, and the indexer compares these DNs as strings. Both lists are therefore written with each DN in both orders, so certificates issued with either order are accepted.
 - `OPENSEARCH_JAVA_OPTS`: Sets JVM heap size and other Java options.
 
 ---
 
 ## Wazuh Dashboard
-
 The Wazuh Dashboard container accepts the following environment variables, which should be set in the `docker-compose.yml` file:
-
 ```yaml
+secrets:
+  - source: dashboard_credentials
+    target: wazuh-credentials
 environment:
-  - INDEXER_USERNAME=wazuh-manager
-  - INDEXER_PASSWORD=wazuh-manager
   - WAZUH_API_URL=https://wazuh.manager
-  - DASHBOARD_USERNAME=kibanaserver
-  - DASHBOARD_PASSWORD=kibanaserver
+  - API_USERNAME=wazuh-internal-client
 ```
-
 **Variable Descriptions:**
-
-- `INDEXER_USERNAME` / `INDEXER_PASSWORD`: Credentials used by the Dashboard to authenticate with the Wazuh Indexer.
 - `WAZUH_API_URL`: Base URL of the Wazuh API, used for querying and visualizing security data.
-- `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`: User credentials for the Dashboard interface.
-- `API_USERNAME` / `API_PASSWORD`: API user credentials for authenticating Wazuh API requests initiated by the Dashboard.
-
+- `WAZUH_INDEXER_KIBANASERVER_PASSWORD`, `WAZUH_MANAGER_WUI_PASSWORD`: the passwords the Dashboard authenticates with, to the Wazuh Indexer as `kibanaserver` and to the Wazuh API as `wazuh-internal-client`, read from `config/credentials/dashboard.env`, mounted as the `wazuh-credentials` secret, or from the environment, which takes precedence. `WAZUH_CREDENTIALS_FILE` works as on the manager. They are stored in the dashboard keystore on the first start and have no effect afterwards. See [Credentials](../credentials.md).
+- `API_USERNAME`: the Wazuh API account the Dashboard uses, `wazuh-internal-client`.
+- `DASHBOARD_PASSWORD` and `API_PASSWORD`: accepted, in the environment only, as aliases of the two passwords above. `DASHBOARD_USERNAME` is ignored: the Dashboard always authenticates to the indexer as `kibanaserver`.
 These variables are critical for enabling communication between the Wazuh Dashboard, the Wazuh Indexer, and the Wazuh API.
-
-The passwords shown are the defaults the images ship. `DASHBOARD_PASSWORD` and `API_PASSWORD` are two of the three that have to be replaced on the first start of the deployment, with the values `password-tool.sh` prints. See [Credentials](../credentials.md).
-
 ---
-
 ## Wazuh Agent
 
 The Wazuh Agent container uses the following environment variables to dynamically update the `ossec.conf` configuration file at runtime:
 
 ```yaml
 environment:
-  - WAZUH_MANAGER_ENDPOINT=wazuh.manager:1517/wazuh-manager/
+  - WAZUH_ENROLLMENT_TOKEN=<token minted by the manager>
   - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
 **Variable Descriptions:**
 
-- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped.
+- `WAZUH_ENROLLMENT_TOKEN`: One-shot enrollment token, minted by the manager (`POST /agents/enrollment-tokens`). This is the only way to enroll — there is no password-based enrollment. The token's own address is what gets written to `<agent><manager><endpoint>`; mutually exclusive with `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` below, which the container refuses if both are set. See [Enrolling with a token](#enrolling-with-a-token).
 - `WAZUH_AGENT_NAME`: Agent name used on enrollment, written to `<agent><enrollment><agent_name>`. Defaults to `wazuh-agent-<container hostname>`.
-- `WAZUH_REGISTRATION_PASSWORD`: Enrollment password, written to `/var/ossec/etc/authd.pass`.
-- `WAZUH_MANAGER_CA`: Path, inside the container, to the CA that signs the manager's HTTPS certificate. Written to `<agent><ssl><certificate_authorities>`. `WAZUH_REGISTRATION_CA`, the name the package installer uses for the same setting, is accepted as an alias.
+- `WAZUH_MANAGER_ENDPOINT`: The whole manager connection as one value, `host[:port][/prefix]`, written to `<agent><manager><endpoint>`. A component left out is filled in with its default, port `1517` and prefix `/wazuh-manager/`, so `wazuh.manager` is written out as `wazuh.manager:1517/wazuh-manager/`. A `https://` scheme is accepted and dropped. Only meaningful without a token — see [Setting the connection without a token](#setting-the-connection-without-a-token).
+- `WAZUH_MANAGER_CA`: Path, inside the container, to the CA that signs the manager's HTTPS certificate. Written to `<agent><ssl><certificate_authorities>`. `WAZUH_REGISTRATION_CA`, the name the package installer uses for the same setting, is accepted as an alias. Not needed with a token that embeds the manager's CA — see below.
+
+### Enrolling with a token
+
+`WAZUH_ENROLLMENT_TOKEN` decodes to the manager's address and, depending on how it
+was minted, either the manager's CA embedded in it or a pin to verify a fetched
+one against. Decoding happens twice: once here, by `wazuh-agentd --show-token`, to
+get the address for `<endpoint>`; and once more by the agent itself at its first
+start, which is what actually fetches the CA, verifies it, enrolls, and writes the
+trust anchor (`/var/ossec/etc/certs/root-ca.pem`) and `client.keys`. Neither
+`WAZUH_MANAGER_CA` nor `WAZUH_AGENT_SSL_VERIFICATION` is needed for this: the token
+supplies its own trust anchor.
+
+The token itself is staged at `/var/ossec/etc/enrollment_token`, mode `600`, owner
+`root:root`. The agent deletes it once it succeeds, or once the manager has
+definitively refused it (unknown, revoked, or already used past `max_uses`); a
+transient failure (the manager unreachable, for instance) leaves it in place on
+purpose, so a retry — within the same boot, or a later one — still has
+something to enroll with. A token this script itself cannot even decode makes
+the container exit before anything is written:
+
+```yaml
+environment:
+  - WAZUH_ENROLLMENT_TOKEN=eyJ2ZXIiOjEs...
+```
+
+```text
+ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:
+wazuh-agentd: invalid enrollment token: malformed token.
+```
+
+Restarting or recreating the container on the same `/var/ossec/etc` volume
+after a successful enrollment does nothing further: the token is not read again,
+and the agent keeps its `client.keys` and its trust anchor.
 
 **Verifying the manager**
 
-The agent verifies the manager's TLS certificate. With no `<ssl>` configuration it
-verifies against the operating system trust store, which covers a manager whose
-certificate chains to a publicly trusted CA and nothing else — a manager
-presenting a certificate of its own, which is what a Wazuh manager does by
-default, is refused and the agent logs the reason and keeps retrying:
+With no `<ssl>` configuration and no enrollment token, the agent does **not**
+verify the manager's TLS certificate: it resolves `verification_mode` to `none`,
+connects to whatever answers on the endpoint — including a manager presenting a
+self-signed certificate — and logs on every connection:
 
 ```text
-wazuh-agentd: ERROR: Enrollment request could not be sent: (60) SSL peer certificate or SSH remote key was not OK: SSL certificate OpenSSL verify result: unable to get local issuer certificate (20).
+wazuh-agentd:https-client: WARNING: TLS verification is DISABLED (verification_mode=none).
 ```
 
-Reaching such a manager means giving the agent the CA that signs it:
+The container says so at start as well. Verifying the manager means giving the
+agent the CA that signs it:
 
 ```yaml
 environment:
@@ -123,10 +165,13 @@ For a manager deployed from this repository that CA is
 root CA the rest of the deployment uses. For any other manager, ask whoever runs
 it for the CA that signs the certificate on its `1517` listener.
 
-The CA may also be dropped at `/var/ossec/etc/certs/root-ca.pem` instead of being
-named, in which case the variable is not needed. That is what makes it mountable
-through `WAZUH_CONFIG_MOUNT` the same way a whole `ossec.conf` is: a file mounted
-at `/wazuh-config-mount/etc/certs/root-ca.pem` is copied there on start.
+The CA may also be dropped at `/var/ossec/etc/certs/manager-ca.pem` instead of
+being named, in which case the variable is not needed. That is what makes it
+mountable through `/wazuh-config-mount` the same way a whole `ossec.conf` is: a
+file mounted at `/wazuh-config-mount/etc/certs/manager-ca.pem` is copied there
+on start. Deliberately not `root-ca.pem`: that name is reserved for the trust
+anchor a token enrollment writes, and the two must never collide — see
+[Enrolling with a token](#enrolling-with-a-token).
 
 Whichever way it arrives, the file is copied into `/var/ossec/etc/certs/` and given
 to the agent user. `wazuh-agentd` opens it after dropping privileges, so a bind
@@ -140,7 +185,7 @@ copying it is what removes that from the deployment's concerns.
 
 | `WAZUH_AGENT_SSL_VERIFICATION` | Trust anchor | Checks the hostname | Needs a CA |
 | - | - | - | - |
-| unset, no CA given | Operating system trust store | Yes | — |
+| unset, no CA given | No verification (`none`), or the token's trust anchor (`full`) after a token enrollment | No / Yes | — |
 | unset, CA given | The given CA | No | — |
 | `certificate` | The given CA | No | Yes |
 | `full` | The given CA | Yes | Yes |
@@ -171,9 +216,14 @@ environment:
 The `%` separating the zone id is percent-encoded as `%25`, which is what makes
 the endpoint a valid URL. The container also accepts the plain `fe80::1%eth0`
 form the system itself reports, encoding it on start and logging that it did so.
-This zone id replaces the separate `<interface_index>` option used before.
 
-These variables are used by the `set_manager_conn()` function in the entrypoint script to replace placeholder values in `ossec.conf`.
+### Setting the connection without a token
+
+`WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` configure `<endpoint>` on their
+own, with no enrollment involved — for an agent that already has `client.keys`
+and a trust anchor of its own (mounted, or restored from a previous container's
+`/var/ossec/etc` volume) and just needs to be told where to connect. They are
+refused alongside `WAZUH_ENROLLMENT_TOKEN`, which already carries the address.
 
 **Setting the connection with separate address and port:**
 
@@ -184,23 +234,23 @@ environment:
   - WAZUH_MANAGER_SERVER=wazuh.manager
   - WAZUH_MANAGER_PORT=1517
   - WAZUH_AGENT_NAME=my-agent
-  - WAZUH_REGISTRATION_PASSWORD=my-authd-password
 ```
 
 - `WAZUH_MANAGER_SERVER`: Address of the Wazuh Manager. Becomes the host of `<endpoint>`.
 - `WAZUH_MANAGER_PORT`: Manager HTTPS port. Defaults to `1517`, and must match the manager `<remote><https><port>`. Becomes the port of `<endpoint>`.
 
-Whichever form is used, `<agent><manager><endpoint>` is the only configuration written: since wazuh/wazuh#38624 it holds the whole connection, and the `<address>` and `<port>` tags it replaced are never touched. It is always written in full, as `host:port/prefix`, with the defaults spelled out rather than left for the agent to infer.
+Whichever form is used, `<agent><manager><endpoint>` is the only configuration written. It is always written in full, as `host:port/prefix`, with the defaults spelled out rather than left for the agent to infer.
 
 `WAZUH_MANAGER_ENDPOINT` takes precedence over both. When it is set, they are not
 read at all, not even to supply a component it left out: an endpoint without a
 port falls back to `1517`, never to `WAZUH_MANAGER_PORT`. The container logs a
 warning when both forms are set at once.
 
-One of the two forms is required. With neither, the container has no manager to
-connect to, so it logs the reason and exits instead of starting an agent that
-could only retry against a placeholder. The one case where both may be omitted is
-a deployment mounting its own `ossec.conf` at
+One of `WAZUH_ENROLLMENT_TOKEN`, `WAZUH_MANAGER_ENDPOINT` or `WAZUH_MANAGER_SERVER`
+is required. With none of them, the container has no manager to connect to, so it
+logs the reason and exits instead of starting an agent that could only retry
+against a placeholder. The one case where all three may be omitted is a
+deployment mounting its own `ossec.conf` at
 `/wazuh-config-mount/etc/ossec.conf`, which already carries a manager of its own.
 
 **Variables that are not supported:**
@@ -209,30 +259,38 @@ a deployment mounting its own `ossec.conf` at
 | - | - |
 | `WAZUH_REGISTRATION_SERVER` | The manager variables, enrollment reuses the agent connection |
 | `WAZUH_REGISTRATION_PORT` | The manager variables, enrollment reuses the agent connection |
+| `WAZUH_REGISTRATION_PASSWORD` | `WAZUH_ENROLLMENT_TOKEN` — there is no password-based enrollment |
 
-Neither configures anything, and the container logs a warning when one is set.
-They pointed enrollment at `authd` separately, which since 5.0.0 no longer
-happens: the agent enrolls through the manager connection it already has, so
-`<enrollment>` carries neither an address nor a port of its own.
+None of these configure anything, and the container logs a warning when one is
+set. The first two pointed enrollment at `authd` separately, which since 5.0.0 no
+longer happens: the agent enrolls through the manager connection it already has,
+so `<enrollment>` carries neither an address nor a port of its own. The token
+replaces the third for the same reason a 5.x manager only ever accepts a token:
+there is no manager version this password would still work against.
 
 ---
 
 ## Overriding Configuration Files with Environment Variables
 
-To override configuration values from files such as `opensearch.yml` and `opensearch_dashboards.yml` using environment variables:
+**Wazuh indexer.** Any environment variable whose name is an `opensearch.yml` key, in lowercase with its dots, is passed to the indexer as that setting. The Compose files use this for `network.host`, `node.name`, `discovery.seed_hosts` and the rest of the node settings:
 
-1. Convert the configuration key to uppercase.
-2. Replace any dots (`.`) in the key with underscores (`_`).
-3. Assign the corresponding value.
+```yaml
+environment:
+  - discovery.seed_hosts=wazuh.indexer
+  - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+```
 
-### Examples:
+**Wazuh dashboard.** Only the settings below are read from the environment, and written to `opensearch_dashboards.yml` on every start. Any other variable is ignored; mount your own `opensearch_dashboards.yml` for other settings.
 
-| YAML Key                                | Environment Variable                       |
-|-----------------------------------------|--------------------------------------------|
-| `discovery.type: single-node`           | `DISCOVERY_TYPE=single-node`               |
-| `opensearch.hosts: https://url:9200`    | `OPENSEARCH_HOSTS=https://url:9200`        |
-| `server.port: 5601`                     | `SERVER_PORT=5601`                         |
-
-This approach allows you to configure the services dynamically via Docker without modifying internal files.
+| Variable | Setting |
+| --- | --- |
+| `SERVER_HOST`, `SERVER_PORT` | `server.host`, `server.port` |
+| `SERVER_SSL_ENABLED`, `SERVER_SSL_KEY`, `SERVER_SSL_CERTIFICATE` | `server.ssl.enabled`, `server.ssl.key`, `server.ssl.certificate` |
+| `OPENSEARCH_HOSTS` | `opensearch.hosts` |
+| `OPENSEARCH_SSL_VERIFICATION_MODE`, `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | `opensearch.ssl.verificationMode`, `opensearch.ssl.certificateAuthorities` |
+| `OPENSEARCH_REQUEST_HEADERS_ALLOWLIST` | `opensearch.requestHeadersAllowlist` |
+| `OPENSEARCH_SECURITY_MULTITENANCY_ENABLED`, `OPENSEARCH_SECURITY_READONLY_MODE_ROLES` | `opensearch_security.multitenancy.enabled`, `opensearch_security.readonly_mode.roles` |
+| `OPENSEARCH_SECURITY_COOKIE_TTL`, `OPENSEARCH_SECURITY_SESSION_TTL`, `OPENSEARCH_SECURITY_SESSION_KEEPALIVE` | `opensearch_security.cookie.ttl`, `opensearch_security.session.ttl`, `opensearch_security.session.keepalive` |
+| `UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE` | `uiSettings.overrides.defaultRoute` |
 
 ---

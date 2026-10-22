@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Wazuh package generator
-# Copyright (C) 2023, Wazuh Inc.
+# Copyright (C) Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -18,6 +18,12 @@ WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
+SKIP_PACKAGE_SIGNATURE_CHECK=""
+ARTIFACT_URLS_INPUT=""
+BASE_IMAGE_PULL_RETRIES="${BASE_IMAGE_PULL_RETRIES:-5}"
+BASE_IMAGE_PULL_DELAY="${BASE_IMAGE_PULL_DELAY:-15}"
+BASE_IMAGES_DIR=""
+BASE_IMAGES_BAKE_FILE=""
 
 # -----------------------------------------------------------------------------
 
@@ -26,11 +32,102 @@ trap ctrl_c INT
 clean() {
     exit_code=$1
 
+    if [ -n "${BASE_IMAGES_DIR}" ]; then
+        rm -rf "${BASE_IMAGES_DIR}"
+    fi
+
     exit ${exit_code}
 }
 
 ctrl_c() {
     clean 1
+}
+
+# -----------------------------------------------------------------------------
+
+# Runs a command until it succeeds, up to BASE_IMAGE_PULL_RETRIES times, waiting
+# BASE_IMAGE_PULL_DELAY seconds more after each failed attempt.
+retry() {
+    local attempt=1
+    until "$@"; do
+        if [ "${attempt}" -ge "${BASE_IMAGE_PULL_RETRIES}" ]; then
+            return 1
+        fi
+        local wait=$(( BASE_IMAGE_PULL_DELAY * attempt ))
+        echo "Attempt ${attempt}/${BASE_IMAGE_PULL_RETRIES} failed. Retrying in ${wait}s..." >&2
+        sleep "${wait}"
+        attempt=$(( attempt + 1 ))
+    done
+}
+
+# Prints the base images of a Dockerfile: the FROM images that are not a
+# previous stage.
+base_images_of() {
+    awk 'toupper($1) == "FROM" {
+             image = $2
+             for (i = 2; i <= NF; i++) if ($i !~ /^--/) { image = $i; break }
+             if (!(image in stage)) print image
+             for (i = 2; i < NF; i++) if (toupper($i) == "AS") stage[$(i + 1)] = 1
+         }' "$1"
+}
+
+# Downloads the base images before the build, with retries, so that a registry
+# rate limit (429 Too Many Requests) fails here instead of in the middle of the
+# build. The docker driver uses the images pulled into the daemon. Other drivers
+# (docker-container, as in CI) do not see them, so the images are exported to
+# OCI layouts and passed to bake as named contexts in an extra bake file.
+prefetch_base_images() {
+    local components=("$@")
+    local driver
+    driver=$(docker buildx inspect 2>/dev/null | awk '$1 == "Driver:" { print $2; exit }')
+
+    local platforms=""
+    if [ "${MULTIARCH}" ]; then
+        platforms="linux/amd64,linux/arm64"
+    fi
+
+    local images=()
+    local component image
+    for component in "${components[@]}"; do
+        while read -r image; do
+            [[ " ${images[*]} " == *" ${image} "* ]] || images+=("${image}")
+        done < <(base_images_of "${component}/Dockerfile")
+    done
+
+    echo "Downloading base images (driver: ${driver:-unknown}, up to ${BASE_IMAGE_PULL_RETRIES} attempts each): ${images[*]}"
+
+    if [ "${driver}" = "docker" ]; then
+        for image in "${images[@]}"; do
+            retry docker pull ${platforms:+--platform "${platforms%%,*}"} "${image}" || {
+                echo "Error: could not download the base image ${image}." >&2
+                return 1
+            }
+        done
+        return 0
+    fi
+
+    BASE_IMAGES_DIR=$(mktemp -d)
+    mkdir -p "${BASE_IMAGES_DIR}/context"
+    local contexts="{}"
+    local i=0
+    for image in "${images[@]}"; do
+        local layout="${BASE_IMAGES_DIR}/image-${i}"
+        echo "FROM ${image}" > "${BASE_IMAGES_DIR}/context/Dockerfile.${i}"
+        retry docker buildx build ${platforms:+--platform "${platforms}"} \
+            --output "type=oci,dest=${layout},tar=false" \
+            -f "${BASE_IMAGES_DIR}/context/Dockerfile.${i}" "${BASE_IMAGES_DIR}/context" || {
+            echo "Error: could not download the base image ${image}." >&2
+            return 1
+        }
+        contexts=$(jq --arg image "${image}" --arg ref "oci-layout://${layout}:latest" \
+            '. + {($image): $ref}' <<< "${contexts}")
+        i=$(( i + 1 ))
+    done
+
+    BASE_IMAGES_BAKE_FILE="${BASE_IMAGES_DIR}/base-images.json"
+    jq -n --argjson contexts "${contexts}" --args \
+        '{target: (reduce $ARGS.positional[] as $t ({}; . + {($t): {contexts: $contexts}}))}' \
+        "${components[@]}" > "${BASE_IMAGES_BAKE_FILE}"
 }
 
 # -----------------------------------------------------------------------------
@@ -45,14 +142,29 @@ build() {
     # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
+
+    # Unsigned packages only come from development builds.
+    if [ -n "${SKIP_PACKAGE_SIGNATURE_CHECK}" ]; then
+        if [ -z "${IS_DEV_BUILD}" ]; then
+            echo "Error: --skip-signature-check is only valid along with --dev." >&2
+            clean 1
+        fi
+        echo "Warning: Skipping the signature check of the Wazuh packages. Use it only with unsigned development packages." >&2
+    fi
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
     ARTIFACT_URLS_DIR="artifact-urls"
 
-    # Check if the artifact file already exists to prevent redundant downloads
-    if [[ -f "$ARTIFACT_URLS_FILE" ]]; then
-        echo "$ARTIFACT_URLS_FILE exists. Using existing file."
+    if [ -n "${ARTIFACT_URLS_INPUT}" ]; then
+        if [ ! -f "${ARTIFACT_URLS_INPUT}" ]; then
+            echo "Error: artifact URLs file '${ARTIFACT_URLS_INPUT}' not found." >&2
+            clean 1
+        fi
+        echo "Using artifact URLs from ${ARTIFACT_URLS_INPUT}."
+        if [ "${ARTIFACT_URLS_INPUT}" != "${ARTIFACT_URLS_FILE}" ]; then
+            cp "${ARTIFACT_URLS_INPUT}" "${ARTIFACT_URLS_FILE}" || clean 1
+        fi
     else
         # GitHub URL for exact Release Tag lookup
         TAG="v${WAZUH_IMAGE_VERSION}"
@@ -207,6 +319,7 @@ build() {
 
     export WAZUH_VERSION="$WAZUH_IMAGE_VERSION"
     export MULTIARCH="${MULTIARCH}"
+    export SKIP_PACKAGE_SIGNATURE_CHECK="${SKIP_PACKAGE_SIGNATURE_CHECK}"
     export INDEXER_TAG=$(make_tag   "${INDEXER_COMMIT:-latest}")
     export MANAGER_TAG=$(make_tag   "${MANAGER_COMMIT:-latest}")
     export DASHBOARD_TAG=$(make_tag "${DASHBOARD_COMMIT:-latest}")
@@ -227,13 +340,25 @@ build() {
         bake_opts="${bake_opts} --load"
     fi
 
+    local components=(wazuh-indexer wazuh-manager wazuh-dashboard wazuh-agent)
+    if [ -n "${WAZUH_COMPONENT}" ]; then
+        components=("${WAZUH_COMPONENT}")
+    fi
+    prefetch_base_images "${components[@]}" || clean 1
+
+    local bake_files="-f docker-bake.hcl"
+    if [ -n "${BASE_IMAGES_BAKE_FILE}" ]; then
+        # Bake only reads the layouts outside its directory when allowed to.
+        bake_files="${bake_files} -f ${BASE_IMAGES_BAKE_FILE} --allow=fs.read=${BASE_IMAGES_DIR}"
+    fi
+
     # Build a specific component or the full default group (all 4 in parallel).
     if [ -z "${WAZUH_COMPONENT}" ]; then
         echo "Building all components in parallel..."
-        docker buildx bake ${bake_opts} -f docker-bake.hcl || clean 1
+        docker buildx bake ${bake_opts} ${bake_files} || clean 1
     else
         echo "Building ${WAZUH_COMPONENT}..."
-        docker buildx bake ${bake_opts} -f docker-bake.hcl "${WAZUH_COMPONENT}" || clean 1
+        docker buildx bake ${bake_opts} ${bake_files} "${WAZUH_COMPONENT}" || clean 1
     fi
 
     echo ""
@@ -248,14 +373,20 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
+    echo "    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version."
     echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
-    echo "    -c, --component <comp>       [Required] Set the Wazuh component to build. Accepted values: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard', 'wazuh-agent'."
+    echo "    -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four."
     echo "    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, ${WAZUH_IMAGE_VERSION}."
     echo "    -m, --multiarch              [Optional] Enable multi-architecture builds."
+    echo "    --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages."
     echo "    -h, --help                   Show this help."
+    echo
+    echo "The base images are downloaded before the build. Environment variables:"
+    echo "    BASE_IMAGE_PULL_RETRIES      Attempts per base image. By default, 5."
+    echo "    BASE_IMAGE_PULL_DELAY        Seconds added to the wait after each failed attempt. By default, 15."
     echo
     exit $1
 }
@@ -269,6 +400,14 @@ main() {
         "-h"|"--help")
             help 0
             ;;
+        "-a"|"--artifact-urls")
+            if [ -n "${2}" ]; then
+                ARTIFACT_URLS_INPUT="${2}"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
         "-d"|"--dev-stage")
             if [ -n "${2}" ]; then
                 WAZUH_DEV_STAGE="${2}"
@@ -279,6 +418,10 @@ main() {
             ;;
         "--dev")
             IS_DEV_BUILD="true"
+            shift
+            ;;
+        "--skip-signature-check")
+            SKIP_PACKAGE_SIGNATURE_CHECK="true"
             shift
             ;;
         "-m"|"--multiarch")
