@@ -86,7 +86,6 @@ Ensure that the necessary network ports are open and available on the Docker hos
       `remoted`). Kept for backward compatibility, not used by 5.x agents.
     * `1515/TCP`: For agent enrollment with Wazuh 4.x agents (`wazuh-authd`).
       Kept for backward compatibility, not used by 5.x agents.
-    * `514/UDP`: For syslog event collection.
     * `55000/TCP`: For Wazuh API (default).
     * `1516/TCP`: For cluster communication between manager nodes. Only needed
       between the manager containers, not on the Docker host.
@@ -107,7 +106,7 @@ the `multi-node` deployment the agent ports are published by the `nginx`
 service, which balances `1517` (and the legacy `1514`) across the master and
 worker nodes; enrollment travels over `1517` together with the agent traffic,
 so it is balanced the same way. `wazuh.master` publishes the other manager
-ports itself: `1515`, `514/UDP` and the Wazuh API on `55000`.
+ports itself: `1515` and the Wazuh API on `55000`.
 
 ## Important Considerations
 

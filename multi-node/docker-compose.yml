@@ -23,7 +23,6 @@ services:
         hard: 655360
     ports:
       - "1515:1515"
-      - "514:514/udp"
       - "55000:55000"
     secrets:
       - source: manager_credentials
