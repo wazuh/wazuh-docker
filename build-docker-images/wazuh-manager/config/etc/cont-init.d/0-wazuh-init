@@ -401,11 +401,11 @@ fi
 # --------------------------
 # Remote: listen address
 #
-# The packaged configuration binds remoted to 127.0.0.1, which inside a
-# container leaves it reachable only from the container itself: the published
-# 1517 (and the legacy 1514) would refuse every agent connection. Binding on
-# all interfaces is scoped to the container network namespace, so what is
-# actually reachable from outside stays governed by the published ports.
+# The packaged configuration already binds the agent listeners (1517 and the
+# legacy 1514) to 0.0.0.0. WAZUH_REMOTE_BIND_ADDR lets a deployment restrict
+# them to one address. Inside a container all interfaces are scoped to the
+# container network namespace, so what is reachable from outside stays
+# governed by the published ports.
 # --------------------------
 # Escapes &, \ and | (the sed replacement delimiter used below) so a value
 # containing any of them is inserted literally instead of being interpreted

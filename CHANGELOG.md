@@ -21,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2764](https://github.com/wazuh/wazuh-docker/issues/2764) | Align the docs with the 5.0.0 code and packages: published `export/credentials.env`, environment variables, missing certificate pair messages, certificates tool URLs, Docker backup, and the `remoted` bind address comment |
 | [#2758](https://github.com/wazuh/wazuh-docker/issues/2758) | Make the Wazuh dashboard listen on `443` inside the container in the single-node and multi-node stacks, as the image, the package and the Kubernetes deployment do |
 | [#2743](https://github.com/wazuh/wazuh-docker/issues/2743) | Adapt the images and stacks to the RC 2 per-package credentials and `/etc/wazuh-manager`, and build the final images on `amazonlinux:2023-minimal` with pre-pulled base images |
 | [#2728](https://github.com/wazuh/wazuh-docker/issues/2728) | Mount the Server API certificate issued by `wazuh-certs-tool.sh` on the manager node that runs the API |

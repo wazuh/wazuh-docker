@@ -78,19 +78,23 @@ In multi-node the same two lines appear on `wazuh.master` and `wazuh.worker`, ea
       - ./config/wazuh_manager/certs/wazuh.manager-apid-key.pem:/etc/wazuh-manager/certs/apid-key.pem
 ```
 
-In multi-node they appear on `wazuh.master` and `wazuh.worker`, each with its own node's pair: the manager's credential resolver checks the pair on every node before the daemons start. Without them the manager does not start:
+In multi-node they appear on `wazuh.master` and `wazuh.worker`, each with its own node's pair: the manager's credential resolver checks the `remoted` and `apid` pairs on every node before the daemons start, and the manager does not start without them.
+
+**These files have to exist on the host before the containers start.** Docker creates a directory in place of a missing bind-mount source. On a first start, the resolver refuses it and the container restarts in a loop, for example with a missing `apid.pem`:
 
 ```
-Error when trying to start the Wazuh API. 2003 - Error loading SSL/TLS certificates: API certificate or key not found: /etc/wazuh-manager/certs/apid.pem. The installer issues it signed by the manager CA.
-wazuh-manager-apid did not start correctly.
+UNSAFE /etc/wazuh-manager/certs/apid.pem: not a regular file
+ERROR: the manager Server API certificate is missing or unreadable: /etc/wazuh-manager/certs/apid.pem
+credentials: the manager cannot start until the problems above are solved;
 ```
 
-**These files have to exist on the host before the containers start.** Docker creates a directory in place of a missing bind-mount source, and the manager refuses its configuration and does not start when it finds one:
+When the `wazuh_etc` volume already holds the file, Docker does not create the container at all:
 
 ```
-(1244): Invalid configuration at '/remote/https/certificate': file not found: /etc/wazuh-manager/certs/remoted.pem
-wazuh-manager.conf: Configuration error. Exiting
+error mounting "…/wazuh.manager-apid.pem" to rootfs at "/etc/wazuh-manager/certs/apid.pem": … not a directory: Are you trying to mount a directory onto a file (or vice-versa)?
 ```
+
+On every start the master logs `WARNING: dashboard client pair not generated: /etc/wazuh-manager/ca has no key; provision it externally in /etc/wazuh-manager/export`. This is expected: the deployment mounts `ca/root-ca.pem` without its key, and nothing uses that pair.
 
 Because the pair lives on the host, it is not affected by `docker compose down -v`, and rotating it means issuing a new one and restarting the manager. A new pair does not break enrolled agents as long as it is signed by the same root CA, which is what agents verify. See [Security](../security.md) for rotation and for the certificate's contents.
 
