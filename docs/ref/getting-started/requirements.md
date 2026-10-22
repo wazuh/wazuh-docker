@@ -98,7 +98,7 @@ Ensure that the necessary network ports are open and available on the Docker hos
     * `9300/TCP`: For inter-node communication (if clustered). Only needed
       between the indexer containers, not on the Docker host.
 * **Wazuh Dashboard**:
-    * `443/TCP` on the host, mapped to the container's `5601/TCP`: For web access, over HTTPS served by the dashboard itself.
+    * `443/TCP` on the host and in the container: For web access, over HTTPS served by the dashboard itself. The dashboard runs as a non-root user and binds `443` because Docker Engine 20.10 and later set `net.ipv4.ip_unprivileged_port_start=0` in the network namespace of each container. This does not apply with `network_mode: host`.
 
 Port mappings in `docker-compose.yml` will expose these container ports on the host. Adjust host ports if defaults cause conflicts.
 

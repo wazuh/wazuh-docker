@@ -232,18 +232,17 @@ services:
     container_name: multi-node-wazuh.dashboard
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/app/login" ]
+      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:443/app/login" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     ports:
-      - 443:5601
+      - 443:443
     secrets:
       - source: dashboard_credentials
         target: wazuh-credentials
     environment:
-      - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=["https://wazuh1.indexer:9200","https://wazuh2.indexer:9200","https://wazuh3.indexer:9200"]
       - WAZUH_API_URL=https://wazuh.master
