@@ -8,15 +8,15 @@
 ### 2. Wazuh Indexer Configuration
 
 * **`opensearch.yml`**: The primary configuration file for OpenSearch. Controls cluster settings, network binding, path settings, discovery, memory allocation, etc.
-    * **Customization**: Mount a custom `opensearch.yml` into the indexer container(s) at `/usr/share/wazuh-indexer/config/opensearch.yml`.
+    * **Customization**: Mount a custom `opensearch.yml` into the indexer container(s) at `/usr/share/wazuh-indexer/config/opensearch.yml`. The file must be owned by `root`, with group `101` (`wazuh-indexer`) and mode `0640`; see the note below.
 * **JVM Settings (`jvm.options`)**: Manages Java Virtual Machine settings, especially heap size (`-Xms`, `-Xmx`). Critical for performance and stability.
     * **Customization**: Mount a custom `jvm.options` file or set `OPENSEARCH_JAVA_OPTS` environment variable.
 
 ### 3. Wazuh Dashboard (OpenSearch Dashboards) Configuration
 
 * **`opensearch_dashboards.yml`**: The main configuration file for OpenSearch Dashboards. Controls server host/port, OpenSearch connection URL, SSL settings, and Wazuh plugin settings.
-    * **Customization**: Mount a custom `opensearch_dashboards.yml` into the dashboard container at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml` and custom `wazuh.yml` into the dashboard container at `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` .
-* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, within `opensearch_dashboards.yml` and `wazuh.yml`. The Wazuh API URL comes from `WAZUH_API_URL`; the password of `wazuh-internal-client` is kept in the keystore (see [Credentials](../credentials.md)).
+    * **Customization**: Mount a custom `opensearch_dashboards.yml` into the dashboard container at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml`. The file must be owned by `root`, with group `101` (`wazuh-dashboard`) and mode `0640`; see the note below. There is no `wazuh.yml` in 5.x: the Wazuh plugin settings are in `opensearch_dashboards.yml`.
+* **Wazuh Plugin Settings**: The Wazuh plugin for the dashboard has its own configuration, within `opensearch_dashboards.yml` (`wazuh_core.hosts`). The Wazuh API URL comes from `WAZUH_API_URL`; the password of `wazuh-internal-client` is kept in the keystore (see [Credentials](../credentials.md)).
 * **`opensearch_dashboards.keystore`**: Secure storage for the dashboard secrets, located at `/usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore`. The image is shipped without a keystore. On the first start, the dashboard's credentials resolver creates it, stores the passwords of `kibanaserver` and `wazuh-internal-client` (see [Credentials](../credentials.md)), and generates a random `wazuh_ai_assistant.encryptionKey`, which the AI assistant uses to encrypt its data.
     * **Customization**: To set your own key, add it through the keystore tool inside the dashboard container and restart the service:
         ```bash
@@ -25,6 +25,15 @@
         docker compose restart wazuh.dashboard
         ```
     * **Important**: The keystore is created only when it does not already exist, so the encryption key stays stable across restarts as long as the `/usr/share/wazuh-dashboard/config` volume is kept. If the keystore is deleted, the next start creates a new one with a new key, and any data encrypted with the previous one becomes unreadable.
+
+> **note**: The Wazuh indexer and the Wazuh dashboard only use a configuration file that is owned by `root` and is not writable by its group or by others; any other file is reported as `UNSAFE <path>: <reason>` and the start fails. A file created by a regular user on the host is owned by that user, so prepare it with `sudo` before mounting it:
+>
+> ```bash
+> sudo chown 0:101 opensearch_dashboards.yml
+> sudo chmod 640 opensearch_dashboards.yml
+> ```
+>
+> Edit it afterwards with `sudo` as well. The container rewrites the settings that come from environment variables in the same file on every start, keeping its owner and mode.
 
 ## Applying Configuration Changes
 
@@ -41,6 +50,7 @@ Consult the official Wazuh documentation for version 5.0.0 for detailed informat
 ## Persistence configuration
 
 When customizing your Wazuh Docker deployment, certain files and directories must be persisted to retain your changes across container restarts and recreations. This is critical for maintaining custom configurations, user credentials, and security settings.
+
 
 ### Volumes and Bind Mounts
 
