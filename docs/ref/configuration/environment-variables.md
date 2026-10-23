@@ -117,7 +117,7 @@ supplies its own trust anchor.
 
 The token itself is staged at `/var/ossec/etc/enrollment_token`, mode `600`, owner
 `root:root`. The agent deletes it once it succeeds, or once the manager has
-definitively refused it (unknown, revoked, or already used past `max_uses`); a
+definitively refused it (unknown, expired, revoked, or already used past `max_uses`); a
 transient failure (the manager unreachable, for instance) leaves it in place on
 purpose, so a retry — within the same boot, or a later one — still has
 something to enroll with. A token this script itself cannot even decode makes

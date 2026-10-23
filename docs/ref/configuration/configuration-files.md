@@ -83,8 +83,9 @@ In multi-node they appear on `wazuh.master` and `wazuh.worker`, each with its ow
 **These files have to exist on the host before the containers start.** Docker creates a directory in place of a missing bind-mount source. On a first start, the resolver refuses it and the container restarts in a loop, for example with a missing `apid.pem`:
 
 ```
-UNSAFE /etc/wazuh-manager/certs/apid.pem: not a regular file
 ERROR: the manager Server API certificate is missing or unreadable: /etc/wazuh-manager/certs/apid.pem
+...
+UNSAFE /etc/wazuh-manager/certs/apid.pem: not a regular file
 credentials: the manager cannot start until the problems above are solved;
 ```
 

@@ -105,8 +105,9 @@ mounted at `/run/secrets/wazuh-credentials` for the life of the container, and
 each component's resolver publishes the passwords it owns in
 `export/credentials.env` of its configuration directory, readable by root only:
 `/usr/share/wazuh-indexer/config/export/credentials.env` in the Wazuh indexer
-and `/etc/wazuh-manager/export/credentials.env` (the `wazuh_etc` volume) in the
-Wazuh manager master. A worker publishes nothing.
+(in the container filesystem, not in a volume; it includes the `admin`
+password) and `/etc/wazuh-manager/export/credentials.env` (the `wazuh_etc`
+volume) in the Wazuh manager master. A worker publishes only `ca.pem`.
 
 - **Another path:** set `WAZUH_CREDENTIALS_FILE` to mount the file elsewhere.
   The container then refuses to start if the file is missing.

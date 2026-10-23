@@ -88,7 +88,7 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     **Note:** The container only decodes the token locally. A token the decoder
     refuses (for example, a malformed one) makes the container exit before
-    writing anything, naming the reason. A revoked token, or one already at
+    writing anything, naming the reason. An expired or revoked token, or one already at
     `max_uses`, is refused by the manager when the agent first starts, and the
     agent deletes it then (see the environment variables reference):
 
