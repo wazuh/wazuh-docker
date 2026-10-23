@@ -99,8 +99,15 @@ At every start, the container reads `/run/secrets/wazuh-credentials` as root and
 exports its `WAZUH_*` keys to the component's credential resolver, which takes
 the environment first. Once the component has stored the values, they are
 removed from the environment, before the service starts under its own user. The
-passwords are therefore not in the service's environment, nothing is written to
-disk for them, and `docker inspect` does not show them.
+passwords are therefore not in the service's environment, and `docker inspect`
+does not show them. They are still on disk in two places: the secret stays
+mounted at `/run/secrets/wazuh-credentials` for the life of the container, and
+each component's resolver publishes the passwords it owns in
+`export/credentials.env` of its configuration directory, readable by root only:
+`/usr/share/wazuh-indexer/config/export/credentials.env` in the Wazuh indexer
+(in the container filesystem, not in a volume; it includes the `admin`
+password) and `/etc/wazuh-manager/export/credentials.env` (the `wazuh_etc`
+volume) in the Wazuh manager master. A worker publishes only `ca.pem`.
 
 - **Another path:** set `WAZUH_CREDENTIALS_FILE` to mount the file elsewhere.
   The container then refuses to start if the file is missing.
@@ -271,9 +278,10 @@ A cluster worker without a user database passes, since it has no API accounts.
   clear text. The directory is in `.gitignore`: keep it out of your commits,
   back it up with the certificates, and restrict access to it.
 - The containers get the files as secrets, not as environment variables, and
-  keep no copy once the values are stored. If you pass the keys in the
-  environment instead, anyone who can run `docker inspect` on the host can read
-  them.
+  remove the keys from the environment once the values are stored. The
+  resolvers still publish the passwords in `export/credentials.env`, readable by
+  root only (see above). If you pass the keys in the environment instead, anyone
+  who can run `docker inspect` on the host can read them.
 - `docker compose down -v` removes the stores. The next start then takes the
   passwords from the env files again.
 - The names of earlier releases still work as aliases, in the environment only:

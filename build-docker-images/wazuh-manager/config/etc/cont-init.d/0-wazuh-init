@@ -134,7 +134,8 @@ remove_data_files() {
 #
 # certs/remoted.* is read by remoted's HTTPS listener (<remote><https>) and
 # by authd (<auth><ssl_manager_cert>). certs/apid.* is read by the Server
-# API, which only runs on the master. Both are issued by wazuh-certs-tool.sh and
+# API; the credentials resolver requires the pair on every node, workers
+# included, even though the Server API only serves requests on the master. Both are issued by wazuh-certs-tool.sh and
 # mounted into the container; nothing generates them here, and the manager does
 # not start without them. This only names the file that is missing, which the
 # error the manager reports on its own does not.
@@ -201,13 +202,10 @@ check_manager_server_certs() {
     print "Warning: authd (${authd_cert}) and the HTTPS listener (${https_cert}) use different certificates; both must present the same manager identity"
   fi
 
-  if [[ "$WAZUH_NODE_TYPE" != "worker" ]]
-  then
-    check_server_cert_pair "${WAZUH_MANAGER_CONF_DIR}/certs/apid.pem" \
-                           "${WAZUH_MANAGER_CONF_DIR}/certs/apid-key.pem" \
-                           "Server API" apid \
-                           "The Server API, and with it the manager, does not start"
-  fi
+  check_server_cert_pair "${WAZUH_MANAGER_CONF_DIR}/certs/apid.pem" \
+                         "${WAZUH_MANAGER_CONF_DIR}/certs/apid-key.pem" \
+                         "Server API" apid \
+                         "The Server API, and with it the manager, does not start"
 }
 
 ##############################################################################
@@ -401,11 +399,11 @@ fi
 # --------------------------
 # Remote: listen address
 #
-# The packaged configuration binds remoted to 127.0.0.1, which inside a
-# container leaves it reachable only from the container itself: the published
-# 1517 (and the legacy 1514) would refuse every agent connection. Binding on
-# all interfaces is scoped to the container network namespace, so what is
-# actually reachable from outside stays governed by the published ports.
+# The packaged configuration already binds the agent listeners (1517 and the
+# legacy 1514) to 0.0.0.0. WAZUH_REMOTE_BIND_ADDR lets a deployment restrict
+# them to one address. Inside a container all interfaces are scoped to the
+# container network namespace, so what is reachable from outside stays
+# governed by the published ports.
 # --------------------------
 # Escapes &, \ and | (the sed replacement delimiter used below) so a value
 # containing any of them is inserted literally instead of being interpreted
