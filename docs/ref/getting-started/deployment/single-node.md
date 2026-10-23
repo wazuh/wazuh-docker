@@ -21,11 +21,11 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
 3.  Download the certificate creation script and `config.yml`:
 
     ```bash
-    curl -fsS -o wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installation-assistant/wazuh-certs-tool-5.0.0.sh
-    curl -fsS -o config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.0.yml
+    curl -fsS -o wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installation-assistant/wazuh-certs-tool-5.0.1.sh
+    curl -fsS -o config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.1.yml
     ```
 
-    For a pre-release, use `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml` from the same path. The tool must be from RC 2 or later: earlier versions do not issue the Server API (`apid`) pair.
+    For a pre-release, use `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml` from the same path. The tool must be from RC 2 or later: earlier versions do not issue the Server API (`apid`) pair.
 
 4.  Edit the config.yml file with the configuration of the Wazuh components to be deployed
 

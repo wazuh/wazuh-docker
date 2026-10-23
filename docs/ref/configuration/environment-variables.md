@@ -261,7 +261,7 @@ deployment mounting its own `ossec.conf` at
 | `WAZUH_REGISTRATION_PASSWORD` | `WAZUH_ENROLLMENT_TOKEN` — there is no password-based enrollment |
 
 None of these configure anything, and the container logs a warning when one is
-set. The first two pointed enrollment at `authd` separately, which since 5.0.0 no
+set. The first two pointed enrollment at `authd` separately, which since 5.0.1 no
 longer happens: the agent enrolls through the manager connection it already has,
 so `<enrollment>` carries neither an address nor a port of its own. The token
 replaces the third for the same reason a 5.x manager only ever accepts a token:

@@ -20,7 +20,7 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
 
 2. **Export the identity** with a one-off container of your 4.x manager image, which runs the tool with the Python it bundles. Use the tag of your 4.x deployment:
    ```bash
-   curl -fsSLo wazuh-migrate-identity.py https://raw.githubusercontent.com/wazuh/wazuh/v5.0.0/tools/migration/wazuh-migrate-identity.py
+   curl -fsSLo wazuh-migrate-identity.py https://raw.githubusercontent.com/wazuh/wazuh/v5.0.1/tools/migration/wazuh-migrate-identity.py
    mkdir wazuh-4x-bundle
    sudo docker run --rm --entrypoint /var/ossec/framework/python/bin/python3 \
      -v single-node_wazuh_etc:/var/ossec/etc:ro \

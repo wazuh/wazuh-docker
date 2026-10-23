@@ -112,7 +112,7 @@ Follow these steps to deploy the Wazuh agent using Docker.
     The endpoint always lands in `ossec.conf` complete, as `host:port/prefix`.
 
     **Note:** The port must match the `<remote><https><port>` of your Wazuh
-    manager, `1517` in the default configuration. Since 5.0.0 the agent enrolls
+    manager, `1517` in the default configuration. Since 5.0.1 the agent enrolls
     over that same HTTPS connection, so this port covers both agent
     communication and registration: there is no separate enrollment port.
 
