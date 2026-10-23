@@ -161,7 +161,10 @@ docker compose exec wazuh.indexer /password-tool.sh --user kibanaserver
 docker compose exec wazuh.manager /password-tool.sh --user wazuh-internal-client
 ```
 
-`--all` changes every account of that component. To choose the password
+`--all` changes every account of that component. On the manager, each account
+is changed on its own: if one of them fails, the tool still prints the accounts
+it did change, with their commands, and exits with code 1. Run
+`--user <account>` again for the one that failed. To choose the password
 yourself, pass it on standard input:
 
 ```bash

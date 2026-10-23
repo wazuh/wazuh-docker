@@ -91,6 +91,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
 | [#2760](https://github.com/wazuh/wazuh-docker/issues/2760) | Stop publishing and exposing `514/udp`, which the Wazuh manager 5.0 does not listen on, and let `opensearch_dashboards.yml` be mounted as a single file by writing its settings through the file instead of `sed -i` |
 | [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
 | [#2721](https://github.com/wazuh/wazuh-docker/issues/2721) | Stop `certificates-conf.sh` when `wazuh-certs-tool.sh` fails or `wazuh-certificates/` is missing, and give `config.yml` back to the user who ran it with `sudo` |
