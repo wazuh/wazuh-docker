@@ -162,7 +162,7 @@ if $DO_COPY; then
     if [ ! -f "$OUTPUT_DIR/${node}-apid.pem" ] || [ ! -f "$OUTPUT_DIR/${node}-apid-key.pem" ]; then
       echo "Error: $OUTPUT_DIR/${node}-apid.pem or ${node}-apid-key.pem is missing."
       echo "The Wazuh manager does not start without the Server API certificate."
-      echo "Use a wazuh-certs-tool.sh that issues it; the 5.0.0-rc1 one does not."
+      echo "Use a wazuh-certs-tool.sh that issues it; the 5.0.1-rc1 one does not."
       exit 1
     fi
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
@@ -185,9 +185,18 @@ fi
 if $DO_PRIV; then
   for node in "${INDEXER_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for indexer $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
+    # The indexer resolver uses a mounted pair only when root owns it; the
+    # indexer reads it through its group. The admin pair is root's alone:
+    # securityadmin runs as root.
+    echo "Setting permissions for indexer $node (0:${WAZUH_GID}, admin 0:0)"
+    chown -R 0:${WAZUH_GID} "./config/$dir_name/certs"
+    chmod 640 "./config/$dir_name/certs/"*
+    for admin_file in "./config/$dir_name/certs/admin.pem" "./config/$dir_name/certs/admin-key.pem"; do
+      if [ -f "$admin_file" ]; then
+        chown 0:0 "$admin_file"
+        chmod 600 "$admin_file"
+      fi
+    done
   done
 
   for node in "${MANAGER_NODES[@]}"; do
@@ -199,9 +208,9 @@ if $DO_PRIV; then
 
   for node in "${DASHBOARD_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
-    echo "Setting permissions for dashboard $node (${WAZUH_UID}:${WAZUH_GID})"
-    chown -R ${WAZUH_UID}:${WAZUH_GID} "./config/$dir_name/certs"
-    chmod 400 "./config/$dir_name/certs/"*
+    echo "Setting permissions for dashboard $node (0:${WAZUH_GID})"
+    chown -R 0:${WAZUH_GID} "./config/$dir_name/certs"
+    chmod 640 "./config/$dir_name/certs/"*
   done
   echo "Setting permissions for root-ca certificates (0:${WAZUH_GID})"
   chown -R 0:${WAZUH_GID} "./config/root-ca/certs"

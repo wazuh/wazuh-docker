@@ -1,4 +1,4 @@
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
     image: wazuh/wazuh-manager:5.0.1
@@ -25,7 +25,6 @@ services:
       - "1517:1517"
       - "1514:1514"
       - "1515:1515"
-      - "514:514/udp"
       - "55000:55000"
     secrets:
       - source: manager_credentials
@@ -37,18 +36,20 @@ services:
       - WAZUH_CLUSTER_BIND_ADDR=wazuh.manager
     volumes:
       - wazuh_api_configuration:/var/wazuh-manager/api/configuration
-      - wazuh_etc:/var/wazuh-manager/etc
+      - wazuh_etc:/etc/wazuh-manager
       - wazuh_logs:/var/wazuh-manager/logs
       - wazuh_queue:/var/wazuh-manager/queue
       - wazuh_var_multigroups:/var/wazuh-manager/var/multigroups
       - wazuh_data:/var/wazuh-manager/data
-      - ./config/root-ca/certs/root-ca.pem:/var/wazuh-manager/etc/certs/root-ca.pem
-      - ./config/wazuh_manager/certs/wazuh.manager.pem:/var/wazuh-manager/etc/certs/indexer-connector.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/var/wazuh-manager/etc/certs/indexer-connector-key.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-remoted.pem:/var/wazuh-manager/etc/certs/remoted.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-remoted-key.pem:/var/wazuh-manager/etc/certs/remoted-key.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-apid.pem:/var/wazuh-manager/etc/certs/apid.pem
-      - ./config/wazuh_manager/certs/wazuh.manager-apid-key.pem:/var/wazuh-manager/etc/certs/apid-key.pem
+      - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/ca/root-ca.pem
+      - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/root-ca.pem
+      - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/indexer-ca.pem
+      - ./config/wazuh_manager/certs/wazuh.manager.pem:/etc/wazuh-manager/certs/indexer-connector.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-key.pem:/etc/wazuh-manager/certs/indexer-connector-key.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-remoted.pem:/etc/wazuh-manager/certs/remoted.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-remoted-key.pem:/etc/wazuh-manager/certs/remoted-key.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-apid.pem:/etc/wazuh-manager/certs/apid.pem
+      - ./config/wazuh_manager/certs/wazuh.manager-apid-key.pem:/etc/wazuh-manager/certs/apid-key.pem
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.1
@@ -95,28 +96,29 @@ services:
     container_name: single-node-wazuh.dashboard
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:5601/app/login" ]
+      test: [ "CMD", "curl", "-f", "-k", "-s", "-o", "/dev/null", "https://localhost:443/app/login" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     ports:
-      - 443:5601
+      - 443:443
     secrets:
       - source: dashboard_credentials
         target: wazuh-credentials
     environment:
-      - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - WAZUH_API_URL=https://wazuh.manager
       - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem
+      - WAZUH_API_CA=/usr/share/wazuh-dashboard/config/certs/manager-ca.pem
     volumes:
       - ./config/wazuh_dashboard/certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - ./config/wazuh_dashboard/certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem
+      - ./config/root-ca/certs/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/manager-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:

@@ -18,15 +18,14 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
     cd multi-node
     ```
 
-3.  Download the certificate creation script, `config.yml` and the credentials library:
+3.  Download the certificate creation script and `config.yml`:
 
     ```bash
-    curl -o wazuh-certs-tool.sh https://packages.wazuh.com/5.0/wazuh-certs-tool-5.0.1-1.sh
-    curl -o config.yml https://packages.wazuh.com/5.0/config-5.0.1-1.yml
+    curl -fsS -o wazuh-certs-tool.sh https://packages.wazuh.com/production/5.x/installation-assistant/wazuh-certs-tool-5.0.1.sh
+    curl -fsS -o config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.1.yml
     ```
 
-    `wazuh-credentials.sh` is the library `credentials-conf.sh` uses in step 6 to
-    generate the passwords. Use the same version as the images.
+    For a pre-release, use `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml` from the same path. The tool must be from RC 2 or later: earlier versions do not issue the Server API (`apid`) pair.
 
 4.  Edit the `config.yml` file with the configuration of the Wazuh components to be deployed
 
@@ -71,9 +70,10 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
 
     This issues every certificate the deployment mounts, including
     `wazuh.master-remoted.pem` and `wazuh.worker-remoted.pem`, the pair each
-    manager node presents to agents, and `wazuh.master-apid.pem`, the pair the
-    Server API presents on `55000`. **A manager node does not start without its
-    pairs**, so this step has to run before `docker compose up`.
+    manager node presents to agents, and `wazuh.master-apid.pem` and
+    `wazuh.worker-apid.pem`, the Server API pairs (`55000`). The worker mounts its
+    `apid` pair too: the manager checks it on every node. **A manager node does
+    not start without its pairs**, so this step has to run before `docker compose up`.
 
     The Server API runs on `wazuh.master` only, and its certificate names that
     node. API clients that reach `55000` through the Docker host need its

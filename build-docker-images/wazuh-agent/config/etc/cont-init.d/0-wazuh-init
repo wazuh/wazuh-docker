@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Variables
 source /permanent_data.env
