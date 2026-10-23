@@ -86,7 +86,6 @@ Ensure that the necessary network ports are open and available on the Docker hos
       `remoted`). Kept for backward compatibility, not used by 5.x agents.
     * `1515/TCP`: For agent enrollment with Wazuh 4.x agents (`wazuh-authd`).
       Kept for backward compatibility, not used by 5.x agents.
-    * `514/UDP`: For syslog event collection.
     * `55000/TCP`: For Wazuh API (default).
     * `1516/TCP`: For cluster communication between manager nodes. Only needed
       between the manager containers, not on the Docker host.
@@ -98,7 +97,7 @@ Ensure that the necessary network ports are open and available on the Docker hos
     * `9300/TCP`: For inter-node communication (if clustered). Only needed
       between the indexer containers, not on the Docker host.
 * **Wazuh Dashboard**:
-    * `443/TCP` on the host, mapped to the container's `5601/TCP`: For web access, over HTTPS served by the dashboard itself.
+    * `443/TCP` on the host and in the container: For web access, over HTTPS served by the dashboard itself. The dashboard runs as a non-root user and binds `443` because Docker Engine 20.10 and later set `net.ipv4.ip_unprivileged_port_start=0` in the network namespace of each container. This does not apply with `network_mode: host`.
 
 Port mappings in `docker-compose.yml` will expose these container ports on the host. Adjust host ports if defaults cause conflicts.
 
@@ -107,7 +106,7 @@ the `multi-node` deployment the agent ports are published by the `nginx`
 service, which balances `1517` (and the legacy `1514`) across the master and
 worker nodes; enrollment travels over `1517` together with the agent traffic,
 so it is balanced the same way. `wazuh.master` publishes the other manager
-ports itself: `1515`, `514/UDP` and the Wazuh API on `55000`.
+ports itself: `1515` and the Wazuh API on `55000`.
 
 ## Important Considerations
 
