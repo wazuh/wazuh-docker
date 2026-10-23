@@ -48,6 +48,24 @@ WAZUH_MANAGER_CONF="/var/wazuh-manager/bin/wazuh-manager-conf -H /var/wazuh-mana
 # its own timeout and fall back to SIGKILL).
 STATUS_TIMEOUT=5
 
+# A start, stop, restart or reload in progress holds the lock of
+# wazuh-manager-control from the stop until the daemons are started again, and
+# status waits for that lock: it times out, or reports the daemons that are
+# being restarted on purpose (a Server API PUT /cluster/restart, a reload,
+# wazuh-manager-control restart). Those checks are skipped while the process
+# that holds the lock is alive, for at most BUSY_MAX_CHECKS in a row (the
+# start alone may wait up to 180 s for the engine), so a restart that hangs
+# still ends in a restart of the container. A lock left by a dead process is
+# reclaimed by status itself.
+CONTROL_LOCK_PID="/var/wazuh-manager/var/start-script-lock/pid"
+BUSY_MAX_CHECKS=16
+busy_checks=0
+
+_manager_busy() {
+    local pid
+    pid=$(cat "${CONTROL_LOCK_PID}" 2>/dev/null) && [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null
+}
+
 # Supervise the manager: if a critical daemon is not running, exit non-zero so
 # the container dies and `restart: always` (single-node/multi-node
 # docker-compose.yml) actually gets a chance to bring it back. Without this,
@@ -93,9 +111,17 @@ _manager_unhealthy() {
 
 sleep "${STARTUP_GRACE_PERIOD}"
 while kill -0 "${TAIL_PID}" 2>/dev/null; do
-    if _manager_unhealthy; then
-        echo "Wazuh Manager is not running as expected, exiting so the container can be restarted..."
-        _stop 1
+    # Busy is checked again after a failed status: the restart may have taken
+    # the lock while status was already waiting for it.
+    if _manager_busy || _manager_unhealthy; then
+        if _manager_busy && [ "${busy_checks}" -lt "${BUSY_MAX_CHECKS}" ]; then
+            busy_checks=$((busy_checks + 1))
+        elif _manager_busy || _manager_unhealthy; then
+            echo "Wazuh Manager is not running as expected, exiting so the container can be restarted..."
+            _stop 1
+        fi
+    else
+        busy_checks=0
     fi
     sleep "${CHECK_INTERVAL}" &
     wait $!

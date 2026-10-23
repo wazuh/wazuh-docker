@@ -86,9 +86,11 @@ Follow these steps to deploy the Wazuh agent using Docker.
     | `WAZUH_AGENT_SSL_VERIFICATION` | Inferred | `<agent><ssl><verification_mode>` |
     | `WAZUH_AGENT_SSL_CERT` / `WAZUH_AGENT_SSL_KEY` | None | `<agent><ssl><certificate>` / `<key>` |
 
-    **Note:** A rejected token (expired, revoked, already at `max_uses`, or
-    malformed) makes the container exit before writing anything, naming the
-    reason:
+    **Note:** The container only decodes the token locally. A token the decoder
+    refuses (for example, a malformed one) makes the container exit before
+    writing anything, naming the reason. An expired or revoked token, or one already at
+    `max_uses`, is refused by the manager when the agent first starts, and the
+    agent deletes it then (see the environment variables reference):
 
     ```text
     ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:
