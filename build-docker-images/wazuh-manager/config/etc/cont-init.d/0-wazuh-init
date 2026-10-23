@@ -260,8 +260,8 @@ set_custom_hostname() {
 # workers authenticate each other with one shared value.
 #
 # This follows the path convention the image already uses for
-# WAZUH_CONFIG_MOUNT and /wazuh-migration: if the directory is there, the
-# deployment has given the manager nodes somewhere to keep that value. The first
+# WAZUH_CONFIG_MOUNT: if the directory is there, the deployment has given the
+# manager nodes somewhere to keep that value. The first
 # node to start creates it and the rest read it, so the key is random per
 # deployment and is stored neither in the image nor in the deployment files.
 #
