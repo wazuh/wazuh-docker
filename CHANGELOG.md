@@ -21,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2758](https://github.com/wazuh/wazuh-docker/issues/2758) | Make the Wazuh dashboard listen on `443` inside the container in the single-node and multi-node stacks, as the image, the package and the Kubernetes deployment do |
 | [#2743](https://github.com/wazuh/wazuh-docker/issues/2743) | Adapt the images and stacks to the RC 2 per-package credentials and `/etc/wazuh-manager`, and build the final images on `amazonlinux:2023-minimal` with pre-pulled base images |
 | [#2728](https://github.com/wazuh/wazuh-docker/issues/2728) | Mount the Server API certificate issued by `wazuh-certs-tool.sh` on the manager node that runs the API |
 | [#2716](https://github.com/wazuh/wazuh-docker/issues/2716) | Rename the `wazuh-wui` Server API user to `wazuh-internal-client`, following wazuh/wazuh#40066. The `WAZUH_MANAGER_WUI_PASSWORD` key keeps its name |
@@ -91,6 +92,7 @@
 | Issue | Comment |
 | - | - |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
+| [#2760](https://github.com/wazuh/wazuh-docker/issues/2760) | Stop publishing and exposing `514/udp`, which the Wazuh manager 5.0 does not listen on, and let `opensearch_dashboards.yml` be mounted as a single file by writing its settings through the file instead of `sed -i` |
 | [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
 | [#2721](https://github.com/wazuh/wazuh-docker/issues/2721) | Stop `certificates-conf.sh` when `wazuh-certs-tool.sh` fails or `wazuh-certificates/` is missing, and give `config.yml` back to the user who ran it with `sudo` |
 | [#2720](https://github.com/wazuh/wazuh-docker/issues/2720) | Download the `artifact_urls` file of the requested version in `build-images.sh` instead of reusing a leftover `artifact_urls.yaml`, and add `-a/--artifact-urls` to build from a given file |
