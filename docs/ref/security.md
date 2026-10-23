@@ -8,10 +8,10 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 - `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password.
 - The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
 - `config/credentials/*.env` holds the deployment's passwords in clear text. The directory is in `.gitignore`: keep it out of your commits and restrict read access to the deployment directory.
-- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers delete their copy once the values are stored. Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
+- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers remove the keys from their environment once the values are stored. The Wazuh indexer and the Wazuh manager master publish the passwords they own in `export/credentials.env` of their configuration directory, readable by root only; the Wazuh dashboard has no `export/`, and a worker publishes only `ca.pem` (see [Credentials](credentials.md)). Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
 - Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of keeping the files on the host.
 - Rotate credentials regularly and after any suspected exposure.
-- The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
+- The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Wazuh indexer credentials, the `wazuh-internal-client` password (`wazuh_core.hosts.default.password`) and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
 
 ### Manager cluster key
 
@@ -40,13 +40,13 @@ The key in use is written to `etc/wazuh-manager.conf` in each manager `etc` volu
 
 ### Manager agent listener certificate
 
-The Wazuh manager presents `etc/certs/remoted.pem` and `etc/certs/remoted-key.pem` on port `1517`, to both the agent listener and agent enrollment. **The manager does not create them, and it does not start without them.** They are issued by `wazuh-certs-tool.sh`, as `<node>-remoted.pem` and `<node>-remoted-key.pem`, and the Compose files mount them from the host. This is what makes the manager verifiable: agents anywhere trust one CA, the deployment's root CA, which covers every cluster node and survives recreating a manager container. Its certificate is copied to `config/root-ca/certs/root-ca.pem`; its private key stays in the CA directory of the host that issued the certificates.
+The Wazuh manager presents `/etc/wazuh-manager/certs/remoted.pem` and `/etc/wazuh-manager/certs/remoted-key.pem` on port `1517`, to both the agent listener and agent enrollment. **The manager does not create them, and it does not start without them.** They are issued by `wazuh-certs-tool.sh`, as `<node>-remoted.pem` and `<node>-remoted-key.pem`, and the Compose files mount them from the host. This is what makes the manager verifiable: agents anywhere trust one CA, the deployment's root CA, which covers every cluster node and survives recreating a manager container. Its certificate is copied to `config/root-ca/certs/root-ca.pem`; its private key stays in the CA directory of the host that issued the certificates.
 
 The certificate is issued for that listener and nothing else: `CA:FALSE`, `keyUsage` limited to `digitalSignature` and `keyEncipherment`, `extendedKeyUsage` `serverAuth`, and a Subject Alternative Name holding the addresses agents dial. The file is the leaf followed by `root-ca.pem`, which is the chain agents receive in the handshake.
 
 - It is a different pair from `<node>.pem`, which the manager presents to the Wazuh indexer as a client. Do not reuse one for the other: the key that faces agents would then also be the key that authenticates the indexer connection.
 - The private key belongs on the deployment host only. Protect `wazuh-certificates/` and `config/*/certs`, and do not publish them or copy them between deployments.
-- Distribute the root CA certificate, never the root CA key. `wazuh-certs-tool.sh` keeps the CA in `/etc/wazuh/ca` (or the directory set in `WAZUH_CA_DIR`), root-only, and never copies `root-ca.key` into `wazuh-certificates/`. Back that directory up: it is what issues certificates for new nodes. It is shared by every deployment whose certificates are issued on the same host, unless `WAZUH_CA_DIR` sets another one.
+- Distribute the root CA certificate, never the root CA key. `wazuh-certs-tool.sh` keeps the CA in `wazuh-ca/` next to the tool (or in the directory set in `WAZUH_CA_DIR`, which must be an absolute path), root-only, and never copies `root-ca.key` into `wazuh-certificates/`. Back that directory up: it is what issues certificates for new nodes. Run the tool from the same directory, or set the same `WAZUH_CA_DIR`, when you add nodes; otherwise it creates a new CA that the existing nodes do not trust.
 - The addresses in the SAN are what agents can verify by name. Which ones belong there is part of the deployment steps — [single-node](getting-started/deployment/single-node.md), [multi-node](getting-started/deployment/multi-node.md).
 - To rotate the pair, issue the certificates again, with the same `--agent-san` options as when the deployment was created, and restart:
   ```bash
@@ -60,11 +60,18 @@ The certificate is issued for that listener and nothing else: `CA:FALSE`, `keyUs
 
 ### Manager Server API certificate
 
-The Server API presents `etc/certs/apid.pem` and `etc/certs/apid-key.pem` on port `55000`. **The API does not create them, and the manager does not start without them** on the node that runs the API: the single-node manager and the multi-node master. Workers do not run the API. They are issued by `wazuh-certs-tool.sh`, as `<node>-apid.pem` and `<node>-apid-key.pem`, with the same profile as the agent listener pair and signed by the same root CA, and the Compose files mount them from the host.
+The Server API presents `/etc/wazuh-manager/certs/apid.pem` and `/etc/wazuh-manager/certs/apid-key.pem` on port `55000`. **The API does not create them, and the manager does not start without them** on the single-node manager and on every multi-node manager node, workers included: the manager's credential resolver checks the pair before the daemons start. They are issued by `wazuh-certs-tool.sh`, as `<node>-apid.pem` and `<node>-apid-key.pem`, with the same profile as the agent listener pair and signed by the same root CA, and the Compose files mount them from the host.
 
 - The SAN holds the manager node's `ip` and `dns` entries from `config.yml`, `localhost`, `127.0.0.1` and `::1`, plus the addresses given with `--api-san`. The node's `dns` entry is the name the Wazuh dashboard uses (`WAZUH_API_URL`). Add with `--api-san` any other name or address API clients dial, for example the Docker host when `55000` is reached from outside. `--agent-san` addresses do not reach this certificate.
 - Clients verify the API against `config/root-ca/certs/root-ca.pem`.
 - It is rotated together with the other certificates, as described above.
+
+### Dashboard verification of the indexer
+
+The dashboard verifies the indexer with `opensearch.ssl.verificationMode: full`: the certificate must chain to `indexer-ca.pem`, which the Compose files mount from `config/root-ca/certs/root-ca.pem`, and must name the host the dashboard dialed. Every host in `OPENSEARCH_HOSTS` has to be a `dns` or `ip` entry of that indexer node in `config.yml`. The shipped Compose files meet this: `wazuh.indexer` on single-node, `wazuh1.indexer` to `wazuh3.indexer` on multi-node.
+
+- When the dashboard reaches the indexer through another name or address, such as an external indexer, a load balancer or an IP address, add it to the indexer node in `config.yml` and issue the indexer certificate again. Until then the dashboard cannot query the indexer and logs `Hostname/IP does not match certificate's altnames`.
+- `OPENSEARCH_SSL_VERIFICATION_MODE=certificate` checks the chain only. Every component of the deployment holds a certificate signed by the same root CA, so with that setting any of them is accepted as the indexer. Use it only as a temporary measure while the certificate is issued again.
 
 ### Agent verification of the manager
 

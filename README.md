@@ -51,7 +51,7 @@ We thank them and everyone else who has contributed to this project.
 
 ## License and copyright
 
-Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 ## Web references
 

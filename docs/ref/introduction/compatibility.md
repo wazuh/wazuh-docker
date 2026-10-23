@@ -12,7 +12,7 @@ This section provides information about the compatibility of the Wazuh Docker st
 
 ### Privileged ports and rootless Docker
 
-The default Compose deployments publish some privileged ports on the host (for example, the Dashboard on `443/tcp` and syslog on `514/udp`).
+The default Compose deployments publish some privileged ports on the host (for example, the Dashboard on `443/tcp`). The Wazuh manager 5.0 has no syslog input, so `514/udp` is not published.
 
 - If you run Docker in rootless mode or under restrictive policies, publishing ports below `1024` may fail.
 - In such environments, map the services to non-privileged host ports in the corresponding `docker-compose.yml` file.
