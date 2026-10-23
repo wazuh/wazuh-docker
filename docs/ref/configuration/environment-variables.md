@@ -293,4 +293,6 @@ environment:
 | `UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE` | `uiSettings.overrides.defaultRoute` |
 | `WAZUH_API_URL`, `API_PORT`, `API_USERNAME`, `RUN_AS`, `WAZUH_API_CA` | `wazuh_core.hosts.default`: `url`, `port`, `username`, `run_as`, `ca` (defaults: `https://localhost`, `55000`, `wazuh-internal-client`, `true`, `/usr/share/wazuh-dashboard/config/certs/manager-ca.pem`) |
 
+`OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`: the dashboard checks the certificate chain and that every host in `OPENSEARCH_HOSTS` is named in the certificate that indexer presents. `certificate` checks the chain only. See [Dashboard verification of the indexer](../security.md#dashboard-verification-of-the-indexer).
+
 ---

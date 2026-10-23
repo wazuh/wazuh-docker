@@ -66,6 +66,13 @@ The Server API presents `/etc/wazuh-manager/certs/apid.pem` and `/etc/wazuh-mana
 - Clients verify the API against `config/root-ca/certs/root-ca.pem`.
 - It is rotated together with the other certificates, as described above.
 
+### Dashboard verification of the indexer
+
+The dashboard verifies the indexer with `opensearch.ssl.verificationMode: full`: the certificate must chain to `indexer-ca.pem`, which the Compose files mount from `config/root-ca/certs/root-ca.pem`, and must name the host the dashboard dialed. Every host in `OPENSEARCH_HOSTS` has to be a `dns` or `ip` entry of that indexer node in `config.yml`. The shipped Compose files meet this: `wazuh.indexer` on single-node, `wazuh1.indexer` to `wazuh3.indexer` on multi-node.
+
+- When the dashboard reaches the indexer through another name or address, such as an external indexer, a load balancer or an IP address, add it to the indexer node in `config.yml` and issue the indexer certificate again. Until then the dashboard cannot query the indexer and logs `Hostname/IP does not match certificate's altnames`.
+- `OPENSEARCH_SSL_VERIFICATION_MODE=certificate` checks the chain only. Every component of the deployment holds a certificate signed by the same root CA, so with that setting any of them is accepted as the indexer. Use it only as a temporary measure while the certificate is issued again.
+
 ### Agent verification of the manager
 
 With nothing configured, an agent enrolled without a token does not verify the manager's certificate (`verification_mode` `none`) and logs `TLS verification is DISABLED`. To verify a manager presenting a certificate signed by this deployment's root CA, the agent needs that CA — `config/root-ca/certs/root-ca.pem` — through `WAZUH_MANAGER_CA` or dropped at `/var/ossec/etc/certs/manager-ca.pem`, deliberately not `root-ca.pem`, which is reserved for the trust anchor a token enrollment writes. An agent enrolled with `WAZUH_ENROLLMENT_TOKEN` needs none of this: the token supplies its own trust anchor. See [Environment Variables](configuration/environment-variables.md#wazuh-agent).
