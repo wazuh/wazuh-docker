@@ -53,6 +53,21 @@ declare -A CONFIG_MAP=(
 # by sed as a backreference, an escape, or the end of the substitution.
 escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
 
+# Applies a sed script to the configuration file and writes the result over the
+# same file. sed -i would rename a new file over it, which fails when the file is
+# a single-file bind mount ("Device or resource busy") and would also drop its
+# owner and mode; writing through the existing file keeps all three.
+edit_config() {
+    local tmp
+    tmp=$(mktemp) || { echo "ERROR: cannot create a temporary file to update ${DASHBOARD_CONFIG_FILE}" >&2; exit 1; }
+    if ! sed "$1" "$DASHBOARD_CONFIG_FILE" > "$tmp" || ! cat "$tmp" > "$DASHBOARD_CONFIG_FILE"; then
+        rm -f "$tmp"
+        echo "ERROR: cannot update ${DASHBOARD_CONFIG_FILE}" >&2
+        exit 1
+    fi
+    rm -f "$tmp"
+}
+
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
     value="${CONFIG_MAP[$key]}"
@@ -68,7 +83,7 @@ for key in "${!CONFIG_MAP[@]}"; do
     # Try to replace existing line (commented or uncommented); if the key is
     # not present at all, append it instead of dropping the value silently.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|" "$DASHBOARD_CONFIG_FILE"
+        edit_config "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|"
     else
         # Ensure the file ends in a newline before appending, otherwise the
         # new line would be glued onto the previous one.
@@ -82,11 +97,11 @@ done
 # Handle wazuh_core.hosts section separately
 if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
     # Update existing wazuh_core.hosts section
-    sed -i "/^wazuh_core.hosts:/,/^[^ ]/ {
+    edit_config "/^wazuh_core.hosts:/,/^[^ ]/ {
         s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
         s|port:.*|port: $(escape_repl "$API_PORT")|
         s|username:.*|username: $(escape_repl "$API_USERNAME")|
         s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
         s|ca:.*|ca: '$(escape_repl "$WAZUH_API_CA")'|
-    }" "$DASHBOARD_CONFIG_FILE"
+    }"
 fi

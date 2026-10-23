@@ -284,7 +284,7 @@ environment:
 
 | Variable | Setting |
 | --- | --- |
-| `SERVER_HOST`, `SERVER_PORT` | `server.host`, `server.port` |
+| `SERVER_HOST`, `SERVER_PORT` | `server.host`, `server.port` (defaults: `0.0.0.0`, `443`) |
 | `SERVER_SSL_ENABLED`, `SERVER_SSL_KEY`, `SERVER_SSL_CERTIFICATE` | `server.ssl.enabled`, `server.ssl.key`, `server.ssl.certificate` |
 | `OPENSEARCH_HOSTS` | `opensearch.hosts` |
 | `OPENSEARCH_SSL_VERIFICATION_MODE`, `OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES` | `opensearch.ssl.verificationMode`, `opensearch.ssl.certificateAuthorities` |
