@@ -1,18 +1,18 @@
 #!/bin/bash
-# Wazuh Docker Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Environment variables with defaults
 SERVER_HOST="${SERVER_HOST:-0.0.0.0}"
 SERVER_PORT="${SERVER_PORT:-443}"
 OPENSEARCH_HOSTS="${OPENSEARCH_HOSTS:-https://wazuh.indexer:9200}"
-OPENSEARCH_SSL_VERIFICATION_MODE="${OPENSEARCH_SSL_VERIFICATION_MODE:-certificate}"
+OPENSEARCH_SSL_VERIFICATION_MODE="${OPENSEARCH_SSL_VERIFICATION_MODE:-full}"
 OPENSEARCH_REQUEST_HEADERS_ALLOWLIST="${OPENSEARCH_REQUEST_HEADERS_ALLOWLIST:-[\"securitytenant\",\"Authorization\"]}"
 OPENSEARCH_SECURITY_MULTITENANCY_ENABLED="${OPENSEARCH_SECURITY_MULTITENANCY_ENABLED:-false}"
 OPENSEARCH_SECURITY_READONLY_MODE_ROLES="${OPENSEARCH_SECURITY_READONLY_MODE_ROLES:-[\"kibana_read_only\"]}"
 SERVER_SSL_ENABLED="${SERVER_SSL_ENABLED:-true}"
-SERVER_SSL_KEY="${SERVER_SSL_KEY:-/etc/wazuh-dashboard/certs/dashboard-key.pem}"
-SERVER_SSL_CERTIFICATE="${SERVER_SSL_CERTIFICATE:-/etc/wazuh-dashboard/certs/dashboard.pem}"
-OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES="${OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES:-[/etc/wazuh-dashboard/certs/root-ca.pem]}"
+SERVER_SSL_KEY="${SERVER_SSL_KEY:-/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem}"
+SERVER_SSL_CERTIFICATE="${SERVER_SSL_CERTIFICATE:-/usr/share/wazuh-dashboard/config/certs/dashboard.pem}"
+OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES="${OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES:-[/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem]}"
 UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE="${UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE:-/app/wz-home}"
 OPENSEARCH_SECURITY_COOKIE_TTL="${OPENSEARCH_SECURITY_COOKIE_TTL:-900000}"
 OPENSEARCH_SECURITY_SESSION_TTL="${OPENSEARCH_SECURITY_SESSION_TTL:-900000}"
@@ -22,6 +22,8 @@ OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-
 WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
 API_PORT="${API_PORT:-55000}"
 API_USERNAME="${API_USERNAME:-wazuh-internal-client}"
+# The CA that verifies the Server API certificate: the manager's, not the indexer's.
+WAZUH_API_CA="${WAZUH_API_CA:-/usr/share/wazuh-dashboard/config/certs/manager-ca.pem}"
 RUN_AS="${RUN_AS:-true}"
 
 # Configuration file path
@@ -51,6 +53,21 @@ declare -A CONFIG_MAP=(
 # by sed as a backreference, an escape, or the end of the substitution.
 escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
 
+# Applies a sed script to the configuration file and writes the result over the
+# same file. sed -i would rename a new file over it, which fails when the file is
+# a single-file bind mount ("Device or resource busy") and would also drop its
+# owner and mode; writing through the existing file keeps all three.
+edit_config() {
+    local tmp
+    tmp=$(mktemp) || { echo "ERROR: cannot create a temporary file to update ${DASHBOARD_CONFIG_FILE}" >&2; exit 1; }
+    if ! sed "$1" "$DASHBOARD_CONFIG_FILE" > "$tmp" || ! cat "$tmp" > "$DASHBOARD_CONFIG_FILE"; then
+        rm -f "$tmp"
+        echo "ERROR: cannot update ${DASHBOARD_CONFIG_FILE}" >&2
+        exit 1
+    fi
+    rm -f "$tmp"
+}
+
 # Replace configuration values in the dashboard config file
 for key in "${!CONFIG_MAP[@]}"; do
     value="${CONFIG_MAP[$key]}"
@@ -66,7 +83,7 @@ for key in "${!CONFIG_MAP[@]}"; do
     # Try to replace existing line (commented or uncommented); if the key is
     # not present at all, append it instead of dropping the value silently.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        sed -i "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|" "$DASHBOARD_CONFIG_FILE"
+        edit_config "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|"
     else
         # Ensure the file ends in a newline before appending, otherwise the
         # new line would be glued onto the previous one.
@@ -80,10 +97,11 @@ done
 # Handle wazuh_core.hosts section separately
 if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
     # Update existing wazuh_core.hosts section
-    sed -i "/^wazuh_core.hosts:/,/^[^ ]/ {
+    edit_config "/^wazuh_core.hosts:/,/^[^ ]/ {
         s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
         s|port:.*|port: $(escape_repl "$API_PORT")|
         s|username:.*|username: $(escape_repl "$API_USERNAME")|
         s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
-    }" "$DASHBOARD_CONFIG_FILE"
+        s|ca:.*|ca: '$(escape_repl "$WAZUH_API_CA")'|
+    }"
 fi

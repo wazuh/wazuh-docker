@@ -79,9 +79,9 @@ update_stage_in_files() {
 }
 
 # Compute the value written into branch reference defaults ("<key>: '...'").
-# Without --tag, references stay branch-like (e.g. 5.0.0).
-# With --tag, references become tag-like (e.g. v5.0.0-beta3), or a plain release
-# tag (e.g. v5.0.0) when no stage is provided.
+# Without --tag, references stay branch-like (e.g. 5.1.0).
+# With --tag, references become tag-like (e.g. v5.1.0-beta3), or a plain release
+# tag (e.g. v5.1.0) when no stage is provided.
 build_reference() {
     if [[ -n "$TAG" ]]; then
         if [[ -z "$STAGE" ]]; then
@@ -95,7 +95,7 @@ build_reference() {
 }
 
 # Tag mode only: normalize every reference to the current version
-# (branch-like "5.0.0", "v5.0.0" or "v5.0.0-<stage>") into ${REFERENCE}.
+# (branch-like "5.1.0", "v5.1.0" or "v5.1.0-<stage>") into ${REFERENCE}.
 # Matching is restricted to "<key>: '...'" entries so plain version strings
 # elsewhere in the repository are left untouched.
 update_tag_references() {
@@ -161,7 +161,7 @@ main() {
         esac
     done
 
-    # --tag rewrites branch references into tag-like references (e.g. v5.0.0-beta3)
+    # --tag rewrites branch references into tag-like references (e.g. v5.1.0-beta3)
     # and re-tags the Docker images accordingly. It is mutually exclusive with
     # --set-as-main, which keeps references on main.
     if [[ -n "$TAG" && -n "$set_as_main" ]]; then
@@ -225,7 +225,7 @@ main() {
     fi
 
     # Tag mode: normalize remaining version references and re-tag the Docker images
-    # (image tags carry no leading 'v', e.g. 5.0.0-beta3).
+    # (image tags carry no leading 'v', e.g. 5.1.0-beta3).
     if [[ -n "$TAG" ]]; then
         echo "Updating version references to tag reference ${REFERENCE}" | tee -a "${LOG_FILE}"
         update_tag_references

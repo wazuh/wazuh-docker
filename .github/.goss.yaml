@@ -6,15 +6,16 @@ file:
     group: root
     filetype: file
     contains: []
-  /var/wazuh-manager/etc/wazuh-manager.conf:
+  /etc/wazuh-manager/wazuh-manager.conf:
     exists: true
     mode: "0660"
     owner: root
     group: wazuh-manager
     filetype: file
     contains: []
-  /var/wazuh-manager/etc/certs:
+  /etc/wazuh-manager/certs:
     exists: true
+    mode: "0750"
     owner: root
     group: wazuh-manager
     filetype: directory

@@ -39,7 +39,30 @@ Usage: ./build-images.sh [OPTIONS]
     -m, --multiarch              [Optional] Enable multi-architecture builds.
     --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages.
     -h, --help                   Show this help.
+
+The base images are downloaded before the build. Environment variables:
+    BASE_IMAGE_PULL_RETRIES      Attempts per base image. By default, 5.
+    BASE_IMAGE_PULL_DELAY        Seconds added to the wait after each failed attempt. By default, 15.
 ```
+
+## Base images
+
+The final stage of every image starts from `public.ecr.aws/amazonlinux/amazonlinux:2023-minimal`, and the builder stages from `amazonlinux:2023`.
+
+Before building, the script downloads the base images of the components it builds. A failed download is retried up to `BASE_IMAGE_PULL_RETRIES` times, waiting `BASE_IMAGE_PULL_DELAY`, then twice that, and so on. That way a registry rate limit (`429 Too Many Requests`) stops the script before the build starts, instead of failing it halfway:
+
+```bash
+BASE_IMAGE_PULL_RETRIES=8 BASE_IMAGE_PULL_DELAY=30 ./build-images.sh
+```
+
+How the downloaded images reach the build depends on the Buildx builder:
+
+| Builder driver | Download | Used by the build as |
+|---|---|---|
+| `docker` (the default local builder) | `docker pull` | The images in the local Docker daemon |
+| `docker-container` (the one `docker/setup-buildx-action` creates) and others | An OCI layout per image, with every platform built (`linux/amd64` and `linux/arm64` with `-m`) | Named build contexts, so the build does not contact the registry for them |
+
+The layouts go to a temporary directory, which is removed when the script ends.
 
 ## Package signature check
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 
 # Variables
 source /permanent_data.env
@@ -132,16 +132,17 @@ remove_data_files() {
 ##############################################################################
 # Check the manager agent listener and Server API certificates
 #
-# etc/certs/remoted.* is read by remoted's HTTPS listener (<remote><https>) and
-# by authd (<auth><ssl_manager_cert>). etc/certs/apid.* is read by the Server
-# API, which only runs on the master. Both are issued by wazuh-certs-tool.sh and
+# certs/remoted.* is read by remoted's HTTPS listener (<remote><https>) and
+# by authd (<auth><ssl_manager_cert>). certs/apid.* is read by the Server
+# API; the credentials resolver requires the pair on every node, workers
+# included, even though the Server API only serves requests on the master. Both are issued by wazuh-certs-tool.sh and
 # mounted into the container; nothing generates them here, and the manager does
 # not start without them. This only names the file that is missing, which the
 # error the manager reports on its own does not.
 ##############################################################################
 
-# Certificate paths in the configuration are Wazuh-home relative, as the rest of
-# the manager configuration is.
+# Certificate paths in the configuration are absolute by default; a relative one
+# resolves against the Wazuh home, as the manager resolves it.
 resolve_wazuh_path() {
   case "$1" in
     /*) echo "$1" ;;
@@ -152,7 +153,7 @@ resolve_wazuh_path() {
 # $1: XML tag, $2: enclosing block
 get_conf_path() {
   sed -n "/<$2>/,/<\/$2>/s|.*<$1>\(.*\)</$1>.*|\1|p" \
-    "${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf" | head -n1
+    "${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf" | head -n1
 }
 
 # $1: certificate path, $2: key path, $3: description, $4: wazuh-certs-tool.sh
@@ -187,39 +188,48 @@ check_manager_server_certs() {
   # authd's <ssl_manager_cert> is derived from the HTTPS listener's <certificate>
   # by the installation itself, so the two are one pair and one identity. A
   # mismatch can only come from hand-edited configuration.
-  check_server_cert_pair "${https_cert:-etc/certs/remoted.pem}" \
-                         "${https_key:-etc/certs/remoted-key.pem}" \
+  local default_cert="${WAZUH_MANAGER_CONF_DIR}/certs/remoted.pem"
+  local default_key="${WAZUH_MANAGER_CONF_DIR}/certs/remoted-key.pem"
+
+  check_server_cert_pair "${https_cert:-${default_cert}}" \
+                         "${https_key:-${default_key}}" \
                          "agent listener" remoted \
                          "The agent listener and agent enrollment do not start"
 
-  if [ "${authd_cert:-etc/certs/remoted.pem}" != "${https_cert:-etc/certs/remoted.pem}" ] || \
-     [ "${authd_key:-etc/certs/remoted-key.pem}" != "${https_key:-etc/certs/remoted-key.pem}" ]
+  if [ "${authd_cert:-${default_cert}}" != "${https_cert:-${default_cert}}" ] || \
+     [ "${authd_key:-${default_key}}" != "${https_key:-${default_key}}" ]
   then
     print "Warning: authd (${authd_cert}) and the HTTPS listener (${https_cert}) use different certificates; both must present the same manager identity"
   fi
 
-  if [[ "$WAZUH_NODE_TYPE" != "worker" ]]
-  then
-    check_server_cert_pair etc/certs/apid.pem etc/certs/apid-key.pem \
-                           "Server API" apid \
-                           "The Server API, and with it the manager, does not start"
-  fi
+  check_server_cert_pair "${WAZUH_MANAGER_CONF_DIR}/certs/apid.pem" \
+                         "${WAZUH_MANAGER_CONF_DIR}/certs/apid-key.pem" \
+                         "Server API" apid \
+                         "The Server API, and with it the manager, does not start"
 }
 
 ##############################################################################
-# Copy all files from $WAZUH_CONFIG_MOUNT to $WAZUH_INSTALL_PATH and respect
-# destination files permissions
+# Copy all files from $WAZUH_CONFIG_MOUNT to the manager and respect
+# destination files permissions. Its etc/ subdirectory goes to the
+# configuration directory ($WAZUH_MANAGER_CONF_DIR), everything else to
+# $WAZUH_INSTALL_PATH.
 #
-# For example, to mount the file /var/wazuh-manager/data/etc/wazuh-manager.conf, mount it at
-# $WAZUH_CONFIG_MOUNT/etc/wazuh-manager.conf in your container and this code will
-# replace the wazuh-manager.conf file in /var/wazuh-manager/data/etc with yours.
+# For example, to replace /etc/wazuh-manager/wazuh-manager.conf, mount your file at
+# $WAZUH_CONFIG_MOUNT/etc/wazuh-manager.conf in the container.
 ##############################################################################
 
 mount_files() {
   if [ -e "$WAZUH_CONFIG_MOUNT" ]
   then
     print "Identified Wazuh configuration files to mount..."
-    exec_cmd_stdout "cp --verbose -r $WAZUH_CONFIG_MOUNT/* $WAZUH_INSTALL_PATH"
+    for entry in "$WAZUH_CONFIG_MOUNT"/*; do
+      [ -e "$entry" ] || continue
+      if [ "$(basename "$entry")" = "etc" ]; then
+        exec_cmd_stdout "cp --verbose -r $entry/. $WAZUH_MANAGER_CONF_DIR"
+      else
+        exec_cmd_stdout "cp --verbose -r $entry $WAZUH_INSTALL_PATH"
+      fi
+    done
   else
     print "No Wazuh configuration files to mount..."
   fi
@@ -237,7 +247,7 @@ mount_files() {
 ##############################################################################
 
 set_custom_hostname() {
-  sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf
+  sed -i 's/<node_name>to_be_replaced_by_hostname<\/node_name>/<node_name>'"${HOSTNAME}"'<\/node_name>/g' ${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf
 }
 
 ##############################################################################
@@ -248,8 +258,8 @@ set_custom_hostname() {
 # workers authenticate each other with one shared value.
 #
 # This follows the path convention the image already uses for
-# WAZUH_CONFIG_MOUNT and /wazuh-migration: if the directory is there, the
-# deployment has given the manager nodes somewhere to keep that value. The first
+# WAZUH_CONFIG_MOUNT: if the directory is there, the deployment has given the
+# manager nodes somewhere to keep that value. The first
 # node to start creates it and the rest read it, so the key is random per
 # deployment and is stored neither in the image nor in the deployment files.
 #
@@ -291,7 +301,7 @@ read_shared_cluster_key() {
 }
 
 function_configure_wazuh_manager_conf() {
-WAZUH_MANAGER_CONF="${WAZUH_INSTALL_PATH}/etc/wazuh-manager.conf"
+WAZUH_MANAGER_CONF="${WAZUH_MANAGER_CONF_DIR}/wazuh-manager.conf"
 
 # --------------------------
 # Defaults based on WAZUH_MANAGER_CONF
@@ -313,8 +323,8 @@ fi
 # way the manager server certificate is generated when it is absent, so no two
 # containers from the same image share a cluster secret.
 #
-# The key is written into etc/wazuh-manager.conf, which lives in the manager
-# 'etc' volume (permanent data), so it stays stable across restarts and
+# The key is written into wazuh-manager.conf, which lives in the manager
+# configuration volume (permanent data), so it stays stable across restarts and
 # container recreation, and is regenerated only on a fresh volume.
 #
 # Nodes that must form a cluster cannot each invent their own key: they either
@@ -389,11 +399,11 @@ fi
 # --------------------------
 # Remote: listen address
 #
-# The packaged configuration binds remoted to 127.0.0.1, which inside a
-# container leaves it reachable only from the container itself: the published
-# 1517 (and the legacy 1514) would refuse every agent connection. Binding on
-# all interfaces is scoped to the container network namespace, so what is
-# actually reachable from outside stays governed by the published ports.
+# The packaged configuration already binds the agent listeners (1517 and the
+# legacy 1514) to 0.0.0.0. WAZUH_REMOTE_BIND_ADDR lets a deployment restrict
+# them to one address. Inside a container all interfaces are scoped to the
+# container network namespace, so what is reachable from outside stays
+# governed by the published ports.
 # --------------------------
 # Escapes &, \ and | (the sed replacement delimiter used below) so a value
 # containing any of them is inserted literally instead of being interpreted
