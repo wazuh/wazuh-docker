@@ -99,8 +99,11 @@ print_follow_up() {
           echo "    docker compose restart wazuh.dashboard"
           ;;
         manager:indexer)
-          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.manager /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password\n" "${password}"
-          echo "    docker compose restart wazuh.manager"
+          # The running manager holds its keystore database open, so the
+          # keystore is written from a one-off container while it is stopped.
+          echo "    docker compose stop wazuh.manager"
+          printf "    printf '%%s' '%s' | docker compose run --rm -T --no-deps --entrypoint /var/wazuh-manager/bin/wazuh-manager-keystore wazuh.manager -f indexer -k password\n" "${password}"
+          echo "    docker compose start wazuh.manager"
           ;;
       esac
     done

@@ -82,10 +82,6 @@ print_follow_up() {
           printf "    printf '%%s' '%s' | docker compose exec -T -e OSD_PATH_CONF=/usr/share/wazuh-dashboard/config wazuh.dashboard /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin %s\n" "${password}" "${consumer#dashboard:}"
           echo "    docker compose restart wazuh.dashboard"
           ;;
-        manager:indexer)
-          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.manager /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password\n" "${password}"
-          echo "    docker compose restart wazuh.manager"
-          ;;
       esac
     done
     echo

@@ -188,6 +188,27 @@ restart the dashboard:
 | `wazuh-manager` | Manager keystore, `indexer` / `password` |
 | `wazuh-internal-client` | Dashboard keystore, `wazuh_core.hosts.default.password` |
 
+For `wazuh-manager`, the commands stop the manager, write its keystore from a
+one-off container on the manager's volumes, and start it again:
+
+```text
+  wazuh-manager:
+    sed -i 's|^WAZUH_INDEXER_MANAGER_PASSWORD=.*|WAZUH_INDEXER_MANAGER_PASSWORD=<new password>|' config/credentials/indexer.env
+    sed -i 's|^WAZUH_INDEXER_MANAGER_PASSWORD=.*|WAZUH_INDEXER_MANAGER_PASSWORD=<new password>|' config/credentials/manager.env
+    docker compose stop wazuh.manager
+    printf '%s' '<new password>' | docker compose run --rm -T --no-deps --entrypoint /var/wazuh-manager/bin/wazuh-manager-keystore wazuh.manager -f indexer -k password
+    docker compose start wazuh.manager
+```
+
+The running manager keeps its keystore database open, and a write into it while
+it runs can fail with `While lock file: queue/keystore/LOCK: Resource
+temporarily unavailable`. The manager would then keep the old password. The
+indexer accepts that password until it drops it from its authentication cache,
+and from then on the manager logs `Unauthorized - Check indexer credentials`.
+If the keystore command does not exit with 0, run it again before starting the
+manager. In multi-node, run the three manager lines for `wazuh.master` and then
+for `wazuh.worker`.
+
 The Wazuh API account the dashboard uses was named `wazuh-wui` before 5.0.0.
 A Wazuh API user database created by a 5.0.0 pre-release image, in the
 `wazuh_api_configuration` volume (`master-wazuh-api-configuration` on
