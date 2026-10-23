@@ -87,11 +87,13 @@
 
 | Issue | Comment |
 | - | - |
+| [#2762](https://github.com/wazuh/wazuh-docker/issues/2762) | Remove the undocumented `/wazuh-migration` path from the manager image: it copied 4.x files (including `global.db`, which 5.0 refuses) into the manager on start; the supported path is the 4.x to 5.0 manager migration of wazuh/wazuh, now documented for Docker in the upgrade guide |
 
 ### Fixed
 
 | Issue | Comment |
 | - | - |
+| [#2756](https://github.com/wazuh/wazuh-docker/issues/2756) | Stop the manager before `password-tool.sh` writes the rotated `wazuh-manager` password into its keystore, and keep the manager supervisor from killing the container during a restart or reload |
 | [#2760](https://github.com/wazuh/wazuh-docker/issues/2760) | Stop publishing and exposing `514/udp`, which the Wazuh manager 5.0 does not listen on, and let `opensearch_dashboards.yml` be mounted as a single file by writing its settings through the file instead of `sed -i` |
 | [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
 | [#2721](https://github.com/wazuh/wazuh-docker/issues/2721) | Stop `certificates-conf.sh` when `wazuh-certs-tool.sh` fails or `wazuh-certificates/` is missing, and give `config.yml` back to the user who ran it with `sudo` |
