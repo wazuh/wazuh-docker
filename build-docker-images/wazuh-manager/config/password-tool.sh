@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
+# Wazuh App Copyright (C) Wazuh Inc. (License GPLv2)
 #
 # Changes the passwords of the Wazuh API users of this manager node, and prints
 # the new ones with the commands that apply them to the dashboard and to
@@ -22,11 +22,11 @@ error() {
   echo "password-tool.sh: $*" >&2
 }
 
-# Password generation and policy come from the credentials library the
-# package ships, the same one its resolver uses.
-CREDENTIALS_LIB="/var/wazuh-manager/lib/wazuh-credentials.sh"
-if ! . "${CREDENTIALS_LIB}" 2>/dev/null || ! declare -F wazuh_password_generate >/dev/null; then
-  error "cannot load ${CREDENTIALS_LIB}"
+# Password generation and policy: the rule the package resolvers apply. The
+# manager package ships its resolver in Python, with no shell library to load.
+PASSWORD_POLICY="/password-policy.sh"
+if ! . "${PASSWORD_POLICY}" 2>/dev/null || ! declare -F common_passwordGenerate >/dev/null; then
+  error "cannot load ${PASSWORD_POLICY}"
   exit 1
 fi
 
@@ -44,42 +44,16 @@ Accounts: ${USERS[*]}
 USAGE
 }
 
-# A library older than the four-class policy may produce a password without a
-# symbol, so every candidate goes through validate_password.
+# The rule the package resolvers apply (password-policy.sh), so a rotated
+# password is one every component would also accept at start.
 generate_password() {
-  local candidate attempt
-  for attempt in 1 2 3 4 5 6 7 8 9 10; do
-    candidate=$(wazuh_password_generate) || return 1
-    if validate_password "${candidate}" 2>/dev/null; then
-      printf '%s\n' "${candidate}"
-      return 0
-    fi
-  done
-  return 1
+  common_passwordGenerate
 }
 
-# The rules the package resolvers apply, so a rotated password is one every
-# component would also accept at start: only the characters the library
-# generates, the library's policy, the four classes it requires since
-# wazuh-installation-assistant#1047 (checked here too, because an older
-# library in a package does not), and no value the dashboard keystore would
-# store as a number.
 validate_password() {
-  local password=$1 reason
-  if [ -n "$(printf '%s' "${password}" | LC_ALL=C tr -d 'A-Za-z0-9.,_+:@%^=~-')" ]; then
-    error "only A-Z a-z 0-9 . , _ + : @ % ^ = ~ - are allowed"
-    return 1
-  fi
-  if ! reason=$(wazuh_password_validate "${password}" 2>&1); then
-    error "${reason#wazuh-credentials: }"
-    return 1
-  fi
-  case ${password} in *[abcdefghijklmnopqrstuvwxyz]*) ;; *) error "password must contain at least one lowercase letter"; return 1 ;; esac
-  case ${password} in *[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*) ;; *) error "password must contain at least one uppercase letter"; return 1 ;; esac
-  case ${password} in *[0123456789]*) ;; *) error "password must contain at least one digit"; return 1 ;; esac
-  case ${password} in *[.,_+:@%^=~-]*) ;; *) error "password must contain at least one symbol from . , _ + : @ % ^ = ~ -"; return 1 ;; esac
-  if printf '%s' "${password}" | grep -Eq '^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$'; then
-    error "the dashboard keystore would store this value as a number"
+  local reason
+  if ! reason=$(common_passwordValidate "$1" 2>&1); then
+    error "${reason}"
     return 1
   fi
 }
@@ -105,12 +79,8 @@ print_follow_up() {
     for consumer in ${CONSUMERS[${user}]}; do
       case "${consumer}" in
         dashboard:*)
-          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin %s\n" "${password}" "${consumer#dashboard:}"
+          printf "    printf '%%s' '%s' | docker compose exec -T -e OSD_PATH_CONF=/usr/share/wazuh-dashboard/config wazuh.dashboard /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin %s\n" "${password}" "${consumer#dashboard:}"
           echo "    docker compose restart wazuh.dashboard"
-          ;;
-        manager:indexer)
-          printf "    printf '%%s' '%s' | docker compose exec -T wazuh.manager /var/wazuh-manager/bin/wazuh-manager-keystore -f indexer -k password\n" "${password}"
-          echo "    docker compose restart wazuh.manager"
           ;;
       esac
     done

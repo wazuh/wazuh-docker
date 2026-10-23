@@ -39,11 +39,11 @@ not in the image.
 ## Creating the credentials
 
 Run it from `single-node/` or `multi-node/`, after the certificates and before
-the first `docker compose up`. It needs the shared credentials library next to
-`wazuh-certs-tool.sh`, in the same version as the images:
+the first `docker compose up`. It generates and checks the passwords with the
+rule the Wazuh packages apply (`build-docker-images/shared/password-policy.sh`),
+so it needs nothing besides this checkout:
 
 ```bash
-curl -o wazuh-credentials.sh https://packages.wazuh.com/5.0/wazuh-credentials-5.0.0-1.sh
 sudo bash ../tools/utils/deployment/credentials-conf.sh
 ```
 
@@ -95,12 +95,19 @@ services:
         target: wazuh-credentials
 ```
 
-At every start, the container installs `/run/secrets/wazuh-credentials` as
-`/etc/wazuh/credentials.env`, the file the Wazuh packages resolve their
-credentials from, readable only by root. Once the component has stored the
-values, the container deletes that copy, before the service starts under its
-own user. The passwords are therefore not in the container's environment, and
-`docker inspect` does not show them.
+At every start, the container reads `/run/secrets/wazuh-credentials` as root and
+exports its `WAZUH_*` keys to the component's credential resolver, which takes
+the environment first. Once the component has stored the values, they are
+removed from the environment, before the service starts under its own user. The
+passwords are therefore not in the service's environment, and `docker inspect`
+does not show them. They are still on disk in two places: the secret stays
+mounted at `/run/secrets/wazuh-credentials` for the life of the container, and
+each component's resolver publishes the passwords it owns in
+`export/credentials.env` of its configuration directory, readable by root only:
+`/usr/share/wazuh-indexer/config/export/credentials.env` in the Wazuh indexer
+(in the container filesystem, not in a volume; it includes the `admin`
+password) and `/etc/wazuh-manager/export/credentials.env` (the `wazuh_etc`
+volume) in the Wazuh manager master. A worker publishes only `ca.pem`.
 
 - **Another path:** set `WAZUH_CREDENTIALS_FILE` to mount the file elsewhere.
   The container then refuses to start if the file is missing.
@@ -177,7 +184,7 @@ restart the dashboard:
   kibanaserver:
     sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/indexer.env
     sed -i 's|^WAZUH_INDEXER_KIBANASERVER_PASSWORD=.*|WAZUH_INDEXER_KIBANASERVER_PASSWORD=<new password>|' config/credentials/dashboard.env
-    printf '%s' '<new password>' | docker compose exec -T wazuh.dashboard runuser -u wazuh-dashboard -- /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add -f --stdin opensearch.password
+    printf '%s' '<new password>' | docker compose exec -T -e OSD_PATH_CONF=/usr/share/wazuh-dashboard/config wazuh.dashboard /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore add --allow-root -f --stdin opensearch.password
     docker compose restart wazuh.dashboard
 ```
 
@@ -187,6 +194,27 @@ restart the dashboard:
 | `kibanaserver` | Dashboard keystore, `opensearch.password` |
 | `wazuh-manager` | Manager keystore, `indexer` / `password` |
 | `wazuh-internal-client` | Dashboard keystore, `wazuh_core.hosts.default.password` |
+
+For `wazuh-manager`, the commands stop the manager, write its keystore from a
+one-off container on the manager's volumes, and start it again:
+
+```text
+  wazuh-manager:
+    sed -i 's|^WAZUH_INDEXER_MANAGER_PASSWORD=.*|WAZUH_INDEXER_MANAGER_PASSWORD=<new password>|' config/credentials/indexer.env
+    sed -i 's|^WAZUH_INDEXER_MANAGER_PASSWORD=.*|WAZUH_INDEXER_MANAGER_PASSWORD=<new password>|' config/credentials/manager.env
+    docker compose stop wazuh.manager
+    printf '%s' '<new password>' | docker compose run --rm -T --no-deps --entrypoint /var/wazuh-manager/bin/wazuh-manager-keystore wazuh.manager -f indexer -k password
+    docker compose start wazuh.manager
+```
+
+The running manager keeps its keystore database open, and a write into it while
+it runs can fail with `While lock file: queue/keystore/LOCK: Resource
+temporarily unavailable`. The manager would then keep the old password. The
+indexer accepts that password until it drops it from its authentication cache,
+and from then on the manager logs `Unauthorized - Check indexer credentials`.
+If the keystore command does not exit with 0, run it again before starting the
+manager. In multi-node, run the three manager lines for `wazuh.master` and then
+for `wazuh.worker`.
 
 The Wazuh API account the dashboard uses was named `wazuh-wui` before 5.0.0.
 A Wazuh API user database created by a 5.0.0 pre-release image, in the
@@ -250,9 +278,10 @@ A cluster worker without a user database passes, since it has no API accounts.
   clear text. The directory is in `.gitignore`: keep it out of your commits,
   back it up with the certificates, and restrict access to it.
 - The containers get the files as secrets, not as environment variables, and
-  keep no copy once the values are stored. If you pass the keys in the
-  environment instead, anyone who can run `docker inspect` on the host can read
-  them.
+  remove the keys from the environment once the values are stored. The
+  resolvers still publish the passwords in `export/credentials.env`, readable by
+  root only (see above). If you pass the keys in the environment instead, anyone
+  who can run `docker inspect` on the host can read them.
 - `docker compose down -v` removes the stores. The next start then takes the
   passwords from the env files again.
 - The names of earlier releases still work as aliases, in the environment only:
