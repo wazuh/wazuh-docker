@@ -15,6 +15,7 @@ WAZUH_REGISTRY=docker.io
 WAZUH_IMAGE_VERSION="4.14.10"
 WAZUH_TAG_REVISION="1"
 WAZUH_DEV_STAGE=""
+WAZUH_RELEASE_BUILD=""
 FILEBEAT_MODULE_VERSION="0.5"
 
 # -----------------------------------------------------------------------------
@@ -40,6 +41,17 @@ build() {
     FILEBEAT_TEMPLATE_BRANCH="${WAZUH_IMAGE_VERSION}"
     WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
     WAZUH_UI_REVISION="${WAZUH_TAG_REVISION}"
+    WAZUH_PACKAGES_SOURCE=""
+
+    if [ "${WAZUH_RELEASE_BUILD}" ] && [ "${WAZUH_DEV_STAGE}" ]; then
+        echo "Error: --release cannot be combined with -d/--dev." >&2
+        clean 1
+    fi
+    if [ "${WAZUH_RELEASE_BUILD}" ]; then
+        WAZUH_PACKAGES_SOURCE="production"
+    elif [ "${WAZUH_DEV_STAGE}" ]; then
+        WAZUH_PACKAGES_SOURCE="pre-release"
+    fi
 
     if  [ "${WAZUH_DEV_STAGE}" ];then
         FILEBEAT_TEMPLATE_BRANCH="v${FILEBEAT_TEMPLATE_BRANCH}-${WAZUH_DEV_STAGE,,}"
@@ -111,6 +123,7 @@ build() {
             -t "${WAZUH_REGISTRY}/wazuh/${component}:${IMAGE_TAG}"
             --build-arg WAZUH_VERSION="${WAZUH_IMAGE_VERSION}"
             --build-arg WAZUH_TAG_REVISION="${WAZUH_TAG_REVISION}"
+            --build-arg WAZUH_PACKAGES_SOURCE="${WAZUH_PACKAGES_SOURCE}"
         )
 
         # Add component-specific args
@@ -152,6 +165,7 @@ help() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "    -d, --dev <ref>              [Optional] Set the development stage you want to build, example rc4 or beta1, not used by default."
+    echo "    --release                    [Optional] Final release build: install the packages from the production repository without checking the wazuh/wazuh tag. Not valid with -d."
     echo "    -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default ${FILEBEAT_MODULE_VERSION}."
     echo "    -r, --revision <rev>         [Optional] Package revision. By default ${WAZUH_TAG_REVISION}"
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
@@ -179,6 +193,10 @@ main() {
             else
                 help 1
             fi
+            ;;
+        "--release")
+            WAZUH_RELEASE_BUILD="true"
+            shift
             ;;
         "-f"|"--filebeat-module")
             if [ -n "${2}" ]; then
