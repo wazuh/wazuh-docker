@@ -18,6 +18,7 @@ WAZUH_IMAGE_VERSION="5.0.0"
 WAZUH_DEV_STAGE=""
 WAZUH_COMPONENTS_COMMIT_LIST=''
 IS_DEV_BUILD=""
+IS_RELEASE_BUILD=""
 SKIP_PACKAGE_SIGNATURE_CHECK=""
 ARTIFACT_URLS_INPUT=""
 BASE_IMAGE_PULL_RETRIES="${BASE_IMAGE_PULL_RETRIES:-5}"
@@ -151,6 +152,12 @@ build() {
         fi
         echo "Warning: Skipping the signature check of the Wazuh packages. Use it only with unsigned development packages." >&2
     fi
+    if [ -n "${IS_RELEASE_BUILD}" ]; then
+        if [ -n "${IS_DEV_BUILD}" ] || [ -n "${WAZUH_DEV_STAGE}" ] || [ -n "${ARTIFACT_URLS_INPUT}" ]; then
+            echo "Error: --release cannot be combined with --dev, --dev-stage or --artifact-urls." >&2
+            clean 1
+        fi
+    fi
     # ARTIFACT_URLS_FILE: The name of the artifact URLs file.
     ARTIFACT_URLS_FILE="artifact_urls.yaml"
     # ARTIFACT_URLS_DIR: The name of the artifact URLs directory.
@@ -173,9 +180,18 @@ build() {
 
         # Fetch the HTTP status code to determine release environment.
         # Using -L to follow redirects (GitHub may return 301/302 for some endpoints).
-        HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "$GH_URL")
+        if [ -z "${IS_RELEASE_BUILD}" ]; then
+            HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "$GH_URL")
+        fi
 
-        if [ "$HTTP_STATUS" -eq 200 ]; then
+        if [ -n "${IS_RELEASE_BUILD}" ]; then
+            # CASE: Final release. The GitHub release is still a draft at this point,
+            # so it is not looked up.
+            echo "Final release build. Setting Production environment."
+            ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
+            PACKAGE_URL="packages.wazuh.com"
+            RELEASE_STAGE="production"
+        elif [ "$HTTP_STATUS" -eq 200 ]; then
             # CASE: Production (Tag and Release exist)
             echo "Release $TAG found. Setting Production environment."
             ARTIFACT_URLS_DOWNLOAD="artifact_urls_${WAZUH_IMAGE_VERSION}.yaml"
@@ -207,11 +223,25 @@ build() {
         # Final download using dynamic variables based on the release type.
         # Pattern: server / stage / major_version.x / filename
         FULL_URL="https://${PACKAGE_URL}/${RELEASE_STAGE}/${WAZUH_MAJOR_VERSION}.x/${ARTIFACT_URLS_DIR}/${ARTIFACT_URLS_DOWNLOAD}"
+        # A final release build may start before the production sync publishes the file.
+        DOWNLOAD_ATTEMPTS=1
+        if [ -n "${IS_RELEASE_BUILD}" ]; then
+            DOWNLOAD_ATTEMPTS="${ARTIFACT_URLS_ATTEMPTS:-60}"
+            if ! [[ "${DOWNLOAD_ATTEMPTS}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Error: ARTIFACT_URLS_ATTEMPTS must be a positive integer, got '${DOWNLOAD_ATTEMPTS}'." >&2
+                clean 1
+            fi
+        fi
         echo "Attempting to download: $FULL_URL"
-        curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" || {
-            echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
-            clean 1
-        }
+        for ((attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++)); do
+            curl -fsSL -o "$ARTIFACT_URLS_FILE" "$FULL_URL" && break
+            if [ "$attempt" -ge "$DOWNLOAD_ATTEMPTS" ]; then
+                echo "Error: Failed to download artifact URLs from $FULL_URL" >&2
+                clean 1
+            fi
+            echo "Artifact URLs not available yet (attempt ${attempt}/${DOWNLOAD_ATTEMPTS}). Retrying in 30 seconds."
+            sleep 30
+        done
     fi
 
     awk -F':' '!/^#/ && NF>1 {name=$1; val=substr($0,length(name)+3); gsub(/[-.]/,"_",name); print name "=\"" val "\""}' $ARTIFACT_URLS_FILE > artifacts_env.txt
@@ -376,6 +406,7 @@ help() {
     echo "    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version."
     echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
+    echo "    --release                    [Optional] Final release build: use the production artifact URLs file without checking the GitHub release. Not valid with --dev, -d or -a."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."
     echo "    -rg, --registry <reg>        [Optional] Set the Docker registry to push the images."
     echo "    -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four."
@@ -418,6 +449,10 @@ main() {
             ;;
         "--dev")
             IS_DEV_BUILD="true"
+            shift
+            ;;
+        "--release")
+            IS_RELEASE_BUILD="true"
             shift
             ;;
         "--skip-signature-check")

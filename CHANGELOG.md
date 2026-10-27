@@ -93,6 +93,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2742](https://github.com/wazuh/wazuh-docker/issues/2742) | Build the final images from the production packages with `build-images.sh --release`, instead of falling back to the pre-release packages of the `VERSION.json` stage while the GitHub release is still a draft or the GitHub API is rate-limited |
 | [#2756](https://github.com/wazuh/wazuh-docker/issues/2756) | Stop the manager before `password-tool.sh` writes the rotated `wazuh-manager` password into its keystore, and keep the manager supervisor from killing the container during a restart or reload |
 | [#2760](https://github.com/wazuh/wazuh-docker/issues/2760) | Stop publishing and exposing `514/udp`, which the Wazuh manager 5.0 does not listen on, and let `opensearch_dashboards.yml` be mounted as a single file by writing its settings through the file instead of `sed -i` |
 | [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
