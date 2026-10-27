@@ -422,6 +422,7 @@ jobs:
               -v $IMAGE_TAG \
               -rg $IMAGE_REGISTRY \
               -m \
+              --release \
               -c $WAZUH_COMPONENT
           fi
         fi
