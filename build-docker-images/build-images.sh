@@ -227,6 +227,10 @@ build() {
         DOWNLOAD_ATTEMPTS=1
         if [ -n "${IS_RELEASE_BUILD}" ]; then
             DOWNLOAD_ATTEMPTS="${ARTIFACT_URLS_ATTEMPTS:-60}"
+            if ! [[ "${DOWNLOAD_ATTEMPTS}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Error: ARTIFACT_URLS_ATTEMPTS must be a positive integer, got '${DOWNLOAD_ATTEMPTS}'." >&2
+                clean 1
+            fi
         fi
         echo "Attempting to download: $FULL_URL"
         for ((attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++)); do
