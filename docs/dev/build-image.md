@@ -34,7 +34,7 @@ Usage: build-docker-images/build-images.sh [OPTIONS]
 
 ## Package repository
 
-Each Dockerfile runs `config/check_repository.sh` to choose the yum repository of the Wazuh packages:
+Each Dockerfile runs `config/check_repository.sh` to choose the yum repository of the Wazuh packages. The `wazuh-manager` image downloads the Filebeat module from the same source (`config/filebeat_module.sh`):
 
 - With `--release`, it uses the production repository (`https://packages.wazuh.com/4.x/yum/`). The `4_build_and_push_images.yml` workflow passes `--release` when `dev` is `false` and `image_tag` has no stage suffix.
 - With `-d`, it uses the pre-release repository (`https://packages-dev.wazuh.com/pre-release/yum/`).
