@@ -2,6 +2,7 @@
 FROM amazonlinux:2023 AS builder
 
 ARG WAZUH_VERSION
+ARG WAZUH_PACKAGES_SOURCE
 ARG WAZUH_TAG_REVISION
 
 RUN yum install curl-minimal openssl xz tar findutils shadow-utils -y

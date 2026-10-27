@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Build the final images from the production repository with `build-images.sh --release`, and fail the build when the `wazuh/wazuh` tag cannot be checked instead of falling back to the pre-release repository. ([#2742](https://github.com/wazuh/wazuh-docker/issues/2742))
 
 ### Deleted
 
