@@ -8,10 +8,10 @@ This section summarizes security recommendations for Wazuh Docker deployments (s
 - `tools/tests/check-default-credentials.sh` asserts that no account authenticates with its own username as its password.
 - The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`, `snapshotrestore`, `anomalyadmin`) are removed from the Wazuh indexer image when it is built. They have no role in a Wazuh deployment and two of them were among the most privileged accounts present.
 - `config/credentials/*.env` holds the deployment's passwords in clear text. The directory is in `.gitignore`: keep it out of your commits and restrict read access to the deployment directory.
-- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers delete their copy once the values are stored. Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
+- The containers receive those files as Compose secrets, not as environment variables, so `docker inspect` does not show the passwords, and the containers remove the keys from their environment once the values are stored. The Wazuh indexer and the Wazuh manager master publish the passwords they own in `export/credentials.env` of their configuration directory, readable by root only; the Wazuh dashboard has no `export/`, and a worker publishes only `ca.pem` (see [Credentials](credentials.md)). Passing the keys in the environment instead exposes them to anyone who can run `docker inspect`.
 - Prefer injecting secrets at runtime (for example, via your CI/CD secret store or an external secrets manager) instead of keeping the files on the host.
 - Rotate credentials regularly and after any suspected exposure.
-- The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Indexer credentials and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
+- The Wazuh dashboard keeps its secrets in `opensearch_dashboards.keystore`, persisted in the `wazuh-dashboard-config` volume. It stores the Wazuh indexer credentials, the `wazuh-internal-client` password (`wazuh_core.hosts.default.password`) and the `wazuh_ai_assistant.encryptionKey`, generated at random on the first start and unique per deployment. Restrict access to that volume and to `docker compose exec` on the dashboard container, and do not copy the keystore between deployments.
 
 ### Manager cluster key
 
@@ -65,6 +65,13 @@ The Server API presents `/etc/wazuh-manager/certs/apid.pem` and `/etc/wazuh-mana
 - The SAN holds the manager node's `ip` and `dns` entries from `config.yml`, `localhost`, `127.0.0.1` and `::1`, plus the addresses given with `--api-san`. The node's `dns` entry is the name the Wazuh dashboard uses (`WAZUH_API_URL`). Add with `--api-san` any other name or address API clients dial, for example the Docker host when `55000` is reached from outside. `--agent-san` addresses do not reach this certificate.
 - Clients verify the API against `config/root-ca/certs/root-ca.pem`.
 - It is rotated together with the other certificates, as described above.
+
+### Dashboard verification of the indexer
+
+The dashboard verifies the indexer with `opensearch.ssl.verificationMode: full`: the certificate must chain to `indexer-ca.pem`, which the Compose files mount from `config/root-ca/certs/root-ca.pem`, and must name the host the dashboard dialed. Every host in `OPENSEARCH_HOSTS` has to be a `dns` or `ip` entry of that indexer node in `config.yml`. The shipped Compose files meet this: `wazuh.indexer` on single-node, `wazuh1.indexer` to `wazuh3.indexer` on multi-node.
+
+- When the dashboard reaches the indexer through another name or address, such as an external indexer, a load balancer or an IP address, add it to the indexer node in `config.yml` and issue the indexer certificate again. Until then the dashboard cannot query the indexer and logs `Hostname/IP does not match certificate's altnames`.
+- `OPENSEARCH_SSL_VERIFICATION_MODE=certificate` checks the chain only. Every component of the deployment holds a certificate signed by the same root CA, so with that setting any of them is accepted as the indexer. Use it only as a temporary measure while the certificate is issued again.
 
 ### Agent verification of the manager
 

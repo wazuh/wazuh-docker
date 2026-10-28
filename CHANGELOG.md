@@ -21,6 +21,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2764](https://github.com/wazuh/wazuh-docker/issues/2764) | Align the docs with the 5.0.0 code and packages: published `export/credentials.env`, environment variables, missing certificate pair messages, certificates tool URLs, Docker backup, and the `remoted` bind address comment |
 | [#2758](https://github.com/wazuh/wazuh-docker/issues/2758) | Make the Wazuh dashboard listen on `443` inside the container in the single-node and multi-node stacks, as the image, the package and the Kubernetes deployment do |
 | [#2743](https://github.com/wazuh/wazuh-docker/issues/2743) | Adapt the images and stacks to the RC 2 per-package credentials and `/etc/wazuh-manager`, and build the final images on `amazonlinux:2023-minimal` with pre-pulled base images |
 | [#2728](https://github.com/wazuh/wazuh-docker/issues/2728) | Mount the Server API certificate issued by `wazuh-certs-tool.sh` on the manager node that runs the API |
@@ -86,12 +87,15 @@
 
 | Issue | Comment |
 | - | - |
+| [#2762](https://github.com/wazuh/wazuh-docker/issues/2762) | Remove the undocumented `/wazuh-migration` path from the manager image: it copied 4.x files (including `global.db`, which 5.0 refuses) into the manager on start; the supported path is the 4.x to 5.0 manager migration of wazuh/wazuh, now documented for Docker in the upgrade guide |
 
 ### Fixed
 
 | Issue | Comment |
 | - | - |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
+| [#2742](https://github.com/wazuh/wazuh-docker/issues/2742) | Build the final images from the production packages with `build-images.sh --release`, instead of falling back to the pre-release packages of the `VERSION.json` stage while the GitHub release is still a draft or the GitHub API is rate-limited |
+| [#2756](https://github.com/wazuh/wazuh-docker/issues/2756) | Stop the manager before `password-tool.sh` writes the rotated `wazuh-manager` password into its keystore, and keep the manager supervisor from killing the container during a restart or reload |
 | [#2760](https://github.com/wazuh/wazuh-docker/issues/2760) | Stop publishing and exposing `514/udp`, which the Wazuh manager 5.0 does not listen on, and let `opensearch_dashboards.yml` be mounted as a single file by writing its settings through the file instead of `sed -i` |
 | [#2723](https://github.com/wazuh/wazuh-docker/issues/2723) | Remove the stale `internal_options.conf` entry from the Wazuh manager `PERMANENT_DATA_EXCP` list, so `wazuh-manager-internal-options.conf` overrides survive upgrades, and fail the image build when a listed path does not exist |
 | [#2721](https://github.com/wazuh/wazuh-docker/issues/2721) | Stop `certificates-conf.sh` when `wazuh-certs-tool.sh` fails or `wazuh-certificates/` is missing, and give `config.yml` back to the user who ran it with `sudo` |
@@ -99,6 +103,7 @@
 | [#2719](https://github.com/wazuh/wazuh-docker/issues/2719) | Report that the Wazuh agent connects without verifying the manager when no TLS material is configured |
 | [#2690](https://github.com/wazuh/wazuh-docker/issues/2690) | Unset INDEXER_PASSWORD and DASHBOARD_PASSWORD after keystore write |
 | [#2675](https://github.com/wazuh/wazuh-docker/issues/2675) | Fixed `docker-agent` package generation: seed the `CHANGE_MANAGER_ENDPOINT` placeholder in the Dockerfile itself instead of relying on the installer, which stopped writing it without an enrollment token |
+| [#2664](https://github.com/wazuh/wazuh-docker/pull/2664) | Enable strict TLS hostname verification by default between the dashboard and the indexer |
 | [#2628](https://github.com/wazuh/wazuh-docker/issues/2628) | Persist the Wazuh manager `data` directory on a named volume in the single-node and multi-node deployments, so the deployed detection content survives recreating the container, and refresh the content the image owns from the image on every start |
 | [#2629](https://github.com/wazuh/wazuh-docker/issues/2629) | Append `opensearch_security.cookie.ttl` when missing from `opensearch_dashboards.yml` instead of silently discarding `OPENSEARCH_SECURITY_COOKIE_TTL`; removed the `PATTERN`, `CHECKS_*`, `APP_TIMEOUT`, `API_SELECTOR`, `IP_SELECTOR`, `IP_IGNORE` and `WAZUH_MONITORING_*` environment variables, which no longer correspond to any setting the dashboard plugin accepts |
 | [#2638](https://github.com/wazuh/wazuh-docker/issues/2638) | Fixed manager/dashboard environment variable attribution and documented missing manager variables |

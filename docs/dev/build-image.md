@@ -32,6 +32,7 @@ Usage: ./build-images.sh [OPTIONS]
     -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version.
     -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default.
     --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow.
+    --release                    [Optional] Final release build: use the production artifact URLs file without checking the GitHub release. Not valid with --dev, -d or -a.
     -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'.
     -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.
     -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four.
@@ -63,6 +64,13 @@ How the downloaded images reach the build depends on the Buildx builder:
 | `docker-container` (the one `docker/setup-buildx-action` creates) and others | An OCI layout per image, with every platform built (`linux/amd64` and `linux/arm64` with `-m`) | Named build contexts, so the build does not contact the registry for them |
 
 The layouts go to a temporary directory, which is removed when the script ends.
+
+## Package source
+
+Unless `-a` is given, the script downloads `artifact_urls.yaml` for the requested version:
+
+- With `--release`, it uses the production file (`https://packages.wazuh.com/production/<major>.x/artifact-urls/artifact_urls_<version>.yaml`). The release pipeline dispatches the build while the GitHub release is still a draft, and the file may not be reachable yet when the build starts, so the download is retried every 30 seconds, up to `ARTIFACT_URLS_ATTEMPTS` times (60 by default, 30 minutes), and then the build fails. The `5_build_and_push_images.yml` workflow passes `--release` when `dev` is `false` and `image_tag` has no stage suffix, and takes `ARTIFACT_URLS_ATTEMPTS` from the repository variable of the same name when it is set.
+- Otherwise, it uses the production file if the `v<version>` GitHub release of `wazuh/wazuh-docker` is published, and the pre-release file of the stage in `VERSION.json` (`https://packages-staging.xdrsiem.wazuh.info/pre-release/<major>.x/artifact-urls/artifact_urls_<version>-<stage>.yaml`) in any other case, including a draft release or a rate-limited GitHub API.
 
 ## Package signature check
 

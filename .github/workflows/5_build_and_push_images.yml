@@ -373,6 +373,7 @@ jobs:
         DEV: ${{ inputs.dev }}
         SKIP_SIGNATURE_CHECK: ${{ inputs.skip_signature_check }}
         WAZUH_COMPONENT: ${{ matrix.wazuh_component }}
+        ARTIFACT_URLS_ATTEMPTS: ${{ vars.ARTIFACT_URLS_ATTEMPTS }}
       run: |
         # Packages built from a commit are not signed; only dev builds may skip the check.
         SIGNATURE_ARGS=""
@@ -422,6 +423,7 @@ jobs:
               -v $IMAGE_TAG \
               -rg $IMAGE_REGISTRY \
               -m \
+              --release \
               -c $WAZUH_COMPONENT
           fi
         fi

@@ -11,7 +11,6 @@ This document outlines the environment variables applicable to the Wazuh Docker 
   - [Wazuh Dashboard](#wazuh-dashboard)
   - [Wazuh Agent](#wazuh-agent)
   - [Overriding Configuration Files with Environment Variables](#overriding-configuration-files-with-environment-variables)
-    - [Examples:](#examples)
 
 ---
 
@@ -40,11 +39,11 @@ environment:
 - `WAZUH_NODE_NAME`: This node's cluster name, written to `<cluster><node_name>`. Defaults to the container hostname.
 - `WAZUH_NODE_TYPE`: Either `master` or `worker`, written to `<cluster><node_type>`. Any other value (including unset) is treated as `master`.
 - `WAZUH_CLUSTER_KEY`: The cluster authentication key shared by every master/worker node, written to `<cluster><key>`. Unset, a single manager generates its own key on its first start, and the multi-node managers share the one kept in the `wazuh-cluster-key` volume. Set it when the manager nodes cannot share that volume, for example on separate hosts. See [Manager cluster key](../security.md#manager-cluster-key).
-- `WAZUH_CLUSTER_NODES`: Space-separated list of worker node addresses/hostnames, written to `<cluster><nodes>`. Only meaningful on the master node.
+- `WAZUH_CLUSTER_NODES`: Space-separated list written to `<cluster><nodes>`: the address of the master node. Set it on every node, master and workers (the compose files set `wazuh.master` on both).
 - `WAZUH_CLUSTER_BIND_ADDR`: Address the cluster service binds to, written to `<cluster><bind_addr>`. Defaults to `0.0.0.0`.
-- `WAZUH_INDEXER_HOSTS`: Comma-separated list of indexer nodes as `host:port` (for example `wazuh.indexer:9200`, or `host1:9200,host2:9200` for multiple nodes), written to `<indexer><hosts>`. Each entry must be exactly `host:port`: no scheme, no trailing slash, no other separator — any other shape either fails validation or produces a corrupt host.
+- `WAZUH_INDEXER_HOSTS`: Comma-separated list of indexer nodes (for example `wazuh.indexer:9200`, or `host1:9200,host2:9200` for multiple nodes), written to `<indexer><hosts>`. Each entry is `[scheme://]host[:port]`: the scheme defaults to `https` and the port to `9200`. Every entry must use the same scheme; with `http`, the `<ssl>` block is removed.
 - `/wazuh-config-mount`: not a variable, but the fixed path where a directory with the manager's own configuration files can be mounted. Its content is copied over the packaged files on every start, for example `/wazuh-config-mount/etc/wazuh-manager.conf` over `/etc/wazuh-manager/wazuh-manager.conf`. Its `etc/` subdirectory goes to the configuration directory `/etc/wazuh-manager`, everything else to `/var/wazuh-manager`.
-- `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, since the packaged `127.0.0.1` would make the published `1517` and `1514` unreachable from outside the container.
+- `WAZUH_REMOTE_BIND_ADDR`: Address `remoted` listens on for agent traffic, written to `<remote><https><bind_addr>` and `<remote><legacy><local_ip>`. Defaults to `0.0.0.0`, the same as the packaged configuration; set it to restrict the agent listeners to one address.
 
 ---
 
@@ -118,7 +117,7 @@ supplies its own trust anchor.
 
 The token itself is staged at `/var/ossec/etc/enrollment_token`, mode `600`, owner
 `root:root`. The agent deletes it once it succeeds, or once the manager has
-definitively refused it (unknown, revoked, or already used past `max_uses`); a
+definitively refused it (unknown, expired, revoked, or already used past `max_uses`); a
 transient failure (the manager unreachable, for instance) leaves it in place on
 purpose, so a retry — within the same boot, or a later one — still has
 something to enroll with. A token this script itself cannot even decode makes
@@ -292,5 +291,8 @@ environment:
 | `OPENSEARCH_SECURITY_MULTITENANCY_ENABLED`, `OPENSEARCH_SECURITY_READONLY_MODE_ROLES` | `opensearch_security.multitenancy.enabled`, `opensearch_security.readonly_mode.roles` |
 | `OPENSEARCH_SECURITY_COOKIE_TTL`, `OPENSEARCH_SECURITY_SESSION_TTL`, `OPENSEARCH_SECURITY_SESSION_KEEPALIVE` | `opensearch_security.cookie.ttl`, `opensearch_security.session.ttl`, `opensearch_security.session.keepalive` |
 | `UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE` | `uiSettings.overrides.defaultRoute` |
+| `WAZUH_API_URL`, `API_PORT`, `API_USERNAME`, `RUN_AS`, `WAZUH_API_CA` | `wazuh_core.hosts.default`: `url`, `port`, `username`, `run_as`, `ca` (defaults: `https://localhost`, `55000`, `wazuh-internal-client`, `true`, `/usr/share/wazuh-dashboard/config/certs/manager-ca.pem`) |
+
+`OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`: the dashboard checks the certificate chain and that every host in `OPENSEARCH_HOSTS` is named in the certificate that indexer presents. `certificate` checks the chain only. See [Dashboard verification of the indexer](../security.md#dashboard-verification-of-the-indexer).
 
 ---
