@@ -49,7 +49,7 @@ permissions:
   issues: write
 
 env:
-  AUTOMATION_REFERENCE: ${{ inputs.automation_reference || 'main' }}
+  AUTOMATION_REFERENCE: ${{ inputs.automation_reference || github.base_ref || 'main' }}
   ALLOCATOR_PATH: /tmp/allocator_instance
   REGION: us-east-1
   LOGS_ARTIFACT_ZIP_FILE: "docker_logs_artifacts_${{ github.run_id }}.zip"
@@ -281,7 +281,7 @@ jobs:
     with:
       image_tag: "${{ needs.prepare.outputs.wazuh_version }}-${{ needs.prepare.outputs.wazuh_stage }}"
       docker_reference: ${{ needs.prepare.outputs.pr_head_ref }}
-      wazuh_automation_reference: ${{ inputs.automation_reference || 'main' }}
+      wazuh_automation_reference: ${{ inputs.automation_reference || github.base_ref || 'main' }}
       products: "wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent"
       dev: true
       id: "docker-integration-${{ github.run_id }}"
@@ -593,6 +593,22 @@ jobs:
             sudo bash /tmp/wazuh-docker/tools/utils/deployment/credentials-conf.sh
             ls -la config/credentials
           "
+
+          # Read by test_runner (wazuh-automation integration-test-module).
+          value() {
+            ssh ${{ env.SSH_OPTS }} "${{ env.REMOTE }}" \
+              "sudo grep -h '^$1=' /tmp/wazuh-docker/${DEPLOYMENT}/config/credentials/*.env | head -1 | cut -d= -f2-"
+          }
+          INDEXER_ADMIN_PASSWORD=$(value WAZUH_INDEXER_ADMIN_PASSWORD)
+          MANAGER_API_PASSWORD=$(value WAZUH_MANAGER_API_PASSWORD)
+          if [ -z "$INDEXER_ADMIN_PASSWORD" ] || [ -z "$MANAGER_API_PASSWORD" ]; then
+            echo "::error::Could not read the generated credentials"
+            exit 1
+          fi
+          echo "::add-mask::${INDEXER_ADMIN_PASSWORD}"
+          echo "::add-mask::${MANAGER_API_PASSWORD}"
+          echo "WAZUH_SERVICE_PASSWORD=${INDEXER_ADMIN_PASSWORD}" >> "$GITHUB_ENV"
+          echo "WAZUH_API_PASSWORD=${MANAGER_API_PASSWORD}"       >> "$GITHUB_ENV"
 
       - name: Start Docker Compose
         run: |
@@ -911,3 +927,11 @@ jobs:
           python3 wazuh-automation/deployability/modules/allocation/main.py \
             --action delete \
             --track-output ${{ env.ALLOCATOR_PATH }}/track.yml
+
+      # "Run tests" continues on error so the results are reported and uploaded; this step
+      # turns a test failure into a failed job.
+      - name: Fail the job when a test failed
+        if: always() && steps.run_tests.outcome == 'failure'
+        run: |
+          echo "::error::One or more integration tests failed for ${{ matrix.deployment_type }}"
+          exit 1

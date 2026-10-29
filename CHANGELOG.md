@@ -93,6 +93,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2776](https://github.com/wazuh/wazuh-docker/issues/2776) | Fixing integration tests |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
 | [#2742](https://github.com/wazuh/wazuh-docker/issues/2742) | Build the final images from the production packages with `build-images.sh --release`, instead of falling back to the pre-release packages of the `VERSION.json` stage while the GitHub release is still a draft or the GitHub API is rate-limited |
 | [#2756](https://github.com/wazuh/wazuh-docker/issues/2756) | Stop the manager before `password-tool.sh` writes the rotated `wazuh-manager` password into its keystore, and keep the manager supervisor from killing the container during a restart or reload |

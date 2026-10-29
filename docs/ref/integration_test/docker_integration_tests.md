@@ -97,7 +97,7 @@ All parameters are derived automatically:
 | `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Always ECR (images are always built) |
-| `automation_reference` | Always `main` |
+| `automation_reference` | Base branch of the PR (e.g. `5.0.0`) |
 
 ---
 
@@ -229,7 +229,7 @@ Steps 1 to 3 run on the **runner**, and steps 4 and 5 on the VM:
 
    `--agent-san` puts the VM's own address in the agent listener certificate of every manager node, which is the address an agent outside the Compose network dials on `1517`. In multi-node it is the only way to cover the shared `nginx` entry point, since the script rejects one address repeated across manager nodes in `config.yml`.
 
-5. **Generate credentials on VM**: runs `tools/utils/deployment/credentials-conf.sh` in the same directory, with the library downloaded in step 1. It writes `config/credentials/{indexer,manager,dashboard}.env`, which the Compose files mount as secrets: without them, the containers do not start.
+5. **Generate credentials on VM**: runs `tools/utils/deployment/credentials-conf.sh` in the same directory, with the library downloaded in step 1. It writes `config/credentials/{indexer,manager,dashboard}.env`, which the Compose files mount as secrets: without them, the containers do not start. The step then exports `WAZUH_INDEXER_ADMIN_PASSWORD` as `WAZUH_SERVICE_PASSWORD` and `WAZUH_MANAGER_API_PASSWORD` as `WAZUH_API_PASSWORD`, masked in the logs, for `test_runner` to authenticate against the indexer and the Server API.
 
 #### Deployment
 
@@ -277,6 +277,8 @@ test_runner \
 | `--output github` | — | Emits GitHub Actions annotations |
 
 For details on what `docker-single-node` and `docker-multi-node` test types validate, see the `Integration Test Module — Description` of the internal documentation.
+
+The step continues on error, so the results are reported and uploaded when a test fails. The last step of the job, `Fail the job when a test failed`, then fails the job.
 
 #### Reporting
 
