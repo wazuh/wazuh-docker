@@ -74,6 +74,18 @@ RUN conf=/var/ossec/etc/ossec.conf; \
     grep -q 'CHANGE_AGENT_NAME' "$conf" || \
         { echo "ERROR: CHANGE_AGENT_NAME is missing from the packaged ossec.conf"; exit 1; }
 
+# The package installer adds a <localfile> block for each dnf log that exists
+# when it runs (wazuh/wazuh#40810). Both exist here, written by the dnf that
+# installed the package, but not in the final image, whose dnf is microdnf.
+RUN conf=/var/ossec/etc/ossec.conf; \
+    awk '/<localfile>/ { blk = $0; inblk = 1; next } \
+         inblk { blk = blk "\n" $0; \
+                 if (/<\/localfile>/) { inblk = 0; \
+                     if (blk !~ /<location>\/var\/log\/dnf(\.rpm)?\.log<\/location>/) print blk } \
+                 next } \
+         { print }' "$conf" > /tmp/ossec.conf && \
+    cat /tmp/ossec.conf > "$conf" && rm /tmp/ossec.conf
+
 # Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
 RUN chmod 755 /permanent_data.sh && \
     sync && /permanent_data.sh && \
@@ -120,6 +132,13 @@ RUN dnf install --setopt=install_weak_deps=0 findutils procps shadow-utils -y &&
 
 # Copy Wazuh Agent installation from builder
 COPY --from=builder /var/ossec /var/ossec
+
+# Fail the build if the default configuration monitors a file this image does
+# not have: the installer chose those files in the builder stage.
+RUN missing=$(sed -n 's#.*<location>\(/[^<]*\)</location>.*#\1#p' /var/ossec/etc/ossec.conf | \
+        while read -r f; do [ -e "$f" ] || echo "$f"; done); \
+    [ -z "$missing" ] || \
+        { echo "ERROR: ossec.conf monitors files missing from the image:" $missing; exit 1; }
 
 # Where the init script puts the TLS material for the manager connection, and
 # where a CA may be dropped instead of being named by a variable. The package
