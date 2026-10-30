@@ -28,7 +28,7 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
      -v single-node_wazuh_api_configuration:/var/ossec/api/configuration:ro \
      -v "$PWD/wazuh-migrate-identity.py:/wazuh-migrate-identity.py:ro" \
      -v "$PWD/wazuh-4x-bundle:/bundle" \
-     wazuh/wazuh-manager:5.0.0-rc2 /wazuh-migrate-identity.py export /bundle/identity --with-rbac
+     wazuh/wazuh-manager:4.14.9 /wazuh-migrate-identity.py export /bundle/identity --with-rbac
    ```
    `--with-rbac` carries the API users, roles and policies, and `--with-password` the enrollment password, which only 4.x agents that still have to enroll need. The bundle holds agent keys and password hashes: handle it like a credential.
 
@@ -103,15 +103,15 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
    ```yaml
    services:
      wazuh.manager:
-       image: wazuh/wazuh-manager:5.0.0-rc2
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-rc2
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0-rc2
+       image: wazuh/wazuh-dashboard:5.0.0
        ...
    ```
 
@@ -127,27 +127,27 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
    ```yaml
    services:
      wazuh.master:
-       image: wazuh/wazuh-manager:5.0.0-rc2
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh.worker:
-       image: wazuh/wazuh-manager:5.0.0-rc2
+       image: wazuh/wazuh-manager:5.0.0
        ...
 
      wazuh1.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-rc2
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh2.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-rc2
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh3.indexer:
-       image: wazuh/wazuh-indexer:5.0.0-rc2
+       image: wazuh/wazuh-indexer:5.0.0
        ...
 
      wazuh.dashboard:
-       image: wazuh/wazuh-dashboard:5.0.0-rc2
+       image: wazuh/wazuh-dashboard:5.0.0
        ...
    ```
 
