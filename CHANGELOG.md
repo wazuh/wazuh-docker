@@ -93,6 +93,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2780](https://github.com/wazuh/wazuh-docker/issues/2780) | Drop the `/var/log/dnf.log` and `/var/log/dnf.rpm.log` `<localfile>` blocks the agent package adds in the builder stage, which the final agent image does not have, and fail the build if `ossec.conf` monitors a file missing from the image |
 | [#2776](https://github.com/wazuh/wazuh-docker/pull/2776) | Fixing integration tests |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
 | [#2742](https://github.com/wazuh/wazuh-docker/issues/2742) | Build the final images from the production packages with `build-images.sh --release`, instead of falling back to the pre-release packages of the `VERSION.json` stage while the GitHub release is still a draft or the GitHub API is rate-limited |
