@@ -93,6 +93,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2771](https://github.com/wazuh/wazuh-docker/issues/2771) | Restore `diffutils` in the final Wazuh agent image, dropped when it moved to `amazonlinux:2023-minimal`, so FIM `report_changes` can generate content diffs again |
 | [#2780](https://github.com/wazuh/wazuh-docker/issues/2780) | Drop the `/var/log/dnf.log` and `/var/log/dnf.rpm.log` `<localfile>` blocks the agent package adds in the builder stage, which the final agent image does not have, and fail the build if `ossec.conf` monitors a file missing from the image |
 | [#2776](https://github.com/wazuh/wazuh-docker/pull/2776) | Fixing integration tests |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
