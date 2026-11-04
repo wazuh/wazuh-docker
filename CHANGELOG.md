@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Deleted
 
-- None
+- Remove the `notify` job of the image build workflow, which opened an "Artifactory vulnerabilities update" issue in `wazuh-automation` for every release or stage tag: the Docker images vulnerability scan is now automated in `wazuh-automation` ([#2788](https://github.com/wazuh/wazuh-docker/issues/2788))
 
 ## [4.14.10]
 
