@@ -11,15 +11,6 @@ ARG TINI_VERSION="v0.19.0"
 # SHA-256 of tini-static-<arch> for TINI_VERSION, from its release page.
 ARG TINI_SHA256_AMD64="c5b0666b4cb676901f90dfcb37106783c5fe2077b04590973b885950611b30ee"
 ARG TINI_SHA256_ARM64="eae1d3aa50c48fb23b8cbdf4e369d0910dfc538566bfd09df89a774aa84a48b9"
-# WAZUH_MANAGER_ENDPOINT here is a placeholder for the runtime init script to
-# substitute, not real configuration -- there is no manager to point at during a
-# build. It used to reach the package post-install as an environment variable
-# and get written into <endpoint> that way, but wazuh/wazuh#39285 (5.0.0) made
-# the package's own installer stop writing any address without a real
-# enrollment token, which a build obviously does not have. So it is written
-# below, into the packaged ossec.conf directly, instead of relying on the
-# installer for it.
-ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
 ARG WAZUH_AGENT_NAME='CHANGE_AGENT_NAME'
 ARG TARGETARCH
 ARG wazuh_agent_x86_64_rpm
@@ -57,10 +48,20 @@ RUN dnf install procps shadow-utils -y && \
 # Write the <endpoint> placeholder ourselves: the packaged ossec.conf ships with
 # a real default (<endpoint>IP:1517/wazuh-manager/</endpoint>), and nothing in
 # the installer replaces it with our placeholder any more (see the ARG comment
-# above), so this is the only thing that puts CHANGE_MANAGER_ENDPOINT there for
+# below), so this is the only thing that puts CHANGE_MANAGER_ENDPOINT there for
 # the runtime init script to find. Scoped to <manager> the same way the runtime
 # script scopes its own substitution, so a second <endpoint>-shaped tag
 # elsewhere in the file is never touched.
+#
+# WAZUH_MANAGER_ENDPOINT here is a placeholder for the runtime init script to
+# substitute, not real configuration -- there is no manager to point at during a
+# build. It used to reach the package post-install as an environment variable
+# and get written into <endpoint> that way, but wazuh/wazuh#39285 (5.0.0) made
+# the package's own installer stop writing any address without a real
+# enrollment token, which a build obviously does not have. It is declared only
+# here, after the package installation, because the installer now reports it
+# in ossec.log as an ignored 5.0 variable.
+ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
 RUN conf=/var/ossec/etc/ossec.conf; \
     sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>${WAZUH_MANAGER_ENDPOINT}</endpoint>#" "$conf"
 
@@ -85,6 +86,14 @@ RUN conf=/var/ossec/etc/ossec.conf; \
                  next } \
          { print }' "$conf" > /tmp/ossec.conf && \
     cat /tmp/ossec.conf > "$conf" && rm /tmp/ossec.conf
+
+# Start every container with empty logs: the package installer writes notices
+# about this build (no enrollment token, so no manager) into ossec.log, and the
+# final stage copies /var/ossec as a whole. Truncated rather than removed, so
+# each file keeps the owner and mode the package gave it. A bash glob, since
+# this stage has no find.
+RUN bash -O globstar -O nullglob -c \
+        'for f in /var/ossec/logs/**; do if [ -f "$f" ]; then : > "$f"; fi; done'
 
 # Prepare permanent data snapshot (sync calls: https://github.com/docker/docker/issues/9547)
 RUN chmod 755 /permanent_data.sh && \
