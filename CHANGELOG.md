@@ -9,6 +9,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2585](https://github.com/wazuh/wazuh-docker/pull/2585) | Adapt Allocator invocation to the new installable Python package |
 
 ### Removed
 
