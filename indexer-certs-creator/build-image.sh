@@ -8,7 +8,7 @@
 # License (version 2) as published by the FSF - Free Software
 # Foundation.
 
-WAZUH_CERTS_IMAGE_VERSION="0.0.4"
+WAZUH_CERTS_IMAGE_VERSION="0.0.5"
 WAZUH_REGISTRY="docker.io"
 
 # -----------------------------------------------------------------------------
