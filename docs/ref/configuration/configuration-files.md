@@ -33,7 +33,7 @@
 > sudo chmod 640 opensearch_dashboards.yml
 > ```
 >
-> Edit it afterwards with `sudo` as well. The container rewrites the settings that come from environment variables in the same file on every start, keeping its owner and mode.
+> Edit it afterwards with `sudo` as well. On every start the container writes into the same file the settings whose environment variable is set, keeping its owner and mode; the rest of the file is kept (see [Environment Variables](environment-variables.md#overriding-configuration-files-with-environment-variables)).
 
 ## Applying Configuration Changes
 

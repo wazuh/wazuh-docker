@@ -110,7 +110,8 @@ RUN chown root:${WAZUH_GID} $INSTALL_DIR/config && \
     chmod 750 $INSTALL_DIR/config && \
     mkdir -p $INSTALL_DIR/config/certs && \
     chown root:${WAZUH_GID} $INSTALL_DIR/config/certs && \
-    chmod 750 $INSTALL_DIR/config/certs
+    chmod 750 $INSTALL_DIR/config/certs && \
+    /wazuh_dashboard_config.sh --defaults
 
 # Starts as root and drops to wazuh-dashboard once the credentials are stored
 WORKDIR $INSTALL_DIR
