@@ -35,21 +35,21 @@ All notable changes to this project will be documented in this file.
 
 ### Deleted
 
-- None
+- Remove the `notify` job of the image build workflow, which opened an "Artifactory vulnerabilities update" issue in `wazuh-automation` for every release or stage tag: the Docker images vulnerability scan is now automated in `wazuh-automation` ([#2788](https://github.com/wazuh/wazuh-docker/issues/2788))
 
 ## [4.14.10]
 
 ### Added
 
-- None
+- Add the `CERT_TOOL_REPOSITORY` variable to the certificates generator to choose which repository is tried first for `wazuh-certs-tool.sh` ([#2729](https://github.com/wazuh/wazuh-docker/issues/2729))
 
 ### Changed
 
-- None
+- Update the certificates generator image to `0.0.5` and pass `CERT_TOOL_REPOSITORY` to it in the single-node and multi-node deployments ([#2729](https://github.com/wazuh/wazuh-docker/issues/2729))
 
 ### Fixed
 
-- None
+- Build the final images from the production repository with `build-images.sh --release`, and fail the build when the `wazuh/wazuh` tag cannot be checked instead of falling back to the pre-release repository. ([#2742](https://github.com/wazuh/wazuh-docker/issues/2742))
 
 ### Deleted
 
