@@ -5,7 +5,8 @@
 Reads ``WAZUH_API_CREDENTIALS``, one ``user=password`` per line, from the
 environment rather than from the command line: an argument list is readable by
 anything that can see ``/proc``. Writes directly to the RBAC database, so it
-does not need the API to be answering.
+does not need the API to be answering. Prints the name of each user it
+updated, one per line, and exits 1 if any user was not updated.
 
 Used by password-tool.sh. See docs/ref/credentials.md.
 """
@@ -57,6 +58,11 @@ def main() -> int:
                 if not auth.update_user(user_id, password):
                     print(f"password-tool.sh: could not set the password of '{username}'", file=sys.stderr)
                     status = 1
+                    continue
+
+                # Each update is committed on its own: report it, so the caller
+                # shows every password that changed, also when a later one fails.
+                print(username, flush=True)
     except Exception as exc:  # noqa: BLE001
         print(f"password-tool.sh: cannot set the Wazuh API passwords: {exc}", file=sys.stderr)
         status = 1
