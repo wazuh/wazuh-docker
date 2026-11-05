@@ -159,11 +159,21 @@ for user in "${selected[@]}"; do
   credentials="${credentials}${user}=${NEW_PASSWORD[${user}]}"$'\n'
 done
 
-if ! ( cd /var/wazuh-manager && \
-       WAZUH_API_CREDENTIALS="${credentials}" \
-       /var/wazuh-manager/framework/python/bin/python3 /etc/wazuh-api-users.py ); then
+updated=$(cd /var/wazuh-manager && \
+          WAZUH_API_CREDENTIALS="${credentials}" \
+          /var/wazuh-manager/framework/python/bin/python3 /etc/wazuh-api-users.py)
+update_status=$?
+
+# Each account is committed on its own, so a failure can leave some of them
+# changed. Those are shown all the same: their new password is already in use.
+changed=()
+for user in "${selected[@]}"; do
+  grep -qxF "${user}" <<< "${updated}" && changed+=("${user}")
+done
+if [ "${#changed[@]}" -eq 0 ]; then
   exit 1
 fi
+selected=("${changed[@]}")
 
 echo
 echo "Changed on this manager node:"
@@ -180,3 +190,9 @@ print_follow_up
 echo "On a cluster, only the master has a Wazuh API user database. A worker that is"
 echo "promoted to master creates its own from config/credentials/manager.env when its"
 echo "container is recreated, so keep that file updated with the commands above."
+
+if [ "${update_status}" -ne 0 ]; then
+  echo
+  error "only the accounts listed above were changed; the others keep their password"
+  exit 1
+fi
