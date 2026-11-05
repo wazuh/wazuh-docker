@@ -97,7 +97,7 @@ All parameters are derived automatically:
 | `deployment_matrix` | Mapped from the label name |
 | `version` / `stage` | Read from `VERSION.json` on the PR branch |
 | `registry` | Always ECR (images are always built) |
-| `automation_reference` | Base branch of the PR (e.g. `5.1.0`) |
+| `automation_reference` | Base branch of the PR (e.g. `main`) |
 
 ---
 
