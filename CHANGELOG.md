@@ -94,6 +94,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2791](https://github.com/wazuh/wazuh-docker/issues/2791) | Ignore the `wazuh-ca/` directory of the single-node and multi-node stacks, which holds the root CA private key `root-ca.key` |
 | [#2795](https://github.com/wazuh/wazuh-docker/issues/2795) | Ship the Wazuh agent image with empty logs instead of the `ossec.log` written by the package installer in the builder stage, and stop passing the `WAZUH_MANAGER_ENDPOINT` placeholder to the package installation |
 | [#2780](https://github.com/wazuh/wazuh-docker/issues/2780) | Drop the `/var/log/dnf.log` and `/var/log/dnf.rpm.log` `<localfile>` blocks the agent package adds in the builder stage, which the final agent image does not have, and fail the build if `ossec.conf` monitors a file missing from the image |
 | [#2776](https://github.com/wazuh/wazuh-docker/pull/2776) | Fixing integration tests |
