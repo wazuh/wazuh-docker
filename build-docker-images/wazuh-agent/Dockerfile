@@ -125,9 +125,10 @@ ARG WAZUH_GID=101
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-# Install only runtime dependencies: findutils (init script) and procps
-# (wazuh-control). shadow-utils is only needed to create the account.
-RUN dnf install --setopt=install_weak_deps=0 findutils procps shadow-utils -y && \
+# Install only runtime dependencies: diffutils (FIM report_changes), findutils
+# (init script) and procps (wazuh-control). shadow-utils is only needed to
+# create the account.
+RUN dnf install --setopt=install_weak_deps=0 diffutils findutils procps shadow-utils -y && \
     getent group wazuh || groupadd -r -g ${WAZUH_GID} wazuh && \
     getent passwd wazuh || useradd --system \
         --no-create-home \

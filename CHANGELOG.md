@@ -95,6 +95,7 @@
 | Issue | Comment |
 | - | - |
 | [#2790](https://github.com/wazuh/wazuh-docker/issues/2790) | Stop the Wazuh dashboard container with an `UNSAFE` line when its group cannot read `opensearch_dashboards.yml` or a TLS file it uses, instead of a Node `ENOENT` stack trace on `/etc/wazuh-dashboard` |
+| [#2771](https://github.com/wazuh/wazuh-docker/issues/2771) | Restore `diffutils` in the final Wazuh agent image, dropped when it moved to `amazonlinux:2023-minimal`, so FIM `report_changes` can generate content diffs again |
 | [#2793](https://github.com/wazuh/wazuh-docker/issues/2793) | Write at every start only the Wazuh dashboard settings whose environment variable is set, so a mounted `opensearch_dashboards.yml` keeps the rest, and update only the `default` entry of `wazuh_core.hosts`. The image now ships the file with the container defaults |
 | [#2791](https://github.com/wazuh/wazuh-docker/issues/2791) | Ignore the `wazuh-ca/` directory of the single-node and multi-node stacks, which holds the root CA private key `root-ca.key` |
 | [#2795](https://github.com/wazuh/wazuh-docker/issues/2795) | Ship the Wazuh agent image with empty logs instead of the `ossec.log` written by the package installer in the builder stage, and stop passing the `WAZUH_MANAGER_ENDPOINT` placeholder to the package installation |
