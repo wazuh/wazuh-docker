@@ -17,7 +17,7 @@ ARG TARGETARCH
 
 COPY config/check_repository.sh /
 
-RUN yum install curl-minimal tar gzip procps -y &&\
+RUN yum install curl-minimal tar gzip procps diffutils -y &&\
     yum clean all
 
 RUN chmod 775 /check_repository.sh
