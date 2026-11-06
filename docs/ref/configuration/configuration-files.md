@@ -26,7 +26,7 @@
         ```
     * **Important**: The keystore is created only when it does not already exist, so the encryption key stays stable across restarts as long as the `/usr/share/wazuh-dashboard/config` volume is kept. If the keystore is deleted, the next start creates a new one with a new key, and any data encrypted with the previous one becomes unreadable.
 
-> **note**: The Wazuh indexer and the Wazuh dashboard only use a configuration file that is owned by `root` and is not writable by its group or by others; any other file is reported as `UNSAFE <path>: <reason>` and the start fails. A file created by a regular user on the host is owned by that user, so prepare it with `sudo` before mounting it:
+> **note**: The Wazuh indexer and the Wazuh dashboard only use a configuration file that is owned by `root` and is not writable by its group or by others; any other file is reported as `UNSAFE <path>: <reason>` and the start fails. The dashboard also stops with an `UNSAFE` line when its group, `wazuh-dashboard` (`101`), cannot read `opensearch_dashboards.yml` or one of the certificates it uses, as with a file copied out of the container with `sudo docker compose cp`, which lands as `0:0` and `0640`. A file created by a regular user on the host is owned by that user, so prepare it with `sudo` before mounting it:
 >
 > ```bash
 > sudo chown 0:101 opensearch_dashboards.yml

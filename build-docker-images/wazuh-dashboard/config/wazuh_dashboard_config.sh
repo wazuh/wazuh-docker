@@ -105,3 +105,27 @@ if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
         s|ca:.*|ca: '$(escape_repl "$WAZUH_API_CA")'|
     }"
 fi
+
+# The dashboard runs as wazuh-dashboard and reads these files through its group.
+# The credentials resolver only checks that they are root's and not writable by
+# others, so a file only root can read would get as far as Node and fail there.
+SERVICE_USER="${SERVICE_USER:-wazuh-dashboard}"
+SERVICE_GID="$(id -g "$SERVICE_USER")"
+unreadable=0
+check_readable() {
+    local file
+    for file in "$@"; do
+        [ -e "$file" ] || continue
+        if ! setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups test -r "$file"; then
+            echo "UNSAFE ${file}: group ${SERVICE_USER} (${SERVICE_GID}) cannot read it; run chown 0:${SERVICE_GID} and chmod 640 on the file on the Docker host" >&2
+            unreadable=1
+        fi
+    done
+}
+
+read -r -a ca_files <<< "$(printf '%s' "$OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES" | tr '[],"'"'" '     ')"
+check_readable "$DASHBOARD_CONFIG_FILE" "${ca_files[@]}" "$WAZUH_API_CA"
+if [ "$SERVER_SSL_ENABLED" = "true" ]; then
+    check_readable "$SERVER_SSL_CERTIFICATE" "$SERVER_SSL_KEY"
+fi
+[ "$unreadable" = 0 ] || exit 1
