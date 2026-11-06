@@ -140,7 +140,7 @@ build() {
     WAZUH_MINOR_VERSION="${WAZUH_IMAGE_VERSION%.*}"
     # WAZUH_MAJOR_VERSION: Extracts major version only (e.g., 5.0.0 -> 5)
     WAZUH_MAJOR_VERSION="${WAZUH_IMAGE_VERSION%%.*}"
-    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc2) from the local JSON metadata file.
+    # WAZUH_STAGE: Extract the 'stage' (e.g., alpha0, beta1, rc3) from the local JSON metadata file.
     # Note: This is primarily used for pre-release package naming.
     WAZUH_STAGE=$(jq -r '.stage' ../VERSION.json)
 
@@ -404,7 +404,7 @@ help() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "    -a, --artifact-urls <file>   [Optional] Use this artifact URLs file instead of downloading the one for the requested version."
-    echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc2). Not used by default."
+    echo "    -d, --dev-stage <ref>        [Optional] Set the pre-release stage suffix (e.g. beta1, rc3). Not used by default."
     echo "    --dev                        [Optional] Mark as a development build: appends the commit ref to the image tag. Controlled by inputs.dev in the workflow."
     echo "    --release                    [Optional] Final release build: use the production artifact URLs file without checking the GitHub release. Not valid with --dev, -d or -a."
     echo "    -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'."

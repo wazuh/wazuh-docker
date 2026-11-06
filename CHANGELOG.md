@@ -87,6 +87,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2788](https://github.com/wazuh/wazuh-docker/issues/2788) | Remove the `notify` job of the image build workflow, which opened an "Artifactory vulnerabilities update" issue in `wazuh-automation` for every release or stage tag: the Docker images vulnerability scan is now automated in `wazuh-automation` |
 | [#2762](https://github.com/wazuh/wazuh-docker/issues/2762) | Remove the undocumented `/wazuh-migration` path from the manager image: it copied 4.x files (including `global.db`, which 5.0 refuses) into the manager on start; the supported path is the 4.x to 5.0 manager migration of wazuh/wazuh, now documented for Docker in the upgrade guide |
 
 ### Fixed
@@ -94,6 +95,9 @@
 | Issue | Comment |
 | - | - |
 | [#2771](https://github.com/wazuh/wazuh-docker/issues/2771) | Restore `diffutils` in the final Wazuh agent image, dropped when it moved to `amazonlinux:2023-minimal`, so FIM `report_changes` can generate content diffs again |
+| [#2793](https://github.com/wazuh/wazuh-docker/issues/2793) | Write at every start only the Wazuh dashboard settings whose environment variable is set, so a mounted `opensearch_dashboards.yml` keeps the rest, and update only the `default` entry of `wazuh_core.hosts`. The image now ships the file with the container defaults |
+| [#2791](https://github.com/wazuh/wazuh-docker/issues/2791) | Ignore the `wazuh-ca/` directory of the single-node and multi-node stacks, which holds the root CA private key `root-ca.key` |
+| [#2795](https://github.com/wazuh/wazuh-docker/issues/2795) | Ship the Wazuh agent image with empty logs instead of the `ossec.log` written by the package installer in the builder stage, and stop passing the `WAZUH_MANAGER_ENDPOINT` placeholder to the package installation |
 | [#2780](https://github.com/wazuh/wazuh-docker/issues/2780) | Drop the `/var/log/dnf.log` and `/var/log/dnf.rpm.log` `<localfile>` blocks the agent package adds in the builder stage, which the final agent image does not have, and fail the build if `ossec.conf` monitors a file missing from the image |
 | [#2776](https://github.com/wazuh/wazuh-docker/pull/2776) | Fixing integration tests |
 | [#1154](https://github.com/wazuh/wazuh-installation-assistant/issues/1154) | Fix partial password changes when password-tool.sh failed in the middle of the password change process |
