@@ -126,3 +126,51 @@ if [ ${#api_env[@]} -gt 0 ] && grep -q "^wazuh_core\.hosts:" "$DASHBOARD_CONFIG_
         { print }
     '
 fi
+
+[ "$MODE" = "defaults" ] && exit 0
+
+# The dashboard runs as wazuh-dashboard and reads these files through its group.
+# The credentials resolver only checks that they are root's and not writable by
+# others, so a file only root can read would get as far as Node and fail there.
+# The certificate paths are read from the file just written, which has them from
+# the environment or from a mounted file, as dotted or nested keys.
+DASHBOARD_HOME=/usr/share/wazuh-dashboard
+SERVICE_USER="${SERVICE_USER:-wazuh-dashboard}"
+SERVICE_GID="$(id -g "$SERVICE_USER")"
+unreadable=0
+check_readable() {
+    local file
+    for file in "$@"; do
+        [ -e "$file" ] || continue
+        if ! setpriv --reuid="$SERVICE_USER" --regid="$SERVICE_USER" --init-groups test -r "$file"; then
+            echo "UNSAFE ${file}: group ${SERVICE_USER} (${SERVICE_GID}) cannot read it; run chown 0:${SERVICE_GID} and chmod 640 on the file on the Docker host" >&2
+            unreadable=1
+        fi
+    done
+}
+
+# Prints, NUL-separated, the CAs of opensearch.ssl.certificateAuthorities and
+# wazuh_core.hosts.default.ca, and the server certificate and key when
+# server.ssl.enabled is true. Nothing when the file cannot be parsed: the
+# dashboard reports that itself.
+list_cert_files() {
+    env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin "$DASHBOARD_HOME/node/bin/node" -e '
+        const fs = require("fs");
+        const yaml = require(process.argv[1] + "/node_modules/js-yaml");
+        const doc = yaml.load(fs.readFileSync(process.argv[2], "utf8")) || {};
+        const get = (key) => Object.prototype.hasOwnProperty.call(doc, key) ? doc[key]
+            : key.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), doc);
+        const files = [].concat(get("opensearch.ssl.certificateAuthorities") || [],
+            ((get("wazuh_core.hosts") || {}).default || {}).ca || []);
+        const ssl = get("server.ssl.enabled");
+        if (ssl === true || ssl === "true") files.push(get("server.ssl.certificate"), get("server.ssl.key"));
+        files.filter((f) => typeof f === "string" && f).forEach((f) => process.stdout.write(f + "\0"));
+    ' "$DASHBOARD_HOME" "$DASHBOARD_CONFIG_FILE" 2>/dev/null
+}
+
+check_readable "$DASHBOARD_CONFIG_FILE"
+if [ "$unreadable" = 0 ]; then
+    mapfile -d '' -t cert_files < <(list_cert_files)
+    check_readable "${cert_files[@]}"
+fi
+[ "$unreadable" = 0 ] || exit 1
