@@ -1,66 +1,79 @@
 #!/bin/bash
 # Wazuh Docker Copyright (C) Wazuh Inc. (License GPLv2)
 
-# Environment variables with defaults
-SERVER_HOST="${SERVER_HOST:-0.0.0.0}"
-SERVER_PORT="${SERVER_PORT:-443}"
-OPENSEARCH_HOSTS="${OPENSEARCH_HOSTS:-https://wazuh.indexer:9200}"
-OPENSEARCH_SSL_VERIFICATION_MODE="${OPENSEARCH_SSL_VERIFICATION_MODE:-full}"
-OPENSEARCH_REQUEST_HEADERS_ALLOWLIST="${OPENSEARCH_REQUEST_HEADERS_ALLOWLIST:-[\"securitytenant\",\"Authorization\"]}"
-OPENSEARCH_SECURITY_MULTITENANCY_ENABLED="${OPENSEARCH_SECURITY_MULTITENANCY_ENABLED:-false}"
-OPENSEARCH_SECURITY_READONLY_MODE_ROLES="${OPENSEARCH_SECURITY_READONLY_MODE_ROLES:-[\"kibana_read_only\"]}"
-SERVER_SSL_ENABLED="${SERVER_SSL_ENABLED:-true}"
-SERVER_SSL_KEY="${SERVER_SSL_KEY:-/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem}"
-SERVER_SSL_CERTIFICATE="${SERVER_SSL_CERTIFICATE:-/usr/share/wazuh-dashboard/config/certs/dashboard.pem}"
-OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES="${OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES:-[/usr/share/wazuh-dashboard/config/certs/indexer-ca.pem]}"
-UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE="${UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE:-/app/wz-home}"
-OPENSEARCH_SECURITY_COOKIE_TTL="${OPENSEARCH_SECURITY_COOKIE_TTL:-900000}"
-OPENSEARCH_SECURITY_SESSION_TTL="${OPENSEARCH_SECURITY_SESSION_TTL:-900000}"
-OPENSEARCH_SECURITY_SESSION_KEEPALIVE="${OPENSEARCH_SECURITY_SESSION_KEEPALIVE:-true}"
+# Writes the settings that come from the environment into opensearch_dashboards.yml.
+#
+#   wazuh_dashboard_config.sh --defaults   at build time: writes every setting
+#                                          below with its default, so the file
+#                                          the image ships works in a container.
+#   wazuh_dashboard_config.sh              at every start: writes only the
+#                                          settings whose variable is set; a
+#                                          mounted file keeps everything else.
+#
+# opensearch.ssl.verificationMode is the exception: it is written at every start,
+# with its default when the variable is not set, so a configuration kept from an
+# earlier version moves to full verification (see docs/ref/upgrade.md).
 
-# Wazuh API configuration
-WAZUH_API_URL="${WAZUH_API_URL:-https://localhost}"
-API_PORT="${API_PORT:-55000}"
-API_USERNAME="${API_USERNAME:-wazuh-internal-client}"
-# The CA that verifies the Server API certificate: the manager's, not the indexer's.
-WAZUH_API_CA="${WAZUH_API_CA:-/usr/share/wazuh-dashboard/config/certs/manager-ca.pem}"
-RUN_AS="${RUN_AS:-true}"
-
-# Configuration file path
 DASHBOARD_CONFIG_FILE="${DASHBOARD_CONFIG_FILE:-/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml}"
+CERTS_DIR=/usr/share/wazuh-dashboard/config/certs
 
-# Map of configuration keys to their values
-declare -A CONFIG_MAP=(
-    [server.host]="$SERVER_HOST"
-    [server.port]="$SERVER_PORT"
-    [opensearch.hosts]="$OPENSEARCH_HOSTS"
-    [opensearch.ssl.verificationMode]="$OPENSEARCH_SSL_VERIFICATION_MODE"
-    [opensearch.requestHeadersAllowlist]="$OPENSEARCH_REQUEST_HEADERS_ALLOWLIST"
-    [opensearch_security.multitenancy.enabled]="$OPENSEARCH_SECURITY_MULTITENANCY_ENABLED"
-    [opensearch_security.readonly_mode.roles]="$OPENSEARCH_SECURITY_READONLY_MODE_ROLES"
-    [server.ssl.enabled]="$SERVER_SSL_ENABLED"
-    [server.ssl.key]="\"$SERVER_SSL_KEY\""
-    [server.ssl.certificate]="\"$SERVER_SSL_CERTIFICATE\""
-    [opensearch.ssl.certificateAuthorities]="$OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES"
-    [uiSettings.overrides.defaultRoute]="$UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE"
-    [opensearch_security.cookie.ttl]="$OPENSEARCH_SECURITY_COOKIE_TTL"
-    [opensearch_security.session.ttl]="$OPENSEARCH_SECURITY_SESSION_TTL"
-    [opensearch_security.session.keepalive]="$OPENSEARCH_SECURITY_SESSION_KEEPALIVE"
+MODE=start
+[ "$1" = "--defaults" ] && MODE=defaults
+
+# setting|variable|default|quote
+SETTINGS=(
+    "server.host|SERVER_HOST|0.0.0.0|"
+    "server.port|SERVER_PORT|443|"
+    "opensearch.hosts|OPENSEARCH_HOSTS|https://wazuh.indexer:9200|"
+    "opensearch.ssl.verificationMode|OPENSEARCH_SSL_VERIFICATION_MODE|full|"
+    "opensearch.requestHeadersAllowlist|OPENSEARCH_REQUEST_HEADERS_ALLOWLIST|[\"securitytenant\",\"Authorization\"]|"
+    "opensearch_security.multitenancy.enabled|OPENSEARCH_SECURITY_MULTITENANCY_ENABLED|false|"
+    "opensearch_security.readonly_mode.roles|OPENSEARCH_SECURITY_READONLY_MODE_ROLES|[\"kibana_read_only\"]|"
+    "server.ssl.enabled|SERVER_SSL_ENABLED|true|"
+    "server.ssl.key|SERVER_SSL_KEY|${CERTS_DIR}/dashboard-key.pem|\""
+    "server.ssl.certificate|SERVER_SSL_CERTIFICATE|${CERTS_DIR}/dashboard.pem|\""
+    "opensearch.ssl.certificateAuthorities|OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES|[${CERTS_DIR}/indexer-ca.pem]|"
+    "uiSettings.overrides.defaultRoute|UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE|/app/wz-home|"
+    "opensearch_security.cookie.ttl|OPENSEARCH_SECURITY_COOKIE_TTL|900000|"
+    "opensearch_security.session.ttl|OPENSEARCH_SECURITY_SESSION_TTL|900000|"
+    "opensearch_security.session.keepalive|OPENSEARCH_SECURITY_SESSION_KEEPALIVE|true|"
+)
+ALWAYS_WRITTEN="opensearch.ssl.verificationMode"
+
+# wazuh_core.hosts.default: field|variable|default|quote
+API_HOST_SETTINGS=(
+    "url|WAZUH_API_URL|https://localhost|"
+    "port|API_PORT|55000|"
+    "username|API_USERNAME|wazuh-internal-client|"
+    "run_as|RUN_AS|true|"
+    "ca|WAZUH_API_CA|${CERTS_DIR}/manager-ca.pem|'"
 )
 
+# Prints the value to write for one entry, or nothing when it must be left alone.
+value_for() {
+    local key="$1" var="$2" default="$3" quote="$4" value
+    if [ "$MODE" = "defaults" ]; then
+        value="$default"
+    elif [ "$key" = "$ALWAYS_WRITTEN" ]; then
+        value="${!var:-$default}"
+    else
+        value="${!var:-}"
+    fi
+    [ -n "$value" ] && printf '%s%s%s' "$quote" "$value" "$quote"
+}
+
 # Escapes &, \ and | (the sed replacement delimiter used below) so a value
-# containing any of them is inserted literally instead of being interpreted
-# by sed as a backreference, an escape, or the end of the substitution.
+# containing any of them is inserted literally.
 escape_repl() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
 
-# Applies a sed script to the configuration file and writes the result over the
-# same file. sed -i would rename a new file over it, which fails when the file is
-# a single-file bind mount ("Device or resource busy") and would also drop its
+# Runs a filter over the configuration file and writes the result over the same
+# file. sed -i would rename a new file over it, which fails when the file is a
+# single-file bind mount ("Device or resource busy") and would also drop its
 # owner and mode; writing through the existing file keeps all three.
-edit_config() {
+filter_config() {
     local tmp
     tmp=$(mktemp) || { echo "ERROR: cannot create a temporary file to update ${DASHBOARD_CONFIG_FILE}" >&2; exit 1; }
-    if ! sed "$1" "$DASHBOARD_CONFIG_FILE" > "$tmp" || ! cat "$tmp" > "$DASHBOARD_CONFIG_FILE"; then
+    if ! "$@" "$DASHBOARD_CONFIG_FILE" > "$tmp" || ! cat "$tmp" > "$DASHBOARD_CONFIG_FILE"; then
         rm -f "$tmp"
         echo "ERROR: cannot update ${DASHBOARD_CONFIG_FILE}" >&2
         exit 1
@@ -68,25 +81,16 @@ edit_config() {
     rm -f "$tmp"
 }
 
-# Replace configuration values in the dashboard config file
-for key in "${!CONFIG_MAP[@]}"; do
-    value="${CONFIG_MAP[$key]}"
+for entry in "${SETTINGS[@]}"; do
+    IFS='|' read -r key var default quote <<< "$entry"
+    value=$(value_for "$key" "$var" "$default" "$quote") || continue
 
-    # Skip empty values for optional configurations
-    if [ -z "$value" ]; then
-        continue
-    fi
+    escaped_key=$(printf '%s' "$key" | sed 's/[.[\*^$()+?{|]/\\&/g')
 
-    # Escape special characters for sed
-    escaped_key=$(echo "$key" | sed 's/[.[\*^$()+?{|]/\\&/g')
-
-    # Try to replace existing line (commented or uncommented); if the key is
-    # not present at all, append it instead of dropping the value silently.
+    # Replace the line (commented or not), or append the setting if it is missing.
     if grep -q "^[#[:space:]]*${escaped_key}:" "$DASHBOARD_CONFIG_FILE"; then
-        edit_config "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|"
+        filter_config sed "s|^[#[:space:]]*${escaped_key}:.*|${key}: $(escape_repl "$value")|"
     else
-        # Ensure the file ends in a newline before appending, otherwise the
-        # new line would be glued onto the previous one.
         if [ -s "$DASHBOARD_CONFIG_FILE" ] && [ "$(tail -c1 "$DASHBOARD_CONFIG_FILE")" != "" ]; then
             echo >> "$DASHBOARD_CONFIG_FILE"
         fi
@@ -94,16 +98,33 @@ for key in "${!CONFIG_MAP[@]}"; do
     fi
 done
 
-# Handle wazuh_core.hosts section separately
-if grep -q "^wazuh_core.hosts:" "$DASHBOARD_CONFIG_FILE"; then
-    # Update existing wazuh_core.hosts section
-    edit_config "/^wazuh_core.hosts:/,/^[^ ]/ {
-        s|url:.*|url: $(escape_repl "$WAZUH_API_URL")|
-        s|port:.*|port: $(escape_repl "$API_PORT")|
-        s|username:.*|username: $(escape_repl "$API_USERNAME")|
-        s|run_as:.*|run_as: $(escape_repl "$RUN_AS")|
-        s|ca:.*|ca: '$(escape_repl "$WAZUH_API_CA")'|
-    }"
+# Only the fields of the "default" entry of wazuh_core.hosts are written: other
+# entries and the settings that follow the block are left as they are.
+api_env=()
+for entry in "${API_HOST_SETTINGS[@]}"; do
+    IFS='|' read -r field var default quote <<< "$entry"
+    value=$(value_for "$field" "$var" "$default" "$quote") && api_env+=("WZ_API_${field}=${value}")
+done
+
+if [ ${#api_env[@]} -gt 0 ] && grep -q "^wazuh_core\.hosts:" "$DASHBOARD_CONFIG_FILE"; then
+    filter_config env "${api_env[@]}" awk '
+        /^wazuh_core\.hosts:/ { in_block = 1; entry = ""; entry_indent = -1; print; next }
+        in_block && /^[^[:space:]#]/ { in_block = 0 }
+        in_block && /^[[:space:]]+[^[:space:]#]/ {
+            indent = match($0, /[^ ]/) - 1
+            if (entry_indent < 0) entry_indent = indent
+            if (indent == entry_indent) {
+                entry = $1; sub(/:.*/, "", entry)
+            } else if (entry == "default" && match($0, /^[[:space:]]+(url|port|username|run_as|ca):/)) {
+                field = substr($0, indent + 1, RLENGTH - indent - 1)
+                if (("WZ_API_" field) in ENVIRON) {
+                    printf "%" indent "s%s: %s\n", "", field, ENVIRON["WZ_API_" field]
+                    next
+                }
+            }
+        }
+        { print }
+    '
 fi
 
 # The dashboard runs as wazuh-dashboard and reads these files through its group.
