@@ -5,6 +5,7 @@ build-docker-images/artifact_urls.yaml
 build-docker-images/artifacts_env.txt
 single-node/wazuh-certificates
 single-node/wazuh-certificates/*
+single-node/wazuh-ca
 single-node/wazuh-certificates-tool.log
 single-node/wazuh-certs-tool*.sh
 single-node/wazuh-credentials*.sh
@@ -13,6 +14,7 @@ single-node/config
 single-node/docker-compose.override.yml
 multi-node/wazuh-certificates
 multi-node/wazuh-certificates/*
+multi-node/wazuh-ca
 multi-node/wazuh-certificates-tool.log
 multi-node/wazuh-certs-tool*.sh
 multi-node/wazuh-credentials*.sh
