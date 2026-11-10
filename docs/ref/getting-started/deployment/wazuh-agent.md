@@ -88,14 +88,20 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     **Note:** The container only decodes the token locally. A token the decoder
     refuses (for example, a malformed one) makes the container exit before
-    writing anything, naming the reason. An expired or revoked token, or one already at
-    `max_uses`, is refused by the manager when the agent first starts, and the
-    agent deletes it then (see the environment variables reference):
+    writing anything, naming the reason:
 
     ```text
     ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:
     wazuh-agentd: invalid enrollment token: malformed token.
     ```
+
+    An expired or revoked token, or one already at `max_uses`, is refused by the
+    manager when the agent first starts, and the agent deletes it then (see the
+    environment variables reference). `wazuh-agentd` stops with `CRITICAL:
+    Enrollment-token bootstrap failed; refusing to enroll unverified.` and the
+    container exits with a non-zero code, as it does whenever an agent daemon
+    stops running. With `restart: always` it is started again and keeps failing
+    until `WAZUH_ENROLLMENT_TOKEN` holds a token the manager accepts.
 
     **Note:** `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` are for an agent
     that does *not* need to enroll here — one already carrying its own
