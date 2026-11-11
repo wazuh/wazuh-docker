@@ -100,8 +100,16 @@ Follow these steps to deploy the Wazuh agent using Docker.
     environment variables reference). `wazuh-agentd` stops with `CRITICAL:
     Enrollment-token bootstrap failed; refusing to enroll unverified.` and the
     container exits with a non-zero code, as it does whenever an agent daemon
-    stops running. With `restart: always` it is started again and keeps failing
-    until `WAZUH_ENROLLMENT_TOKEN` holds a token the manager accepts.
+    stops running. Restarting it does not help: the configuration in
+    `wazuh_agent_etc` already has the manager endpoint, so the container no
+    longer reads `WAZUH_ENROLLMENT_TOKEN`. Mint a new token, put it in the
+    Compose file, remove the agent's volume (it holds no identity yet, since
+    the agent never enrolled) and start the agent again:
+
+    ```bash
+    docker compose down -v
+    docker compose up -d
+    ```
 
     **Note:** `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` are for an agent
     that does *not* need to enroll here — one already carrying its own
@@ -204,6 +212,14 @@ Follow these steps to deploy the Wazuh agent using Docker.
     agent, since the container gets a new hostname-derived
     `WAZUH_AGENT_NAME` and loses its previous `client.keys` each time, leaving
     the old registration on the manager with nothing to remove it.
+
+    **Note:** Upgrade the agent container by changing the image tag in the
+    compose file and running `docker compose up -d`; `wazuh_agent_etc` keeps
+    its enrollment. WPK upgrades sent from the manager are not supported here:
+    the package stops the agent daemons before installing, the container exits
+    as soon as it finds them stopped, and the upgrade is cut off. Anything
+    installed inside the container outside `/var/ossec/etc` is also lost the
+    next time it is recreated.
 
 3.  **Start the agent**, from the `wazuh-agent` directory:
 
