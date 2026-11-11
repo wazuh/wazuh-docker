@@ -108,6 +108,7 @@ if [ "$(id -u)" = "0" ]; then
         echo "credentials: the indexer cannot start until the problems above are solved;" >&2
         echo "credentials: passwords go in config/credentials/indexer.env," >&2
         echo "credentials: certificates under config/*/certs, and any file you mount, must be owned by root and not writable by group or others" >&2
+        echo "credentials: (certificates-conf.sh --priv sets them: root, group 101, mode 0640)" >&2
         exit 1
     fi
     unset WAZUH_INDEXER_ADMIN_PASSWORD WAZUH_INDEXER_KIBANASERVER_PASSWORD \
