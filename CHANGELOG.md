@@ -95,6 +95,7 @@
 | Issue | Comment |
 | - | - |
 | [#2796](https://github.com/wazuh/wazuh-docker/issues/2796) | Exit the Wazuh agent container with a non-zero code when the agent fails to start or one of its daemons stops running, for example when the manager refuses the enrollment token, instead of staying `Up` with no agent; add a healthcheck to the agent Compose file |
+| [#2792](https://github.com/wazuh/wazuh-docker/issues/2792) | Point the Wazuh indexer container to the problems reported above it when `resolve-credentials.sh --prestart` fails, passwords or certificates, instead of always to `config/credentials/indexer.env` and `credentials-conf.sh` |
 | [#2797](https://github.com/wazuh/wazuh-docker/issues/2797) | Copy the certificates of each node by exact file name in `certificates-conf.sh`, so a node whose name is a prefix of another, as `node-1` and `node-10`, no longer receives the certificate and the private key of the other |
 | [#2790](https://github.com/wazuh/wazuh-docker/issues/2790) | Stop the Wazuh dashboard container with an `UNSAFE` line when its group cannot read `opensearch_dashboards.yml` or a TLS file it uses, instead of a Node `ENOENT` stack trace on `/etc/wazuh-dashboard` |
 | [#2771](https://github.com/wazuh/wazuh-docker/issues/2771) | Restore `diffutils` in the final Wazuh agent image, dropped when it moved to `amazonlinux:2023-minimal`, so FIM `report_changes` can generate content diffs again |
