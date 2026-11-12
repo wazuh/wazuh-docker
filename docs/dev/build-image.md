@@ -13,7 +13,7 @@ This script initializes the environment variables needed to build each of the im
 The script allows you to build images from other versions of Wazuh, to do this you must use the -v or --version argument:
 
 ```
-$ build-docker-images/build-images.sh -v 4.14.12
+$ build-docker-images/build-images.sh -v 4.14.13
 ```
 
 To get all the available script options use the -h or --help option:
@@ -27,7 +27,7 @@ Usage: build-docker-images/build-images.sh [OPTIONS]
     --release                    [Optional] Final release build: install the packages from the production repository without checking the wazuh/wazuh tag. Not valid with -d.
     -f, --filebeat-module <ref>  [Optional] Set Filebeat module version. By default 0.5.
     -r, --revision <rev>         [Optional] Package revision. By default 1
-    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.12.
+    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 4.14.13.
     -h, --help                   Show this help.
 
 ```
