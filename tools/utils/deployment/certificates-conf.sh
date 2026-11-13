@@ -145,7 +145,7 @@ if $DO_COPY; then
     dir_name=$(node_to_dir "$node")
     echo "Copying certificates for indexer: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
-    cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
+    cp "$OUTPUT_DIR/${node}"{.pem,-key.pem} "./config/$dir_name/certs/"
     if $FIRST_INDEXER; then
       cp "$OUTPUT_DIR"/admin* "./config/$dir_name/certs/"
       FIRST_INDEXER=false
@@ -167,14 +167,14 @@ if $DO_COPY; then
     fi
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
-    cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
+    cp "$OUTPUT_DIR/${node}"{.pem,-key.pem,-remoted.pem,-remoted-key.pem,-apid.pem,-apid-key.pem} "./config/$dir_name/certs/"
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do
     dir_name=$(node_to_dir "$node")
     echo "Copying certificates for dashboard: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
-    cp "$OUTPUT_DIR/${node}"* "./config/$dir_name/certs/"
+    cp "$OUTPUT_DIR/${node}"{.pem,-key.pem} "./config/$dir_name/certs/"
   done
   echo "Copying root-ca certificates -> config/root-ca/certs/"
   mkdir -p "./config/root-ca/certs"
