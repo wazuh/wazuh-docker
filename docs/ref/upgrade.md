@@ -8,7 +8,11 @@ These steps apply between 5.x releases. Upgrading from 4.x, or from 5.0.0 RC 1 o
 
 A 4.x deployment cannot be upgraded in place. The 5.0 manager uses other paths (`/var/wazuh-manager` and `/etc/wazuh-manager` instead of `/var/ossec`), a new configuration format and a new agent protocol, so it does not read the 4.x volumes. A deployment of 5.0.0 RC 1 or an earlier pre-release cannot be upgraded either (wazuh/wazuh#40338): deploy 5.0 again with new volumes.
 
-Deploy 5.0 as a new deployment and carry the agents' identity across with the manager's migration tool, `wazuh-migrate-identity.py`. It keeps the agent ids, names and keys, the group membership and the group folders and, optionally, the API users and the enrollment password, so the 4.x agents reconnect without enrolling again. The Wazuh manager guide [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-4x-to-5x.md) covers everything else: the configuration, the rules and decoders, upgrading the agents, retiring the legacy channel, and the historical data. The steps below are the Docker part of it, for the single-node deployment. On multi-node, use the volumes and the service of the master (`master-wazuh-etc`, `master-wazuh-queue`, `master-wazuh-api-configuration` and `wazuh.master`).
+Deploy 5.0 as a new deployment and carry the agents' identity across with the manager's migration tool, `wazuh-migrate-identity.py`. It keeps the agent ids, names and keys, the group membership and the group folders and, optionally, the API users and the enrollment password, so the 4.x agents reconnect without enrolling again. The Wazuh manager guide [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-4x-to-5x.md) covers everything else: the configuration, the rules and decoders, upgrading the agents, retiring the legacy channel, and the historical data. The steps below are the Docker part of it, for the single-node deployment. On multi-node, use the volumes and the service of the master (`master-wazuh-etc`, `master-wazuh-queue`, `master-wazuh-api-configuration` and `wazuh.master`), and the override of step 3 for multi-node. [Configuration and content](#configuration-and-content) says where the input of the rest of the guide is in a 4.x Docker deployment and where 5.0 takes it.
+
+Run the tool with the Python the manager bundles, as the steps below do: the 5.0 manager image has no `python3` on its `PATH`. The downloaded tool is not executable, so `./wazuh-migrate-identity.py` fails with `Permission denied`, and with `env: 'python3': No such file or directory` after a `chmod +x`. The image has no `sqlite3` or `ssh` either; the manual procedure of the manager guide does not apply to Docker.
+
+To keep the 4.x alerts available in 5.0, take the snapshot of [Historical data](#historical-data) before step 1.
 
 1. **Stop the 4.x deployment**, keeping its volumes, and list them:
    ```bash
@@ -41,6 +45,12 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
    printf 'services:\n  wazuh.manager:\n    ports: !reset []\n' > docker-compose.migration.yml
    docker compose -f docker-compose.yml -f docker-compose.migration.yml up -d
    ```
+   On multi-node, the agent ports `1514` and `1517` are published by `nginx`, not by the managers, so the override resets both services; start the deployment with the same `docker compose` command:
+   ```bash
+   printf 'services:\n  wazuh.master:\n    ports: !reset []\n  nginx:\n    ports: !reset []\n' > docker-compose.migration.yml
+   ```
+   With the override, `docker compose ps` shows no published port on `wazuh.master` or `nginx`.
+
    Until step 5, the 4.x agents log `(1216): Unable to connect` and keep retrying.
 
 4. **Import the identity** into the 5.0 manager, through its API on loopback, with the `wazuh` password of the 5.0 deployment:
@@ -53,10 +63,12 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
    ```
    Run it with `--dry-run` first. The API certificate is verified against `/etc/wazuh-manager/certs/root-ca.pem`, which the deployment mounts. The import ends with `Inserted N of N agent(s)`.
 
-5. **Open the manager to the agents**: start the deployment without the override. This recreates the manager with its ports published, and removes the copies from `/tmp`:
+5. **Open the manager to the agents**: stop the manager, then start the deployment without the override. This recreates the manager with its ports published, and removes the copies from `/tmp`:
    ```bash
+   docker compose stop -t 120 wazuh.manager
    docker compose up -d
    ```
+   The imported group membership reaches the manager database only when the manager stops cleanly, which takes about a minute. Docker kills a container 10 seconds after asking it to stop, so a plain `docker compose up -d` or `restart` here can leave every agent in `default` only, and `check` in step 6 then reports `agent <id> is not in <group>`. On multi-node, stop `wazuh.master`.
    With `--with-rbac`, the `wazuh` and `wazuh-internal-client` users now have their 4.x passwords, and the dashboard, which uses the one in `config/credentials`, cannot log in. Set both back:
    ```bash
    sudo sed -n 's/^WAZUH_MANAGER_API_PASSWORD=//p' config/credentials/manager.env | \
@@ -76,7 +88,78 @@ Deploy 5.0 as a new deployment and carry the agents' identity across with the ma
    docker compose exec wazuh.manager rm -rf /tmp/identity /tmp/wazuh-migrate-identity.py
    sudo rm -rf <4.x checkout>/single-node/wazuh-4x-bundle
    ```
-   `check` reports `The target matches the bundle.` The manager logs `Loaded N agent key(s)`, and the 4.x agents connect on `1514` with their existing keys and show as `active`, with their ids, names and groups. The registration date is the date of the import. Keep the 4.x volumes until the migration is complete; the 4.x indexer data stays in them for consultation.
+   `check` reports `The target matches the bundle.` The manager logs `Loaded N agent key(s)` in `/var/wazuh-manager/logs/wazuh-manager.log` (`docker compose exec wazuh.manager grep 'agent key' /var/wazuh-manager/logs/wazuh-manager.log`), and the 4.x agents connect on `1514` with their existing keys and show as `active`, with their ids, names and groups. The registration date is the date of the import. On multi-node, the worker may log `claims agent ID '<id>', which is not registered` for a few seconds after this step, until it receives the keys from the master. Keep the 4.x volumes until the migration is complete. The 4.x indexer data stays in them, but the 5.0 indexer does not read it: see [Historical data](#historical-data).
+
+### Configuration and content
+
+5.0 does not read any 4.x configuration file: each one is rewritten following the manager guide, and none of the 4.x mounted files is mounted again. Read the running 4.x configuration from the `etc` volume, not from `config/wazuh_cluster/`: the mounted `ossec.conf` is not always applied to `/var/ossec/etc/ossec.conf`. A one-off container with the 4.x image and the volumes mounted read-only, as in step 2, gives access to them while 4.x is stopped.
+
+| 4.x source | 4.x path | 5.0 destination |
+|---|---|---|
+| `wazuh_etc` volume | `/var/ossec/etc/ossec.conf`, `local_internal_options.conf` | `wazuh-manager.conf` and `wazuh-manager-internal-options.conf`, rewritten as the [Manager configuration migration](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-configuration-migration.md) guide says. Mount the new `wazuh-manager.conf` at `/wazuh-config-mount/etc/wazuh-manager.conf` |
+| `wazuh_etc` volume | `/var/ossec/etc/rules`, `decoders`, `lists` | Rewritten as detection rules, engine decoders and KVDBs: [rules](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/rules-4x-to-5x.md), [decoders](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/xml-decoders-migration.md), [CDB lists](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/cdb-to-kvdb-migration.md) |
+| `wazuh_etc` volume | `/var/ossec/etc/shared/<group>/` | Carried by `wazuh-migrate-identity.py`. Each `agent.conf` must be valid for 5.0 |
+| `wazuh_api_configuration` volume | `/var/ossec/api/configuration/api.yaml` | `/var/wazuh-manager/api/configuration/api.yaml`, through `/wazuh-config-mount/api/configuration/api.yaml` |
+| `config/wazuh_indexer/wazuh.indexer.yml` | `/usr/share/wazuh-indexer/config/opensearch.yml` | Environment variables with the setting name on the indexer service, or a 5.0 `opensearch.yml`. The 4.x file names other certificate files and cannot be reused |
+| `config/wazuh_indexer/internal_users.yml` | `.../opensearch-security/internal_users.yml` | Not mounted. The shipped accounts take their passwords from `config/credentials/indexer.env` (see [Credentials](credentials.md)); create your own users through the security API |
+| `config/wazuh_dashboard/opensearch_dashboards.yml` | `/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml` | Environment variables on the dashboard service, or a 5.0 file mounted at the same path |
+| `config/wazuh_dashboard/wazuh.yml` | `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` | None: there is no `wazuh.yml` in 5.x. The API URL is `WAZUH_API_URL` |
+
+On multi-node, the manager files are on `master-wazuh-etc` and `master-wazuh-api-configuration`, and the indexer files are `wazuh1.indexer.yml` to `wazuh3.indexer.yml`.
+
+A file mounted into the 5.0 indexer or dashboard must be owned by `root`, group `101`, mode `0640`; with the owner and mode a 4.x file had on the host, the container stops with `UNSAFE <path>: ...`. See the note in [Configuration files](configuration/configuration-files.md). Validate the manager configuration before restarting the manager:
+
+```bash
+docker compose exec wazuh.manager /var/wazuh-manager/bin/wazuh-manager-conf validate
+```
+
+### Historical data
+
+The 5.0 indexer does not read the 4.x indices, and the 4.x indexer is stopped in step 1. To consult the 4.x alerts from 5.0, take a snapshot of them into a host folder while 4.x is still running, and restore it into the 5.0 indexer after step 6.
+
+1. **Before step 1**, in the 4.x deployment, add `path.repo` to the indexer configuration and mount a folder at that path. The 4.x indexer does not read settings from environment variables, and the shipped `wazuh.indexer.yml` has no newline at the end, so the setting starts with one:
+   ```bash
+   cd <4.x checkout>/single-node
+   printf '\npath.repo: ["/mnt/snapshots"]\n' >> config/wazuh_indexer/wazuh.indexer.yml
+   mkdir wazuh-4x-snapshots
+   sudo chown 1000:1000 wazuh-4x-snapshots
+   printf 'services:\n  wazuh.indexer:\n    volumes:\n      - ./wazuh-4x-snapshots:/mnt/snapshots\n' > docker-compose.snapshot.yml
+   docker compose -f docker-compose.yml -f docker-compose.snapshot.yml up -d wazuh.indexer
+   ```
+   Register the folder and take the snapshot, with the 4.x `admin` password:
+   ```bash
+   curl -sk -u admin:<4.x admin password> -X PUT https://localhost:9200/_snapshot/wazuh-4x \
+     -H 'Content-Type: application/json' -d '{"type":"fs","settings":{"location":"/mnt/snapshots"}}'
+   curl -sk -u admin:<4.x admin password> -X PUT 'https://localhost:9200/_snapshot/wazuh-4x/alerts-4x?wait_for_completion=true' \
+     -H 'Content-Type: application/json' -d '{"indices":"wazuh-alerts-4.x-*","include_global_state":false}'
+   ```
+   The snapshot ends with `"state":"SUCCESS"`. Add `wazuh-states-*` to `indices` to keep the 4.x inventory too.
+
+2. **After step 6**, in the 5.0 deployment, mount the same folder in the indexer, read-only, and set `path.repo` as an environment variable:
+   ```bash
+   printf 'services:\n  wazuh.indexer:\n    environment:\n      - path.repo=/mnt/snapshots\n    volumes:\n      - <4.x checkout>/single-node/wazuh-4x-snapshots:/mnt/snapshots:ro\n' > docker-compose.restore.yml
+   docker compose -f docker-compose.yml -f docker-compose.restore.yml up -d wazuh.indexer
+   ```
+   When the indexer is `healthy`, register the folder read-only and restore the snapshot under another name:
+   ```bash
+   ADMIN_PASSWORD=$(sudo sed -n 's/^WAZUH_INDEXER_ADMIN_PASSWORD=//p' config/credentials/indexer.env)
+   docker compose exec -T wazuh.indexer curl -sk -u "admin:$ADMIN_PASSWORD" -X PUT https://localhost:9200/_snapshot/wazuh-4x \
+     -H 'Content-Type: application/json' -d '{"type":"fs","settings":{"location":"/mnt/snapshots","readonly":true}}'
+   docker compose exec -T wazuh.indexer curl -sk -u "admin:$ADMIN_PASSWORD" -X POST 'https://localhost:9200/_snapshot/wazuh-4x/alerts-4x/_restore?wait_for_completion=true' \
+     -H 'Content-Type: application/json' -d '{"indices":"wazuh-alerts-4.x-*","include_global_state":false,"rename_pattern":"(.+)","rename_replacement":"restored-$1"}'
+   docker compose exec -T wazuh.indexer curl -sk -u "admin:$ADMIN_PASSWORD" 'https://localhost:9200/_cat/indices/restored-*?v&h=health,index,docs.count'
+   ```
+   Then run `docker compose up -d` without the override. The restored indices stay in the 5.0 indexer volume.
+
+On multi-node, add `path.repo` to the three indexer files the same way, since `wazuh2.indexer.yml` and `wazuh3.indexer.yml` do not end with a newline either:
+
+```bash
+cd <4.x checkout>/multi-node
+printf '\npath.repo: ["/mnt/snapshots"]\n' | tee -a config/wazuh_indexer/wazuh1.indexer.yml \
+  config/wazuh_indexer/wazuh2.indexer.yml config/wazuh_indexer/wazuh3.indexer.yml > /dev/null
+```
+
+Mount the folder in the three indexer services on both sides: a snapshot repository has to be reachable from every node. Run the `curl` commands against `wazuh1.indexer`.
 
 ## Between 5.x releases
 
