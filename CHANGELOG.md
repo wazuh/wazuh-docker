@@ -31,7 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Install `diffutils` in the Wazuh agent and Wazuh manager images so FIM `report_changes` can generate content diffs ([#2771](https://github.com/wazuh/wazuh-docker/issues/2771))
 
 ### Deleted
 
