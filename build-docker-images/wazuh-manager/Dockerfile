@@ -14,7 +14,7 @@ ARG WAZUH_FILEBEAT_MODULE
 ARG S6_VERSION="v2.2.0.3"
 ARG TARGETARCH
 
-RUN yum install curl-minimal xz gnupg tar gzip openssl findutils procps -y &&\
+RUN yum install curl-minimal xz gnupg tar gzip openssl findutils procps diffutils -y &&\
     yum clean all
 
 COPY config/check_repository.sh /
