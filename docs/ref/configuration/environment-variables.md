@@ -279,7 +279,7 @@ environment:
   - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
 ```
 
-**Wazuh dashboard.** Only the settings below are read from the environment, and written to `opensearch_dashboards.yml` on every start. Any other variable is ignored; mount your own `opensearch_dashboards.yml` for other settings.
+**Wazuh dashboard.** Only the settings below are read from the environment. On every start the container writes to `opensearch_dashboards.yml` the settings whose variable is set, and leaves the rest of the file as it is, so a value in a mounted `opensearch_dashboards.yml` is kept unless its variable is set. The defaults in brackets are the values of the file the image ships. `OPENSEARCH_SSL_VERIFICATION_MODE` is the exception: it is written on every start, `full` when it is not set (see [Dashboard verification of the indexer](../upgrade.md#dashboard-verification-of-the-indexer)). Any other variable is ignored.
 
 | Variable | Setting |
 | --- | --- |
@@ -291,7 +291,7 @@ environment:
 | `OPENSEARCH_SECURITY_MULTITENANCY_ENABLED`, `OPENSEARCH_SECURITY_READONLY_MODE_ROLES` | `opensearch_security.multitenancy.enabled`, `opensearch_security.readonly_mode.roles` |
 | `OPENSEARCH_SECURITY_COOKIE_TTL`, `OPENSEARCH_SECURITY_SESSION_TTL`, `OPENSEARCH_SECURITY_SESSION_KEEPALIVE` | `opensearch_security.cookie.ttl`, `opensearch_security.session.ttl`, `opensearch_security.session.keepalive` |
 | `UI_SETTINGS_OVERRIDES_DEFAULT_ROUTE` | `uiSettings.overrides.defaultRoute` |
-| `WAZUH_API_URL`, `API_PORT`, `API_USERNAME`, `RUN_AS`, `WAZUH_API_CA` | `wazuh_core.hosts.default`: `url`, `port`, `username`, `run_as`, `ca` (defaults: `https://localhost`, `55000`, `wazuh-internal-client`, `true`, `/usr/share/wazuh-dashboard/config/certs/manager-ca.pem`) |
+| `WAZUH_API_URL`, `API_PORT`, `API_USERNAME`, `RUN_AS`, `WAZUH_API_CA` | `wazuh_core.hosts.default`: `url`, `port`, `username`, `run_as`, `ca` (defaults: `https://localhost`, `55000`, `wazuh-internal-client`, `true`, `/usr/share/wazuh-dashboard/config/certs/manager-ca.pem`). Other `wazuh_core.hosts` entries are not changed. |
 
 `OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`: the dashboard checks the certificate chain and that every host in `OPENSEARCH_HOSTS` is named in the certificate that indexer presents. `certificate` checks the chain only. See [Dashboard verification of the indexer](../security.md#dashboard-verification-of-the-indexer).
 
