@@ -3,6 +3,12 @@ services:
   wazuh.agent:
     image: wazuh/wazuh-agent:5.0.0
     restart: always
+    healthcheck:
+      test: [ "CMD", "/var/ossec/bin/wazuh-control", "status" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     environment:
       - WAZUH_ENROLLMENT_TOKEN=<TOKEN MINTED BY THE MANAGER>
       #- WAZUH_AGENT_NAME=<WAZUH_AGENT_NAME>
