@@ -56,10 +56,16 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
           dns: "wazuh.dashboard"
     ```
 
-5.  Run the certificate creation script:
+    Each manager node keeps its own name here. The address agents dial is not one
+    of them: agents reach the cluster through `nginx`, which publishes `1517` and
+    hands each connection to either manager node, so that address belongs to both
+    nodes at once and is given in the next step instead.
+
+5.  Run the certificate creation script, naming the address agents dial:
 
     ```bash
-    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv
+    sudo bash ../tools/utils/deployment/certificates-conf.sh --cert --copy --priv \
+        --agent-san nginx --agent-san <DOCKER_HOST_ADDRESS>
     ```
 
     This issues every certificate the deployment mounts, including

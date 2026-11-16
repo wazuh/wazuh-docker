@@ -40,13 +40,29 @@ This deployment uses the `single-node/docker-compose.yml` file, which defines a 
       # Use node_type only with more than one Wazuh manager
       manager:
         - name: wazuh.manager
-          dns: "wazuh.manager"
+          ip: "<DOCKER_HOST_ADDRESS>"
+          dns:
+            - "wazuh.manager"
 
       # Wazuh dashboard node
       dashboard:
         - name: wazuh.dashboard
           dns: "wazuh.dashboard"
     ```
+
+    The `ip` and `dns` entries of the manager node become the Subject Alternative
+    Names of the certificate the manager presents on `1517`, the port agents
+    connect to and enroll through. **List every address agents dial.**
+    `wazuh.manager` only resolves inside the Compose network, so an agent on
+    another host reaches the address that publishes `1517`, which is the Docker
+    host: replace `<DOCKER_HOST_ADDRESS>` with that host's IP address, and add its
+    DNS name to the `dns` list if agents use a name instead.
+
+    An address left out is not refused until an agent verifies the hostname as
+    well as the chain (`WAZUH_AGENT_SSL_VERIFICATION=full`), and adding one later
+    means issuing the certificates again. `ip` and `dns` both take one value or a
+    list. Node names are enough for the Wazuh indexer and the Wazuh dashboard,
+    whose certificates are only used inside the Compose network.
 
 5.  Run the certificate creation script:
 

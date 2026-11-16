@@ -19,7 +19,7 @@ Then execute:
 The script downloads the package URLs for the requested version into `artifact_urls.yaml` on every run, overwriting any previous copy, and builds the four images in parallel. To build from your own package list instead, pass it with `-a <file>`. To build only one, use `-c`:
 
 ```bash
-./build-images.sh -v 5.1.0
+./build-images.sh -c wazuh-dashboard
 ```
 
 To get all the available script options use the `-h` or `--help` option:
@@ -36,7 +36,7 @@ Usage: ./build-images.sh [OPTIONS]
     -refs, --references <refs>   [Optional] [Only with --dev] JSON array of commit refs for components (indexer, manager, dashboard, agent) in order. Defaults to 'latest'.
     -rg, --registry <reg>        [Optional] Set the Docker registry to push the images.
     -c, --component <comp>       [Optional] Build only this component: 'wazuh-indexer', 'wazuh-manager', 'wazuh-dashboard' or 'wazuh-agent'. By default, all four.
-    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, main.
+    -v, --version <ver>          [Optional] Set the Wazuh version should be builded. By default, 5.1.0.
     -m, --multiarch              [Optional] Enable multi-architecture builds.
     --skip-signature-check       [Optional] [Only with --dev] Install the Wazuh packages without checking that they are signed by Wazuh. Only for unsigned development packages.
     -h, --help                   Show this help.
