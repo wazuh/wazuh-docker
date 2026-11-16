@@ -53,11 +53,7 @@ These are general recommendations. Actual needs may vary based on the number of 
 * **Docker Desktop**
     * Install Docker Desktop by following the official instructions: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
 * **WSL Linux distribution**
-<<<<<<< HEAD
-    * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not compatible with wazuh-certs-tool-5.1.0-1.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
-=======
     * Install Ubuntu or other compatible Linux distribution (bash in Alpine is not compatible with wazuh-certs-tool.sh): [Install Ubuntu on WSL](https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/)
->>>>>>> 3844cd03aeec869827540292730c4d4eea1e702c
 * **Git Client**:
     * Required for cloning the `wazuh-docker` repository.
 * **Web Browser**:

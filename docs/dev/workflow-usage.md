@@ -6,7 +6,7 @@ The `(5.x) Build and push images` workflow (`.github/workflows/5_build_and_push_
 
 | Parameter | Description | Default | Required |
 |-----------|-------------|---------|----------|
-| `image_tag` | Docker image version tag | `main` | Yes |
+| `image_tag` | Docker image version tag | `5.1.0` | Yes |
 | `docker_reference` | Branch or tag of `wazuh-docker` to build from | - | Yes |
 | `wazuh_automation_reference` | Branch or tag of `wazuh-automation` | `main` | No |
 | `products` | Comma-separated list of the images to build and push | `wazuh-manager,wazuh-dashboard,wazuh-indexer,wazuh-agent` | No |
