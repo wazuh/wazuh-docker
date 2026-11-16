@@ -19,7 +19,7 @@ Then execute:
 The script downloads the package URLs for the requested version into `artifact_urls.yaml` on every run, overwriting any previous copy, and builds the four images in parallel. To build from your own package list instead, pass it with `-a <file>`. To build only one, use `-c`:
 
 ```bash
-./build-images.sh -v 5.0.1
+./build-images.sh -c wazuh-dashboard
 ```
 
 To get all the available script options use the `-h` or `--help` option:
