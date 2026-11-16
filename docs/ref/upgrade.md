@@ -2,11 +2,11 @@
 
 An upgrade replaces the images and keeps everything else. The named volumes hold what each component stored on its first start: the indexer security configuration and data, the manager's Wazuh API user database, keystore, configuration and cluster key, and the dashboard keystore. The deployment directory holds the certificates and `config/credentials/*.env`, which are used as they are. None of them is created again, so do not run `certificates-conf.sh` or `credentials-conf.sh` for an upgrade.
 
-These steps apply between 5.x releases. Upgrading from 4.x, or from 5.0.0 RC 1 or an earlier pre-release, is not supported: see [From 4.x](#from-4x).
+These steps apply between 5.x releases. Upgrading from 4.x is not supported: see [From 4.x](#from-4x).
 
 ## From 4.x
 
-A 4.x deployment cannot be upgraded in place. The 5.0 manager uses other paths (`/var/wazuh-manager` and `/etc/wazuh-manager` instead of `/var/ossec`), a new configuration format and a new agent protocol, so it does not read the 4.x volumes. A deployment of 5.0.0 RC 1 or an earlier pre-release cannot be upgraded either (wazuh/wazuh#40338): deploy 5.0 again with new volumes.
+A 4.x deployment cannot be upgraded in place. The 5.0 manager uses other paths (`/var/wazuh-manager` and `/etc/wazuh-manager` instead of `/var/ossec`), a new configuration format and a new agent protocol, so it does not read the 4.x volumes.
 
 Deploy 5.0 as a new deployment and carry the agents' identity across with the manager's migration tool, `wazuh-migrate-identity.py`. It keeps the agent ids, names and keys, the group membership and the group folders and, optionally, the API users and the enrollment password, so the 4.x agents reconnect without enrolling again. The Wazuh manager guide [Migrating a Wazuh manager from 4.x to 5.0](https://github.com/wazuh/wazuh/blob/v5.0.0/docs/guide/migration/manager-4x-to-5x.md) covers everything else: the configuration, the rules and decoders, upgrading the agents, retiring the legacy channel, and the historical data. The steps below are the Docker part of it, for the single-node deployment. On multi-node, use the volumes and the service of the master (`master-wazuh-etc`, `master-wazuh-queue`, `master-wazuh-api-configuration` and `wazuh.master`), and the override of step 3 for multi-node. [Configuration and content](#configuration-and-content) says where the input of the rest of the guide is in a 4.x Docker deployment and where 5.0 takes it.
 
@@ -112,6 +112,14 @@ A file mounted into the 5.0 indexer or dashboard must be owned by `root`, group 
 ```bash
 docker compose exec wazuh.manager /var/wazuh-manager/bin/wazuh-manager-conf validate
 ```
+
+The 4.x dashboard checked only the certificate chain of the indexer (`opensearch.ssl.verificationMode: certificate`). The 5.0 dashboard also verifies the indexer hostname: `OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`. A deployment that keeps the shipped `OPENSEARCH_HOSTS` needs no change. If you change it, check that every host it lists is in the certificate your indexer service mounts as `indexer.pem`. On the shipped single-node deployment:
+
+```bash
+openssl x509 -in config/wazuh_indexer/certs/wazuh.indexer.pem -noout -ext subjectAltName
+```
+
+On multi-node, check `config/wazuh1_indexer/certs/wazuh1.indexer.pem` to `config/wazuh3_indexer/certs/wazuh3.indexer.pem` the same way. See [Dashboard verification of the indexer](security.md#dashboard-verification-of-the-indexer) for what to do when a host is missing.
 
 ### Historical data
 
@@ -246,13 +254,3 @@ Mount the folder in the three indexer services on both sides: a snapshot reposit
    ../tools/tests/check-default-credentials.sh
    ```
    Every service is `healthy` and the check passes. The accounts keep the passwords they had: see [Credentials](credentials.md).
-
-## Dashboard verification of the indexer
-
-From 5.0.0 the dashboard verifies the indexer hostname (`OPENSEARCH_SSL_VERIFICATION_MODE` defaults to `full`; it was `certificate`). The dashboard writes the setting on every start, so an upgraded deployment uses it even though `opensearch_dashboards.yml` is kept on the `wazuh-dashboard-config` volume. A deployment that keeps the shipped `OPENSEARCH_HOSTS` needs no change. If you changed it, check before upgrading that every host it lists is in the certificate your indexer service mounts as `indexer.pem`. On the shipped single-node deployment:
-
-```bash
-openssl x509 -in config/wazuh_indexer/certs/wazuh.indexer.pem -noout -ext subjectAltName
-```
-
-On multi-node, check `config/wazuh1_indexer/certs/wazuh1.indexer.pem` to `config/wazuh3_indexer/certs/wazuh3.indexer.pem` the same way. See [Dashboard verification of the indexer](security.md#dashboard-verification-of-the-indexer) for what to do when a host is missing.
