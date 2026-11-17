@@ -32,7 +32,8 @@ then on, the stored values are the ones that count.
 
 The files are `config/credentials/<file>` under `single-node/` or `multi-node/`.
 The first three accounts live in the indexer, and the last two in the manager's
-Wazuh API. The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`,
+Wazuh API. In 4.x, the Wazuh API account the dashboard uses was named
+`wazuh-wui`. The OpenSearch demo accounts (`kibanaro`, `logstash`, `readall`,
 `snapshotrestore`, `anomalyadmin`) are not part of a Wazuh deployment and are
 not in the image.
 
@@ -142,7 +143,7 @@ them and stores them:
 - **Dashboard:** stores both of its passwords in its keystore.
 
 Later starts, restarts and recreated containers keep what was stored, and the
-env files are no longer read for those values. The stores are on the
+env files are not read again for those values. The stores are on the
 deployment's named volumes, so recreating the containers without `-v` keeps
 them.
 
@@ -219,14 +220,6 @@ If the keystore command does not exit with 0, run it again before starting the
 manager. In multi-node, run the three manager lines for `wazuh.master` and then
 for `wazuh.worker`.
 
-The Wazuh API account the dashboard uses was named `wazuh-wui` before 5.0.0.
-A Wazuh API user database created by a 5.0.0 pre-release image, in the
-`wazuh_api_configuration` volume (`master-wazuh-api-configuration` on
-multi-node), keeps that name after the upgrade, and the dashboard can no longer
-log in. Set `API_USERNAME=wazuh-wui` on the dashboard service of such a
-deployment. `password-tool.sh --user wazuh-internal-client` changes its password
-all the same, since the tool addresses the account by its identifier.
-
 The manager's tool refuses to run before the manager's first start. It would
 otherwise create the Wazuh API user database itself, and the first start would
 then keep that database instead of the passwords in `manager.env`.
@@ -287,7 +280,7 @@ A cluster worker without a user database passes, since it has no API accounts.
   who can run `docker inspect` on the host can read them.
 - `docker compose down -v` removes the stores. The next start then takes the
   passwords from the env files again.
-- The names of earlier releases still work as aliases, in the environment only:
+- The 4.x variable names work as aliases, in the environment only:
   `INDEXER_PASSWORD` on the manager, and `DASHBOARD_PASSWORD` and `API_PASSWORD`
   on the dashboard. `INDEXER_USERNAME` and `DASHBOARD_USERNAME` are ignored: the
   accounts are always `wazuh-manager` and `kibanaserver`.

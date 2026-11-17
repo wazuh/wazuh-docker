@@ -143,14 +143,14 @@ mount_files() {
 }
 
 ##############################################################################
-# Report the variables that no longer configure anything, so that a compose file
-# carried over from an earlier version fails loudly rather than silently
-# connecting somewhere else.
+# Warn about the 4.x variables that configure nothing in 5.x, so that a compose
+# file carried over from 4.x does not silently connect somewhere else. The
+# container still starts.
 #
-# WAZUH_REGISTRATION_SERVER and WAZUH_REGISTRATION_PORT pointed enrollment at
-# authd separately. Since 5.0.0 the agent enrolls over the same HTTPS channel it
-# uses for everything else, so <enrollment> carries neither an address nor a port
-# of its own and both are taken from the manager connection.
+# In 4.x, WAZUH_REGISTRATION_SERVER and WAZUH_REGISTRATION_PORT pointed
+# enrollment at authd separately. A 5.x agent enrolls over the same HTTPS
+# channel it uses for everything else, so <enrollment> carries neither an
+# address nor a port of its own and both are taken from the manager connection.
 ##############################################################################
 
 warn_unsupported_vars() {
@@ -160,7 +160,7 @@ warn_unsupported_vars() {
     fi
   done
 
-  # There is no password-based enrollment left to fall back to: a 5.x agent
+  # There is no password-based enrollment to fall back to: a 5.x agent
   # only ever enrolls against a 5.x manager, and a 5.x manager only ever
   # accepts a token. authd.pass is not written for any manager version.
   if [ -n "$WAZUH_REGISTRATION_PASSWORD" ]; then
@@ -172,7 +172,7 @@ warn_unsupported_vars() {
 # Resolve the manager connection into its address, port and path prefix, and
 # assemble the normalized endpoint string back out of them.
 #
-# Since wazuh/wazuh#38624 the agent takes one <endpoint> holding
+# The agent takes one <endpoint> holding
 # host[:port][/prefix], with 1517 and /wazuh-manager/ as the defaults for the
 # components left out. Those defaults are applied here rather than left to the
 # agent, so the value written is always the complete host:port/prefix form. Two
@@ -187,8 +187,7 @@ warn_unsupported_vars() {
 # the default, exactly as it would if the agent parsed it.
 #
 # host is an IPv4 literal, a hostname, or a bracketed IPv6 literal optionally
-# carrying a zone id: [<ipv6-literal>%25<ifname>]. That zone replaces the
-# <interface_index> option the agent used to take separately.
+# carrying a zone id: [<ipv6-literal>%25<ifname>].
 #
 # Only MANAGER_ENDPOINT is written to ossec.conf. The components are kept apart
 # because assembling the value means normalizing them first: defaulting the port,
@@ -320,7 +319,7 @@ decode_enrollment_token() {
 # on success. <endpoint> is the only thing this script writes from the token;
 # the anchor and the key are bootstrapped by the agent itself, not here.
 #
-# Root-only, unlike the old authd.pass: the agent reads it while still root, so
+# Root-only, unlike authd.pass in 4.x: the agent reads it while still root, so
 # the wazuh user never needs it and must not be able to substitute the token
 # that chooses its certificate authority. Created and locked down before the
 # token is written into it, so the credential is never briefly world-readable
@@ -341,7 +340,7 @@ store_enrollment_token() {
 ##############################################################################
 # Allow users to set the manager endpoint and the agent name on container
 # start. The manager endpoint also drives enrollment, which reuses the agent
-# connection since 5.0.0.
+# connection.
 #
 # WAZUH_ENROLLMENT_TOKEN is the only way to enroll: its address is what gets
 # written to <endpoint>, and it is mutually exclusive with
@@ -397,11 +396,10 @@ set_manager_conn() {
   fi
 
   # <endpoint> is the only tag configured here, whichever variables supplied the
-  # value. <address> and <port> are never written: wazuh/wazuh#38624 folded them
-  # into the endpoint, so a package that still ships them predates the change and
-  # cannot use what this writes anyway.
+  # value. <address> and <port> are never written: they are the 4.x layout, and
+  # a 5.x agent reads the manager connection from <endpoint> only.
   if sed -n '/<manager>/,/<\/manager>/p' "$config" | grep -q "<address>"; then
-    print "WARNING: ossec.conf still has <address> and <port> in <manager>, so this package predates the unified endpoint (wazuh/wazuh#38624) and will not read what is written below. Rebuild the image once the package ships the single <endpoint>."
+    print "WARNING: ossec.conf has <address> and <port> in <manager>, the 4.x layout. A 5.x agent reads the manager connection from <endpoint> only, which is what is written below."
   fi
 
   print "Manager endpoint: $MANAGER_ENDPOINT"
@@ -424,7 +422,7 @@ set_agent_name() {
 # TLS material for the manager connection: the <agent><ssl> block.
 #
 # With no <ssl> block and no trust anchor at etc/certs/root-ca.pem the agent
-# resolves <verification_mode> to 'none' (wazuh/wazuh#38940): it connects to
+# resolves <verification_mode> to 'none': it connects to
 # whatever answers on the endpoint, including a manager presenting its own
 # self-signed certificate, and logs "TLS verification is DISABLED". A token
 # enrollment writes that anchor, after which the agent verifies in 'full'.
@@ -629,7 +627,7 @@ resolve_agent_ssl() {
 # Write the <ssl> block into <agent>.
 #
 # Unlike the endpoint and the agent name there is no placeholder to substitute:
-# no shipped agent template carries an <ssl> block (wazuh/wazuh#38684), so the
+# no shipped agent template carries an <ssl> block, so the
 # block is inserted. Any existing one is dropped first and rebuilt from the
 # variables, so a restart cannot stack two of them, and what the variables say is
 # what ends up in the file.
@@ -764,7 +762,7 @@ main() {
   # Mount selected files (WAZUH_CONFIG_MOUNT) to container
   mount_files
 
-  # Report the variables that no longer take effect
+  # Warn about the 4.x variables that configure nothing
   warn_unsupported_vars
 
   # Configure agent variables
