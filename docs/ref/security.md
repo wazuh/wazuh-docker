@@ -44,7 +44,6 @@ The Wazuh manager presents `/etc/wazuh-manager/certs/remoted.pem` and `/etc/wazu
 
 The certificate is issued for that listener and nothing else: `CA:FALSE`, `keyUsage` limited to `digitalSignature` and `keyEncipherment`, `extendedKeyUsage` `serverAuth`, and a Subject Alternative Name holding the addresses agents dial. The file is the leaf followed by `root-ca.pem`, which is the chain agents receive in the handshake.
 
-- It is a different pair from `<node>.pem`, which the manager presents to the Wazuh indexer as a client. Do not reuse one for the other: the key that faces agents would then also be the key that authenticates the indexer connection.
 - The private key belongs on the deployment host only. Protect `wazuh-certificates/` and `config/*/certs`, and do not publish them or copy them between deployments.
 - Distribute the root CA certificate, never the root CA key. `wazuh-certs-tool.sh` keeps the CA in `wazuh-ca/` next to the tool (or in the directory set in `WAZUH_CA_DIR`, which must be an absolute path), root-only, and never copies `root-ca.key` into `wazuh-certificates/`. Back that directory up: it is what issues certificates for new nodes. Run the tool from the same directory, or set the same `WAZUH_CA_DIR`, when you add nodes; otherwise it creates a new CA that the existing nodes do not trust.
 - The addresses in the SAN are what agents can verify by name. Which ones belong there is part of the deployment steps — [single-node](getting-started/deployment/single-node.md), [multi-node](getting-started/deployment/multi-node.md).

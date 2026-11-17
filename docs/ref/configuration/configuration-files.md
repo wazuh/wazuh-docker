@@ -95,8 +95,6 @@ When the `wazuh_etc` volume already holds the file, Docker does not create the c
 error mounting "…/wazuh.manager-apid.pem" to rootfs at "/etc/wazuh-manager/certs/apid.pem": … not a directory: Are you trying to mount a directory onto a file (or vice-versa)?
 ```
 
-On every start the master logs `WARNING: dashboard client pair not generated: /etc/wazuh-manager/ca has no key; provision it externally in /etc/wazuh-manager/export`. This is expected: the deployment mounts `ca/root-ca.pem` without its key, and nothing uses that pair.
-
 Because the pair lives on the host, it is not affected by `docker compose down -v`, and rotating it means issuing a new one and restarting the manager. A new pair does not break enrolled agents as long as it is signed by the same root CA, which is what agents verify. See [Security](../security.md) for rotation and for the certificate's contents.
 
 ### Wazuh manager detection content

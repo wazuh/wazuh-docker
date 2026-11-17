@@ -167,7 +167,7 @@ if $DO_COPY; then
     fi
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
-    cp "$OUTPUT_DIR/${node}"{.pem,-key.pem,-remoted.pem,-remoted-key.pem,-apid.pem,-apid-key.pem} "./config/$dir_name/certs/"
+    cp "$OUTPUT_DIR/${node}"{-remoted.pem,-remoted-key.pem,-apid.pem,-apid-key.pem} "./config/$dir_name/certs/"
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do

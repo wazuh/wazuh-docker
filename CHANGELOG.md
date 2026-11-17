@@ -20,6 +20,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2828](https://github.com/wazuh/wazuh-docker/issues/2828) | Stop mounting and copying the manager's indexer client certificate (`<node>.pem`), which the manager no longer configures, following wazuh/wazuh#41513 |
 | [#2817](https://github.com/wazuh/wazuh-docker/issues/2817) | Complete the migration from 4.x in `upgrade.md`: keep the agents out on multi-node by resetting the `nginx` ports, map the 4.x mounted files and volumes to 5.0, and snapshot and restore the 4.x alerts |
 | [#2764](https://github.com/wazuh/wazuh-docker/issues/2764) | Align the docs with the 5.0.0 code and packages: published `export/credentials.env`, environment variables, missing certificate pair messages, certificates tool URLs, Docker backup, and the `remoted` bind address comment |
 | [#2758](https://github.com/wazuh/wazuh-docker/issues/2758) | Make the Wazuh dashboard listen on `443` inside the container in the single-node and multi-node stacks, as the image, the package and the Kubernetes deployment do |
