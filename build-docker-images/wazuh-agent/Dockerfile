@@ -47,20 +47,19 @@ RUN dnf install procps shadow-utils -y && \
 
 # Write the <endpoint> placeholder ourselves: the packaged ossec.conf ships with
 # a real default (<endpoint>IP:1517/wazuh-manager/</endpoint>), and nothing in
-# the installer replaces it with our placeholder any more (see the ARG comment
-# below), so this is the only thing that puts CHANGE_MANAGER_ENDPOINT there for
-# the runtime init script to find. Scoped to <manager> the same way the runtime
-# script scopes its own substitution, so a second <endpoint>-shaped tag
-# elsewhere in the file is never touched.
+# the installer replaces it with our placeholder (see the ARG comment below), so
+# this is the only thing that puts CHANGE_MANAGER_ENDPOINT there for the runtime
+# init script to find. Scoped to <manager> the same way the runtime script
+# scopes its own substitution, so a second <endpoint>-shaped tag elsewhere in
+# the file is never touched.
 #
 # WAZUH_MANAGER_ENDPOINT here is a placeholder for the runtime init script to
 # substitute, not real configuration -- there is no manager to point at during a
-# build. It used to reach the package post-install as an environment variable
-# and get written into <endpoint> that way, but wazuh/wazuh#39285 (5.0.0) made
-# the package's own installer stop writing any address without a real
-# enrollment token, which a build obviously does not have. It is declared only
-# here, after the package installation, because the installer now reports it
-# in ossec.log as an ignored 5.0 variable.
+# build. Unlike in 4.x, the package installer does not write a manager address
+# taken from its environment: it writes one only with a real enrollment token,
+# which a build does not have, and reports the variable in ossec.log as
+# ignored. The ARG is therefore declared only here, after the package
+# installation.
 ARG WAZUH_MANAGER_ENDPOINT='CHANGE_MANAGER_ENDPOINT'
 RUN conf=/var/ossec/etc/ossec.conf; \
     sed -i "/<manager>/,/<\/manager>/ s#<endpoint>.*</endpoint>#<endpoint>${WAZUH_MANAGER_ENDPOINT}</endpoint>#" "$conf"
@@ -68,7 +67,7 @@ RUN conf=/var/ossec/etc/ossec.conf; \
 # Fail the build if the above stops working, or if the package installer starts
 # writing the agent name placeholder somewhere this image does not expect:
 # without them the manager endpoint and the agent name are silently ignored at
-# container start, which is how the port support was lost once already (#2590).
+# container start.
 RUN conf=/var/ossec/etc/ossec.conf; \
     grep -q 'CHANGE_MANAGER_ENDPOINT' "$conf" || \
         { echo "ERROR: CHANGE_MANAGER_ENDPOINT is missing from the packaged ossec.conf"; exit 1; }; \
@@ -76,7 +75,7 @@ RUN conf=/var/ossec/etc/ossec.conf; \
         { echo "ERROR: CHANGE_AGENT_NAME is missing from the packaged ossec.conf"; exit 1; }
 
 # The package installer adds a <localfile> block for each dnf log that exists
-# when it runs (wazuh/wazuh#40810). Both exist here, written by the dnf that
+# when it runs. Both exist here, written by the dnf that
 # installed the package, but not in the final image, whose dnf is microdnf.
 RUN conf=/var/ossec/etc/ossec.conf; \
     awk '/<localfile>/ { blk = $0; inblk = 1; next } \

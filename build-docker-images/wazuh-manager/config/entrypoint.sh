@@ -70,25 +70,22 @@ _manager_busy() {
 # the container dies and `restart: always` (single-node/multi-node
 # docker-compose.yml) actually gets a chance to bring it back. Without this,
 # tail -F never exits on its own regardless of what happens to the daemons
-# started by wazuh-manager-control (see wazuh-docker#2626), so the container
-# stays "Up" forever with a dead API/daemon and no restart is ever triggered.
+# started by wazuh-manager-control, so the container stays "Up" forever with a
+# dead API/daemon and no restart is ever triggered.
 #
-# Same failure vocabulary as the compose healthchecks (fixed in #2642):
-# wazuh-manager-control status's "not running"/"failed to start"/"refused its
-# configuration" lines, not a fragile grep on arbitrary text -- these are
-# exactly the three cases that set that script's own non-zero RETVAL.
+# Same failure vocabulary as the compose healthchecks: wazuh-manager-control
+# status's "not running"/"failed to start"/"refused its configuration" lines,
+# not a fragile grep on arbitrary text -- these are exactly the three cases
+# that set that script's own non-zero RETVAL.
 #
-# No manual exclusion for apid here: status() already excludes it correctly
-# on non-master nodes by reading the real cluster.node_type from the config
-# file, unlike a naive check against the raw WAZUH_NODE_TYPE env var (which
-# an earlier version of this fix duplicated, and which broke silently on
-# case mismatches like WAZUH_NODE_TYPE=WORKER -- found by QA testing this
-# fix). Trust the same source of truth wazuh-manager-control itself uses.
+# No manual exclusion for apid here: status() already excludes it on
+# non-master nodes by reading the real cluster.node_type from the config file.
+# The raw WAZUH_NODE_TYPE env var is not checked, because it breaks silently
+# on case mismatches like WAZUH_NODE_TYPE=WORKER.
 #
 # authd is excluded when auth.disabled: true is set in wazuh-manager.conf,
 # because start_service() skips starting it in that case but status() has no
-# matching exclusion for it -- a real bug in the core script (found by Julia
-# while reviewing this fix). Without compensating here, any deployment with
+# matching exclusion for it. Without compensating here, any deployment with
 # auth.disabled: true would restart-loop forever.
 _manager_unhealthy() {
     exclude_pattern='^$'
