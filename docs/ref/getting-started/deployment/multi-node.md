@@ -87,10 +87,8 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
     DNS name — replacing `<DOCKER_HOST_ADDRESS>` — for agents anywhere else.
 
     Addresses given this way reach the agent listener certificates only. The
-    `<node>.pem` each manager presents to the Wazuh indexer keeps its own name,
-    and the certificate creation script rejects an address repeated across
-    manager nodes in `config.yml`, which is why the entry point is not written
-    there.
+    certificate creation script rejects an address repeated across manager
+    nodes in `config.yml`, which is why the entry point is not written there.
 
 6.  Create the deployment's passwords:
 
