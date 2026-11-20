@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None
+- Skip the permanent data volumes with no snapshot left in the Wazuh manager init script, so a restart of the same container no longer aborts it before the mounted configuration is applied ([#2732](https://github.com/wazuh/wazuh-docker/issues/2732))
 
 ### Deleted
 

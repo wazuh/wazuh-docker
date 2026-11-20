@@ -44,6 +44,8 @@ mount_permanent_data() {
     # Check if the path is not empty
     if find ${permanent_dir} -mindepth 1 | read; then
       print "The path ${permanent_dir} is already mounted"
+    elif [ ! -d "${data_tmp}" ]; then
+      print "No permanent data snapshot for ${permanent_dir}, skipping"
     else
         print "Installing ${permanent_dir}"
         exec_cmd "cp -ar ${data_tmp}. ${permanent_dir}"
