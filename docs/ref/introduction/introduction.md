@@ -36,6 +36,7 @@ This manual is structured to help you find information efficiently:
     -   [Environment Variables](../configuration/environment-variables.md)
     -   [Configuration Files](../configuration/configuration-files.md)
 -   **[Upgrade](../upgrade.md)**: Provides instructions for upgrading your Wazuh-Docker deployment to a newer version.
+-   **[Migration from 4.x](../migration.md)**: Explains how to move the agents, configuration and alerts of a 4.x deployment to a new 5.x deployment.
 -   **[Glossary](../glossary.md)**: Defines key terms and concepts.
 
 ## Using This Manual

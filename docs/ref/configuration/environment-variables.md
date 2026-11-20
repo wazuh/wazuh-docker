@@ -261,8 +261,8 @@ deployment mounting its own `ossec.conf` at
 | `WAZUH_REGISTRATION_PASSWORD` | `WAZUH_ENROLLMENT_TOKEN` — there is no password-based enrollment |
 
 None of these configure anything, and the container logs a warning when one is
-set. The first two pointed enrollment at `authd` separately, which since 5.1.0 no
-longer happens: the agent enrolls through the manager connection it already has,
+set. In 4.x, the first two pointed enrollment at `authd` separately. A 5.x agent
+enrolls through the manager connection it already has,
 so `<enrollment>` carries neither an address nor a port of its own. The token
 replaces the third for the same reason a 5.x manager only ever accepts a token:
 there is no manager version this password would still work against.
@@ -279,7 +279,7 @@ environment:
   - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
 ```
 
-**Wazuh dashboard.** Only the settings below are read from the environment. On every start the container writes to `opensearch_dashboards.yml` the settings whose variable is set, and leaves the rest of the file as it is, so a value in a mounted `opensearch_dashboards.yml` is kept unless its variable is set. The defaults in brackets are the values of the file the image ships. `OPENSEARCH_SSL_VERIFICATION_MODE` is the exception: it is written on every start, `full` when it is not set (see [Dashboard verification of the indexer](../upgrade.md#dashboard-verification-of-the-indexer)). Any other variable is ignored.
+**Wazuh dashboard.** Only the settings below are read from the environment. On every start the container writes to `opensearch_dashboards.yml` the settings whose variable is set, and leaves the rest of the file as it is, so a value in a mounted `opensearch_dashboards.yml` is kept unless its variable is set. The defaults in brackets are the values of the file the image ships. `OPENSEARCH_SSL_VERIFICATION_MODE` is the exception: it is written on every start, `full` when it is not set (see [Dashboard verification of the indexer](../security.md#dashboard-verification-of-the-indexer)). Any other variable is ignored.
 
 | Variable | Setting |
 | --- | --- |

@@ -162,12 +162,12 @@ if $DO_COPY; then
     if [ ! -f "$OUTPUT_DIR/${node}-apid.pem" ] || [ ! -f "$OUTPUT_DIR/${node}-apid-key.pem" ]; then
       echo "Error: $OUTPUT_DIR/${node}-apid.pem or ${node}-apid-key.pem is missing."
       echo "The Wazuh manager does not start without the Server API certificate."
-      echo "Use a wazuh-certs-tool.sh that issues it; the 5.1.0-rc1 one does not."
+      echo "Use a wazuh-certs-tool.sh that issues it."
       exit 1
     fi
     echo "Copying certificates for manager: $node -> config/$dir_name/certs/"
     mkdir -p "./config/$dir_name/certs"
-    cp "$OUTPUT_DIR/${node}"{.pem,-key.pem,-remoted.pem,-remoted-key.pem,-apid.pem,-apid-key.pem} "./config/$dir_name/certs/"
+    cp "$OUTPUT_DIR/${node}"{-remoted.pem,-remoted-key.pem,-apid.pem,-apid-key.pem} "./config/$dir_name/certs/"
   done
 
   for node in "${DASHBOARD_NODES[@]}"; do

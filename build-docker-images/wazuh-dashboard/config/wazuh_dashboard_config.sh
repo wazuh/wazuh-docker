@@ -11,8 +11,9 @@
 #                                          mounted file keeps everything else.
 #
 # opensearch.ssl.verificationMode is the exception: it is written at every start,
-# with its default when the variable is not set, so a configuration kept from an
-# earlier version moves to full verification (see docs/ref/upgrade.md).
+# with its default (full) when the variable is not set, also over the value in a
+# mounted file such as one kept from 4.x, which set certificate (see
+# docs/ref/security.md#dashboard-verification-of-the-indexer).
 
 DASHBOARD_CONFIG_FILE="${DASHBOARD_CONFIG_FILE:-/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml}"
 CERTS_DIR=/usr/share/wazuh-dashboard/config/certs
