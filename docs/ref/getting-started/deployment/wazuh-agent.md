@@ -88,13 +88,27 @@ Follow these steps to deploy the Wazuh agent using Docker.
 
     **Note:** The container only decodes the token locally. A token the decoder
     refuses (for example, a malformed one) makes the container exit before
-    writing anything, naming the reason. An expired or revoked token, or one already at
-    `max_uses`, is refused by the manager when the agent first starts, and the
-    agent deletes it then (see the environment variables reference):
+    writing anything, naming the reason:
 
     ```text
     ERROR: WAZUH_ENROLLMENT_TOKEN was refused by the token decoder:
     wazuh-agentd: invalid enrollment token: malformed token.
+    ```
+
+    An expired or revoked token, or one already at `max_uses`, is refused by the
+    manager when the agent first starts, and the agent deletes it then (see the
+    environment variables reference). `wazuh-agentd` stops with `CRITICAL:
+    Enrollment-token bootstrap failed; refusing to enroll unverified.` and the
+    container exits with a non-zero code, as it does whenever an agent daemon
+    stops running. Restarting it does not help: the configuration in
+    `wazuh_agent_etc` already has the manager endpoint, so the container no
+    longer reads `WAZUH_ENROLLMENT_TOKEN`. Mint a new token, put it in the
+    Compose file, remove the agent's volume (it holds no identity yet, since
+    the agent never enrolled) and start the agent again:
+
+    ```bash
+    docker compose down -v
+    docker compose up -d
     ```
 
     **Note:** `WAZUH_MANAGER_ENDPOINT`/`WAZUH_MANAGER_SERVER` are for an agent
@@ -198,6 +212,14 @@ Follow these steps to deploy the Wazuh agent using Docker.
     agent, since the container gets a new hostname-derived
     `WAZUH_AGENT_NAME` and loses its previous `client.keys` each time, leaving
     the old registration on the manager with nothing to remove it.
+
+    **Note:** Upgrade the agent container by changing the image tag in the
+    compose file and running `docker compose up -d`; `wazuh_agent_etc` keeps
+    its enrollment. WPK upgrades sent from the manager are not supported here:
+    the package stops the agent daemons before installing, the container exits
+    as soon as it finds them stopped, and the upgrade is cut off. Anything
+    installed inside the container outside `/var/ossec/etc` is also lost the
+    next time it is recreated.
 
 3.  **Start the agent**, from the `wazuh-agent` directory:
 

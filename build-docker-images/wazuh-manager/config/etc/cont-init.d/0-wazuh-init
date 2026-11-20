@@ -354,9 +354,9 @@ WAZUH_NODE_NAME="${WAZUH_NODE_NAME:-$HOSTNAME}"
 # does not. Every host must agree: <ssl> is one block per <indexer>, so a list
 # mixing schemes has no configuration that satisfies it.
 #
-# Over plain http the <ssl> block is removed. It names a CA, a certificate and a
-# key, and the connector refuses to start when those files are absent, which is
-# the case in a deployment that has no TLS to configure them for.
+# Over plain http the <ssl> block is removed. It names the indexer CA, and the
+# connector refuses to start when that file is absent, which is the case in a
+# deployment that has no TLS to configure it for.
 # --------------------------
 if [[ -n "$WAZUH_INDEXER_HOSTS" ]]; then
     TMP_HOSTS=$(mktemp)
