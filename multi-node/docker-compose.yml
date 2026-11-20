@@ -45,8 +45,6 @@ services:
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/ca/root-ca.pem
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/root-ca.pem
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/indexer-ca.pem
-      - ./config/wazuh_master/certs/wazuh.master.pem:/etc/wazuh-manager/certs/indexer-connector.pem
-      - ./config/wazuh_master/certs/wazuh.master-key.pem:/etc/wazuh-manager/certs/indexer-connector-key.pem
       - ./config/wazuh_master/certs/wazuh.master-remoted.pem:/etc/wazuh-manager/certs/remoted.pem
       - ./config/wazuh_master/certs/wazuh.master-remoted-key.pem:/etc/wazuh-manager/certs/remoted-key.pem
       - ./config/wazuh_master/certs/wazuh.master-apid.pem:/etc/wazuh-manager/certs/apid.pem
@@ -94,8 +92,6 @@ services:
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/ca/root-ca.pem
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/root-ca.pem
       - ./config/root-ca/certs/root-ca.pem:/etc/wazuh-manager/certs/indexer-ca.pem
-      - ./config/wazuh_worker/certs/wazuh.worker.pem:/etc/wazuh-manager/certs/indexer-connector.pem
-      - ./config/wazuh_worker/certs/wazuh.worker-key.pem:/etc/wazuh-manager/certs/indexer-connector-key.pem
       - ./config/wazuh_worker/certs/wazuh.worker-remoted.pem:/etc/wazuh-manager/certs/remoted.pem
       - ./config/wazuh_worker/certs/wazuh.worker-remoted-key.pem:/etc/wazuh-manager/certs/remoted-key.pem
       - ./config/wazuh_worker/certs/wazuh.worker-apid.pem:/etc/wazuh-manager/certs/apid.pem
