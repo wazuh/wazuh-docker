@@ -25,7 +25,7 @@ This deployment utilizes the `multi-node/docker-compose.yml` file, which defines
     curl -fsS -o config.yml https://packages.wazuh.com/production/5.x/installation-assistant/config-5.0.1.yml
     ```
 
-    For a pre-release, use `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/wazuh-certs-tool-5.0.0-<STAGE>.sh` and `config-5.0.0-<STAGE>.yml` from the same path.
+    For a pre-release, use `https://packages-staging.xdrsiem.wazuh.info/pre-release/5.x/installation-assistant/wazuh-certs-tool-5.0.1-<STAGE>.sh` and `config-5.0.1-<STAGE>.yml` from the same path.
 
 4.  Edit the `config.yml` file with the configuration of the Wazuh components to be deployed
 
