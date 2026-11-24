@@ -11,6 +11,43 @@
     * **Customization**: Mount a custom `opensearch.yml` into the indexer container(s) at `/usr/share/wazuh-indexer/config/opensearch.yml`. The file must be owned by `root`, with group `101` (`wazuh-indexer`) and mode `0640`; see the note below.
 * **JVM Settings (`jvm.options`)**: Manages Java Virtual Machine settings, especially heap size (`-Xms`, `-Xmx`). Critical for performance and stability.
     * **Customization**: Mount a custom `jvm.options` file or set `OPENSEARCH_JAVA_OPTS` environment variable.
+* **`wazuh-indexer-setup/setup.yml`**: Overrides the settings of the index templates the indexer creates (shards, replicas, refresh interval, codec, translog durability) and selects an editable copy of a default ISM policy. The image ships it at `/usr/share/wazuh-indexer/config/wazuh-indexer-setup/setup.yml` with every key commented out, so it changes nothing until you set a key. The keys and their valid values are listed in the file itself and in the Setup plugin [Customization](https://github.com/wazuh/wazuh-indexer-plugins/blob/5.0.0/docs/ref/modules/setup/customization.md) reference.
+    * **Customization**: Mount your own `setup.yml` over the one in the image. Mount the file, not the directory, so the README and the policy copies of the image stay in place. In `multi-node`, mount the same file on the three indexers: the node elected cluster manager applies it, and any of them can be elected.
+        ```bash
+        sudo mkdir -p config/wazuh_indexer_setup
+        sudo tee config/wazuh_indexer_setup/setup.yml > /dev/null <<'EOF'
+        templates.streams.events.settings.index.number_of_shards: 3
+        templates.streams.events.settings.index.auto_expand_replicas: "0-2"
+        EOF
+        sudo chown 0:101 config/wazuh_indexer_setup/setup.yml
+        sudo chmod 640 config/wazuh_indexer_setup/setup.yml
+        ```
+        Add the mount to each indexer service (`wazuh.indexer` in `single-node`; `wazuh1.indexer`, `wazuh2.indexer` and `wazuh3.indexer` in `multi-node`):
+        ```yaml
+            volumes:
+              - type: bind
+                source: ./config/wazuh_indexer_setup/setup.yml
+                target: /usr/share/wazuh-indexer/config/wazuh-indexer-setup/setup.yml
+                read_only: true
+                bind:
+                  create_host_path: false
+        ```
+        `create_host_path: false` makes `docker compose up` fail if the file is missing. With the short syntax, Docker would create a directory in its place, and the indexer would refuse it.
+
+        To replace a default ISM policy, set `policies.<policy-id>.custom: true` in `setup.yml` and mount your `<policy-id>.json` the same way, at `/usr/share/wazuh-indexer/config/wazuh-indexer-setup/<policy-id>.json`, with the same owner and mode.
+    * **When changes take effect**: The file is read when a node that has just started is elected cluster manager. Mount it before the first start. To apply a later change, restart the indexer; in `multi-node`, restart the three indexers, since restarting a node that is not the elected cluster manager changes nothing:
+        ```bash
+        docker compose restart wazuh1.indexer wazuh2.indexer wazuh3.indexer
+        ```
+        Changes reach only indices created afterwards. A data stream takes them at its next rollover, and existing indices keep their settings.
+    * **Checking the result**: An invalid file does not stop the indexer and the container is still reported healthy, but no index template or index is created. Check the setup status and the template:
+        ```bash
+        ADMIN_PASSWORD=$(sudo sed -n 's/^WAZUH_INDEXER_ADMIN_PASSWORD=//p' config/credentials/indexer.env)
+        docker compose exec -T wazuh.indexer curl -sk -u "admin:$ADMIN_PASSWORD" 'https://localhost:9200/.wazuh-setup-status/_doc/setup-status?filter_path=_source'
+        docker compose exec -T wazuh.indexer curl -sk -u "admin:$ADMIN_PASSWORD" 'https://localhost:9200/_index_template/wazuh-events-v5-security-template?filter_path=**.number_of_shards'
+        docker compose logs wazuh.indexer | grep -E 'Setup configuration file|Setup initialization failed'
+        ```
+        Use the name of your indexer service (`wazuh1.indexer` in `multi-node`). The error line names the key or the file that is wrong.
 
 ### 3. Wazuh Dashboard (OpenSearch Dashboards) Configuration
 
