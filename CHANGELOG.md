@@ -4,6 +4,7 @@
 
 | Issue | Comment |
 | - | - |
+| [#2835](https://github.com/wazuh/wazuh-docker/issues/2835) | Document how to provide the indexer `setup.yml` (index template settings and ISM policies) to the single-node and multi-node indexers |
 | [#2724](https://github.com/wazuh/wazuh-docker/pull/2724) | Check the signature of the Wazuh packages and the checksum of `tini` before installing them in the images |
 | [#2706](https://github.com/wazuh/wazuh-docker/issues/2706) | Add Wazuh indexer dependencies on builder final stage |
 | [#2717](https://github.com/wazuh/wazuh-docker/pull/2717) | Start the Docker integration tests from PR labels |
